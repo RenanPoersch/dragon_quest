@@ -16,8 +16,29 @@ Use essa versão do Editor para evitar migrações involuntárias.
 1. Clone este repositório ou use a cópia local existente.
 2. No Unity Hub, abra **Projects → Add → Add project from disk** e selecione a raiz deste repositório (a pasta que contém `Assets`, `Packages` e `ProjectSettings`).
 3. Abra com o Editor **6000.6.5f1** e aguarde a importação dos pacotes e assets.
-4. Abra `Assets/Scenes/SampleScene.unity`.
-5. Clique em **Play**. Na etapa inicial, a cena é a base vazia do template: ainda não há personagem nem controles.
+4. Abra `Assets/Scenes/CidadePrototipo.unity`.
+5. Clique em **Play**, clique dentro da janela **Game** e use **WASD ou as setas** para andar.
+
+## Parte 1 — exploração
+
+A cidade provisória é criada pelo componente `PrototypeCity` ao iniciar Play. No modo de edição, a cena contém câmera, luz e o objeto que monta o protótipo. Durante Play, a hierarquia mostra o herói, ruas, prédios e obstáculos. Esses objetos temporários desaparecem ao sair de Play; isso é esperado nesta etapa.
+
+- Movimento em oito direções, com velocidade diagonal limitada.
+- Colisões com prédios, árvores, fonte, bancos e muralhas.
+- Câmera seguindo o herói e limitada à área do mapa.
+- Controles e nomes dos locais exibidos na tela.
+- Portas ainda fechadas; interiores e interações entram na parte 2.
+
+O cenário usa formas coloridas geradas pelo código, sem imagens externas. Sprites e tiles finais serão adicionados nas próximas entregas.
+
+### Onde está o código
+
+- `Assets/Scripts/Exploration/PlayerMovement.cs`: teclado, velocidade e movimento físico.
+- `Assets/Scripts/Exploration/CameraFollow.cs`: acompanhamento e limites da câmera.
+- `Assets/Scripts/Prototype/PrototypeCity.cs`: mapa provisório, obstáculos e herói.
+- `Assets/Scripts/Prototype/PrototypeHud.cs`: controles e placas dos locais.
+
+Veja `Docs/PARTE_1.md` para o roteiro de verificação.
 
 ## Escopo planejado
 

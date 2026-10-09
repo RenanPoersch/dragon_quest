@@ -19,3 +19,15 @@
 4. Abrir `Assets/Scenes/SampleScene.unity` e entrar/sair de Play.
 
 A cena inicial contém o conteúdo padrão do template; movimento e personagens serão adicionados na parte 1.
+
+### Confirmação posterior da parte 0
+
+O usuário apresentou a cena em Play, com os contadores do Console em zero. A abertura manual foi confirmada após as correções; os registros anteriores descrevem as tentativas de preparação.
+
+## Parte 1 — exploração
+
+- Quatro scripts C# compilados sem erros com o compilador Roslyn e as bibliotecas do Editor 6000.6.5f1, incluindo a biblioteca do Input System instalada no projeto.
+- Referência do componente PrototypeCity na cena e GUID da cena nos Build Settings conferidos.
+- Validação interativa de movimento, colisões e enquadramento ainda pendente no Editor aberto pelo usuário. Compilação isolada não substitui teste em Play.
+- Roteiro de verificação: `Docs/PARTE_1.md`.
+- Sem build executável nesta etapa.
