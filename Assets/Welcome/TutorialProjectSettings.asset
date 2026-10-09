@@ -22,10 +22,10 @@ MonoBehaviour:
     m_Pivot: {x: 0, y: 0, z: 0}
     m_Rotation: {x: 0, y: 0, z: 0, w: 0}
     m_FrameObject:
-      m_SceneGuid:
-      m_GameObjectGuid:
+      m_SceneGuid: 
+      m_GameObjectGuid: 
       m_SerializedComponentType:
-        m_TypeName:
+        m_TypeName: 
       m_ComponentIndex: 0
       m_AssetObject: {fileID: 0}
       m_Prefab: {fileID: 0}
