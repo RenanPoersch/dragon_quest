@@ -40,3 +40,16 @@ O usuário apresentou a cena em Play, com os contadores do Console em zero. A ab
 - Verificação visual e interativa de movimento, diálogos, aparência do baú e transições ainda pendente no Editor do usuário.
 - Roteiro: `Docs/PARTE_2.md`. Teste reproduzível: `Tools/Test-ExplorationProgress.ps1`.
 - Sem build executável nesta etapa.
+
+### Confirmação posterior da parte 2
+
+O usuário confirmou que as interações funcionaram em Play. Não houve validação individual registrada de todos os passos do roteiro.
+
+## Parte 3 — combate básico por turnos
+
+- Scripts do jogo compilados sem erros com Roslyn e as bibliotecas instaladas da Unity 6000.6.5f1 e Input System.
+- 204 verificações de combate passaram, incluindo ações inválidas sem gasto de recursos, HP/MP, cura, defesa, ordem de turnos, combatentes derrotados, estados independentes e partidas completas que chegam a vitória e derrota.
+- As 15 verificações de progresso de exploração continuam passando.
+- Interface de batalha, passagem da exploração para combate, controle de foco e retorno à cidade aguardam validação visual e interativa no Editor do usuário. Compilação isolada e testes das regras não confirmam esses comportamentos visuais.
+- Roteiro: `Docs/PARTE_3.md`; verificação automatizada: `Tools/Test-Combat.ps1`.
+- Não foi produzido executável.

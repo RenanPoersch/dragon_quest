@@ -11,24 +11,27 @@ namespace DragonQuest.Prototype
         private DialogueController dialogue;
         private ExplorationProgress progress;
         private PrototypeLocations locations;
+        private PrototypeBattleController battle;
         private GUIStyle titleStyle;
         private GUIStyle bodyStyle;
         private GUIStyle labelStyle;
         private Texture2D panelTexture;
 
         public void Initialize(Camera worldCamera, PlayerInteraction playerInteraction,
-            DialogueController dialogueController, ExplorationProgress explorationProgress, PrototypeLocations locationController)
+            DialogueController dialogueController, ExplorationProgress explorationProgress, PrototypeLocations locationController,
+            PrototypeBattleController battleController)
         {
             view = worldCamera;
             interaction = playerInteraction;
             dialogue = dialogueController;
             progress = explorationProgress;
             locations = locationController;
+            battle = battleController;
         }
 
         private void OnGUI()
         {
-            if (view == null) return;
+            if (view == null || battle.IsActive) return;
             EnsureStyles();
             float scale = Mathf.Clamp(Screen.height / 720f, 0.65f, 2f);
             Matrix4x4 previousMatrix = GUI.matrix;
@@ -50,6 +53,7 @@ namespace DragonQuest.Prototype
                 DrawLabel(new Vector2(0, 8.8f), "CASTELO", scale);
                 DrawLabel(new Vector2(-3.4f, -2.1f), "ALDEAO", scale);
                 DrawLabel(new Vector2(3.6f, -2.3f), "BAU", scale);
+                DrawLabel(new Vector2(0, 6.2f), "GUARDA", scale);
             }
 
             GUI.DrawTexture(new Rect(16, 16, Mathf.Min(420, width - 32), 94), panelTexture);

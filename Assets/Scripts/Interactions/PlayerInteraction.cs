@@ -26,6 +26,12 @@ namespace DragonQuest.Interactions
         private void Update()
         {
             if (context == null) return;
+            if (context.IsBusy())
+            {
+                current = null;
+                movement.SetMovementEnabled(false);
+                return;
+            }
             Keyboard keyboard = Keyboard.current;
             bool hasInput = keyboard != null && Application.isFocused;
 
@@ -37,7 +43,7 @@ namespace DragonQuest.Interactions
                 if (hasInput && keyboard.escapeKey.wasPressedThisFrame) context.Dialogue.Close();
                 else if (hasInput && (keyboard.eKey.wasPressedThisFrame || keyboard.spaceKey.wasPressedThisFrame || keyboard.enterKey.wasPressedThisFrame))
                     context.Dialogue.Advance();
-                movement.SetMovementEnabled(!context.Dialogue.IsOpen);
+                movement.SetMovementEnabled(!context.Dialogue.IsOpen && !context.IsBusy());
                 return;
             }
 
@@ -47,7 +53,7 @@ namespace DragonQuest.Interactions
             {
                 current.Interact(context);
                 current = null;
-                movement.SetMovementEnabled(!context.Dialogue.IsOpen);
+                movement.SetMovementEnabled(!context.Dialogue.IsOpen && !context.IsBusy());
             }
         }
 

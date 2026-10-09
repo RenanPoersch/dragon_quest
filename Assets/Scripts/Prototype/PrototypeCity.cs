@@ -64,6 +64,13 @@ namespace DragonQuest.Prototype
             interactables.Add(citizen);
             interactables.Add(CreateChest(interactions));
             interactables.Add(CreateDoor("Entrada da loja de itens", new Vector2(-9, 2.1f), city, "item-shop", "Entrar na loja de itens"));
+            GameObject guard = Entity("Guarda do tirano", new Vector2(0, 5.3f), city);
+            BoxCollider2D guardCollider = guard.AddComponent<BoxCollider2D>();
+            guardCollider.size = new Vector2(0.65f, 0.7f);
+            guardCollider.sharedMaterial = frictionless;
+            Block("Guarda - armadura", Vector2.zero, new Vector2(0.75f, 0.85f), "AB4F49", guard.transform, false, 10);
+            Block("Guarda - cabeca", new Vector2(0, 0.5f), new Vector2(0.5f, 0.4f), "D3BA91", guard.transform, false, 11);
+            interactables.Add(guard.AddComponent<BattleInteraction>());
 
             Transform shop = Group("Loja de itens - interior");
             CreateShop(shop, interactables);
@@ -83,10 +90,14 @@ namespace DragonQuest.Prototype
             DialogueController dialogue = gameObject.AddComponent<DialogueController>();
             PrototypeLocations locations = gameObject.AddComponent<PrototypeLocations>();
             locations.Initialize(city.gameObject, shop.gameObject, player.GetComponent<PlayerMovement>(), cameraFollow);
+            PrototypeBattleController battle = gameObject.AddComponent<PrototypeBattleController>();
+            battle.Initialize(player.GetComponent<PlayerMovement>());
+            gameObject.AddComponent<PrototypeBattleHud>().Initialize(battle);
             PlayerInteraction interaction = player.AddComponent<PlayerInteraction>();
-            interaction.Initialize(new InteractionContext(dialogue, progress, locations.TravelTo), interactables.ToArray());
+            interaction.Initialize(new InteractionContext(dialogue, progress, locations.TravelTo,
+                battle.StartBattle, () => battle.IsActive), interactables.ToArray());
             PrototypeHud hud = gameObject.AddComponent<PrototypeHud>();
-            hud.Initialize(camera, interaction, dialogue, progress, locations);
+            hud.Initialize(camera, interaction, dialogue, progress, locations, battle);
         }
 
         private Transform Group(string groupName, Transform parent = null)

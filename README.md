@@ -19,6 +19,18 @@ Use essa versão do Editor para evitar migrações involuntárias.
 4. Abra `Assets/Scenes/CidadePrototipo.unity`.
 5. Clique em **Play**, clique dentro da janela **Game** e use **WASD ou as setas** para andar; **E** interage com objetos próximos.
 
+## Parte 3 — batalha por turnos
+
+Ao norte da fonte, aproxime-se do guarda vermelho e pressione **E**. A equipe contém Aren (atacante), Lia (healer) e Bram (tank). Clique nas ações e nos alvos; o inimigo age automaticamente no turno dele.
+
+- Ataque básico e defesa para todos, golpe forte para Aren e cura para Lia.
+- Rodadas ordenadas por velocidade, com HP/MP individuais.
+- Seleção de alvos vivos e válidos e validação do custo antes da ação.
+- Vitória ou derrota seguida de retorno à cidade, preservando o progresso de exploração.
+- Cada nova batalha inicia com HP/MP completos; não há recompensas ou consumo de itens nesta entrega.
+
+Veja `Docs/PARTE_3.md` para regras e teste em Play. As regras independentes da Unity ficam em `Assets/Scripts/Combat`; os componentes visuais provisórios ficam em `Assets/Scripts/Prototype`.
+
 ## Parte 2 — interações
 
 - Aldeão a sudoeste da fonte com diálogo em páginas.
