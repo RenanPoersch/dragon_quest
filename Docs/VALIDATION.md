@@ -53,3 +53,13 @@ O usuário confirmou que as interações funcionaram em Play. Não houve valida�
 - Interface de batalha, passagem da exploração para combate, controle de foco e retorno à cidade aguardam validação visual e interativa no Editor do usuário. Compilação isolada e testes das regras não confirmam esses comportamentos visuais.
 - Roteiro: `Docs/PARTE_3.md`; verificação automatizada: `Tools/Test-Combat.ps1`.
 - Não foi produzido executável.
+
+## Parte 4 — habilidades e condições
+
+- Scripts do jogo compilados sem erros com Roslyn e as bibliotecas da Unity 6000.6.5f1, incluindo Input System.
+- 542 verificações de combate passaram. Incluem regressão do encontro básico, ataque em área com custo único, veneno e purificação, ressuscitar e ordem de turnos, duração de provocação, interceptação e expiração de proteção, morte dos responsáveis pelos efeitos, fallback da IA sem MP e partidas completas com vitória e derrota no encontro atual.
+- A contagem inclui as verificações das ações realizadas durante as partidas completas; não representa 542 cenários separados.
+- As 15 verificações de progresso de exploração continuam passando.
+- A interface foi adaptada para cinco ações, dois inimigos e condições, mas sua aparência e interação ainda aguardam teste em Play no Editor do usuário.
+- Roteiro: `Docs/PARTE_4.md`; testes reproduzíveis: `Tools/Test-Combat.ps1` e `Tools/Test-ExplorationProgress.ps1`.
+- Sem build executável nesta etapa. Mapa e recursos visuais permanecem provisórios.

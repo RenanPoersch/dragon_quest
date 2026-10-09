@@ -19,9 +19,21 @@ Use essa versão do Editor para evitar migrações involuntárias.
 4. Abra `Assets/Scenes/CidadePrototipo.unity`.
 5. Clique em **Play**, clique dentro da janela **Game** e use **WASD ou as setas** para andar; **E** interage com objetos próximos.
 
-## Parte 3 — batalha por turnos
+## Parte 4 — habilidades e condições
 
-Ao norte da fonte, aproxime-se do guarda vermelho e pressione **E**. A equipe contém Aren (atacante), Lia (healer) e Bram (tank). Clique nas ações e nos alvos; o inimigo age automaticamente no turno dele.
+Inicie a batalha pelo guarda ao norte da fonte, usando **E**. Agora o encontro tem um guarda e um soldado; o menu mostra as habilidades de cada papel e as condições junto às barras de HP/MP.
+
+- **Aren:** corte amplo atinge todos os inimigos, além do ataque e golpe forte.
+- **Lia:** curar, purificar veneno e reviver aliados derrotados.
+- **Bram:** provocar um inimigo e proteger outro aliado de um golpe individual.
+- O guarda alterna golpe venenoso, ataque e varredura em área; o soldado usa ataque básico.
+- Confirmação única para ataque em área, descrições e seleção de alvos apropriados para cada habilidade.
+
+Veja `Docs/PARTE_4.md` para custos, duração dos efeitos e roteiro em Play. As regras foram testadas e os scripts compilados; a interface desta entrega ainda precisa de conferência no Editor. A cidade mantém o tamanho atual. Inventário, equipamentos e afinidades entram na parte 5.
+
+## Parte 3 — base da batalha por turnos
+
+A parte 3 estabeleceu a equipe com Aren (atacante), Lia (healer) e Bram (tank). Clique nas ações e nos alvos; os inimigos agem automaticamente no turno deles.
 
 - Ataque básico e defesa para todos, golpe forte para Aren e cura para Lia.
 - Rodadas ordenadas por velocidade, com HP/MP individuais.
@@ -83,7 +95,7 @@ Veja `Docs/PARTE_1.md` para o roteiro de verificação.
 | 1 | Movimento, câmera e colisões em mapa provisório |
 | 2 | Interação com NPC, baú e entrada/saída de loja |
 | 3 | Batalha por turnos com três aliados e um inimigo |
-| 4 | Habilidades de ataque, cura e proteção |
+| 4 | Ataque em área, purificar, reviver, provocar e proteger |
 | 5 | Inventário, equipamentos, habilidades e afinidades |
 | 6 | Compra de itens, equipamentos e magias |
 | 7 | Segredos, dragão e recompensa |

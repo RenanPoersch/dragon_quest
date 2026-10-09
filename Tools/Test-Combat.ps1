@@ -20,6 +20,7 @@ $testArguments += Get-ChildItem -LiteralPath $testReferenceDirectory.FullName -F
 $testArguments += Get-ChildItem -LiteralPath (Join-Path $testProjectRoot 'Assets/Scripts/Combat') -Filter '*.cs' | ForEach-Object { $_.FullName }
 $testArguments += Join-Path $testProjectRoot 'Assets/Scripts/Prototype/PrototypeBattleFactory.cs'
 $testArguments += Join-Path $testProjectRoot 'Tests/BattleChecks.cs'
+$testArguments += Join-Path $testProjectRoot 'Tests/AbilityChecks.cs'
 & $testDotnet $testCsc.FullName @testArguments
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 $testRuntimeConfig = @{ runtimeOptions = @{ tfm = $testReferenceDirectory.Name; framework = @{ name = 'Microsoft.NETCore.App'; version = $testRuntimeFolder.Name } } }

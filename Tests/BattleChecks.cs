@@ -10,6 +10,16 @@ internal static class BattleChecks
     private static AbilityDefinition Heal => PrototypeBattleFactory.Heal;
     private static AbilityDefinition Heavy => PrototypeBattleFactory.HeavyStrike;
 
+    // Encontro original mantido como fixture de regressao das regras da parte 3.
+    private static BattleSession CreateBasicEncounter()
+    {
+        return new BattleSession(
+            new CombatantState("aren", new CombatantDefinition("Aren", "Atacante", 100, 20, 22, 7, 4, 14, Attack, Heavy, Defend), CombatTeam.Party),
+            new CombatantState("lia", new CombatantDefinition("Lia", "Healer", 80, 36, 9, 5, 20, 12, Attack, Heal, Defend), CombatTeam.Party),
+            new CombatantState("bram", new CombatantDefinition("Bram", "Tank", 150, 15, 14, 13, 3, 8, Attack, Defend), CombatTeam.Party),
+            new CombatantState("guard", new CombatantDefinition("Guarda", "Inimigo", 150, 0, 22, 8, 0, 9, Attack, Defend), CombatTeam.Enemy));
+    }
+
     private static void Assert(bool condition, string description)
     {
         checks++;
@@ -30,7 +40,7 @@ internal static class BattleChecks
 
     private static void CheckBasicRound()
     {
-        BattleSession battle = PrototypeBattleFactory.CreateEncounter();
+        BattleSession battle = CreateBasicEncounter();
         CombatantState guard = Find(battle, "guard");
         CombatantState aren = Find(battle, "aren");
         CombatantState lia = Find(battle, "lia");
@@ -54,7 +64,7 @@ internal static class BattleChecks
 
     private static void CheckResourcesAndTargets()
     {
-        BattleSession battle = PrototypeBattleFactory.CreateEncounter();
+        BattleSession battle = CreateBasicEncounter();
         CombatantState guard = Find(battle, "guard");
         CombatantState aren = Find(battle, "aren");
         Act(battle, Heavy, guard);
@@ -65,7 +75,7 @@ internal static class BattleChecks
         battle = new BattleSession(limited, opponent);
         Assert(!battle.TryAct(limited, Heavy, opponent, out _), "MP insuficiente deve impedir a habilidade.");
         Assert(limited.Mp == 3 && opponent.Hp == 100 && battle.CurrentActor == limited, "Falha por MP nao pode alterar estado.");
-        CombatantState foreign = Find(PrototypeBattleFactory.CreateEncounter(), "guard");
+        CombatantState foreign = Find(CreateBasicEncounter(), "guard");
         Assert(!battle.TryAct(limited, Attack, foreign, out _), "Alvo de outra batalha deve ser recusado.");
         var counterfeit = new AbilityDefinition("attack", "Ataque falso", "", 0, 999, AbilityEffect.PhysicalDamage, TargetRule.Enemy);
         Assert(!battle.TryAct(limited, counterfeit, opponent, out _), "Habilidade nao aprendida deve ser recusada mesmo com ID igual.");
@@ -75,7 +85,7 @@ internal static class BattleChecks
 
     private static void CheckHealingAndDefense()
     {
-        BattleSession battle = PrototypeBattleFactory.CreateEncounter();
+        BattleSession battle = CreateBasicEncounter();
         CombatantState aren = Find(battle, "aren");
         CombatantState lia = Find(battle, "lia");
         Act(battle, Defend, aren);
@@ -130,7 +140,7 @@ internal static class BattleChecks
     {
         for (int strategy = 0; strategy < 2; strategy++)
         {
-            BattleSession battle = PrototypeBattleFactory.CreateEncounter();
+            BattleSession battle = CreateBasicEncounter();
             int actions = 0;
             while (battle.Outcome == BattleOutcome.None && actions++ < 500)
             {
@@ -149,7 +159,7 @@ internal static class BattleChecks
             Assert(actions < 500, "Batalha nao pode ficar presa na ordem de turnos.");
             Assert(battle.Outcome == (strategy == 0 ? BattleOutcome.Victory : BattleOutcome.Defeat), "Estrategias completas devem permitir vitoria e derrota.");
         }
-        BattleSession fresh = PrototypeBattleFactory.CreateEncounter();
+        BattleSession fresh = CreateBasicEncounter();
         Assert(Find(fresh, "aren").Hp == 100 && Find(fresh, "aren").Mp == 20, "Nova batalha deve iniciar com estado independente.");
     }
 
@@ -162,6 +172,7 @@ internal static class BattleChecks
             CheckHealingAndDefense();
             CheckOutcomeAndIndependentStates();
             CheckFullEncounters();
+            checks += AbilityChecks.Run();
             Console.WriteLine(checks + " verificacoes de combate passaram.");
             return 0;
         }

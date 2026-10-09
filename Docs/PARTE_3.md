@@ -1,5 +1,7 @@
 # Parte 3 — combate por turnos
 
+Esta página registra o encontro básico da parte 3. Para jogar e validar a versão atual, com dois inimigos e habilidades adicionais, use `PARTE_4.md`.
+
 ## Como iniciar
 
 1. Saia de Play e aguarde a Unity importar e compilar os scripts.

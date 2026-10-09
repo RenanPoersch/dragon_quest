@@ -13,6 +13,11 @@ namespace DragonQuest.Combat
         public int Mp { get; private set; }
         public bool IsAlive => Hp > 0;
         public bool IsDefending { get; internal set; }
+        public int PoisonTurns { get; internal set; }
+        public int TauntTurns { get; internal set; }
+        public CombatantState TauntedBy { get; internal set; }
+        public CombatantState ProtectedBy { get; internal set; }
+        public int TurnsTaken { get; internal set; }
 
         public CombatantState(string id, CombatantDefinition definition, CombatTeam team)
         {
@@ -25,7 +30,20 @@ namespace DragonQuest.Combat
         }
 
         internal void SpendMp(int cost) => Mp -= cost;
-        internal void TakeDamage(int amount) => Hp = Math.Max(0, Hp - amount);
+        internal void TakeDamage(int amount)
+        {
+            Hp = Math.Max(0, Hp - amount);
+            if (!IsAlive) ClearConditions();
+        }
         internal void RecoverHp(int amount) => Hp = (int)Math.Min(Definition.MaxHp, (long)Hp + amount);
+
+        internal void ClearConditions()
+        {
+            IsDefending = false;
+            PoisonTurns = 0;
+            TauntTurns = 0;
+            TauntedBy = null;
+            ProtectedBy = null;
+        }
     }
 }
