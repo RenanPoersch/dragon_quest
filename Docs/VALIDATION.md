@@ -31,3 +31,12 @@ O usuário apresentou a cena em Play, com os contadores do Console em zero. A ab
 - Validação interativa de movimento, colisões e enquadramento ainda pendente no Editor aberto pelo usuário. Compilação isolada não substitui teste em Play.
 - Roteiro de verificação: `Docs/PARTE_1.md`.
 - Sem build executável nesta etapa.
+
+## Parte 2 — interações e interior
+
+- Scripts do jogo compilados sem erros com Roslyn e bibliotecas da Unity 6000.6.5f1, incluindo Input System.
+- Executadas 15 verificações automatizadas do progresso: recompensa única, baús independentes, validação de entradas, overflow e isolamento entre sessões. Todas passaram.
+- Ouro e baús ficam em ExplorationProgress, mantido em memória enquanto os ambientes são alternados.
+- Verificação visual e interativa de movimento, diálogos, aparência do baú e transições ainda pendente no Editor do usuário.
+- Roteiro: `Docs/PARTE_2.md`. Teste reproduzível: `Tools/Test-ExplorationProgress.ps1`.
+- Sem build executável nesta etapa.

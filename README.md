@@ -17,7 +17,18 @@ Use essa versão do Editor para evitar migrações involuntárias.
 2. No Unity Hub, abra **Projects → Add → Add project from disk** e selecione a raiz deste repositório (a pasta que contém `Assets`, `Packages` e `ProjectSettings`).
 3. Abra com o Editor **6000.6.5f1** e aguarde a importação dos pacotes e assets.
 4. Abra `Assets/Scenes/CidadePrototipo.unity`.
-5. Clique em **Play**, clique dentro da janela **Game** e use **WASD ou as setas** para andar.
+5. Clique em **Play**, clique dentro da janela **Game** e use **WASD ou as setas** para andar; **E** interage com objetos próximos.
+
+## Parte 2 — interações
+
+- Aldeão a sudoeste da fonte com diálogo em páginas.
+- Baú a sudeste: 25 moedas uma única vez por sessão.
+- Porta da loja de itens a noroeste: E entra no interior.
+- Conversa com lojista e saída ao sul, usando E.
+- Ouro e baú aberto preservados ao entrar/sair da loja.
+- Movimento suspenso enquanto o diálogo está aberto; E, Espaço ou Enter avançam, e Esc fecha.
+
+Teste a entrega com o roteiro em `Docs/PARTE_2.md`. A cena continua sendo `CidadePrototipo`; o estado reinicia ao sair de Play. Compras e salvamento serão adicionados em etapas posteriores.
 
 ## Parte 1 — exploração
 
@@ -27,7 +38,7 @@ A cidade provisória é criada pelo componente `PrototypeCity` ao iniciar Play. 
 - Colisões com prédios, árvores, fonte, bancos e muralhas.
 - Câmera seguindo o herói e limitada à área do mapa.
 - Controles e nomes dos locais exibidos na tela.
-- Portas ainda fechadas; interiores e interações entram na parte 2.
+- A parte 1 estabeleceu movimento e colisões; a parte 2 adiciona a entrada da loja de itens.
 
 O cenário usa formas coloridas geradas pelo código, sem imagens externas. Sprites e tiles finais serão adicionados nas próximas entregas.
 

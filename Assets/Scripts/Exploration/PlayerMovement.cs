@@ -10,6 +10,7 @@ namespace DragonQuest.Exploration
 
         private Rigidbody2D body;
         private Vector2 movement;
+        private bool movementEnabled = true;
 
         public Vector2 FacingDirection { get; private set; } = Vector2.down;
 
@@ -25,7 +26,7 @@ namespace DragonQuest.Exploration
         private void Update()
         {
             Keyboard keyboard = Keyboard.current;
-            if (keyboard == null || !Application.isFocused)
+            if (!movementEnabled || keyboard == null || !Application.isFocused)
             {
                 movement = Vector2.zero;
                 return;
@@ -47,6 +48,24 @@ namespace DragonQuest.Exploration
         {
             // A física resolve as colisões, inclusive ao deslizar ao longo de paredes.
             body.linearVelocity = movement * speed;
+        }
+
+        public void SetMovementEnabled(bool enabled)
+        {
+            movementEnabled = enabled;
+            if (!enabled)
+            {
+                movement = Vector2.zero;
+                if (body != null) body.linearVelocity = Vector2.zero;
+            }
+        }
+
+        public void Teleport(Vector2 position)
+        {
+            movement = Vector2.zero;
+            body.linearVelocity = Vector2.zero;
+            body.position = position;
+            transform.position = new Vector3(position.x, position.y, transform.position.z);
         }
 
         private void OnDisable()

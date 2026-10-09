@@ -1,16 +1,30 @@
 using UnityEngine;
+using DragonQuest.Exploration;
+using DragonQuest.Interactions;
 
 namespace DragonQuest.Prototype
 {
     public sealed class PrototypeHud : MonoBehaviour
     {
         private Camera view;
+        private PlayerInteraction interaction;
+        private DialogueController dialogue;
+        private ExplorationProgress progress;
+        private PrototypeLocations locations;
         private GUIStyle titleStyle;
         private GUIStyle bodyStyle;
         private GUIStyle labelStyle;
         private Texture2D panelTexture;
 
-        public void Initialize(Camera worldCamera) => view = worldCamera;
+        public void Initialize(Camera worldCamera, PlayerInteraction playerInteraction,
+            DialogueController dialogueController, ExplorationProgress explorationProgress, PrototypeLocations locationController)
+        {
+            view = worldCamera;
+            interaction = playerInteraction;
+            dialogue = dialogueController;
+            progress = explorationProgress;
+            locations = locationController;
+        }
 
         private void OnGUI()
         {
@@ -20,21 +34,46 @@ namespace DragonQuest.Prototype
             Matrix4x4 previousMatrix = GUI.matrix;
             GUI.matrix = Matrix4x4.Scale(new Vector3(scale, scale, 1));
             float width = Screen.width / scale;
+            float height = Screen.height / scale;
 
-            DrawLabel(new Vector2(-9, 4.3f), "ITENS", scale);
-            DrawLabel(new Vector2(9, 4.3f), "MAGIAS", scale);
-            DrawLabel(new Vector2(-9, -5.2f), "HOSPEDARIA", scale);
-            DrawLabel(new Vector2(9, -5.2f), "ARMADURAS", scale);
-            DrawLabel(new Vector2(0, 8.8f), "CASTELO", scale);
+            if (locations.IsInShop)
+            {
+                DrawLabel(new Vector2(0, 1.9f), "LOJISTA", scale);
+                DrawLabel(new Vector2(0, -3.7f), "SAIDA", scale);
+            }
+            else
+            {
+                DrawLabel(new Vector2(-9, 4.3f), "ITENS", scale);
+                DrawLabel(new Vector2(9, 4.3f), "MAGIAS", scale);
+                DrawLabel(new Vector2(-9, -5.2f), "HOSPEDARIA", scale);
+                DrawLabel(new Vector2(9, -5.2f), "ARMADURAS", scale);
+                DrawLabel(new Vector2(0, 8.8f), "CASTELO", scale);
+                DrawLabel(new Vector2(-3.4f, -2.1f), "ALDEAO", scale);
+                DrawLabel(new Vector2(3.6f, -2.3f), "BAU", scale);
+            }
 
-            GUI.DrawTexture(new Rect(16, 16, Mathf.Min(390, width - 32), 94), panelTexture);
-            GUI.Label(new Rect(30, 25, width - 60, 27), "DRAGON QUEST  /  EXPLORACAO", titleStyle);
+            GUI.DrawTexture(new Rect(16, 16, Mathf.Min(420, width - 32), 94), panelTexture);
+            GUI.Label(new Rect(30, 25, width - 60, 27), "DRAGON QUEST  /  " + locations.LocationName, titleStyle);
             GUI.Label(new Rect(30, 54, width - 60, 24), "WASD ou setas para andar", bodyStyle);
-            GUI.Label(new Rect(30, 78, width - 60, 24), "Parte 1: mapa e personagem provisorios", bodyStyle);
+            GUI.Label(new Rect(30, 78, width - 60, 24), "E para interagir  |  Ouro: " + progress.Gold, bodyStyle);
 
-            GUI.DrawTexture(new Rect(16, Screen.height / scale - 54, width - 32, 38), panelTexture);
-            GUI.Label(new Rect(28, Screen.height / scale - 47, width - 56, 26),
-                "Explore a cidade. Predios, fonte e muralhas bloqueiam a passagem.", bodyStyle);
+            if (dialogue.IsOpen)
+            {
+                float panelTop = height - 205;
+                GUI.DrawTexture(new Rect(16, panelTop, width - 32, 189), panelTexture);
+                GUI.Label(new Rect(30, panelTop + 12, width - 60, 27), dialogue.Title, titleStyle);
+                GUI.Label(new Rect(30, panelTop + 48, width - 60, 89), dialogue.Text, bodyStyle);
+                GUI.Label(new Rect(30, panelTop + 145, width - 60, 30),
+                    "E / Espaco / Enter: continuar   |   Esc: fechar   (" + dialogue.PageNumber + "/" + dialogue.PageCount + ")", bodyStyle);
+            }
+            else
+            {
+                GUI.DrawTexture(new Rect(16, height - 64, width - 32, 48), panelTexture);
+                string prompt = interaction.CurrentPrompt;
+                if (string.IsNullOrEmpty(prompt))
+                    prompt = locations.IsInShop ? "Fale com o lojista ou procure a saida ao sul." : "Aproxime-se do aldeao, do bau ou da porta da loja de itens.";
+                GUI.Label(new Rect(28, height - 57, width - 56, 38), prompt, bodyStyle);
+            }
             GUI.matrix = previousMatrix;
         }
 

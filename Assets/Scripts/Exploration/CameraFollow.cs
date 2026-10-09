@@ -12,13 +12,13 @@ namespace DragonQuest.Exploration
         private Rect worldBounds;
         private Vector3 velocity;
 
-        public void Initialize(Transform followTarget, Rect bounds)
+        public void Initialize(Transform followTarget, Rect bounds, float orthographicSize = 6f)
         {
             target = followTarget;
             worldBounds = bounds;
             view = GetComponent<Camera>();
             view.orthographic = true;
-            view.orthographicSize = 6f;
+            view.orthographicSize = Mathf.Max(0.1f, orthographicSize);
             transform.position = GetBoundedPosition();
             velocity = Vector3.zero;
         }
