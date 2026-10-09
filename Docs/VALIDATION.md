@@ -63,3 +63,16 @@ O usuário confirmou que as interações funcionaram em Play. Não houve valida�
 - A interface foi adaptada para cinco ações, dois inimigos e condições, mas sua aparência e interação ainda aguardam teste em Play no Editor do usuário.
 - Roteiro: `Docs/PARTE_4.md`; testes reproduzíveis: `Tools/Test-Combat.ps1` e `Tools/Test-ExplorationProgress.ps1`.
 - Sem build executável nesta etapa. Mapa e recursos visuais permanecem provisórios.
+
+## Parte 5A — materias, combos e Limit Break
+
+- Scripts do jogo compilados sem erros com Roslyn e as bibliotecas da Unity 6000.6.5f1 e Input System.
+- 1.153 verificações de combate passaram, incluindo as regras anteriores e os cenários de matéria, equipamento, afinidade, dano mágico, recuperação em área e Limit.
+- Verificadas transferências entre membros, troca entre encaixes, remoção de comandos, rejeição de itens estrangeiros e ausência de duplicação de instâncias.
+- Verificados os combos verde/azul, verde/roxa, vermelha/azul e vermelha/roxa, custo único em área, pares isolados e definições de matéria preservadas.
+- Verificados bônus sobre valores base, cura em área, dano real após defesa, carga individual de Limit, consumo sem MP e preservação ao concluir uma derrota e iniciar outra batalha com a mesma equipe.
+- A contagem inclui verificações de cada ação em partidas completas, não 1.153 cenários separados.
+- As 15 verificações de progresso de exploração continuam passando.
+- Menu de matérias, rolagem das ações, bloqueio de movimento, cores e barras ainda aguardam validação visual e interativa em Play pelo usuário.
+- Roteiro: `Docs/PARTE_5A.md`; testes reproduzíveis: `Tools/Test-Combat.ps1` e `Tools/Test-ExplorationProgress.ps1`.
+- Persistência em memória durante a mesma sessão. Não há salvamento em disco, troca de equipamento, consumíveis, animação de summon ou executável nesta entrega.

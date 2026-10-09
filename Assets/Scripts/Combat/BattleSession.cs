@@ -53,11 +53,11 @@ namespace DragonQuest.Combat
             if (!target.IsAlive) return false;
             if (ability.Targets == TargetRule.Self && target != actor) return false;
             if ((ability.Targets == TargetRule.Enemy || ability.Targets == TargetRule.AllEnemies) && target.Team == actor.Team) return false;
-            if (ability.Targets == TargetRule.Ally && target.Team != actor.Team) return false;
+            if ((ability.Targets == TargetRule.Ally || ability.Targets == TargetRule.AllAllies) && target.Team != actor.Team) return false;
             if (ability.Effect == AbilityEffect.Heal && target.Hp >= target.Definition.MaxHp) return false;
             if (ability.Effect == AbilityEffect.Cleanse && target.PoisonTurns == 0) return false;
             if (ability.Effect == AbilityEffect.Protect && target == actor) return false;
-            if (ability.Effect == AbilityEffect.PhysicalDamage && ability.Targets == TargetRule.Enemy
+            if ((ability.Effect == AbilityEffect.PhysicalDamage || ability.Effect == AbilityEffect.MagicDamage) && ability.Targets == TargetRule.Enemy
                 && actor.TauntTurns > 0 && actor.TauntedBy != null && actor.TauntedBy.IsAlive && target != actor.TauntedBy) return false;
             return true;
         }
@@ -71,11 +71,13 @@ namespace DragonQuest.Combat
                 if (known == ability) knownAbility = true;
             if (!knownAbility) { message = "Habilidade indisponivel para este personagem."; return false; }
             if (actor.Mp < ability.MpCost) { message = "MP insuficiente."; return false; }
+            if (ability.UsesLimit && !actor.Limit.IsReady) { message = "Limit Break exige a barra em 100%."; return false; }
             if (target == null || !combatants.Contains(target) || !IsValidTarget(actor, ability, target))
             { message = "Escolha um alvo valido para esta habilidade."; return false; }
 
             actor.SpendMp(ability.MpCost);
-            if (ability.Effect == AbilityEffect.PhysicalDamage)
+            if (ability.UsesLimit) actor.Limit.Spend();
+            if (ability.Effect == AbilityEffect.PhysicalDamage || ability.Effect == AbilityEffect.MagicDamage)
             {
                 var report = new StringBuilder(actor.Definition.Name + " usou " + ability.Name + ": ");
                 if (ability.Targets == TargetRule.AllEnemies)
@@ -87,29 +89,18 @@ namespace DragonQuest.Combat
                 else ApplyDamage(actor, ability, target, true, report);
                 message = report.ToString();
             }
-            else if (ability.Effect == AbilityEffect.Heal)
+            else if (ability.Effect == AbilityEffect.Heal || ability.Effect == AbilityEffect.Cleanse || ability.Effect == AbilityEffect.Revive)
             {
-                int healing = (int)Math.Min(int.MaxValue, (long)ability.Power + actor.Definition.Magic);
-                int previousHp = target.Hp;
-                target.RecoverHp(healing);
-                message = actor.Definition.Name + " curou " + (target.Hp - previousHp) + " HP de " + target.Definition.Name + ".";
+                var report = new StringBuilder(actor.Definition.Name + " usou " + ability.Name + ": ");
+                if (ability.Targets == TargetRule.AllAllies)
+                    foreach (CombatantState ally in GetValidTargets(ability)) ApplyRecovery(actor, ability, ally, report);
+                else ApplyRecovery(actor, ability, target, report);
+                message = report.ToString();
             }
             else if (ability.Effect == AbilityEffect.Defend)
             {
                 actor.IsDefending = true;
                 message = actor.Definition.Name + " esta defendendo ate o inicio de seu proximo turno.";
-            }
-            else if (ability.Effect == AbilityEffect.Cleanse)
-            {
-                target.PoisonTurns = 0;
-                message = actor.Definition.Name + " removeu o veneno de " + target.Definition.Name + ".";
-            }
-            else if (ability.Effect == AbilityEffect.Revive)
-            {
-                target.ClearConditions();
-                int recovery = (int)(((long)target.Definition.MaxHp * ability.Power + 99) / 100);
-                target.RecoverHp(recovery);
-                message = actor.Definition.Name + " reviveu " + target.Definition.Name + " com " + target.Hp + " HP.";
             }
             else if (ability.Effect == AbilityEffect.Taunt)
             {
@@ -143,17 +134,40 @@ namespace DragonQuest.Combat
             return true;
         }
 
+        private static void ApplyRecovery(CombatantState actor, AbilityDefinition ability, CombatantState target, StringBuilder report)
+        {
+            report.Append(target.Definition.Name);
+            if (ability.Effect == AbilityEffect.Heal)
+            {
+                int previousHp = target.Hp;
+                target.RecoverHp((int)Math.Min(int.MaxValue, (long)ability.Power + actor.Definition.Magic));
+                report.Append(" +").Append(target.Hp - previousHp).Append(" HP. ");
+            }
+            else if (ability.Effect == AbilityEffect.Cleanse)
+            {
+                target.PoisonTurns = 0;
+                report.Append(" sem veneno. ");
+            }
+            else
+            {
+                target.ClearConditions();
+                target.RecoverHp((int)(((long)target.Definition.MaxHp * ability.Power + 99) / 100));
+                report.Append(" reviveu com ").Append(target.Hp).Append(" HP. ");
+            }
+        }
+
         private static void ApplyDamage(CombatantState actor, AbilityDefinition ability, CombatantState target,
             bool allowProtection, StringBuilder report)
         {
-            if (allowProtection && target.ProtectedBy != null && target.ProtectedBy.IsAlive)
+            if (allowProtection && ability.Effect == AbilityEffect.PhysicalDamage && target.ProtectedBy != null && target.ProtectedBy.IsAlive)
             {
                 CombatantState protector = target.ProtectedBy;
                 target.ProtectedBy = null;
                 report.Append(protector.Definition.Name).Append(" protegeu ").Append(target.Definition.Name).Append(". ");
                 target = protector;
             }
-            long damage = Math.Max(1L, (long)actor.Definition.Attack + ability.Power - target.Definition.Defense);
+            int offense = ability.Effect == AbilityEffect.MagicDamage ? actor.Definition.Magic : actor.Definition.Attack;
+            long damage = Math.Max(1L, (long)offense + ability.Power - target.Definition.Defense);
             if (target.IsDefending) damage = (damage + 1) / 2;
             int previousHp = target.Hp;
             target.TakeDamage((int)Math.Min(int.MaxValue, damage));

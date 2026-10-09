@@ -18,8 +18,9 @@ namespace DragonQuest.Combat
         public CombatantState TauntedBy { get; internal set; }
         public CombatantState ProtectedBy { get; internal set; }
         public int TurnsTaken { get; internal set; }
+        public LimitGauge Limit { get; }
 
-        public CombatantState(string id, CombatantDefinition definition, CombatTeam team)
+        public CombatantState(string id, CombatantDefinition definition, CombatTeam team, LimitGauge limit = null)
         {
             if (string.IsNullOrWhiteSpace(id)) throw new ArgumentException("Combatente precisa de ID.", nameof(id));
             Definition = definition ?? throw new ArgumentNullException(nameof(definition));
@@ -27,12 +28,15 @@ namespace DragonQuest.Combat
             Team = team;
             Hp = definition.MaxHp;
             Mp = definition.MaxMp;
+            Limit = limit ?? new LimitGauge();
         }
 
         internal void SpendMp(int cost) => Mp -= cost;
         internal void TakeDamage(int amount)
         {
+            int previousHp = Hp;
             Hp = Math.Max(0, Hp - amount);
+            if (Team == CombatTeam.Party) Limit.AddDamage(previousHp - Hp, Definition.MaxHp);
             if (!IsAlive) ClearConditions();
         }
         internal void RecoverHp(int amount) => Hp = (int)Math.Min(Definition.MaxHp, (long)Hp + amount);

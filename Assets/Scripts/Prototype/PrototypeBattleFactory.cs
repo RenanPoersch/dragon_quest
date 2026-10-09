@@ -1,4 +1,5 @@
 using DragonQuest.Combat;
+using DragonQuest.Equipment;
 
 namespace DragonQuest.Prototype
 {
@@ -22,25 +23,22 @@ namespace DragonQuest.Prototype
         public static readonly AbilityDefinition Taunt = new AbilityDefinition("taunt", "Provocar",
             "Atrai os golpes individuais de um inimigo por 2 turnos dele. Ataques em area atingem a equipe.", 3, 2, AbilityEffect.Taunt, TargetRule.Enemy);
         public static readonly AbilityDefinition Protect = new AbilityDefinition("protect", "Proteger",
-            "Recebe o proximo golpe individual dirigido ao aliado. Expira no proximo turno de Bram; area e veneno ja aplicado nao sao interceptados.", 4, 0, AbilityEffect.Protect, TargetRule.Ally);
+            "Recebe o proximo golpe fisico individual dirigido ao aliado. Expira no proximo turno do usuario; area, magia e veneno ja aplicado nao sao interceptados.", 4, 0, AbilityEffect.Protect, TargetRule.Ally);
         public static readonly AbilityDefinition PoisonStrike = new AbilityDefinition("poison-strike", "Golpe venenoso",
             "Ataque individual que envenena por 3 turnos do afetado.", 4, 0, AbilityEffect.PhysicalDamage, TargetRule.Enemy, 3);
         public static readonly AbilityDefinition EnemySweep = new AbilityDefinition("enemy-sweep", "Varredura",
             "Ataque contra todos os aliados vivos.", 5, 0, AbilityEffect.PhysicalDamage, TargetRule.AllEnemies);
 
-        public static BattleSession CreateEncounter()
+        public static BattleSession CreateEncounter(PartyProgress party = null)
         {
-            var attacker = new CombatantDefinition("Aren", "Atacante", 100, 28, 22, 7, 4, 14, Attack, HeavyStrike, Cleave, Defend);
-            var healer = new CombatantDefinition("Lia", "Healer", 80, 60, 9, 5, 20, 12, Attack, Heal, Cleanse, Revive, Defend);
-            var tank = new CombatantDefinition("Bram", "Tank", 150, 30, 14, 13, 3, 8, Attack, Taunt, Protect, Defend);
+            if (party == null) party = PrototypePartyFactory.Create();
+            var participants = new System.Collections.Generic.List<CombatantState>();
+            foreach (PartyMember member in party.Members) participants.Add(member.CreateCombatant());
             var guard = new CombatantDefinition("Guarda do tirano", "Inimigo", 180, 24, 18, 8, 0, 9, PoisonStrike, Attack, EnemySweep, Defend);
             var soldier = new CombatantDefinition("Soldado", "Inimigo", 90, 0, 15, 6, 0, 7, Attack, Defend);
-            return new BattleSession(
-                new CombatantState("aren", attacker, CombatTeam.Party),
-                new CombatantState("lia", healer, CombatTeam.Party),
-                new CombatantState("bram", tank, CombatTeam.Party),
-                new CombatantState("guard", guard, CombatTeam.Enemy),
-                new CombatantState("soldier", soldier, CombatTeam.Enemy));
+            participants.Add(new CombatantState("guard", guard, CombatTeam.Enemy));
+            participants.Add(new CombatantState("soldier", soldier, CombatTeam.Enemy));
+            return new BattleSession(participants.ToArray());
         }
     }
 }

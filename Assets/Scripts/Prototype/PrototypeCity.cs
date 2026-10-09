@@ -91,11 +91,12 @@ namespace DragonQuest.Prototype
             PrototypeLocations locations = gameObject.AddComponent<PrototypeLocations>();
             locations.Initialize(city.gameObject, shop.gameObject, player.GetComponent<PlayerMovement>(), cameraFollow);
             PrototypeBattleController battle = gameObject.AddComponent<PrototypeBattleController>();
-            battle.Initialize(player.GetComponent<PlayerMovement>());
+            battle.Initialize(player.GetComponent<PlayerMovement>(), dialogue);
             gameObject.AddComponent<PrototypeBattleHud>().Initialize(battle);
+            gameObject.AddComponent<PrototypeMateriaHud>().Initialize(battle);
             PlayerInteraction interaction = player.AddComponent<PlayerInteraction>();
             interaction.Initialize(new InteractionContext(dialogue, progress, locations.TravelTo,
-                battle.StartBattle, () => battle.IsActive), interactables.ToArray());
+                battle.StartBattle, () => battle.IsBusy), interactables.ToArray());
             PrototypeHud hud = gameObject.AddComponent<PrototypeHud>();
             hud.Initialize(camera, interaction, dialogue, progress, locations, battle);
         }

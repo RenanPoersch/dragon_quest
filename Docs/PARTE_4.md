@@ -1,5 +1,7 @@
 # Parte 4 — habilidades de cada papel
 
+Esta página registra a etapa anterior. A partir da parte 5A, comandos vêm das matérias equipadas, classes concedem afinidade e Limit permanece entre batalhas. Use `PARTE_5A.md` para a versão atual.
+
 ## Abrir e jogar
 
 1. Saia de Play e aguarde a Unity importar e compilar os scripts.

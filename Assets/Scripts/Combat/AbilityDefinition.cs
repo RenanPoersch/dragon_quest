@@ -2,8 +2,8 @@ using System;
 
 namespace DragonQuest.Combat
 {
-    public enum AbilityEffect { PhysicalDamage, Heal, Defend, Cleanse, Revive, Taunt, Protect }
-    public enum TargetRule { Enemy, Ally, Self, AllEnemies }
+    public enum AbilityEffect { PhysicalDamage, Heal, Defend, Cleanse, Revive, Taunt, Protect, MagicDamage }
+    public enum TargetRule { Enemy, Ally, Self, AllEnemies, AllAllies }
 
     public sealed class AbilityDefinition
     {
@@ -15,9 +15,11 @@ namespace DragonQuest.Combat
         public AbilityEffect Effect { get; }
         public TargetRule Targets { get; }
         public int PoisonTurns { get; }
+        public bool UsesLimit { get; }
+        public string SourceAbilityId { get; }
 
         public AbilityDefinition(string id, string name, string description, int mpCost, int power,
-            AbilityEffect effect, TargetRule targets, int poisonTurns = 0)
+            AbilityEffect effect, TargetRule targets, int poisonTurns = 0, bool usesLimit = false, string sourceAbilityId = null)
         {
             if (string.IsNullOrWhiteSpace(id)) throw new ArgumentException("Habilidade precisa de ID.", nameof(id));
             if (mpCost < 0 || power < 0) throw new ArgumentOutOfRangeException(nameof(mpCost));
@@ -27,11 +29,15 @@ namespace DragonQuest.Combat
                 throw new ArgumentException("Efeito ou alvo desconhecido.");
             if (poisonTurns < 0 || (poisonTurns > 0 && effect != AbilityEffect.PhysicalDamage))
                 throw new ArgumentException("Veneno exige um ataque fisico e duracao positiva.");
-            if (targets == TargetRule.AllEnemies && effect != AbilityEffect.PhysicalDamage)
-                throw new ArgumentException("Ataque em area exige dano fisico.");
-            if ((effect == AbilityEffect.Heal || effect == AbilityEffect.Cleanse || effect == AbilityEffect.Revive
-                || effect == AbilityEffect.Protect) && targets != TargetRule.Ally)
+            if (targets == TargetRule.AllEnemies && effect != AbilityEffect.PhysicalDamage && effect != AbilityEffect.MagicDamage)
+                throw new ArgumentException("Ataque em area exige dano.");
+            if ((effect == AbilityEffect.Heal || effect == AbilityEffect.Cleanse || effect == AbilityEffect.Revive)
+                && targets != TargetRule.Ally && targets != TargetRule.AllAllies)
                 throw new ArgumentException("Esta habilidade exige um aliado como alvo.");
+            if (effect == AbilityEffect.Protect && targets != TargetRule.Ally)
+                throw new ArgumentException("Proteger exige um aliado individual.");
+            if (targets == TargetRule.AllAllies && effect != AbilityEffect.Heal && effect != AbilityEffect.Cleanse && effect != AbilityEffect.Revive)
+                throw new ArgumentException("Area aliada exige cura, purificacao ou ressuscitar.");
             if (effect == AbilityEffect.Taunt && (targets != TargetRule.Enemy || power < 1))
                 throw new ArgumentException("Provocar exige um inimigo e duracao positiva.");
             if (effect == AbilityEffect.Revive && (power < 1 || power > 100))
@@ -44,6 +50,8 @@ namespace DragonQuest.Combat
             Effect = effect;
             Targets = targets;
             PoisonTurns = poisonTurns;
+            UsesLimit = usesLimit;
+            SourceAbilityId = sourceAbilityId ?? id;
         }
     }
 }

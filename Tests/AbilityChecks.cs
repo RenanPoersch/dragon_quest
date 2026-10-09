@@ -30,6 +30,9 @@ internal static class AbilityChecks
 
     private static void Act(BattleSession battle, AbilityDefinition ability, CombatantState target)
     {
+        // O encontro atual deriva os comandos das materias, com IDs por instancia.
+        foreach (AbilityDefinition known in battle.CurrentActor.Definition.Abilities)
+            if (known.SourceAbilityId == ability.SourceAbilityId) { ability = known; break; }
         Assert(battle.TryAct(battle.CurrentActor, ability, target, out string message), "Acao recusada: " + message);
     }
 

@@ -31,7 +31,7 @@ namespace DragonQuest.Prototype
 
         private void OnGUI()
         {
-            if (view == null || battle.IsActive) return;
+            if (view == null || battle.IsBusy) return;
             EnsureStyles();
             float scale = Mathf.Clamp(Screen.height / 720f, 0.65f, 2f);
             Matrix4x4 previousMatrix = GUI.matrix;
@@ -59,7 +59,7 @@ namespace DragonQuest.Prototype
             GUI.DrawTexture(new Rect(16, 16, Mathf.Min(420, width - 32), 94), panelTexture);
             GUI.Label(new Rect(30, 25, width - 60, 27), "DRAGON QUEST  /  " + locations.LocationName, titleStyle);
             GUI.Label(new Rect(30, 54, width - 60, 24), "WASD ou setas para andar", bodyStyle);
-            GUI.Label(new Rect(30, 78, width - 60, 24), "E para interagir  |  Ouro: " + progress.Gold, bodyStyle);
+            GUI.Label(new Rect(30, 78, width - 60, 24), "E: interagir  |  I: materias  |  Ouro: " + progress.Gold, bodyStyle);
 
             if (dialogue.IsOpen)
             {

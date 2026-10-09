@@ -173,6 +173,7 @@ internal static class BattleChecks
             CheckOutcomeAndIndependentStates();
             CheckFullEncounters();
             checks += AbilityChecks.Run();
+            checks += MateriaLimitChecks.Run();
             Console.WriteLine(checks + " verificacoes de combate passaram.");
             return 0;
         }

@@ -17,11 +17,35 @@ Use essa versão do Editor para evitar migrações involuntárias.
 2. No Unity Hub, abra **Projects → Add → Add project from disk** e selecione a raiz deste repositório (a pasta que contém `Assets`, `Packages` e `ProjectSettings`).
 3. Abra com o Editor **6000.6.5f1** e aguarde a importação dos pacotes e assets.
 4. Abra `Assets/Scenes/CidadePrototipo.unity`.
-5. Clique em **Play**, clique dentro da janela **Game** e use **WASD ou as setas** para andar; **E** interage com objetos próximos.
+5. Clique em **Play**, clique dentro da janela **Game** e use **WASD ou as setas** para andar; **E** interage com objetos próximos e **I** abre o menu de matérias.
+
+## Parte 5A — matérias, combos e Limit Break
+
+As habilidades especiais vêm das matérias equipadas. Qualquer personagem pode usar qualquer matéria; a classe concede apenas afinidade. Abra o menu com **I**, escolha um personagem, selecione uma matéria na lista e clique no encaixe de destino.
+
+| Cor | Tipo | Exemplos |
+| --- | --- | --- |
+| Verde | Magia | Raio (Thunder), Cura, Purificação, Vida |
+| Azul | Suporte | All: aplica a matéria ligada a todos os alvos válidos |
+| Vermelha | Summon | Fênix: concede uma invocação de dano |
+| Roxa | Aprimoramento físico | Força, Corte, Guardião e Infusão |
+
+- Cada equipamento tem pares ligados; combinações funcionam dentro do mesmo par.
+- **Thunder + All:** magia em todos os inimigos, 9 MP uma vez.
+- **Fênix + All:** invocação em todos os inimigos, 18 MP uma vez.
+- **Thunder ou Fênix + Infusão:** converte o comando de dano em golpe físico, usando ataque.
+- **Cura + All:** cura todos os aliados vivos e feridos.
+- Aren ganha +20% sobre o ataque base da arma; Lia, +25% sobre o poder base de magia, invocação e cura; Bram, +25% sobre a defesa base da armadura. Não existem restrições de matéria por classe.
+- Limit Break acumula com o HP realmente perdido e pode ser usado a 100%. A barra de cada personagem permanece entre batalhas da mesma sessão, inclusive depois de derrota ou ressurreição.
+- Ataque, defender e Limit Break são comandos comuns. Remover uma matéria retira seus comandos da próxima batalha.
+
+A configuração inicial preserva os comandos usados na parte 4 por meio de matérias e já oferece Thunder + All em Aren. O inventário inclui matérias extras para experimentar os combos. Equipamentos iniciais têm valores e encaixes fixos nesta entrega; troca de armas/armaduras, consumíveis e compras entram na continuação da parte 5 e na parte 6.
+
+Veja `Docs/PARTE_5A.md` para regras e teste em Play. A arte de matérias e invocação permanece provisória.
 
 ## Parte 4 — habilidades e condições
 
-Inicie a batalha pelo guarda ao norte da fonte, usando **E**. Agora o encontro tem um guarda e um soldado; o menu mostra as habilidades de cada papel e as condições junto às barras de HP/MP.
+A parte 4 estabeleceu o encontro com um guarda e um soldado, as habilidades iniciais e as condições junto às barras de HP/MP. Na versão atual, esses comandos são concedidos pelas matérias da parte 5A.
 
 - **Aren:** corte amplo atinge todos os inimigos, além do ataque e golpe forte.
 - **Lia:** curar, purificar veneno e reviver aliados derrotados.
@@ -29,7 +53,7 @@ Inicie a batalha pelo guarda ao norte da fonte, usando **E**. Agora o encontro t
 - O guarda alterna golpe venenoso, ataque e varredura em área; o soldado usa ataque básico.
 - Confirmação única para ataque em área, descrições e seleção de alvos apropriados para cada habilidade.
 
-Veja `Docs/PARTE_4.md` para custos, duração dos efeitos e roteiro em Play. As regras foram testadas e os scripts compilados; a interface desta entrega ainda precisa de conferência no Editor. A cidade mantém o tamanho atual. Inventário, equipamentos e afinidades entram na parte 5.
+Veja `Docs/PARTE_4.md` para o registro das regras desta etapa. Use `Docs/PARTE_5A.md` para validar a versão atual. A cidade mantém o tamanho atual.
 
 ## Parte 3 — base da batalha por turnos
 
@@ -80,7 +104,9 @@ Veja `Docs/PARTE_1.md` para o roteiro de verificação.
 - Cidade com exploração livre, lojas, NPCs e três segredos.
 - Equipe com atacante, healer e tank.
 - Combate por rodadas e habilidades próprias de cada papel.
-- Inventário, equipamentos e seleção de habilidades aprendidas.
+- Inventário, equipamentos e comandos concedidos por matérias equipadas em pares ligados.
+- Quatro tipos de matéria: magia, suporte, summon e aprimoramento físico.
+- Limit Break individual com carga mantida entre batalhas.
 - Afinidades calculadas sobre os valores base de equipamentos ou habilidades.
 - Dragão secreto liberado ao concluir os três segredos.
 - Armadura especial como recompensa do dragão.
@@ -96,7 +122,8 @@ Veja `Docs/PARTE_1.md` para o roteiro de verificação.
 | 2 | Interação com NPC, baú e entrada/saída de loja |
 | 3 | Batalha por turnos com três aliados e um inimigo |
 | 4 | Ataque em área, purificar, reviver, provocar e proteger |
-| 5 | Inventário, equipamentos, habilidades e afinidades |
+| 5A | Matérias livres por classe, encaixes ligados, combos, afinidades e Limit Break |
+| 5B | Troca de equipamentos e inventário de consumíveis |
 | 6 | Compra de itens, equipamentos e magias |
 | 7 | Segredos, dragão e recompensa |
 | 8 | Tirano, espírito e dois finais |

@@ -14,6 +14,7 @@ namespace DragonQuest.Prototype
         private GUIStyle button;
         private CombatantState observedActor;
         private AbilityDefinition selected;
+        private Vector2 actionsScroll;
 
         public void Initialize(PrototypeBattleController battleController) => controller = battleController;
 
@@ -29,7 +30,7 @@ namespace DragonQuest.Prototype
 
             BattleSession battle = controller.Session;
             CombatantState actor = battle.CurrentActor;
-            if (actor != observedActor) { observedActor = actor; selected = null; }
+            if (actor != observedActor) { observedActor = actor; selected = null; actionsScroll = Vector2.zero; }
 
             Panel(new Rect(40, 20, 1200, 70));
             GUI.Label(new Rect(58, 31, 650, 30), "BATALHA / PATRULHA DO TIRANO", title);
@@ -42,7 +43,7 @@ namespace DragonQuest.Prototype
             {
                 if (participant.Team == CombatTeam.Enemy)
                     DrawStatus(new Rect(880, 135 + enemyIndex++ * 155, 360, 120), participant, participant == actor);
-                else DrawStatus(new Rect(40, 110 + partyIndex++ * 118, 315, 112), participant, participant == actor);
+                else DrawStatus(new Rect(40, 105 + partyIndex++ * 124, 315, 120), participant, participant == actor);
             }
 
             RectBox(new Rect(385, 110, 455, 270), new Color(0.13f, 0.22f, 0.23f));
@@ -92,31 +93,37 @@ namespace DragonQuest.Prototype
         private void DrawActions(CombatantState actor, BattleSession battle)
         {
             GUI.Label(new Rect(60, 490, 290, 30), "Turno de " + actor.Definition.Name, title);
+            GUI.Label(new Rect(680, 490, 520, 25), "Limit " + actor.Limit.Charge + "% / Role a lista para mais acoes", small);
+            actionsScroll = GUI.BeginScrollView(new Rect(60, 525, 275, 145), actionsScroll,
+                new Rect(0, 0, 250, actor.Definition.Abilities.Count * 32));
             for (int i = 0; i < actor.Definition.Abilities.Count; i++)
             {
                 AbilityDefinition ability = actor.Definition.Abilities[i];
                 string label = ability.Name + (ability.MpCost > 0 ? "  /  " + ability.MpCost + " MP" : string.Empty);
                 if (selected == ability) label = "> " + label;
                 bool previousEnabled = GUI.enabled;
-                GUI.enabled = actor.Mp >= ability.MpCost;
-                bool clicked = GUI.Button(new Rect(60, 525 + i * 31, 255, 28), label, button);
+                GUI.enabled = actor.Mp >= ability.MpCost && (!ability.UsesLimit || actor.Limit.IsReady);
+                bool clicked = GUI.Button(new Rect(0, i * 32, 250, 28), label, button);
                 GUI.enabled = previousEnabled;
                 if (!clicked) continue;
                 if (ability.Targets == TargetRule.Self)
                 {
                     if (controller.TryPlayerAction(ability, actor)) selected = null;
+                    GUI.EndScrollView();
                     return;
                 }
                 selected = ability;
             }
+            GUI.EndScrollView();
 
             GUI.Label(new Rect(350, 490, 295, 30), selected == null ? "Escolha uma acao" : "Escolha o alvo", title);
             if (selected != null)
             {
                 var targets = battle.GetValidTargets(selected);
-                if (selected.Targets == TargetRule.AllEnemies && targets.Count > 0)
+                if ((selected.Targets == TargetRule.AllEnemies || selected.Targets == TargetRule.AllAllies) && targets.Count > 0)
                 {
-                    if (GUI.Button(new Rect(350, 530, 290, 38), "Todos os inimigos (" + targets.Count + ")", button))
+                    string group = selected.Targets == TargetRule.AllEnemies ? "Todos os inimigos" : "Todos os aliados validos";
+                    if (GUI.Button(new Rect(350, 530, 290, 38), group + " (" + targets.Count + ")", button))
                     {
                         if (controller.TryPlayerAction(selected, targets[0])) selected = null;
                         return;
@@ -136,7 +143,7 @@ namespace DragonQuest.Prototype
                 GUI.Label(new Rect(680, 525, 520, 90), selected.Description, text);
                 if (GUI.Button(new Rect(680, 625, 180, 38), "Cancelar selecao", button)) selected = null;
             }
-            else GUI.Label(new Rect(680, 533, 520, 95), "Escolha uma habilidade para ver seu efeito e os alvos. Defender age imediatamente. Corte amplo exige confirmar todos os inimigos.", text);
+            else GUI.Label(new Rect(680, 533, 520, 95), "As materias equipadas concedem suas acoes. Ataque e Defender estao sempre disponiveis. Limit Break exige 100% e guarda a carga entre batalhas.", text);
 
             if (!string.IsNullOrEmpty(controller.ErrorMessage))
                 GUI.Label(new Rect(680, 604, 520, 20), controller.ErrorMessage, small);
@@ -158,15 +165,18 @@ namespace DragonQuest.Prototype
             GUI.Label(new Rect(rect.x + 70, rect.y + 8, rect.width - 80, 25), participant.Definition.Name, text);
             GUI.Label(new Rect(rect.x + 70, rect.y + 33, rect.width - 80, 20), participant.Definition.Role
                 + (!participant.IsAlive ? " / DERROTADO" : string.Empty), small);
-            DrawBar(new Rect(rect.x + 70, rect.y + 54, rect.width - 86, 18), participant.Hp,
+            DrawBar(new Rect(rect.x + 70, rect.y + 49, rect.width - 86, 16), participant.Hp,
                 participant.Definition.MaxHp, new Color(0.26f, 0.66f, 0.44f), "HP");
-            DrawBar(new Rect(rect.x + 70, rect.y + 75, rect.width - 86, 16), participant.Mp,
+            DrawBar(new Rect(rect.x + 70, rect.y + 68, rect.width - 86, 15), participant.Mp,
                 participant.Definition.MaxMp, new Color(0.26f, 0.48f, 0.78f), "MP");
+            if (participant.Team == CombatTeam.Party)
+                DrawBar(new Rect(rect.x + 70, rect.y + 85, rect.width - 86, 15), participant.Limit.Charge,
+                    100, new Color(0.81f, 0.38f, 0.76f), "LIMIT");
             string conditions = participant.IsDefending ? "DEFESA " : string.Empty;
             if (participant.PoisonTurns > 0) conditions += "VENENO " + participant.PoisonTurns + " ";
             if (participant.TauntTurns > 0) conditions += "PROVOCADO " + participant.TauntTurns + " ";
             if (participant.ProtectedBy != null) conditions += "PROTEGIDO";
-            GUI.Label(new Rect(rect.x + 70, rect.y + 93, rect.width - 80, 17), conditions, small);
+            GUI.Label(new Rect(rect.x + 70, rect.y + 103, rect.width - 80, 15), conditions, small);
         }
 
         private void DrawBar(Rect rect, int value, int maximum, Color color, string label)
@@ -210,7 +220,7 @@ namespace DragonQuest.Prototype
             text = new GUIStyle(GUI.skin.label) { fontSize = 17, wordWrap = true };
             small = new GUIStyle(GUI.skin.label) { fontSize = 13, wordWrap = true };
             centered = new GUIStyle(GUI.skin.label) { fontSize = 13, alignment = TextAnchor.MiddleCenter };
-            button = new GUIStyle(GUI.skin.button) { fontSize = 17 };
+            button = new GUIStyle(GUI.skin.button) { fontSize = 14 };
             title.normal.textColor = new Color(0.96f, 0.81f, 0.48f);
             text.normal.textColor = Color.white;
             small.normal.textColor = new Color(0.78f, 0.84f, 0.84f);

@@ -2,6 +2,7 @@ namespace DragonQuest.Combat
 {
     public static class EnemyAI
     {
+        private static bool IsOffensive(AbilityDefinition ability) => ability.Effect == AbilityEffect.PhysicalDamage || ability.Effect == AbilityEffect.MagicDamage;
         public static AbilityDefinition ChooseAbility(BattleSession battle)
         {
             CombatantState actor = battle.CurrentActor;
@@ -9,14 +10,14 @@ namespace DragonQuest.Combat
             // Alterna as ofensivas na ordem cadastrada; falta de MP usa a proxima opcao viavel.
             int attacks = 0;
             foreach (AbilityDefinition ability in actor.Definition.Abilities)
-                if (ability.Effect == AbilityEffect.PhysicalDamage) attacks++;
+                if (IsOffensive(ability)) attacks++;
             for (int offset = 0; offset < attacks; offset++)
             {
                 int desired = (int)(((long)actor.TurnsTaken + offset) % attacks);
                 int index = 0;
                 foreach (AbilityDefinition ability in actor.Definition.Abilities)
                 {
-                    if (ability.Effect != AbilityEffect.PhysicalDamage) continue;
+                    if (!IsOffensive(ability)) continue;
                     if (index++ == desired && ability.MpCost <= actor.Mp && battle.GetValidTargets(ability).Count > 0)
                         return ability;
                 }
