@@ -76,3 +76,16 @@ O usuário confirmou que as interações funcionaram em Play. Não houve valida�
 - Menu de matérias, rolagem das ações, bloqueio de movimento, cores e barras ainda aguardam validação visual e interativa em Play pelo usuário.
 - Roteiro: `Docs/PARTE_5A.md`; testes reproduzíveis: `Tools/Test-Combat.ps1` e `Tools/Test-ExplorationProgress.ps1`.
 - Persistência em memória durante a mesma sessão. Não há salvamento em disco, troca de equipamento, consumíveis, animação de summon ou executável nesta entrega.
+
+## Parte 5B — equipamentos e consumiveis
+
+- Scripts do jogo compilados sem erros com Roslyn e as bibliotecas da Unity 6000.6.5f1 e Input System.
+- 1.247 verificações de combate/inventário passaram, incluindo todas as regras anteriores, equipamento e consumíveis. A contagem inclui verificações de ações durante partidas completas.
+- Confirmados troca/remoção e retorno de todas as matérias ao inventário, equipamentos vazios ao reequipar, troca entre aliados, bloqueio de itens estrangeiros, identidades sem duplicação e jogo sem arma/armadura.
+- Confirmados bônus equipados, magia de cajado/manto e combos no último par de uma armadura com seis encaixes.
+- Confirmados uso e limites de poção/éter, remoção de veneno, ressurreição sem turno extra, estoque esgotado, tentativas inválidas sem consumo e aplicação de veneno ao fim do uso de item.
+- Confirmados persistência de estoque e Limit, consumo sem MP, isolamento entre sessões, rejeição de definições falsas e proteção contra overflow das quantidades.
+- As 15 verificações de progresso de exploração continuam passando.
+- Abas, comparação de atributos, rolagem dos encaixes e uso de itens pela interface aguardam confirmação visual/interativa em Play.
+- Roteiro: `Docs/PARTE_5B.md`; testes: `Tools/Test-Combat.ps1` e `Tools/Test-ExplorationProgress.ps1`.
+- Sem compras, salvamento em disco, arte final ou executável nesta etapa.

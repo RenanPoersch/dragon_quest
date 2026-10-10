@@ -1,11 +1,16 @@
 using System.Collections.Generic;
 using DragonQuest.Combat;
 using DragonQuest.Equipment;
+using DragonQuest.Inventory;
 
 namespace DragonQuest.Prototype
 {
     public static class PrototypePartyFactory
     {
+        public static readonly ConsumableDefinition Potion = new ConsumableDefinition("potion", "Pocao", "Recupera 40 HP de um aliado vivo e ferido. Usa uma unidade e um turno.", ItemEffect.RestoreHp, 40);
+        public static readonly ConsumableDefinition Ether = new ConsumableDefinition("ether", "Eter", "Recupera 15 MP de um aliado vivo. Usa uma unidade e um turno.", ItemEffect.RestoreMp, 15);
+        public static readonly ConsumableDefinition Antidote = new ConsumableDefinition("antidote", "Antidoto", "Remove veneno de um aliado vivo. Usa uma unidade e um turno.", ItemEffect.CleansePoison, 0);
+        public static readonly ConsumableDefinition PhoenixFeather = new ConsumableDefinition("phoenix-feather", "Pluma da Fenix", "Revive um aliado derrotado com 30% do HP maximo. Usa uma unidade e um turno.", ItemEffect.Revive, 30);
         public static readonly AbilityDefinition Thunder = new AbilityDefinition("thunder", "Thunder",
             "Magia de raio contra um inimigo, poder 22. Custa 6 MP.", 6, 22, AbilityEffect.MagicDamage, TargetRule.Enemy);
         public static readonly AbilityDefinition Summon = new AbilityDefinition("summon", "Invocar Fenix",
@@ -24,7 +29,7 @@ namespace DragonQuest.Prototype
         public static PartyProgress Create()
         {
             var weapon = new EquipmentDefinition("Arma inicial", 5, 0, 2);
-            var armor = new EquipmentDefinition("Armadura inicial", 0, 6, 4);
+            var armor = new EquipmentDefinition("Armadura inicial", 0, 6, 4, EquipmentSlot.Armor);
             var aren = new PartyMember("aren", "Aren", CharacterClass.Attacker,
                 new CombatantDefinition("Aren", "Atacante", 100, 28, 22, 7, 4, 14, MateriaResolver.Attack, MateriaResolver.Defend), weapon, armor);
             var lia = new PartyMember("lia", "Lia", CharacterClass.Healer,
@@ -35,7 +40,16 @@ namespace DragonQuest.Prototype
             foreach (MateriaDefinition definition in new[] { HeavyMateria, CleaveMateria, ThunderMateria, AllMateria,
                 CureMateria, CleanseMateria, ReviveMateria, SummonMateria, GuardianMateria, InfuseMateria, AllMateria, ThunderMateria })
                 inventory.Add(new MateriaInstance("materia-" + inventory.Count, definition));
-            var party = new PartyProgress(new[] { aren, lia, bram }, inventory.ToArray());
+            var spareEquipment = new[]
+            {
+                new EquipmentLoadout(new EquipmentDefinition("Espada de ferro", 9, 0, 2), "iron-sword"),
+                new EquipmentLoadout(new EquipmentDefinition("Cajado runico", 3, 0, 4, magicBonus: 6), "runic-staff"),
+                new EquipmentLoadout(new EquipmentDefinition("Armadura de ferro", 0, 10, 2, EquipmentSlot.Armor), "iron-armor"),
+                new EquipmentLoadout(new EquipmentDefinition("Manto arcano", 0, 3, 6, EquipmentSlot.Armor, 4), "arcane-robe")
+            };
+            var consumables = new ItemInventory(new ItemStack(Potion, 6), new ItemStack(Ether, 3),
+                new ItemStack(Antidote, 3), new ItemStack(PhoenixFeather, 2));
+            var party = new PartyProgress(new[] { aren, lia, bram }, inventory.ToArray(), spareEquipment, consumables);
             party.TryEquip(aren, aren.Weapon, 0, inventory[0], out _);
             party.TryEquip(aren, aren.Armor, 0, inventory[1], out _);
             party.TryEquip(aren, aren.Armor, 2, inventory[2], out _);

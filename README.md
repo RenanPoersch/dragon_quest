@@ -17,7 +17,20 @@ Use essa versão do Editor para evitar migrações involuntárias.
 2. No Unity Hub, abra **Projects → Add → Add project from disk** e selecione a raiz deste repositório (a pasta que contém `Assets`, `Packages` e `ProjectSettings`).
 3. Abra com o Editor **6000.6.5f1** e aguarde a importação dos pacotes e assets.
 4. Abra `Assets/Scenes/CidadePrototipo.unity`.
-5. Clique em **Play**, clique dentro da janela **Game** e use **WASD ou as setas** para andar; **E** interage com objetos próximos e **I** abre o menu de matérias.
+5. Clique em **Play**, clique dentro da janela **Game** e use **WASD ou as setas** para andar; **E** interage com objetos próximos e **I** abre o inventário.
+
+## Parte 5B — equipamentos e consumíveis
+
+O menu aberto com **I** tem abas **Matérias**, **Equipamentos** e **Itens**. Na aba Equipamentos, escolha o personagem, selecione uma arma ou armadura, confira os atributos e clique em Equipar selecionado. Também é possível remover arma e armadura.
+
+- Trocar ou remover equipamento **desequipa todas as matérias dele**, devolvendo-as ao inventário. Os encaixes do novo equipamento começam vazios.
+- Trocar equipamento entre dois personagens devolve as matérias dos dois equipamentos envolvidos. As matérias do outro equipamento de cada personagem permanecem.
+- Espada de ferro, cajado rúnico, armadura de ferro e manto arcano permitem experimentar atributos e diferentes quantidades de pares.
+- Na batalha, clique em **Itens**, escolha um consumível e confirme um aliado válido. Cada uso gasta uma unidade e o turno; tentativas inválidas ou canceladas não gastam recursos.
+- Poção recupera 40 HP; éter recupera 15 MP; antídoto remove veneno; Pluma da Fênix revive com 30% do HP máximo.
+- Estoque, equipamento, matérias e Limit permanecem entre batalhas da mesma sessão. O estoque de consumíveis não é reposto automaticamente.
+
+Veja `Docs/PARTE_5B.md` para o roteiro em Play. Compras e reposição por lojas entram na parte 6; arte e salvamento em disco continuam para entregas posteriores.
 
 ## Parte 5A — matérias, combos e Limit Break
 
@@ -39,9 +52,9 @@ As habilidades especiais vêm das matérias equipadas. Qualquer personagem pode 
 - Limit Break acumula com o HP realmente perdido e pode ser usado a 100%. A barra de cada personagem permanece entre batalhas da mesma sessão, inclusive depois de derrota ou ressurreição.
 - Ataque, defender e Limit Break são comandos comuns. Remover uma matéria retira seus comandos da próxima batalha.
 
-A configuração inicial preserva os comandos usados na parte 4 por meio de matérias e já oferece Thunder + All em Aren. O inventário inclui matérias extras para experimentar os combos. Equipamentos iniciais têm valores e encaixes fixos nesta entrega; troca de armas/armaduras, consumíveis e compras entram na continuação da parte 5 e na parte 6.
+A configuração inicial preserva os comandos usados na parte 4 por meio de matérias e já oferece Thunder + All em Aren. O inventário inclui matérias extras para experimentar os combos. A parte 5B adiciona troca de equipamentos e consumíveis; as compras ficam para a parte 6.
 
-Veja `Docs/PARTE_5A.md` para regras e teste em Play. A arte de matérias e invocação permanece provisória.
+Veja `Docs/PARTE_5A.md` para as regras introduzidas nessa etapa e `Docs/PARTE_5B.md` para validar a versão atual. A arte de matérias e invocação permanece provisória.
 
 ## Parte 4 — habilidades e condições
 

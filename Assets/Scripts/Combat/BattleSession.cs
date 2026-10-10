@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using DragonQuest.Inventory;
 
 namespace DragonQuest.Combat
 {
@@ -14,13 +15,17 @@ namespace DragonQuest.Combat
         private int turnIndex;
 
         public IReadOnlyList<CombatantState> Combatants { get; }
+        public ItemInventory Inventory { get; }
         public BattleOutcome Outcome { get; private set; }
         public int Round { get; private set; }
         public string LastMessage { get; private set; }
         public CombatantState CurrentActor => Outcome == BattleOutcome.None ? turnOrder[turnIndex] : null;
 
-        public BattleSession(params CombatantState[] participants)
+        public BattleSession(params CombatantState[] participants) : this(new ItemInventory(), participants) { }
+
+        public BattleSession(ItemInventory inventory, params CombatantState[] participants)
         {
+            Inventory = inventory ?? throw new ArgumentNullException(nameof(inventory));
             if (participants == null) throw new ArgumentNullException(nameof(participants));
             combatants = new List<CombatantState>(participants);
             var ids = new HashSet<string>();
@@ -36,6 +41,62 @@ namespace DragonQuest.Combat
             Combatants = combatants.AsReadOnly();
             LastMessage = "Prepare sua equipe para a batalha.";
             BeginRound();
+        }
+
+        public IReadOnlyList<CombatantState> GetValidItemTargets(ConsumableDefinition item)
+        {
+            var targets = new List<CombatantState>();
+            if (item == null || CurrentActor == null || CurrentActor.Team != CombatTeam.Party || Inventory.QuantityOf(item) == 0) return targets;
+            foreach (CombatantState target in combatants)
+                if (IsValidItemTarget(CurrentActor, item, target)) targets.Add(target);
+            return targets;
+        }
+
+        private static bool IsValidItemTarget(CombatantState actor, ConsumableDefinition item, CombatantState target)
+        {
+            if (target.Team != actor.Team) return false;
+            if (item.Effect == ItemEffect.Revive) return !target.IsAlive;
+            if (!target.IsAlive) return false;
+            if (item.Effect == ItemEffect.RestoreHp) return target.Hp < target.Definition.MaxHp;
+            if (item.Effect == ItemEffect.RestoreMp) return target.Mp < target.Definition.MaxMp;
+            return target.PoisonTurns > 0;
+        }
+
+        public bool TryUseItem(CombatantState actor, ConsumableDefinition item, CombatantState target, out string message)
+        {
+            if (Outcome != BattleOutcome.None) { message = "A batalha ja terminou."; return false; }
+            if (actor == null || actor != CurrentActor || actor.Team != CombatTeam.Party)
+            { message = "Itens so podem ser usados no turno de um aliado."; return false; }
+            if (item == null || Inventory.QuantityOf(item) == 0) { message = "Item indisponivel no inventario."; return false; }
+            if (target == null || !combatants.Contains(target) || !IsValidItemTarget(actor, item, target))
+            { message = "Este alvo nao precisa ou nao pode receber o item."; return false; }
+            if (!Inventory.TryConsume(item)) { message = "Item esgotado."; return false; }
+            message = actor.Definition.Name + " usou " + item.Name + ": " + target.Definition.Name;
+            if (item.Effect == ItemEffect.RestoreHp)
+            {
+                int before = target.Hp;
+                target.RecoverHp(item.Power);
+                message += " +" + (target.Hp - before) + " HP.";
+            }
+            else if (item.Effect == ItemEffect.RestoreMp)
+            {
+                int before = target.Mp;
+                target.RecoverMp(item.Power);
+                message += " +" + (target.Mp - before) + " MP.";
+            }
+            else if (item.Effect == ItemEffect.CleansePoison)
+            {
+                target.PoisonTurns = 0;
+                message += " sem veneno.";
+            }
+            else
+            {
+                target.ClearConditions();
+                target.RecoverHp((int)(((long)target.Definition.MaxHp * item.Power + 99) / 100));
+                message += " reviveu com " + target.Hp + " HP.";
+            }
+            CompleteAction(actor, ref message);
+            return true;
         }
 
         public IReadOnlyList<CombatantState> GetValidTargets(AbilityDefinition ability)
@@ -114,6 +175,12 @@ namespace DragonQuest.Combat
                 message = actor.Definition.Name + " protegera " + target.Definition.Name + " do proximo golpe individual, ate seu proximo turno.";
             }
 
+            CompleteAction(actor, ref message);
+            return true;
+        }
+
+        private void CompleteAction(CombatantState actor, ref string message)
+        {
             actor.TurnsTaken++;
             if (actor.TauntTurns > 0 && --actor.TauntTurns == 0) actor.TauntedBy = null;
             RemoveDeadSources();
@@ -131,7 +198,6 @@ namespace DragonQuest.Combat
             }
             LastMessage = message;
             if (Outcome == BattleOutcome.None) NextTurn();
-            return true;
         }
 
         private static void ApplyRecovery(CombatantState actor, AbilityDefinition ability, CombatantState target, StringBuilder report)

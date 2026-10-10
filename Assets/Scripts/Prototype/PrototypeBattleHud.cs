@@ -1,5 +1,6 @@
 using UnityEngine;
 using DragonQuest.Combat;
+using DragonQuest.Inventory;
 
 namespace DragonQuest.Prototype
 {
@@ -15,6 +16,8 @@ namespace DragonQuest.Prototype
         private CombatantState observedActor;
         private AbilityDefinition selected;
         private Vector2 actionsScroll;
+        private bool itemMode;
+        private ConsumableDefinition selectedItem;
 
         public void Initialize(PrototypeBattleController battleController) => controller = battleController;
 
@@ -30,7 +33,8 @@ namespace DragonQuest.Prototype
 
             BattleSession battle = controller.Session;
             CombatantState actor = battle.CurrentActor;
-            if (actor != observedActor) { observedActor = actor; selected = null; actionsScroll = Vector2.zero; }
+            if (actor != observedActor)
+            { observedActor = actor; selected = null; selectedItem = null; itemMode = false; actionsScroll = Vector2.zero; }
 
             Panel(new Rect(40, 20, 1200, 70));
             GUI.Label(new Rect(58, 31, 650, 30), "BATALHA / PATRULHA DO TIRANO", title);
@@ -93,7 +97,11 @@ namespace DragonQuest.Prototype
         private void DrawActions(CombatantState actor, BattleSession battle)
         {
             GUI.Label(new Rect(60, 490, 290, 30), "Turno de " + actor.Definition.Name, title);
-            GUI.Label(new Rect(680, 490, 520, 25), "Limit " + actor.Limit.Charge + "% / Role a lista para mais acoes", small);
+            if (GUI.Button(new Rect(680, 489, 230, 29), (!itemMode ? "> " : "") + "Habilidades", button))
+            { itemMode = false; selectedItem = null; actionsScroll = Vector2.zero; }
+            if (GUI.Button(new Rect(925, 489, 230, 29), (itemMode ? "> " : "") + "Itens", button))
+            { itemMode = true; selected = null; actionsScroll = Vector2.zero; }
+            if (itemMode) { DrawItemActions(battle); return; }
             actionsScroll = GUI.BeginScrollView(new Rect(60, 525, 275, 145), actionsScroll,
                 new Rect(0, 0, 250, actor.Definition.Abilities.Count * 32));
             for (int i = 0; i < actor.Definition.Abilities.Count; i++)
@@ -147,6 +155,46 @@ namespace DragonQuest.Prototype
 
             if (!string.IsNullOrEmpty(controller.ErrorMessage))
                 GUI.Label(new Rect(680, 604, 520, 20), controller.ErrorMessage, small);
+        }
+
+        private void DrawItemActions(BattleSession battle)
+        {
+            actionsScroll = GUI.BeginScrollView(new Rect(60, 525, 275, 145), actionsScroll,
+                new Rect(0, 0, 250, battle.Inventory.Items.Count * 35));
+            for (int i = 0; i < battle.Inventory.Items.Count; i++)
+            {
+                ItemStack stack = battle.Inventory.Items[i];
+                bool enabled = GUI.enabled;
+                GUI.enabled = stack.Quantity > 0;
+                if (GUI.Button(new Rect(0, i * 35, 250, 31), (selectedItem == stack.Definition ? "> " : "")
+                    + stack.Definition.Name + " / x" + stack.Quantity, button)) selectedItem = stack.Definition;
+                GUI.enabled = enabled;
+            }
+            GUI.EndScrollView();
+            GUI.Label(new Rect(350, 490, 295, 30), selectedItem == null ? "Escolha um item" : "Escolha o alvo", title);
+            if (selectedItem != null)
+            {
+                var targets = battle.GetValidItemTargets(selectedItem);
+                for (int i = 0; i < targets.Count; i++)
+                    if (GUI.Button(new Rect(350, 530 + i * 46, 290, 38), targets[i].Definition.Name, button))
+                    {
+                        if (controller.TryPlayerItem(selectedItem, targets[i])) selectedItem = null;
+                        return;
+                    }
+                if (targets.Count == 0) GUI.Label(new Rect(350, 533, 290, 105), NoItemTargetsMessage(selectedItem), text);
+                GUI.Label(new Rect(680, 525, 520, 90), selectedItem.Description, text);
+                if (GUI.Button(new Rect(680, 625, 180, 38), "Cancelar selecao", button)) selectedItem = null;
+            }
+            else GUI.Label(new Rect(680, 533, 520, 95), "Escolha um item e depois um aliado valido. Cada uso gasta uma unidade e seu turno; nao gasta MP ou Limit.", text);
+            if (!string.IsNullOrEmpty(controller.ErrorMessage)) GUI.Label(new Rect(680, 604, 520, 20), controller.ErrorMessage, small);
+        }
+
+        private static string NoItemTargetsMessage(ConsumableDefinition item)
+        {
+            if (item.Effect == ItemEffect.RestoreHp) return "Nenhum aliado vivo e ferido para receber pocao.";
+            if (item.Effect == ItemEffect.RestoreMp) return "Nenhum aliado vivo com MP abaixo do maximo.";
+            if (item.Effect == ItemEffect.CleansePoison) return "Nenhum aliado vivo envenenado.";
+            return "Nenhum aliado derrotado para reviver.";
         }
 
         private static string NoTargetsMessage(AbilityDefinition ability)

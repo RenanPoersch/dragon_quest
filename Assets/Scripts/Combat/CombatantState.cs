@@ -40,6 +40,7 @@ namespace DragonQuest.Combat
             if (!IsAlive) ClearConditions();
         }
         internal void RecoverHp(int amount) => Hp = (int)Math.Min(Definition.MaxHp, (long)Hp + amount);
+        internal void RecoverMp(int amount) => Mp = (int)Math.Min(Definition.MaxMp, (long)Mp + amount);
 
         internal void ClearConditions()
         {

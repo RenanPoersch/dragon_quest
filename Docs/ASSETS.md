@@ -8,5 +8,6 @@ Registrar cada conjunto de sprites, tiles, fontes, áudio ou outros recursos adi
 | Formas provisórias de cenário e herói | Código criado para este projeto, em 8 de outubro de 2026 | Sem recursos de imagem externos; textura branca e cores geradas em execução | Assets/Scripts/Prototype/PrototypeCity.cs |
 | Combatentes e arena provisórios | Código criado para este projeto, em 9 de outubro de 2026 | Sem imagens externas; formas e cores desenhadas pela interface | Assets/Scripts/Prototype/PrototypeBattleHud.cs |
 | Menu e cores provisórias de matérias | Código criado para este projeto, em 9 de outubro de 2026 | Sem imagens externas; caixas, botões e cores da interface. A invocação usa a apresentação provisória da batalha | Assets/Scripts/Prototype/PrototypeMateriaHud.cs |
+| Abas de equipamento/consumíveis e seleção de itens em batalha | Código criado para este projeto, em 10 de outubro de 2026 | Interface provisória desenhada por código; sem imagens externas | Assets/Scripts/Prototype/PrototypeMateriaHud.cs e PrototypeBattleHud.cs |
 
 Para recursos gerados durante o projeto, registrar a ferramenta, a data, as alterações realizadas e as condições aplicáveis. Para recursos externos, incluir a URL da fonte e a atribuição exigida.

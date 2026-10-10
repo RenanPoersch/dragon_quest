@@ -38,7 +38,7 @@ namespace DragonQuest.Prototype
             var soldier = new CombatantDefinition("Soldado", "Inimigo", 90, 0, 15, 6, 0, 7, Attack, Defend);
             participants.Add(new CombatantState("guard", guard, CombatTeam.Enemy));
             participants.Add(new CombatantState("soldier", soldier, CombatTeam.Enemy));
-            return new BattleSession(participants.ToArray());
+            return new BattleSession(party.Consumables, participants.ToArray());
         }
     }
 }

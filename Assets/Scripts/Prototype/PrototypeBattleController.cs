@@ -2,6 +2,7 @@ using UnityEngine;
 using DragonQuest.Combat;
 using DragonQuest.Exploration;
 using DragonQuest.Equipment;
+using DragonQuest.Inventory;
 using DragonQuest.Interactions;
 using UnityEngine.InputSystem;
 
@@ -47,6 +48,14 @@ namespace DragonQuest.Prototype
         {
             if (!IsActive || Session.CurrentActor == null || Session.CurrentActor.Team != CombatTeam.Party) return false;
             bool accepted = Session.TryAct(Session.CurrentActor, ability, target, out string message);
+            ErrorMessage = accepted ? string.Empty : message;
+            return accepted;
+        }
+
+        public bool TryPlayerItem(ConsumableDefinition item, CombatantState target)
+        {
+            if (!IsActive || Session.CurrentActor == null || Session.CurrentActor.Team != CombatTeam.Party) return false;
+            bool accepted = Session.TryUseItem(Session.CurrentActor, item, target, out string message);
             ErrorMessage = accepted ? string.Empty : message;
             return accepted;
         }

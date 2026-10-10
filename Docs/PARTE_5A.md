@@ -1,5 +1,7 @@
 # Parte 5A — matérias, afinidades e Limit Break
 
+Esta página registra a introdução das matérias. A versão atual permite trocar/remover equipamentos, devolvendo suas matérias ao inventário, e usar consumíveis em batalha. Use `PARTE_5B.md` para validar esses comportamentos.
+
 ## Usar o menu
 
 1. Saia de Play, aguarde a importação e abra `Assets/Scenes/CidadePrototipo.unity`.

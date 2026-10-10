@@ -14,6 +14,8 @@ namespace DragonQuest.Equipment
         {
             var commands = new List<AbilityDefinition> { Attack, Defend, LimitBreak };
             foreach (EquipmentLoadout equipment in new[] { member.Weapon, member.Armor })
+            {
+                if (equipment == null) continue;
                 for (int i = 0; i < equipment.Sockets.Count; i++)
                 {
                     MateriaInstance source = equipment.Sockets[i];
@@ -54,6 +56,7 @@ namespace DragonQuest.Equipment
                             effect, targets, original.PoisonTurns, original.UsesLimit, original.SourceAbilityId));
                     }
                 }
+            }
             return commands;
         }
     }

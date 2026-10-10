@@ -174,6 +174,7 @@ internal static class BattleChecks
             CheckFullEncounters();
             checks += AbilityChecks.Run();
             checks += MateriaLimitChecks.Run();
+            checks += EquipmentItemChecks.Run();
             Console.WriteLine(checks + " verificacoes de combate passaram.");
             return 0;
         }
