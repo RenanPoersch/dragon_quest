@@ -114,7 +114,7 @@ namespace DragonQuest.Prototype
 
         private void DrawLabel(Vector2 worldPosition, string text, float scale)
         {
-            Vector3 screen = view.WorldToScreenPoint(worldPosition);
+            Vector3 screen = view.WorldToScreenPoint(ObliqueProjection.Point(worldPosition, 1.5f));
             if (screen.z <= 0 || screen.x < 0 || screen.x > Screen.width || screen.y < 0 || screen.y > Screen.height) return;
             Rect rect = new Rect(screen.x / scale - 75, (Screen.height - screen.y) / scale - 13, 150, 26);
             GUI.DrawTexture(rect, panelTexture);

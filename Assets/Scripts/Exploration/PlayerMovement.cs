@@ -40,7 +40,7 @@ namespace DragonQuest.Exploration
             if (keyboard.wKey.isPressed || keyboard.upArrowKey.isPressed) vertical += 1f;
 
             // Clamp evita que a diagonal seja mais rápida que os eixos.
-            movement = Vector2.ClampMagnitude(new Vector2(horizontal, vertical), 1f);
+            movement = ObliqueProjection.GroundDirection(Vector2.ClampMagnitude(new Vector2(horizontal, vertical), 1f));
             if (movement.sqrMagnitude > 0f) FacingDirection = movement.normalized;
         }
 

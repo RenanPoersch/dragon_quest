@@ -1,0 +1,138 @@
+using System;
+using System.IO;
+using System.Linq;
+using System.Text.Json;
+using DragonQuest.Exploration;
+using DragonQuest.Prototype;
+using UnityEngine;
+
+internal static class ObliqueChecks
+{
+    private static int checks;
+    private static void Assert(bool condition,string text) { checks++; if(!condition) throw new Exception(text); }
+    private static void Near(float a,float b,string text) => Assert(Math.Abs(a-b)<0.0001f,text);
+
+    private static void Validate(ObliqueMeshData data,string name)
+    {
+        Assert(data.Vertices.Count==data.Colors.Count && data.Triangles.Count%3==0,name+": buffers incompatíveis.");
+        Assert(data.Vertices.All(p=>float.IsFinite(p.x)&&float.IsFinite(p.y)&&float.IsFinite(p.z)),name+": coordenada inválida.");
+        Assert(data.Colors.All(c=>float.IsFinite(c.r)&&float.IsFinite(c.g)&&float.IsFinite(c.b)&&c.r>=0&&c.r<=1&&c.g>=0&&c.g<=1&&c.b>=0&&c.b<=1),name+": cor inválida.");
+        Assert(data.Triangles.All(i=>i>=0&&i<data.Vertices.Count),name+": índice fora da malha.");
+        bool degenerate=false;
+        for(int i=0;i<data.Triangles.Count;i+=3)
+        {
+            Vector3 a=data.Vertices[data.Triangles[i]],b=data.Vertices[data.Triangles[i+1]],c=data.Vertices[data.Triangles[i+2]];
+            double ux=b.x-a.x,uy=b.y-a.y,uz=b.z-a.z,vx=c.x-a.x,vy=c.y-a.y,vz=c.z-a.z;
+            double x=uy*vz-uz*vy,y=uz*vx-ux*vz,z=ux*vy-uy*vx;
+            if(x*x+y*y+z*z<1e-18) degenerate=true;
+        }
+        Assert(!degenerate,name+": triângulo sem área.");
+    }
+
+    private static void Export(string directory,string name,ObliqueMeshData data,Vector2 focus,float size)
+    {
+        File.WriteAllText(Path.Combine(directory,name+".json"),JsonSerializer.Serialize(new {
+            vertices=data.Vertices.Select(p=>new[]{p.x,p.y,p.z}),colors=data.Colors.Select(c=>new[]{c.r,c.g,c.b}),
+            triangles=data.Triangles,focus=new[]{focus.x,focus.y},size,
+            groundScale=ObliqueProjection.GroundScale,heightScale=ObliqueProjection.HeightScale,
+            yawCos=ObliqueProjection.YawCos,yawSin=ObliqueProjection.YawSin
+        }));
+    }
+    private static void Person(ObliqueMeshData scene,Vector2 point,string color,bool armed)
+    {
+        scene.Append(ObliqueScenery.PersonBodyData(color,armed),ObliqueProjection.Point(point));
+        foreach(float x in new[]{-0.12f,0.12f})
+            scene.Append(ObliqueScenery.LegData(x,ObliqueMeshData.Hex(color)),ObliqueProjection.Point(point,0.5f));
+    }
+    private static void AddBlock(ObliqueMeshData scene,CityBlock block)
+        => scene.Append(ObliqueScenery.BlockData(block.Name,block.Size,block.Color,block.Solid,block.Order),ObliqueProjection.Point(block.Position));
+
+    public static void Main(string[] args)
+    {
+        string directory=args[0];
+        Near(ObliqueProjection.ScreenPlane(new Vector2(4,3)).x,4*ObliqueProjection.YawCos+3*ObliqueProjection.YawSin,"Eixos do chão devem acompanhar rotação da câmera.");
+        Near(ObliqueProjection.ScreenPlane(new Vector2(4,3)).y,(-4*ObliqueProjection.YawSin+3*ObliqueProjection.YawCos)*ObliqueProjection.GroundScale,"Profundidade do chão precisa comprimir na tela.");
+        Near(ObliqueProjection.ScreenPlane(Vector2.zero,2).y,2*ObliqueProjection.HeightScale,"Altura deve subir na tela.");
+        Assert(ObliqueProjection.Point(Vector2.zero,2).z==-2,"Altura não pode mover a posição física XY.");
+        foreach(var input in new[]{new Vector2(0,1),new Vector2(1,0),new Vector2(0,-1),new Vector2(-1,0)})
+        {
+            var screen=ObliqueProjection.ScreenPlane(ObliqueProjection.GroundDirection(input));
+            Near(screen.x,input.x,"Controles horizontais precisam corresponder à tela.");
+            Near(screen.y,input.y*ObliqueProjection.GroundScale,"Controles verticais precisam corresponder à tela.");
+        }
+        var travel=new PrototypeTravel();
+        foreach(var map in travel.Maps)
+        {
+            Assert(map.FixedCamera==(map.Id!=PrototypeTravel.City),"A cidade segue o herói; ambientes menores usam enquadramento fixo.");
+            foreach(var hero in new[]{map.Spawn,new Vector2(map.Bounds.xMax,map.Bounds.yMax)})
+            {
+                var focus=ObliqueProjection.CameraFocus(hero,map.Bounds,map.CameraSize,16f/9,map.FixedCamera);
+                Assert(map.Bounds.Contains(focus),"Foco da câmera deve continuar dentro do mapa.");
+                if(map.FixedCamera) Assert(focus==map.Bounds.center,"Câmera fixa não pode saltar com o personagem.");
+            }
+            foreach(float aspect in new[]{16f/9,4f/3,0.75f})
+            {
+                float size=ObliqueProjection.FrameSize(map.CameraSize,map.Bounds,aspect,map.FixedCamera);
+                foreach(var point in new[]{new Vector2(map.Bounds.xMin,map.Bounds.yMin),new Vector2(map.Bounds.xMin,map.Bounds.yMax),
+                    new Vector2(map.Bounds.xMax,map.Bounds.yMin),new Vector2(map.Bounds.xMax,map.Bounds.yMax)})
+                {
+                    var screen=ObliqueProjection.ScreenPlane(new Vector2(point.x-map.Bounds.center.x,point.y-map.Bounds.center.y));
+                    if(map.FixedCamera) Assert(Math.Abs(screen.x)<=size*aspect&&Math.Abs(screen.y)<=size,"Câmera fixa deve enquadrar o mapa em telas de proporções diferentes.");
+                }
+            }
+        }
+        Vector2 corner=ObliqueProjection.CameraFocus(new Vector2(100,100),PrototypeCityLayout.Bounds,7.5f,16f/9,false);
+        Near(corner.y,PrototypeCityLayout.Bounds.yMax-(7.5f*16f/9*ObliqueProjection.YawSin+7.5f/ObliqueProjection.GroundScale*ObliqueProjection.YawCos),"Limite vertical deve considerar o ângulo da câmera.");
+        Near(corner.x,PrototypeCityLayout.Bounds.xMax-(7.5f*16f/9*ObliqueProjection.YawCos+7.5f/ObliqueProjection.GroundScale*ObliqueProjection.YawSin),"Limite horizontal deve considerar o aspecto.");
+
+        var world=ObliqueScenery.IslandData(); Validate(world,"Ilha e mar");
+        // Area triangulada da superficie precisa corresponder ao contorno concavo.
+        var inner=PrototypeWorldLayout.Coast.Select(p=>new Vector2(p.x*0.955f,p.y*0.955f)).ToArray();
+        var surface=new ObliqueMeshData();surface.Polygon(inner,0,ObliqueMeshData.Hex("71806A"));
+        double polygonArea=0,triangleArea=0;
+        for(int i=0;i<inner.Length;i++) {var a=inner[i];var b=inner[(i+1)%inner.Length];polygonArea+=(double)a.x*b.y-(double)b.x*a.y;}
+        for(int i=0;i<surface.Vertices.Count;i+=3)
+        {var a=surface.Vertices[i];var b=surface.Vertices[i+1];var c=surface.Vertices[i+2];triangleArea+=Math.Abs((double)(b.x-a.x)*(c.y-a.y)-(double)(b.y-a.y)*(c.x-a.x));}
+        Assert(Math.Abs(polygonArea-triangleArea)<0.001,"Triangulação deve preencher a ilha sem sobreposição nem buracos.");
+        foreach(var block in PrototypeWorldLayout.Blocks)
+        {
+            if(block.Name=="Mar"||block.Name.StartsWith("Costa")||block.Name.StartsWith("Ilha -")) continue;
+            var data=ObliqueScenery.BlockData(block.Name,block.Size,block.Color,block.Solid,block.Order);Validate(data,block.Name);AddBlock(world,block);
+        }
+        var castle=ObliqueScenery.CastleIconData();Validate(castle,"Castelo global");
+        var forest=ObliqueScenery.ForestIconData();Validate(forest,"Bosque global");
+        var volcano=ObliqueScenery.VolcanoIconData();Validate(volcano,"Vulcão global");
+        foreach(var icon in new[]{castle,forest})
+            Assert(-icon.Vertices.Min(p=>p.z)>1.45f&&-icon.Vertices.Min(p=>p.z)<=2,"Ícones precisam ser ligeiramente mais altos que o herói.");
+        world.Append(castle,ObliqueProjection.Point(PrototypeWorldLayout.Castle));
+        world.Append(forest,ObliqueProjection.Point(PrototypeWorldLayout.WestForest));
+        world.Append(forest,ObliqueProjection.Point(PrototypeWorldLayout.EastForest));
+        world.Append(volcano,ObliqueProjection.Point(PrototypeWorldLayout.Volcano));
+        Person(world,PrototypeWorldLayout.Spawn,"B4A078",true);
+        Export(directory,"WorldOblique",world,Vector2.zero,ObliqueProjection.FrameSize(11.5f,PrototypeWorldLayout.Bounds,16f/9,true));
+
+        var city=new ObliqueMeshData();
+        foreach(var block in PrototypeCityLayout.Blocks)
+        {Validate(ObliqueScenery.BlockData(block.Name,block.Size,block.Color,block.Solid,block.Order),block.Name);AddBlock(city,block);}
+        foreach(var building in PrototypeCityLayout.Buildings)
+        {
+            var data=ObliqueScenery.BuildingData(building.Size,building.Color,building.Name.Contains("Castelo")||building.Name.Contains("Torre"));
+            Validate(data,building.Name);city.Append(data,ObliqueProjection.Point(building.Position));
+        }
+        Validate(ObliqueScenery.PersonBodyData("B4A078",true),"Herói");
+        foreach(float x in new[]{-0.12f,0.12f})Validate(ObliqueScenery.LegData(x,ObliqueMeshData.Hex("B4A078")),"Perna");
+        Person(city,PrototypeCityLayout.Spawn,"B4A078",true);
+        Person(city,PrototypeCityLayout.Citizen,"8D9DB0",false);Person(city,PrototypeCityLayout.Guard,"9B7770",true);
+        Export(directory,"CityOblique",city,new Vector2(0,0),7.5f);
+        var hall=new ObliqueMeshData();
+        foreach(var block in PrototypeWorldLayout.CastleBlocks)
+        {Validate(ObliqueScenery.BlockData(block.Name,block.Size,block.Color,block.Solid,block.Order),block.Name);AddBlock(hall,block);}
+        Person(hall,PrototypeWorldLayout.CastleSpawn,"B4A078",true);Person(hall,PrototypeWorldLayout.Throne,"9A5979",false);
+        Export(directory,"CastleOblique",hall,Vector2.zero,9);
+        foreach(bool eastern in new[]{false,true})
+            foreach(var block in PrototypeWorldLayout.CreateForestBlocks(eastern))Validate(ObliqueScenery.BlockData(block.Name,block.Size,block.Color,block.Solid,block.Order),block.Name);
+        Validate(ObliqueScenery.BlockData("Balcao",new Vector2(4,0.6f),"614533",true,4),"Balcão");
+        Validate(ObliqueScenery.BlockData("Estante",new Vector2(1.5f,3),"705033",true,3),"Estante");
+        Console.WriteLine(checks+" verificacoes de perspectiva, camera e malhas passaram.");
+    }
+}

@@ -12,8 +12,9 @@ namespace DragonQuest.Prototype
         public Vector2 Spawn { get; }
         public float CameraSize { get; }
         public bool IsShop { get; }
-        public MapDefinition(string id, string name, Rect bounds, Vector2 spawn, float cameraSize, bool isShop = false)
-        { Id = id; Name = name; Bounds = bounds; Spawn = spawn; CameraSize = cameraSize; IsShop = isShop; }
+        public bool FixedCamera { get; }
+        public MapDefinition(string id, string name, Rect bounds, Vector2 spawn, float cameraSize, bool isShop = false, bool fixedCamera = false)
+        { Id = id; Name = name; Bounds = bounds; Spawn = spawn; CameraSize = cameraSize; IsShop = isShop; FixedCamera = fixedCamera; }
     }
 
     public sealed class MapRoute
@@ -38,14 +39,14 @@ namespace DragonQuest.Prototype
         {
             var definitions = new[]
             {
-                new MapDefinition(World, "ILHA / MAPA GLOBAL", PrototypeWorldLayout.Bounds, PrototypeWorldLayout.Spawn, 6),
-                new MapDefinition(City, "PERIFERIA DO CASTELO", PrototypeCityLayout.Bounds, PrototypeWorldLayout.CityEntry, 6),
-                new MapDefinition(Castle, "INTERIOR DO CASTELO", PrototypeWorldLayout.CastleBounds, PrototypeWorldLayout.CastleSpawn, 4.5f),
-                new MapDefinition(WestForest, "FLORESTA OESTE", PrototypeWorldLayout.ForestBounds, PrototypeWorldLayout.ForestSpawn, 4.5f),
-                new MapDefinition(EastForest, "FLORESTA LESTE", PrototypeWorldLayout.ForestBounds, PrototypeWorldLayout.ForestSpawn, 4.5f),
-                new MapDefinition("item-shop", "LOJA DE ITENS", new Rect(-7, -5, 14, 10), new Vector2(0, -2.7f), 4, true),
-                new MapDefinition("equipment-shop", "LOJA DE EQUIPAMENTOS", new Rect(-7, -5, 14, 10), new Vector2(0, -2.7f), 4, true),
-                new MapDefinition("materia-shop", "LOJA DE MATERIAS", new Rect(-7, -5, 14, 10), new Vector2(0, -2.7f), 4, true)
+                new MapDefinition(World, "ILHA / MAPA GLOBAL", PrototypeWorldLayout.Bounds, PrototypeWorldLayout.Spawn, 11.5f, false, true),
+                new MapDefinition(City, "PERIFERIA DO CASTELO", PrototypeCityLayout.Bounds, PrototypeWorldLayout.CityEntry, 7.5f),
+                new MapDefinition(Castle, "INTERIOR DO CASTELO", PrototypeWorldLayout.CastleBounds, PrototypeWorldLayout.CastleSpawn, 9, false, true),
+                new MapDefinition(WestForest, "FLORESTA OESTE", PrototypeWorldLayout.ForestBounds, PrototypeWorldLayout.ForestSpawn, 8, false, true),
+                new MapDefinition(EastForest, "FLORESTA LESTE", PrototypeWorldLayout.ForestBounds, PrototypeWorldLayout.ForestSpawn, 8, false, true),
+                new MapDefinition("item-shop", "LOJA DE ITENS", new Rect(-7, -5, 14, 10), new Vector2(0, -2.7f), 6, true, true),
+                new MapDefinition("equipment-shop", "LOJA DE EQUIPAMENTOS", new Rect(-7, -5, 14, 10), new Vector2(0, -2.7f), 6, true, true),
+                new MapDefinition("materia-shop", "LOJA DE MATERIAS", new Rect(-7, -5, 14, 10), new Vector2(0, -2.7f), 6, true, true)
             };
             foreach (MapDefinition map in definitions) maps.Add(map.Id, map);
             Maps = Array.AsReadOnly(definitions);

@@ -1,6 +1,6 @@
 # Dragon Quest — demo acadêmica
 
-RPG 2D com exploração de uma cidade de fantasia e batalhas por turnos. Projeto desenvolvido em pequenas entregas, com validação e commits por etapa.
+RPG com apresentação 2.5D, exploração de uma ilha de fantasia e batalhas por turnos. Projeto desenvolvido em pequenas entregas, com validação e commits por etapa.
 
 ## Ambiente
 
@@ -28,9 +28,11 @@ A demo começa no **mapa global de uma pequena ilha cercada pelo mar**. Castelo 
 - Duas florestas no mapa global → cenários próprios com clareira, árvores e moradores.
 - Passagem escondida ao norte → trilha para o vulcão, bloqueada por rochas e três selos. O dragão entra em uma entrega posterior.
 
-Saídas devolvem o herói ao ponto correspondente do mapa anterior. Ouro, inventário, equipamentos, missão, estoques e Limit usam a mesma sessão entre cenários. A câmera recupera os limites e o zoom de cada mapa.
+Saídas devolvem o herói ao ponto correspondente do mapa anterior. Ouro, inventário, equipamentos, missão, estoques e Limit usam a mesma sessão entre cenários.
 
-Abra `Assets/Scenes/CidadePrototipo.unity` e siga `Docs/PARTE_7A.md` para testar em Play. Os ambientes usam formas provisórias geradas por código. A próxima entrega será implementar os três segredos, seguida do vulcão, dragão e sua armadura.
+A apresentação agora usa **câmera oblíqua e modelos com volume**, substituindo os retângulos vistos de cima. A ilha tem costa elevada, montanhas, mar e ícones pequenos de locais; casas têm paredes, telhados e janelas; personagens têm um modelo simples com passos animados. Ilha, florestas, castelo e lojas usam enquadramentos fixos. Na periferia, a câmera acompanha o herói mantendo o ângulo. WASD/setas acompanham as direções da tela.
+
+Abra `Assets/Scenes/CidadePrototipo.unity` e siga `Docs/PARTE_7A.md` e `Docs/VISUAL_25D.md` para testar em Play. Os modelos ainda são provisórios, criados por código. A batalha e os menus conservam sua interface atual. A próxima entrega será implementar os três segredos, seguida do vulcão, dragão e sua armadura.
 
 ## Parte 6C — recompensas e missão de entrega
 

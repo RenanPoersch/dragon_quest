@@ -39,7 +39,7 @@ namespace DragonQuest.Prototype
         {
             foreach (var root in mapRoots) root.Value.SetActive(root.Key == LocationId);
             player.Teleport(arrival);
-            cameraFollow.Initialize(player.transform, navigation.Current.Bounds, navigation.Current.CameraSize);
+            cameraFollow.Initialize(player.transform, navigation.Current.Bounds, navigation.Current.CameraSize, navigation.Current.FixedCamera);
             cameraFollow.GetComponent<Camera>().backgroundColor = LocationId == PrototypeTravel.World
                 ? new Color(0.19f, 0.37f, 0.49f) : new Color(0.15f, 0.24f, 0.21f);
             Physics2D.SyncTransforms();

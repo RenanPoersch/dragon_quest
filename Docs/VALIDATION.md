@@ -150,3 +150,13 @@ O usuário confirmou que as interações funcionaram em Play. Não houve valida�
 - Confirmada altura dos ícones de castelo/floresta um pouco acima do herói e conferida uma visão geral da ilha gerada pelos dados da geometria.
 - As 1.518 verificações de combate/inventário/lojas/progresso e 15 de exploração continuam passando; scripts compilaram com bibliotecas da Unity 6000.6.5f1.
 - Ativação de ambientes, física em movimento, câmera, UI e preservação real de estado entre grupos ainda precisam de Play: `Docs/PARTE_7A.md`. O tirano tem diálogo; suas batalhas e os finais permanecem na parte 8.
+
+## Parte 7A — apresentação 2.5D
+
+- Scripts compilaram com as bibliotecas da Unity 6000.6.5f1; 1.404 verificações de câmera, projeção e malhas passaram em `Tools/Test-Oblique.ps1`.
+- Confirmados índices válidos, vértices/cores finitos, triângulos com área e preenchimento da superfície côncava da ilha sem buracos ou sobreposição na soma das áreas.
+- Confirmados altura visual em -Z, redução da profundidade na tela, controles alinhados à câmera girada, dimensões dos ícones e limites da câmera considerando inclinação/rotação.
+- Confirmado enquadramento fixo dos ambientes menores para proporções 16:9, 4:3 e 3:4; a periferia mantém acompanhamento do herói.
+- Prévias da ilha, praça e sala do trono conferidas com rasterização externa das mesmas malhas/projeção. Não são capturas do Editor.
+- 57 verificações de caminhos da periferia, 88 de ilha/interiores/viagens, 1.518 de combate/inventário/lojas/progresso e 15 de exploração passaram.
+- Importação/compilação do shader na Unity, renderização pela GPU, passos/tampa animados, HUD, física e interações ao vivo ainda precisam do roteiro de Play em `Docs/VISUAL_25D.md`.

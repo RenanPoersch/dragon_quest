@@ -5,19 +5,15 @@ using DragonQuest.Interactions;
 
 namespace DragonQuest.Prototype
 {
-    // Cenário descartável para validar exploração antes dos tiles e sprites finais.
+    // Monta mapas, fisica e interacoes; a apresentacao 2.5D fica em ObliqueScenery.
     public sealed class PrototypeCity : MonoBehaviour
     {
-        private Texture2D squareTexture;
-        private Sprite squareSprite;
+        private ObliqueScenery scenery;
         private PhysicsMaterial2D frictionless;
 
         private void Awake()
         {
-            squareTexture = new Texture2D(1, 1) { name = "PrototypePixel", filterMode = FilterMode.Point };
-            squareTexture.SetPixel(0, 0, Color.white);
-            squareTexture.Apply();
-            squareSprite = Sprite.Create(squareTexture, new Rect(0, 0, 1, 1), new Vector2(0.5f, 0.5f), 1f);
+            scenery = new ObliqueScenery();
             frictionless = new PhysicsMaterial2D("PrototypeFrictionless") { friction = 0f, bounciness = 0f };
 
             Transform city = Group("Periferia do castelo");
@@ -62,8 +58,7 @@ namespace DragonQuest.Prototype
             BoxCollider2D guardCollider = guard.AddComponent<BoxCollider2D>();
             guardCollider.size = new Vector2(0.65f, 0.7f);
             guardCollider.sharedMaterial = frictionless;
-            Block("Guarda - armadura", Vector2.zero, new Vector2(0.75f, 0.85f), "AB4F49", guard.transform, false, 10);
-            Block("Guarda - cabeca", new Vector2(0, 0.5f), new Vector2(0.5f, 0.4f), "D3BA91", guard.transform, false, 11);
+            scenery.Person("9B7770", guard.transform, true);
             interactables.Add(guard.AddComponent<BattleInteraction>());
 
             var mapRoots = new Dictionary<string, GameObject>
@@ -135,8 +130,7 @@ namespace DragonQuest.Prototype
             BoxCollider2D collider = npc.AddComponent<BoxCollider2D>();
             collider.size = new Vector2(0.55f, 0.6f);
             collider.sharedMaterial = frictionless;
-            Block(npcName + " - corpo", Vector2.zero, new Vector2(0.65f, 0.75f), color, npc.transform, false, 10);
-            Block(npcName + " - cabeca", new Vector2(0, 0.4f), new Vector2(0.5f, 0.4f), "E9CC9D", npc.transform, false, 11);
+            scenery.Person(color, npc.transform);
             return npc;
         }
 
@@ -146,11 +140,9 @@ namespace DragonQuest.Prototype
             BoxCollider2D collider = chest.AddComponent<BoxCollider2D>();
             collider.size = new Vector2(0.9f, 0.7f);
             collider.sharedMaterial = frictionless;
-            Block("Bau - base", Vector2.zero, new Vector2(0.9f, 0.7f), "8A5E37", chest.transform, false, 5);
-            GameObject lid = Block("Bau - tampa", new Vector2(0, 0.15f), new Vector2(1f, 0.32f), "C99549", chest.transform, false, 6);
-            Block("Bau - fecho", Vector2.zero, new Vector2(0.16f, 0.28f), "F3D378", chest.transform, false, 7);
+            Transform lid = scenery.Chest(chest.transform);
             ChestInteraction interaction = chest.AddComponent<ChestInteraction>();
-            interaction.Initialize("praca-primeiro-bau", 25, lid.GetComponent<SpriteRenderer>());
+            interaction.Initialize("praca-primeiro-bau", 25, () => lid.localRotation = Quaternion.Euler(65, 0, 0));
             return interaction;
         }
 
@@ -166,7 +158,8 @@ namespace DragonQuest.Prototype
         private Transform CreateWorld(List<Interactable> interactions)
         {
             Transform world = Group("Ilha - mapa global");
-            DrawBlocks(PrototypeWorldLayout.Blocks, world);
+            scenery.World(world);
+            foreach (BoxCollider2D collider in world.GetComponentsInChildren<BoxCollider2D>()) collider.sharedMaterial = frictionless;
             GameObject coast = Entity("Costa - limite do mar", Vector2.zero, world);
             EdgeCollider2D shoreline = coast.AddComponent<EdgeCollider2D>();
             var perimeter = new Vector2[PrototypeWorldLayout.Coast.Count + 1];
@@ -177,7 +170,8 @@ namespace DragonQuest.Prototype
             shoreline.sharedMaterial = frictionless;
 
             Transform castle = Entity("Castelo - icone global", PrototypeWorldLayout.Castle, world).transform;
-            DrawBlocks(PrototypeWorldLayout.CastleIcon, castle);
+            scenery.CastleIcon(castle);
+            castle.GetComponent<BoxCollider2D>().sharedMaterial = frictionless;
             interactions.Add(CreateDoor("Castelo e arredores", PrototypeWorldLayout.Castle + Vector2.down * 0.85f, world,
                 PrototypeTravel.City, "Entrar na periferia do castelo"));
             CreateForestIcon(world, PrototypeWorldLayout.WestForest);
@@ -188,7 +182,7 @@ namespace DragonQuest.Prototype
                 PrototypeTravel.EastForest, "Entrar na floresta leste"));
 
             Transform volcano = Entity("Vulcao - icone global", PrototypeWorldLayout.Volcano, world).transform;
-            DrawBlocks(PrototypeWorldLayout.VolcanoIcon, volcano);
+            scenery.VolcanoIcon(volcano);
             GameObject passage = Entity("Passagem oculta", PrototypeWorldLayout.Trail, world);
             interactions.Add(passage.AddComponent<BlockedPassageInteraction>());
             return world;
@@ -197,7 +191,7 @@ namespace DragonQuest.Prototype
         private void CreateForestIcon(Transform world, Vector2 position)
         {
             Transform forest = Entity("Floresta - icone global", position, world).transform;
-            DrawBlocks(PrototypeWorldLayout.ForestIcon, forest);
+            scenery.ForestIcon(forest);
         }
 
         private Transform CreateForest(List<Interactable> interactions, bool eastern)
@@ -257,15 +251,10 @@ namespace DragonQuest.Prototype
 
         private void Building(string buildingName, Vector2 position, Vector2 size, string roofColor, Transform parent)
         {
-            Block(buildingName, position, size, "D8C9A5", parent, true, 1);
-            Block(buildingName + " - telhado", position + Vector2.up * 0.35f,
-                new Vector2(size.x + 0.25f, size.y - 1.1f), roofColor, parent, false, 2);
-            Block(buildingName + " - porta fechada", position + Vector2.down * (size.y * 0.5f - 0.4f),
-                new Vector2(0.85f, 0.8f), "41382F", parent, false, 3);
-            Block(buildingName + " - janela oeste", position + new Vector2(-1.5f, -0.65f),
-                new Vector2(0.55f, 0.6f), "E6C97C", parent, false, 3);
-            Block(buildingName + " - janela leste", position + new Vector2(1.5f, -0.65f),
-                new Vector2(0.55f, 0.6f), "E6C97C", parent, false, 3);
+            GameObject building = Entity(buildingName, position, parent);
+            BoxCollider2D collider = building.AddComponent<BoxCollider2D>();
+            collider.size = size; collider.sharedMaterial = frictionless;
+            scenery.Building(buildingName, size, roofColor, building.transform);
         }
 
         private GameObject CreatePlayer()
@@ -280,12 +269,8 @@ namespace DragonQuest.Prototype
             collider.sharedMaterial = frictionless;
             player.AddComponent<PlayerMovement>();
 
-            // As partes visuais são filhas; a escala do objeto físico permanece 1.
-            Block("Sombra", Vector2.zero, new Vector2(0.85f, 0.65f), "334638", player.transform, false, 9).transform.localPosition = new Vector3(0, -0.2f, 0);
-            Block("Capa", Vector2.zero, new Vector2(0.75f, 0.8f), "BB6949", player.transform, false, 10);
-            Block("Tunica", Vector2.zero, new Vector2(0.55f, 0.65f), "DDBA59", player.transform, false, 11);
-            Block("Cabeca", Vector2.zero, new Vector2(0.5f, 0.4f), "E9CC9D", player.transform, false, 12).transform.localPosition = new Vector3(0, 0.35f, 0);
-            Block("Cabelo", Vector2.zero, new Vector2(0.52f, 0.15f), "4B3832", player.transform, false, 13).transform.localPosition = new Vector3(0, 0.5f, 0);
+            // O modelo tem altura em -Z; o objeto fisico permanece no chao XY, escala 1.
+            scenery.Person("B4A078", player.transform, true, true);
             return player;
         }
 
@@ -295,14 +280,11 @@ namespace DragonQuest.Prototype
             GameObject block = new GameObject(blockName);
             block.transform.SetParent(parent, false);
             block.transform.localPosition = position;
-            block.transform.localScale = new Vector3(size.x, size.y, 1);
-            SpriteRenderer renderer = block.AddComponent<SpriteRenderer>();
-            renderer.sprite = squareSprite;
-            renderer.color = Hex(color);
-            renderer.sortingOrder = sortingOrder;
+            scenery.Block(blockName, size, color, solid, sortingOrder, block.transform);
             if (solid)
             {
                 BoxCollider2D collider = block.AddComponent<BoxCollider2D>();
+                collider.size = size;
                 collider.sharedMaterial = frictionless;
             }
             return block;
@@ -316,8 +298,7 @@ namespace DragonQuest.Prototype
 
         private void OnDestroy()
         {
-            if (squareSprite != null) Destroy(squareSprite);
-            if (squareTexture != null) Destroy(squareTexture);
+            scenery?.Dispose();
             if (frictionless != null) Destroy(frictionless);
         }
     }

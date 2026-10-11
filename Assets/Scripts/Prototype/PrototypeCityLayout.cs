@@ -4,7 +4,7 @@ using UnityEngine;
 namespace DragonQuest.Prototype
 {
     // Geometria compartilhada pelo cenario, camera, placas e verificacao de caminhos.
-    // Continua sendo um mapa provisório: blocos podem ser substituidos por tiles depois.
+    // Blocos descrevem a planta; ObliqueScenery transforma essa planta em volumes 2.5D.
     public readonly struct CityBlock
     {
         public string Name { get; }

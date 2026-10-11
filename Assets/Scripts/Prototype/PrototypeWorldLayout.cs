@@ -23,7 +23,7 @@ namespace DragonQuest.Prototype
         public static readonly Vector2 CityExit = new Vector2(0, -22);
         public static readonly Vector2 CastleDoor = new Vector2(0, 15.5f);
 
-        public static IReadOnlyList<Vector2> Coast { get; } = System.Array.AsReadOnly(new[]
+        public static IReadOnlyList<Vector2> Coast { get; } = BeveledCoast(new[]
         {
             new Vector2(-13, -7), new Vector2(-10, -7), new Vector2(-10, -10), new Vector2(8, -10),
             new Vector2(8, -8), new Vector2(13, -8), new Vector2(13, -3), new Vector2(15, -3),
@@ -31,6 +31,21 @@ namespace DragonQuest.Prototype
             new Vector2(6, 10), new Vector2(-4, 10), new Vector2(-4, 8), new Vector2(-11, 8),
             new Vector2(-11, 5), new Vector2(-15, 5), new Vector2(-15, -2), new Vector2(-13, -2)
         });
+
+        // Cantos facetados compartilhados pela malha da ilha e pelo limite fisico do mar.
+        private static IReadOnlyList<Vector2> BeveledCoast(Vector2[] corners)
+        {
+            var points = new List<Vector2>();
+            for (int i = 0; i < corners.Length; i++)
+            {
+                Vector2 p = corners[i], previous = corners[(i + corners.Length - 1) % corners.Length], next = corners[(i + 1) % corners.Length];
+                float before = (float)System.Math.Sqrt((previous.x-p.x)*(previous.x-p.x)+(previous.y-p.y)*(previous.y-p.y));
+                float after = (float)System.Math.Sqrt((next.x-p.x)*(next.x-p.x)+(next.y-p.y)*(next.y-p.y));
+                points.Add(new Vector2(p.x+(previous.x-p.x)*0.45f/before,p.y+(previous.y-p.y)*0.45f/before));
+                points.Add(new Vector2(p.x+(next.x-p.x)*0.45f/after,p.y+(next.y-p.y)*0.45f/after));
+            }
+            return points.AsReadOnly();
+        }
 
         public static bool IsLand(Vector2 position)
         {

@@ -14,3 +14,9 @@ Registrar cada conjunto de sprites, tiles, fontes, áudio ou outros recursos adi
 | Ilha global, ícones pequenos de locais, florestas e interior do castelo | Código criado para este projeto, em 10 de outubro de 2026 | Blocos, cores e textura branca gerados em execução; sem imagens externas ou assets de Final Fantasy | Assets/Scripts/Prototype/PrototypeWorldLayout.cs e PrototypeCity.cs |
 
 Para recursos gerados durante o projeto, registrar a ferramenta, a data, as alterações realizadas e as condições aplicáveis. Para recursos externos, incluir a URL da fonte e a atribuição exigida.
+
+## Modelos 2.5D — 10 de outubro de 2026
+
+Os retângulos do cenário e dos personagens foram substituídos por malhas originais de poucos polígonos, geradas por C# em execução. Casas, torres, árvores, montanhas, costa, fonte, mobiliário, baú e personagens vêm de `ObliqueScenery.cs` e `ObliqueMeshData.cs`. O material usa `Assets/Resources/ObliqueWorld.shader`, criado para este projeto, com cores por face e teste de profundidade. Nenhuma imagem ou modelo de Final Fantasy foi importado.
+
+`ObliqueProjection.cs`, `CameraFollow.cs` e `ObliqueCharacter.cs` controlam perspectiva oblíqua, enquadramento e passos do herói. Os modelos são provisórios; texturas e acabamento artístico entram em entregas posteriores. Prévias técnicas exportadas fora do repositório são renderizações dessas malhas, não capturas do Editor.

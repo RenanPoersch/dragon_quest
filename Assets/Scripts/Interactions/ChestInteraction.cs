@@ -6,16 +6,16 @@ namespace DragonQuest.Interactions
     {
         private string chestId;
         private int goldReward;
-        private SpriteRenderer lid;
+        private System.Action openLid;
         private bool opened;
 
         public override string Prompt => opened ? "Examinar bau aberto" : "Abrir bau";
 
-        public void Initialize(string id, int reward, SpriteRenderer lidRenderer)
+        public void Initialize(string id, int reward, System.Action showOpened)
         {
             chestId = id;
             goldReward = reward;
-            lid = lidRenderer;
+            openLid = showOpened;
         }
 
         public override void Interact(InteractionContext context)
@@ -26,11 +26,7 @@ namespace DragonQuest.Interactions
                 context.Dialogue.Open("Bau da praca", "O bau esta vazio. Voce ja recolheu a recompensa.");
 
             opened = true;
-            if (lid != null)
-            {
-                lid.color = new Color(0.3f, 0.23f, 0.16f);
-                lid.transform.localPosition = new Vector3(0, 0.4f, 0);
-            }
+            openLid?.Invoke();
         }
     }
 }
