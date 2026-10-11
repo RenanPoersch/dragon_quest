@@ -46,6 +46,13 @@ namespace DragonQuest.Prototype
             if (name.Contains("Arvore - detalhe") || name.Contains("Arvore - folhagem") || name.Contains("Coluna - detalhe")
                 || name == "Fonte - agua" || name == "Fonte - centro" || name == "Trono - ouro") return mesh;
             if (name.Contains("Arvore")) { Tree(mesh,0,0,w/2, d > 1 ? 2.8f : 1.1f,color); return mesh; }
+            if(name.StartsWith("Coluna quebrada"))
+            {
+                float top=name.EndsWith("baixa")?0.85f:1.65f;
+                mesh.Box(0,0,w,d,0,0.15f,color);
+                mesh.Cone(0,0,w*0.3f,0.15f,top,color,7,w*0.25f);
+                mesh.Roof(0,0,w*0.5f,d*0.5f,top,top+0.2f,color);return mesh;
+            }
             if (name.Contains("Coluna"))
             {
                 mesh.Box(0,0,w,d,0,0.2f,color);
@@ -113,6 +120,7 @@ namespace DragonQuest.Prototype
             if (order < 0 || name=="Rio" || name.StartsWith("Lago"))
             {
                 float height=Math.Max(0,(order+10)*0.012f);
+                if(name.StartsWith("Trilha")) height=0.02f;
                 if(name.StartsWith("Estrado")) height=0.12f;
                 mesh.Plane(0,0,w,d,height,color);
                 if(name.StartsWith("Piso") || name=="Praca" || name.StartsWith("Patio"))
@@ -310,6 +318,27 @@ namespace DragonQuest.Prototype
             Tree(mesh,-0.45f,0,0.48f,1.5f,ObliqueMeshData.Hex("405B4D"));
             Tree(mesh,0.45f,0,0.48f,1.4f,ObliqueMeshData.Hex("4A6451"));
             Tree(mesh,0,0.45f,0.46f,1.8f,ObliqueMeshData.Hex("526D57"));
+            return mesh;
+        }
+
+        public void RuinsIcon(Transform parent)
+        {
+            Show("Ruinas em miniatura",RuinsIconData(),parent);
+            CityBlock footprint=PrototypeRuinsLayout.Icon[0];
+            BoxCollider2D collider=parent.gameObject.AddComponent<BoxCollider2D>();
+            collider.size=footprint.Size;collider.offset=footprint.Position;
+        }
+
+        public static ObliqueMeshData RuinsIconData()
+        {
+            var mesh=new ObliqueMeshData();Color stone=ObliqueMeshData.Hex("A4A491");
+            mesh.Shadow(0.1f,-0.1f,1.1f,0.6f);
+            mesh.Box(0,0.1f,1.8f,0.8f,0,0.12f,ObliqueMeshData.Hex("818576"));
+            mesh.Cone(-0.55f,0.2f,0.2f,0.12f,1.5f,stone,7,0.17f);
+            mesh.Roof(-0.55f,0.2f,0.34f,0.34f,1.5f,1.7f,stone);
+            mesh.Cone(0.55f,0.2f,0.2f,0.12f,0.95f,stone,7,0.17f);
+            mesh.Box(-0.25f,0.2f,0.6f,0.26f,1.3f,1.43f,stone);
+            mesh.Roof(0.4f,-0.15f,0.45f,0.3f,0.12f,0.36f,stone);
             return mesh;
         }
 

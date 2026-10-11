@@ -18,6 +18,7 @@ internal static class WorldMapChecks
         => PrototypeWorldLayout.Blocks.Concat(At(PrototypeWorldLayout.CastleIcon, PrototypeWorldLayout.Castle))
             .Concat(At(PrototypeWorldLayout.ForestIcon, PrototypeWorldLayout.WestForest))
             .Concat(At(PrototypeWorldLayout.ForestIcon, PrototypeWorldLayout.EastForest))
+            .Concat(At(PrototypeRuinsLayout.Icon,PrototypeWorldLayout.Ruins))
             .Concat(At(PrototypeWorldLayout.VolcanoIcon, PrototypeWorldLayout.Volcano));
 
     private sealed class Paths
@@ -86,6 +87,7 @@ internal static class WorldMapChecks
     {
         var travel = new PrototypeTravel();
         Assert(travel.Current.Id == PrototypeTravel.World && !travel.Current.IsShop, "Demo deve iniciar na ilha e nao numa loja.");
+        Assert(travel.Maps.Any(map=>map.Id==PrototypeTravel.Ruins&&map.FixedCamera&&!map.IsShop),"Ruinas devem ser um cenario proprio de exploracao.");
         foreach (MapDefinition map in travel.Maps)
             Assert(map.IsShop == map.Id.EndsWith("-shop"), "Florestas, periferia e castelo nao devem ser tratados como lojas.");
         foreach (string destination in new[] { PrototypeTravel.Castle, "item-shop", "volcano", "missing", PrototypeTravel.World, null })
@@ -117,6 +119,15 @@ internal static class WorldMapChecks
         travel.TryTravel(PrototypeTravel.World, out Vector2 westReturn);
         travel.TryTravel(PrototypeTravel.EastForest, out _); travel.TryTravel(PrototypeTravel.World, out Vector2 eastReturn);
         Assert(westReturn != eastReturn, "Florestas diferentes precisam de retornos globais diferentes.");
+        travel.TryTravel(PrototypeTravel.Ruins,out Vector2 ruinsEntry);
+        Assert(ruinsEntry==PrototypeRuinsLayout.Spawn,"Entrada das ruinas deve usar ponto livre do cenario local.");
+        Assert(!travel.TryTravel(PrototypeTravel.City,out _)&&!travel.TryTravel("item-shop",out _),"Ruinas exigem voltar a ilha para viajar a outros locais.");
+        travel.TryTravel(PrototypeTravel.World,out Vector2 ruinsReturn);
+        Assert(ruinsReturn==PrototypeWorldLayout.Ruins+Vector2.down*2.5f,"Saida das ruinas deve devolver ao seu icone global.");
+        var secrets=new DragonQuest.Progression.AncientSecrets();secrets.LearnPoem();
+        Assert(travel.TryTravel(PrototypeTravel.Ruins,out _)&&secrets.TrySolveAltar(DragonQuest.Progression.LegendPoem.Flame),"Poema aprendido deve permitir resolver altar durante a visita.");
+        travel.TryTravel(PrototypeTravel.World,out _);travel.TryTravel(PrototypeTravel.Ruins,out _);
+        Assert(secrets.AltarSolved&&secrets.CompletedCount==1&&!secrets.TrySolveAltar(DragonQuest.Progression.LegendPoem.Flame),"Sair e retornar nao duplica nem apaga a solucao do altar.");
         Assert(new PrototypeTravel().Current.Id == PrototypeTravel.World, "Uma nova sessao nao pode herdar o mapa de outra.");
     }
 
@@ -126,6 +137,7 @@ internal static class WorldMapChecks
         var west = new Paths(PrototypeWorldLayout.ForestBounds, PrototypeWorldLayout.CreateForestBlocks(false), PrototypeWorldLayout.ForestSpawn, npc: new Vector2(1.5f, 1));
         var east = new Paths(PrototypeWorldLayout.ForestBounds, PrototypeWorldLayout.CreateForestBlocks(true), PrototypeWorldLayout.ForestSpawn, npc: new Vector2(1.5f, 1));
         var castle = new Paths(PrototypeWorldLayout.CastleBounds, PrototypeWorldLayout.CastleBlocks, PrototypeWorldLayout.CastleSpawn, npc: PrototypeWorldLayout.Throne);
+        var ruins = new Paths(PrototypeRuinsLayout.Bounds,PrototypeRuinsLayout.Blocks,PrototypeRuinsLayout.Spawn);
         var shop = new Paths(new Rect(-7, -5, 14, 10), new[]
         {
             new CityBlock("Balcao", 0, 0.15f, 4, 0.6f, "", true, 0),
@@ -135,9 +147,9 @@ internal static class WorldMapChecks
         var paths = new Dictionary<string, Paths>
         {
             { PrototypeTravel.World, world }, { PrototypeTravel.WestForest, west }, { PrototypeTravel.EastForest, east },
-            { PrototypeTravel.Castle, castle }, { "item-shop", shop }, { "equipment-shop", shop }, { "materia-shop", shop }
+            { PrototypeTravel.Castle, castle }, { PrototypeTravel.Ruins,ruins }, { "item-shop", shop }, { "equipment-shop", shop }, { "materia-shop", shop }
         };
-        foreach (Vector2 icon in new[] { PrototypeWorldLayout.Castle, PrototypeWorldLayout.WestForest, PrototypeWorldLayout.EastForest })
+        foreach (Vector2 icon in new[] { PrototypeWorldLayout.Castle, PrototypeWorldLayout.WestForest, PrototypeWorldLayout.EastForest,PrototypeWorldLayout.Ruins })
             Assert(world.Accessible(icon + Vector2.down * 0.85f), "Entrada global deve ser acessivel pela ilha.");
         Assert(world.Accessible(PrototypeWorldLayout.Trail), "Passagem oculta deve poder ser examinada.");
         Assert(!world.Accessible(PrototypeWorldLayout.Volcano), "Vulcao nao pode ser alcancado enquanto a trilha estiver bloqueada.");
@@ -150,6 +162,9 @@ internal static class WorldMapChecks
         Assert(west.Accessible(PrototypeSecretLayout.Inscription+Vector2.down), "Inscricao deve poder ser lida.");
         Assert(east.Accessible(PrototypeSecretLayout.ClawStone+Vector2.down), "Pedra com marcas precisa ser acessivel.");
         Assert(east.Accessible(PrototypeSecretLayout.HollowTree+Vector2.left*1.5f), "Arvore oca precisa de acesso dentro do alcance de E.");
+        Assert(ruins.Accessible(PrototypeSecretLayout.Altar+Vector2.down),"Altar precisa de caminho desde entrada das ruinas.");
+        Assert(!ruins.Walkable(PrototypeSecretLayout.Altar),"Altar das ruinas deve ter colisao propria.");
+        Assert(ruins.Accessible(PrototypeRuinsLayout.Exit),"Ruinas precisam permitir retornar a ilha.");
         foreach (Vector2 water in new[] { new Vector2(-18, 0), new Vector2(18, 0), new Vector2(0, -12), new Vector2(0, 12), new Vector2(-14, -8) })
             Assert(!world.Walkable(water), "Mar e baia nao podem permitir caminhar fora da ilha.");
         Assert(west.Accessible(PrototypeWorldLayout.LocalExit) && east.Accessible(PrototypeWorldLayout.LocalExit), "Duas florestas devem ter saidas acessiveis.");

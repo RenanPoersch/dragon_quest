@@ -10,6 +10,7 @@ namespace DragonQuest.Prototype
         public static readonly Vector2 Castle = Vector2.zero;
         public static readonly Vector2 WestForest = new Vector2(-8, 2);
         public static readonly Vector2 EastForest = new Vector2(7, -4);
+        public static readonly Vector2 Ruins = new Vector2(-7, -5);
         public static readonly Vector2 Volcano = new Vector2(3, 8.5f);
         public static readonly Vector2 Trail = new Vector2(3, 5.5f);
         public static readonly Rect ForestBounds = new Rect(-9, -7, 18, 14);
@@ -107,6 +108,8 @@ namespace DragonQuest.Prototype
             blocks.Add(new CityBlock("Trilha oeste", -4, 0, 8, 0.4f, "B2A578", false, -18));
             blocks.Add(new CityBlock("Trilha da floresta oeste", -8, 1, 0.4f, 2, "B2A578", false, -18));
             blocks.Add(new CityBlock("Trilha leste", 3.5f, -4, 7, 0.4f, "B2A578", false, -18));
+            blocks.Add(new CityBlock("Trilha sul para as ruinas",-3.5f,-6.5f,7,0.35f,"B2A578",false,-18));
+            blocks.Add(new CityBlock("Trilha da entrada das ruinas",-7,-6.15f,0.35f,0.7f,"B2A578",false,-18));
             blocks.Add(new CityBlock("Vegetacao da passagem", 3, 4.8f, 2.8f, 2.4f, "3C5F40", false, -18));
             blocks.Add(new CityBlock("Trilha oculta", 3, 6.8f, 0.45f, 3.2f, "827B58", false, -17));
             blocks.Add(new CityBlock("Cordilheira oeste", -4.75f, 6.5f, 12.5f, 1, "777C72", true, 2));

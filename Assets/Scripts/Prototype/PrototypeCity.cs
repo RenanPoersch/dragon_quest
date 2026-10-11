@@ -40,8 +40,6 @@ namespace DragonQuest.Prototype
             interactables.Add(citizen);
             GameObject peasant = CreateNpcFigure("Camponesa", PrototypeCityLayout.Resident, "B77D8B", interactions);
             interactables.Add(AddSecret(peasant, SecretObject.Peasant));
-            Transform altar = obstacles.Find("Altar antigo");
-            interactables.Add(AddSecret(altar.gameObject, SecretObject.Altar, MonolithSymbol.Sun, scenery.AltarFlame(altar)));
             NpcInteraction gardener = CreateNpc("Jardineiro", PrototypeCityLayout.Gardener, "86A96B", interactions);
             gardener.Initialize("Jardineiro", "Os jardins ja foram abertos a todos. Hoje quase ninguem caminha por aqui.",
                 "Seguindo esta rua para o sul voce atravessa a ponte leste e chega as ruinas antigas.");
@@ -69,7 +67,8 @@ namespace DragonQuest.Prototype
                 { PrototypeTravel.City, city.gameObject },
                 { PrototypeTravel.Castle, CreateCastle(interactables).gameObject },
                 { PrototypeTravel.WestForest, CreateForest(interactables, false).gameObject },
-                { PrototypeTravel.EastForest, CreateForest(interactables, true).gameObject }
+                { PrototypeTravel.EastForest, CreateForest(interactables, true).gameObject },
+                { PrototypeTravel.Ruins, CreateRuins(interactables).gameObject }
             };
             string[] shopIds = { "item-shop", "equipment-shop", "materia-shop" };
             string[] shopNames = { "Loja de itens", "Loja de equipamentos", "Loja de materias" };
@@ -190,6 +189,12 @@ namespace DragonQuest.Prototype
             interactions.Add(CreateDoor("Floresta leste", PrototypeWorldLayout.EastForest + Vector2.down * 0.85f, world,
                 PrototypeTravel.EastForest, "Entrar na floresta leste"));
 
+            Transform ruins = Entity("Ruinas - icone global",PrototypeWorldLayout.Ruins,world).transform;
+            scenery.RuinsIcon(ruins);
+            ruins.GetComponent<BoxCollider2D>().sharedMaterial=frictionless;
+            interactions.Add(CreateDoor("Ruinas antigas",PrototypeWorldLayout.Ruins+Vector2.down*0.85f,world,
+                PrototypeTravel.Ruins,"Entrar nas ruinas antigas"));
+
             Transform volcano = Entity("Vulcao - icone global", PrototypeWorldLayout.Volcano, world).transform;
             scenery.VolcanoIcon(volcano);
             NpcInteraction crater = volcano.gameObject.AddComponent<NpcInteraction>();
@@ -252,6 +257,16 @@ namespace DragonQuest.Prototype
                 "Por um instante, uma segunda voz parece falar junto com a dele. Uma presenca estranha ocupa esta sala...");
             interactions.Add(tyrant);
             return castle;
+        }
+
+        private Transform CreateRuins(List<Interactable> interactions)
+        {
+            Transform ruins=Group("Ruinas antigas - altar da lenda");
+            DrawBlocks(PrototypeRuinsLayout.Blocks,ruins);
+            Transform altar=ruins.Find("Altar antigo");
+            interactions.Add(AddSecret(altar.gameObject,SecretObject.Altar,MonolithSymbol.Sun,scenery.AltarFlame(altar)));
+            interactions.Add(CreateDoor("Saida das ruinas",PrototypeRuinsLayout.Exit,ruins,PrototypeTravel.World,"Voltar para a ilha"));
+            return ruins;
         }
 
         private void DrawBlocks(IReadOnlyList<CityBlock> blocks, Transform parent)

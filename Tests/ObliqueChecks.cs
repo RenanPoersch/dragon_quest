@@ -81,20 +81,22 @@ internal static class ObliqueChecks
                 }
             }
         }
-        foreach(var point in new[]{new Vector2(-35,23),new Vector2(35,23),new Vector2(-35,-23),new Vector2(35,-23),PrototypeSecretLayout.Altar+Vector2.down})
+        foreach(var point in new[]{new Vector2(-35,23),new Vector2(35,23),new Vector2(-35,-23),new Vector2(35,-23)})
             foreach(float aspect in new[]{16f/9,4f/3})
             {
                 Vector2 focus=ObliqueProjection.CameraFocus(point,PrototypeCityLayout.Bounds,7.5f,aspect,false);
                 Vector2 relative=new Vector2(point.x-focus.x,point.y-focus.y);
                 var foot=ObliqueProjection.ScreenPlane(relative);var head=ObliqueProjection.ScreenPlane(relative,1.45f);
-                Assert(Math.Abs(foot.x)<7.5f*aspect&&Math.Abs(foot.y)<7.5f&&Math.Abs(head.y)<7.5f,"Câmera deve manter pés/cabeça visíveis perto do altar e das extremidades.");
+                Assert(Math.Abs(foot.x)<7.5f*aspect&&Math.Abs(foot.y)<7.5f&&Math.Abs(head.y)<7.5f,"Câmera deve manter pés/cabeça visíveis nas extremidades.");
                 Assert(PrototypeCityLayout.Bounds.Contains(focus),"Acompanhamento nos cantos deve manter foco dentro da periferia.");
-                if(point==PrototypeSecretLayout.Altar+Vector2.down)
-                {
-                    var flame=ObliqueProjection.ScreenPlane(new Vector2(PrototypeSecretLayout.Altar.x-focus.x,PrototypeSecretLayout.Altar.y-focus.y),1.32f);
-                    Assert(Math.Abs(flame.x)<7.5f*aspect&&Math.Abs(flame.y)<7.5f,"Chama do altar deve ficar visível a partir do ponto de interação.");
-                }
             }
+        foreach(float aspect in new[]{16f/9,4f/3})
+        {
+            float size=ObliqueProjection.FrameSize(8,PrototypeRuinsLayout.Bounds,aspect,true);
+            var focus=ObliqueProjection.CameraFocus(PrototypeSecretLayout.Altar+Vector2.down,PrototypeRuinsLayout.Bounds,size,aspect,true);
+            var flame=ObliqueProjection.ScreenPlane(new Vector2(PrototypeSecretLayout.Altar.x-focus.x,PrototypeSecretLayout.Altar.y-focus.y),1.32f);
+            Assert(Math.Abs(flame.x)<size*aspect&&Math.Abs(flame.y)<size,"Câmera fixa das ruinas deve mostrar chama do altar.");
+        }
 
         var world=ObliqueScenery.IslandData(); Validate(world,"Ilha e mar");
         // Area triangulada da superficie precisa corresponder ao contorno concavo.
@@ -113,12 +115,14 @@ internal static class ObliqueChecks
         var castle=ObliqueScenery.CastleIconData();Validate(castle,"Castelo global");
         var forest=ObliqueScenery.ForestIconData();Validate(forest,"Bosque global");
         var volcano=ObliqueScenery.VolcanoIconData();Validate(volcano,"Vulcão global");
+        var ruinsIcon=ObliqueScenery.RuinsIconData();Validate(ruinsIcon,"Ruinas globais");
         foreach(var icon in new[]{castle,forest})
             Assert(-icon.Vertices.Min(p=>p.z)>1.45f&&-icon.Vertices.Min(p=>p.z)<=2,"Ícones precisam ser ligeiramente mais altos que o herói.");
         world.Append(castle,ObliqueProjection.Point(PrototypeWorldLayout.Castle));
         world.Append(forest,ObliqueProjection.Point(PrototypeWorldLayout.WestForest));
         world.Append(forest,ObliqueProjection.Point(PrototypeWorldLayout.EastForest));
         world.Append(volcano,ObliqueProjection.Point(PrototypeWorldLayout.Volcano));
+        world.Append(ruinsIcon,ObliqueProjection.Point(PrototypeWorldLayout.Ruins));
         Person(world,PrototypeWorldLayout.Spawn,"B4A078",true);
         Export(directory,"WorldOblique",world,Vector2.zero,ObliqueProjection.FrameSize(11.5f,PrototypeWorldLayout.Bounds,16f/9,true));
 
@@ -140,6 +144,11 @@ internal static class ObliqueChecks
         {Validate(ObliqueScenery.BlockData(block.Name,block.Size,block.Color,block.Solid,block.Order),block.Name);AddBlock(hall,block);}
         Person(hall,PrototypeWorldLayout.CastleSpawn,"B4A078",true);Person(hall,PrototypeWorldLayout.Throne,"9A5979",false);
         Export(directory,"CastleOblique",hall,Vector2.zero,9);
+        var ruins=new ObliqueMeshData();
+        foreach(var block in PrototypeRuinsLayout.Blocks)
+        {Validate(ObliqueScenery.BlockData(block.Name,block.Size,block.Color,block.Solid,block.Order),block.Name);AddBlock(ruins,block);}
+        Person(ruins,PrototypeRuinsLayout.Spawn,"B4A078",true);
+        Export(directory,"RuinsOblique",ruins,Vector2.zero,ObliqueProjection.FrameSize(8,PrototypeRuinsLayout.Bounds,16f/9,true));
         foreach(bool eastern in new[]{false,true})
             foreach(var block in PrototypeWorldLayout.CreateForestBlocks(eastern))Validate(ObliqueScenery.BlockData(block.Name,block.Size,block.Color,block.Solid,block.Order),block.Name);
         Validate(ObliqueScenery.BlockData("Balcao",new Vector2(4,0.6f),"614533",true,4),"Balcão");

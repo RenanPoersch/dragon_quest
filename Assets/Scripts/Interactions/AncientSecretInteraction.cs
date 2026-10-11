@@ -36,13 +36,13 @@ namespace DragonQuest.Interactions
             {
                 var pages=new System.Collections.Generic.List<string> { "Minha avo dizia que estas palavras sao mais antigas que o castelo. Os moradores as guardaram mesmo depois de esquecerem sua origem." };
                 pages.AddRange(LegendPoem.ExplainedPages());
-                pages.Add("Ha uma capela ao norte desta rua. Por aqui ainda se canta a lenda, mas poucas pessoas param para escuta-la.");
+                pages.Add("As ruinas ao sudoeste da ilha ja eram antigas quando este castelo foi erguido. Muitas historias se perderam entre aquelas pedras.");
                 dialogue.OpenWithCompletion("Camponesa",secrets.LearnPoem,pages.ToArray());
             }
             else if(kind==SecretObject.Altar)
             {
                 if(secrets.AltarSolved) dialogue.Open("Altar antigo","Uma chama silenciosa permanece acesa. A pedra ja reconheceu suas palavras.");
-                else if(!secrets.KnowsPoem) dialogue.Open("Altar antigo","Na pedra, uma chama envolve um reino em ruinas. Uma inscricao pede palavras da antiga lenda. Talvez alguem da periferia ainda as conheca.");
+                else if(!secrets.KnowsPoem) dialogue.Open("Altar antigo","Na pedra, uma chama envolve um reino em ruinas. Uma inscricao pede palavras da antiga lenda. Talvez alguem da periferia do castelo ainda as conheca.");
                 else dialogue.OpenChoices("Altar antigo","Uma chama envolve um reino em ruinas. Qual verso da lenda voce recita?",LegendPoem.AltarChoices,index=>
                 {
                     if(secrets.TrySolveAltar(LegendPoem.AltarChoices[index]))

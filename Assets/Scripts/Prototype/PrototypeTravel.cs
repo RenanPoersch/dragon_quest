@@ -28,7 +28,7 @@ namespace DragonQuest.Prototype
     // Politica de viagem separada da Unity: somente conexoes declaradas podem trocar mapas.
     public sealed class PrototypeTravel
     {
-        public const string World = "world", City = "city", Castle = "castle", WestForest = "west-forest", EastForest = "east-forest";
+        public const string World = "world", City = "city", Castle = "castle", WestForest = "west-forest", EastForest = "east-forest", Ruins = "ancient-ruins";
         private readonly Dictionary<string, MapDefinition> maps = new Dictionary<string, MapDefinition>();
         private readonly Dictionary<(string, string), MapRoute> routes = new Dictionary<(string, string), MapRoute>();
         public IReadOnlyList<MapDefinition> Maps { get; }
@@ -44,6 +44,7 @@ namespace DragonQuest.Prototype
                 new MapDefinition(Castle, "INTERIOR DO CASTELO", PrototypeWorldLayout.CastleBounds, PrototypeWorldLayout.CastleSpawn, 9, false, true),
                 new MapDefinition(WestForest, "FLORESTA OESTE", PrototypeWorldLayout.ForestBounds, PrototypeWorldLayout.ForestSpawn, 8, false, true),
                 new MapDefinition(EastForest, "FLORESTA LESTE", PrototypeWorldLayout.ForestBounds, PrototypeWorldLayout.ForestSpawn, 8, false, true),
+                new MapDefinition(Ruins,"RUINAS ANTIGAS",PrototypeRuinsLayout.Bounds,PrototypeRuinsLayout.Spawn,8,false,true),
                 new MapDefinition("item-shop", "LOJA DE ITENS", new Rect(-7, -5, 14, 10), new Vector2(0, -2.7f), 6, true, true),
                 new MapDefinition("equipment-shop", "LOJA DE EQUIPAMENTOS", new Rect(-7, -5, 14, 10), new Vector2(0, -2.7f), 6, true, true),
                 new MapDefinition("materia-shop", "LOJA DE MATERIAS", new Rect(-7, -5, 14, 10), new Vector2(0, -2.7f), 6, true, true)
@@ -54,6 +55,7 @@ namespace DragonQuest.Prototype
             Connect(connections, World, City, PrototypeWorldLayout.Castle + Vector2.down * 2.5f);
             Connect(connections, World, WestForest, PrototypeWorldLayout.WestForest + Vector2.down * 2.5f);
             Connect(connections, World, EastForest, PrototypeWorldLayout.EastForest + Vector2.down * 2.5f);
+            Connect(connections, World, Ruins, PrototypeWorldLayout.Ruins + Vector2.down * 2.5f);
             Connect(connections, City, Castle, new Vector2(0, 14.5f));
             Connect(connections, City, "item-shop", new Vector2(-9, 1.7f));
             Connect(connections, City, "materia-shop", new Vector2(9, 1.7f));

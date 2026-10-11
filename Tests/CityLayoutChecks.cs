@@ -74,8 +74,8 @@ internal static class CityLayoutChecks
         CheckReachable(PrototypeCityLayout.Citizen + Vector2.down, "aldeao");
         CheckReachable(PrototypeCityLayout.Chest + Vector2.down, "bau");
         CheckReachable(PrototypeCityLayout.Guard + Vector2.down, "patrulha");
-        CheckReachable(PrototypeSecretLayout.Altar + Vector2.down, "altar da capela");
-        Assert(!Walkable(PrototypeSecretLayout.Altar), "Altar deve ter colisao sem bloquear a rua.");
+        CheckReachable(new Vector2(-24,18), "fachada da capela");
+        Assert(!PrototypeCityLayout.Blocks.Any(block=>block.Name=="Altar antigo"),"Altar do segredo nao pode permanecer na cidade.");
         CheckReachable(new Vector2(24, -18), "pedestal nas ruinas");
         foreach (float x in new[] { -24f, 0f, 24f })
             for (int y = -15; y <= -9; y++) CheckReachable(new Vector2(x, y), "travessia da ponte em " + x);

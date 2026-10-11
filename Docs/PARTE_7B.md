@@ -20,7 +20,7 @@ Depois de terminar a conversa completa, **P** permite reler o poema e suas expli
 
 ## Os três segredos
 
-1. **Altar da capela, na periferia:** uma imagem de chama e reino em ruínas pede um verso da lenda. Após ouvir a camponesa, o jogador escolhe entre as três frases em latim, com clique ou teclas 1/2/3. A resposta é **Flamma ardet, regnum perit.** Os outros versos deixam o altar frio e permitem tentar novamente. A frase correta acende uma chama e registra o segredo uma única vez.
+1. **Altar nas ruínas antigas, acessadas pelo mapa global:** entre no novo ponto de interesse ao sudoeste da ilha, em **(-7; -5)**, usando E junto à entrada ao sul do ícone. O cenário local possui colunas quebradas, paredes antigas e um altar ao norte. Uma imagem de chama e reino destruído pede um verso da lenda. Após ouvir a camponesa na periferia, o jogador escolhe entre as três frases em latim, com clique ou teclas 1/2/3. A resposta é **Flamma ardet, regnum perit.** Os outros versos deixam o altar frio e permitem tentar novamente. A frase correta acende uma chama e registra o segredo uma única vez. O altar foi retirado da cidade.
 2. **Monólitos, na floresta oeste:** a inscrição na pedra repete **Luna surgit, stella lucet, sol redit.** A sequência é **Lua → Estrela → Sol**. Use E em cada monólito. Os símbolos acendem; um erro apaga todos e reinicia, sem dano ou gasto. O lenhador dá pistas sobre a inscrição e a camponesa, sem anunciar a solução. Progresso parcial e conclusão persistem entre viagens.
 3. **Árvore oca, na floresta leste:** examine as marcas de garras na pedra. Elas apontam para nordeste, até uma árvore de raízes abertas. Usar E nas raízes revela a **Escama ancestral**, uma única vez. É possível descobri-la pela exploração sem antes ler a pista. A escama aparece na aba Itens do inventário como objeto de história, sem integrar os catálogos de venda ou consumíveis de batalha.
 
@@ -35,8 +35,8 @@ A cratera tem uma interação de ambientação. O interior do vulcão, a batalha
 1. Saia de Play e aguarde a importação. Abra `Assets/Scenes/CidadePrototipo.unity`, entre em Play e confira o Console.
 2. Na ilha, examine a passagem antes de resolver qualquer segredo: as rochas devem impedir atravessar. O HUD não deve mostrar o contador.
 3. Entre na periferia pelo castelo global. Vá ao bairro residencial a oeste: a camponesa fica em **(-25,5; -3)**. Abra a conversa e cancele com Esc antes do fim: P ainda não deve abrir o poema. Converse de novo até terminar e confira as três explicações. P passa a abrir a leitura.
-4. Siga ao norte até a capela. O altar fica em **(-24; 18)**, diante da fachada; aproxime-se pelo sul. Teste cancelar a escolha, selecionar um verso errado e tentar novamente. A resposta correta acende a chama e mostra 1/3; repetir não aumenta o contador.
-5. Volte à ilha e entre na floresta oeste. A inscrição fica na pedra em **(-2; 3)**. Teste começar pelo Sol, depois Lua/Lua e depois Lua/Estrela/Estrela: cada erro apaga o ciclo. Resolva Lua/Estrela/Sol. Os monólitos ficam em Lua **(-2; 0)**, Estrela **(2; 3,5)** e Sol **(2; -1,5)**.
+4. Saia da periferia pelo portão sul e procure **Ruínas antigas** ao sudoeste do castelo global. Use E junto à entrada do ícone. O altar fica em **(0; 4)** do novo cenário; aproxime-se pelo sul. Teste cancelar a escolha, selecionar um verso errado e tentar novamente. A resposta correta acende a chama e mostra 1/3; repetir não aumenta o contador. Use a saída em **(0; -5,8)** para voltar à ilha, junto ao ícone das ruínas. Entre novamente e confirme a chama acesa e o progresso preservado.
+5. Na ilha, entre na floresta oeste. A inscrição fica na pedra em **(-2; 3)**. Teste começar pelo Sol, depois Lua/Lua e depois Lua/Estrela/Estrela: cada erro apaga o ciclo. Resolva Lua/Estrela/Sol. Os monólitos ficam em Lua **(-2; 0)**, Estrela **(2; 3,5)** e Sol **(2; -1,5)**.
 6. Saia e retorne à floresta: as luzes e a conclusão devem continuar. Teste P e confirme que ler o poema não gasta recursos nem altera o progresso.
 7. Entre na floresta leste. Examine a pedra em **(2; 3)**, siga a pista e examine as raízes da árvore em **(4,5; 5)**, aproximando-se pelo oeste. Confira a escama em I → Itens; repetir a interação não duplica o objeto.
 8. Antes de ter todos os objetivos, examine novamente a passagem: possuir somente a escama não basta. Com 3/3, as rochas continuam fechadas até usar E.
@@ -50,8 +50,9 @@ A cratera tem uma interação de ambientação. O interior do vulcão, a batalha
 - `DialogueSession.cs` / `DialogueController.cs`: páginas, escolhas, conclusão e cancelamento. Fechar uma escolha não executa sua resposta.
 - `AncientSecretInteraction.cs`: camponesa, altar, monólitos, inscrição, marcas e árvore oca.
 - `PrototypeSecretLayout.cs`: posições e áreas dos monólitos, compartilhadas com as verificações de caminhos.
+- `PrototypeRuinsLayout.cs`: cenário local das ruínas, posição inicial, saída, altar, colunas e paredes. A demo agora tem nove mapas e 16 rotas direcionais.
 - `BlockedPassageInteraction.cs`: abertura explícita da trilha e movimento das duas partes da barreira.
 
-Passaram 159 verificações de segredos/escolhas, 58 de caminhos da periferia, 97 de ilha/interiores/viagens, 1.444 de câmera/malhas, 1.518 de combate/inventário/lojas/progresso e 15 de exploração. Os scripts compilaram com as bibliotecas da Unity 6000.6.5f1.
+Passaram 159 verificações de segredos/escolhas, 58 de caminhos da periferia, 115 de ilha/interiores/viagens, 1.552 de câmera/malhas, 1.518 de combate/inventário/lojas/progresso e 15 de exploração. Os scripts compilaram com as bibliotecas da Unity 6000.6.5f1.
 
 Os testes conferem a lógica de cancelamento, respostas, repetição, ordens de descoberta, progresso e caminho aberto/fechado. Eles não executam cliques, teclado, física, animação ou renderização na Unity. Esses pontos precisam do roteiro de Play acima. Progresso continua restrito à sessão, sem salvamento em disco.

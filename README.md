@@ -26,6 +26,7 @@ A demo começa no **mapa global de uma pequena ilha cercada pelo mar**. Castelo 
 - Castelo no mapa global → **periferia do castelo**, reaproveitando a cidade de 72 × 48, com lojas, moradores, rio, pontes, missão e patrulha.
 - Porta ao norte da periferia → **interior do castelo**, com salão e trono. O tirano tem diálogo nesta entrega; a batalha e os finais entram na parte 8.
 - Duas florestas no mapa global → cenários próprios com clareira, árvores e moradores.
+- Ruínas antigas ao sudoeste da ilha → cenário próprio com colunas quebradas e o altar da lenda.
 - Passagem escondida ao norte → trilha para o vulcão, bloqueada por rochas e três selos. O dragão entra em uma entrega posterior.
 
 Saídas devolvem o herói ao ponto correspondente do mapa anterior. Ouro, inventário, equipamentos, missão, estoques e Limit usam a mesma sessão entre cenários.
@@ -38,7 +39,7 @@ Abra `Assets/Scenes/CidadePrototipo.unity` e siga `Docs/PARTE_7A.md` e `Docs/VIS
 
 A camponesa do bairro residencial recita um poema original de três versos em latim e explica cada frase, sem identificar a resposta do altar. Termine a conversa para consultar o poema e suas explicações com **P**.
 
-- Altar diante da capela: escolha o verso que corresponde à imagem de chama e reino em ruínas, com clique ou teclas 1/2/3.
+- Altar nas ruínas antigas: saia da periferia e use E no ponto de interesse ao sudoeste da ilha. Dentro das ruínas, escolha o verso que corresponde à imagem de chama e reino destruído, com clique ou teclas 1/2/3.
 - Floresta oeste: interprete outro verso do mesmo poema para ativar os monólitos. Erros reiniciam sem punição.
 - Floresta leste: marcas de garras apontam para uma árvore oca que guarda a Escama ancestral, um objeto de história protegido contra venda.
 

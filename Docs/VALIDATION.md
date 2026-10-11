@@ -171,3 +171,11 @@ O usuário confirmou que as interações funcionaram em Play. Não houve valida�
 - 58 verificações de caminhos da periferia e 97 de ilha/interiores/viagens passaram, incluindo acesso ao altar, monólitos, inscrição, pedra e árvore oca. O vulcão é inacessível com o colisor dos selos e acessível após removê-lo, com retorno ao sul possível.
 - 1.444 verificações de câmera/malhas, 1.518 de combate/inventário/lojas/progresso e 15 de exploração passaram. Scripts compilaram com bibliotecas da Unity 6000.6.5f1. O acompanhamento nas extremidades da periferia foi ajustado e verificado para manter pés/cabeça e chama do altar visíveis.
 - Interações, seleção por clique/teclas, consulta com P, luzes, movimento das rochas, colisão ao vivo e UI aguardam Play em `Docs/PARTE_7B.md`. Interior do vulcão e dragão ficam na parte 7C.
+
+## Ajuste da parte 7B — altar nas ruínas do mapa global
+
+- Altar removido da planta/interações da cidade e instalado em um cenário próprio, acessível por um novo ponto de interesse ao sudoeste da ilha.
+- 58 verificações de caminhos da periferia e 115 de ilha/interiores/viagens passaram, incluindo entrada global das ruínas, chegada livre, caminho ao altar, saída/retorno específico e rejeição de viagens diretas entre ruínas e cidade/lojas.
+- Poema aprendido e altar resolvido continuam no mesmo estado da sessão ao sair e retornar às ruínas; a solução não duplica progresso.
+- 1.552 verificações de câmera/malhas passaram, incluindo ruínas locais, ícone com volume e enquadramento fixo da chama do altar. Scripts compilaram com bibliotecas da Unity 6000.6.5f1.
+- As verificações de segredos/escolhas, combate/inventário/lojas/progresso e exploração continuam passando. Roteiro de Play atualizado em `Docs/PARTE_7B.md`; cliques, física e transições reais ainda precisam da conferência no Editor.

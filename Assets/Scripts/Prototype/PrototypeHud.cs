@@ -72,12 +72,18 @@ namespace DragonQuest.Prototype
                 DrawLabel(PrototypeWorldLayout.Castle + Vector2.up * 1.5f, "CASTELO E ARREDORES", scale);
                 DrawLabel(PrototypeWorldLayout.WestForest + Vector2.up * 1.5f, "FLORESTA OESTE", scale);
                 DrawLabel(PrototypeWorldLayout.EastForest + Vector2.up * 1.5f, "FLORESTA LESTE", scale);
+                DrawLabel(PrototypeWorldLayout.Ruins + Vector2.up * 1.5f,"RUINAS ANTIGAS",scale);
                 DrawLabel(PrototypeWorldLayout.Volcano + Vector2.up * 1.4f, "VULCAO", scale);
             }
             else if (locations.LocationId == PrototypeTravel.Castle)
             {
                 DrawLabel(PrototypeWorldLayout.Throne + Vector2.up, "TIRANO", scale);
                 DrawLabel(PrototypeWorldLayout.CastleExit, "SAIDA PARA A PERIFERIA", scale);
+            }
+            else if(locations.LocationId==PrototypeTravel.Ruins)
+            {
+                DrawLabel(PrototypeSecretLayout.Altar+Vector2.up*0.8f,"ALTAR ANTIGO",scale);
+                DrawLabel(PrototypeRuinsLayout.Exit,"SAIDA PARA A ILHA",scale);
             }
             else
             {
@@ -116,9 +122,10 @@ namespace DragonQuest.Prototype
                 string prompt = interaction.CurrentPrompt;
                 if (string.IsNullOrEmpty(prompt))
                     prompt = locations.IsInShop ? "Use E no lojista para comprar/vender; a saida fica ao sul."
-                        : locations.LocationId == PrototypeTravel.World ? "Explore a ilha. Use E perto do castelo e das florestas para entrar."
+                        : locations.LocationId == PrototypeTravel.World ? "Explore a ilha. Use E perto do castelo, florestas e ruinas para entrar."
                         : locations.IsInCity ? "Lojas ao redor da praca. Castelo ao norte; saida para a ilha ao sul. Use E nas entradas."
                         : locations.LocationId == PrototypeTravel.Castle ? "O trono fica ao norte; use E na saida ao sul para voltar a periferia."
+                        : locations.LocationId == PrototypeTravel.Ruins ? "Explore as ruinas. O altar fica ao norte; a saida para a ilha fica ao sul."
                         : "Converse com o morador usando E. A saida para a ilha fica ao sul.";
                 GUI.Label(new Rect(28, height - 57, width - 56, 38), prompt, bodyStyle);
             }
