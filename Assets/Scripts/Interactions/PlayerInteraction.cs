@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using DragonQuest.Exploration;
+using DragonQuest.Progression;
 
 namespace DragonQuest.Interactions
 {
@@ -41,6 +42,12 @@ namespace DragonQuest.Interactions
                 current = null;
                 movement.SetMovementEnabled(false);
                 if (hasInput && keyboard.escapeKey.wasPressedThisFrame) context.Dialogue.Close();
+                else if (hasInput && context.Dialogue.HasChoices)
+                {
+                    if (keyboard.digit1Key.wasPressedThisFrame || keyboard.numpad1Key.wasPressedThisFrame) context.Dialogue.Choose(0);
+                    else if (keyboard.digit2Key.wasPressedThisFrame || keyboard.numpad2Key.wasPressedThisFrame) context.Dialogue.Choose(1);
+                    else if (keyboard.digit3Key.wasPressedThisFrame || keyboard.numpad3Key.wasPressedThisFrame) context.Dialogue.Choose(2);
+                }
                 else if (hasInput && (keyboard.eKey.wasPressedThisFrame || keyboard.spaceKey.wasPressedThisFrame || keyboard.enterKey.wasPressedThisFrame))
                     context.Dialogue.Advance();
                 movement.SetMovementEnabled(!context.Dialogue.IsOpen && !context.IsBusy());
@@ -48,6 +55,11 @@ namespace DragonQuest.Interactions
             }
 
             movement.SetMovementEnabled(true);
+            if(hasInput && context.Secrets != null && context.Secrets.KnowsPoem && keyboard.pKey.wasPressedThisFrame)
+            {
+                context.Dialogue.Open("Poema da lenda",LegendPoem.ExplainedPages());
+                current=null;movement.SetMovementEnabled(false);return;
+            }
             current = FindNearest();
             if (hasInput && current != null && keyboard.eKey.wasPressedThisFrame)
             {

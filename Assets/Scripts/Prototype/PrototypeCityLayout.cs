@@ -97,6 +97,7 @@ namespace DragonQuest.Prototype
                 new CityBlock("Rua sul", 0, -18, 45, 3, "C2AC80", false, -8),
                 new CityBlock("Patio do castelo", 0, 13.5f, 15, 5, "C3C1B4", false, -7),
                 new CityBlock("Praca", 0, 0, 8, 7, "D1C19B", false, -7),
+                new CityBlock("Altar antigo", PrototypeSecretLayout.Altar.x, PrototypeSecretLayout.Altar.y, 1.2f, 0.8f, "9F9B88", true, 2),
                 new CityBlock("Lago dos jardins", 29, 14, 5, 4, "5BA5B6", true, -6),
                 new CityBlock("Fonte - borda", 0, 0, 2.6f, 2.6f, "747A80", true, 2),
                 new CityBlock("Fonte - agua", 0, 0, 2.05f, 2.05f, "5BA5B6", false, 3),

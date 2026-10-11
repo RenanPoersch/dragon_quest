@@ -1,5 +1,6 @@
 using System;
 using DragonQuest.Exploration;
+using DragonQuest.Progression;
 
 namespace DragonQuest.Interactions
 {
@@ -11,9 +12,10 @@ namespace DragonQuest.Interactions
         public Action StartBattle { get; }
         public Func<bool> IsBusy { get; }
         public Action<string> OpenShop { get; }
+        public AncientSecrets Secrets { get; }
 
         public InteractionContext(DialogueController dialogue, ExplorationProgress progress, Action<string> travelTo,
-            Action startBattle = null, Func<bool> isBusy = null, Action<string> openShop = null)
+            Action startBattle = null, Func<bool> isBusy = null, Action<string> openShop = null, AncientSecrets secrets = null)
         {
             Dialogue = dialogue;
             Progress = progress;
@@ -21,6 +23,7 @@ namespace DragonQuest.Interactions
             StartBattle = startBattle;
             IsBusy = isBusy ?? (() => false);
             OpenShop = openShop;
+            Secrets = secrets;
         }
     }
 }

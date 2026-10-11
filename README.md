@@ -32,7 +32,19 @@ Saídas devolvem o herói ao ponto correspondente do mapa anterior. Ouro, invent
 
 A apresentação agora usa **câmera oblíqua e modelos com volume**, substituindo os retângulos vistos de cima. A ilha tem costa elevada, montanhas, mar e ícones pequenos de locais; casas têm paredes, telhados e janelas; personagens têm um modelo simples com passos animados. Ilha, florestas, castelo e lojas usam enquadramentos fixos. Na periferia, a câmera acompanha o herói mantendo o ângulo. WASD/setas acompanham as direções da tela.
 
-Abra `Assets/Scenes/CidadePrototipo.unity` e siga `Docs/PARTE_7A.md` e `Docs/VISUAL_25D.md` para testar em Play. Os modelos ainda são provisórios, criados por código. A batalha e os menus conservam sua interface atual. A próxima entrega será implementar os três segredos, seguida do vulcão, dragão e sua armadura.
+Abra `Assets/Scenes/CidadePrototipo.unity` e siga `Docs/PARTE_7A.md` e `Docs/VISUAL_25D.md` para testar em Play. Os modelos ainda são provisórios, criados por código. A batalha e os menus conservam sua interface atual.
+
+## Parte 7B — três segredos e poema em latim
+
+A camponesa do bairro residencial recita um poema original de três versos em latim e explica cada frase, sem identificar a resposta do altar. Termine a conversa para consultar o poema e suas explicações com **P**.
+
+- Altar diante da capela: escolha o verso que corresponde à imagem de chama e reino em ruínas, com clique ou teclas 1/2/3.
+- Floresta oeste: interprete outro verso do mesmo poema para ativar os monólitos. Erros reiniciam sem punição.
+- Floresta leste: marcas de garras apontam para uma árvore oca que guarda a Escama ancestral, um objeto de história protegido contra venda.
+
+O contador fica oculto até concluir o primeiro segredo. Depois dos três, use **E** na passagem ao norte da ilha: a escama desfaz os selos, as rochas se afastam e a trilha fica livre até o vulcão. A escama permanece no inventário e o progresso persiste entre mapas da sessão.
+
+Veja `Docs/PARTE_7B.md` para o poema, soluções e roteiro de teste em Play. A próxima entrega é o interior do vulcão, o dragão e sua armadura; a cratera atual tem uma interação de ambientação.
 
 ## Parte 6C — recompensas e missão de entrega
 
@@ -192,8 +204,8 @@ Veja `Docs/PARTE_1.md` para o roteiro de verificação.
 | 6B | Três lojas com estoques limitados, compras, vendas e kit econômico |
 | 6C | Recompensas de batalha, primeira missão e reposição por progresso |
 | 7A | Ilha global, periferia, florestas, interior do castelo e viagens |
-| 7B | Três segredos e acesso ao dragão |
-| 7C | Batalha do dragão e armadura especial |
+| 7B | Poema em latim, três segredos e abertura da trilha do vulcão |
+| 7C | Interior do vulcão, batalha do dragão e armadura especial |
 | 8 | Tirano, espírito e dois finais |
 | 9 | Arte, áudio, balanceamento e executável |
 

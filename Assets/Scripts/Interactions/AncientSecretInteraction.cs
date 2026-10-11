@@ -1,0 +1,75 @@
+using UnityEngine;
+using DragonQuest.Progression;
+
+namespace DragonQuest.Interactions
+{
+    public enum SecretObject { Peasant, Altar, Inscription, Monolith, ClawStone, HollowTree }
+
+    public sealed class AncientSecretInteraction : Interactable
+    {
+        private SecretObject kind;
+        private MonolithSymbol symbol;
+        private AncientSecrets secrets;
+        private GameObject light;
+        public void Initialize(SecretObject type, AncientSecrets progress, MonolithSymbol rune = MonolithSymbol.Sun, GameObject glow = null)
+        { kind=type; secrets=progress; symbol=rune; light=glow; RefreshLight(); }
+        public override string Prompt => kind == SecretObject.Peasant ? "Conversar com a camponesa"
+            : kind == SecretObject.Altar ? "Examinar altar antigo"
+            : kind == SecretObject.Inscription ? "Ler inscricao desgastada"
+            : kind == SecretObject.Monolith ? "Tocar monolito / " + SymbolName(symbol)
+            : kind == SecretObject.ClawStone ? "Examinar marcas na pedra" : "Examinar raizes antigas";
+
+        private void OnEnable() => RefreshLight();
+        private void Update() => RefreshLight();
+        private void RefreshLight()
+        {
+            if(light==null||secrets==null) return;
+            bool visible=kind==SecretObject.Altar?secrets.AltarSolved:kind==SecretObject.Monolith&&secrets.IsLit(symbol);
+            if(light.activeSelf!=visible) light.SetActive(visible);
+        }
+        public static string SymbolName(MonolithSymbol symbol) => symbol==MonolithSymbol.Moon?"Lua":symbol==MonolithSymbol.Star?"Estrela":"Sol";
+
+        public override void Interact(InteractionContext context)
+        {
+            DialogueController dialogue=context.Dialogue;
+            if(kind==SecretObject.Peasant)
+            {
+                var pages=new System.Collections.Generic.List<string> { "Minha avo dizia que estas palavras sao mais antigas que o castelo. Os moradores as guardaram mesmo depois de esquecerem sua origem." };
+                pages.AddRange(LegendPoem.ExplainedPages());
+                pages.Add("Ha uma capela ao norte desta rua. Por aqui ainda se canta a lenda, mas poucas pessoas param para escuta-la.");
+                dialogue.OpenWithCompletion("Camponesa",secrets.LearnPoem,pages.ToArray());
+            }
+            else if(kind==SecretObject.Altar)
+            {
+                if(secrets.AltarSolved) dialogue.Open("Altar antigo","Uma chama silenciosa permanece acesa. A pedra ja reconheceu suas palavras.");
+                else if(!secrets.KnowsPoem) dialogue.Open("Altar antigo","Na pedra, uma chama envolve um reino em ruinas. Uma inscricao pede palavras da antiga lenda. Talvez alguem da periferia ainda as conheca.");
+                else dialogue.OpenChoices("Altar antigo","Uma chama envolve um reino em ruinas. Qual verso da lenda voce recita?",LegendPoem.AltarChoices,index=>
+                {
+                    if(secrets.TrySolveAltar(LegendPoem.AltarChoices[index]))
+                        dialogue.Open("Altar antigo","Uma chama desperta no altar. Ao longe, algo parece ceder entre as montanhas.");
+                    else dialogue.Open("Altar antigo","O altar permanece frio. As palavras nao correspondem a imagem gravada na pedra.");
+                    RefreshLight();
+                });
+            }
+            else if(kind==SecretObject.Inscription)
+                dialogue.Open("Inscricao antiga",LegendPoem.Sky,"Os tres monolitos parecem esperar a passagem de um mesmo ciclo.");
+            else if(kind==SecretObject.Monolith)
+            {
+                MonolithResult result=secrets.Activate(symbol);
+                dialogue.Open("Monolito / "+SymbolName(symbol),result==MonolithResult.Reset
+                    ? "As luzes se apagam. O ciclo precisa recomecar. Nenhum ferimento ou gasto foi causado."
+                    : result==MonolithResult.Completed?"Os tres simbolos brilham juntos. Um tremor distante atravessa o chao."
+                    : result==MonolithResult.AlreadyCompleted?"O ciclo foi completado. A luz permanece na pedra."
+                    : "O simbolo ganha um brilho suave. As outras pedras continuam em silencio.");
+                RefreshLight();
+            }
+            else if(kind==SecretObject.ClawStone)
+                dialogue.Open("Pedra marcada","Sulcos profundos cortam a pedra. Marcas menores seguem para nordeste, ate uma arvore antiga de raizes abertas.",
+                    "Entre os sulcos ha vestigios de escamas. O tronco ao fim das marcas parece guardar algo em seu interior.");
+            else
+                dialogue.Open("Arvore oca",secrets.TryCollectScale()
+                    ? "Entre as raizes voce encontra uma Escama ancestral. Ela vibra por um instante, como se respondesse a algo distante."
+                    : "A abertura esta vazia. A Escama ancestral continua guardada com a equipe.");
+        }
+    }
+}

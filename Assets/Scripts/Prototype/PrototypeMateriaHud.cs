@@ -2,12 +2,14 @@ using UnityEngine;
 using DragonQuest.Combat;
 using DragonQuest.Equipment;
 using DragonQuest.Inventory;
+using DragonQuest.Progression;
 
 namespace DragonQuest.Prototype
 {
     public sealed class PrototypeMateriaHud : MonoBehaviour
     {
         private PrototypeBattleController controller;
+        private AncientSecrets secrets;
         private Texture2D pixel;
         private GUIStyle title, text, small, button;
         private int memberIndex;
@@ -20,7 +22,8 @@ namespace DragonQuest.Prototype
         private string message = "Escolha uma materia na lista e clique no encaixe de destino.";
         private Vector2 inventoryScroll, commandsScroll, socketsScroll, gearScroll;
 
-        public void Initialize(PrototypeBattleController battleController) => controller = battleController;
+        public void Initialize(PrototypeBattleController battleController, AncientSecrets ancientSecrets)
+        {controller=battleController;secrets=ancientSecrets;}
 
         private void OnGUI()
         {
@@ -172,6 +175,11 @@ namespace DragonQuest.Prototype
                     + stack.Definition.Name + " / Quantidade: " + stack.Quantity, button)) selectedInventoryItem = stack.Definition;
             }
             GUI.Label(new Rect(48, 595, 560, 67), "O uso acontece na batalha: escolha Itens e depois um alvo. Abrir a lista ou cancelar nao gasta item nem turno.", text);
+            if(secrets.HasScale)
+            {
+                GUI.Label(new Rect(48,540,560,25),"OBJETO DE HISTORIA / Escama ancestral x1",small);
+                GUI.Label(new Rect(48,565,560,25),"Guardada com a equipe; protegida contra venda.",small);
+            }
             GUI.Label(new Rect(690, 255, 530, 30), selectedInventoryItem?.Name ?? "Escolha um item", title);
             GUI.Label(new Rect(690, 310, 530, 135), selectedInventoryItem?.Description
                 ?? "Pocao recupera HP, eter recupera MP, antidoto remove veneno e Pluma da Fenix revive.", text);

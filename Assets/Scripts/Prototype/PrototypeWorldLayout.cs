@@ -111,7 +111,7 @@ namespace DragonQuest.Prototype
             blocks.Add(new CityBlock("Trilha oculta", 3, 6.8f, 0.45f, 3.2f, "827B58", false, -17));
             blocks.Add(new CityBlock("Cordilheira oeste", -4.75f, 6.5f, 12.5f, 1, "777C72", true, 2));
             blocks.Add(new CityBlock("Cordilheira leste", 8.25f, 6.5f, 7.5f, 1, "777C72", true, 2));
-            blocks.Add(new CityBlock("Rochas da passagem selada", 3, 6.5f, 3, 1, "676A68", true, 2));
+            blocks.Add(new CityBlock(PrototypeSecretLayout.SealedRocks, 3, 6.5f, 3, 1, "676A68", true, 2));
             foreach (Vector2 point in new[] { new Vector2(-11, -4), new Vector2(-5, -5), new Vector2(10, 1), new Vector2(-5, 4), new Vector2(6, 3) })
                 blocks.Add(new CityBlock("Arvore distante", point.x, point.y, 0.65f, 0.8f, "2D5038", false, 1));
             return blocks.AsReadOnly();
@@ -133,6 +133,7 @@ namespace DragonQuest.Prototype
                     blocks.Add(new CityBlock("Arvore - folhagem", x - 0.15f, y + 0.15f, 1.2f, 1.3f, "52764C", false, 3));
                 }
             blocks.Add(new CityBlock(eastern ? "Pedra com escamas" : "Pedra antiga", eastern ? 2 : -2, 3, 1.4f, 1, "8B927F", true, 2));
+            if (!eastern) blocks.AddRange(PrototypeSecretLayout.WestMonoliths);
             return blocks.AsReadOnly();
         }
 

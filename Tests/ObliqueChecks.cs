@@ -81,9 +81,20 @@ internal static class ObliqueChecks
                 }
             }
         }
-        Vector2 corner=ObliqueProjection.CameraFocus(new Vector2(100,100),PrototypeCityLayout.Bounds,7.5f,16f/9,false);
-        Near(corner.y,PrototypeCityLayout.Bounds.yMax-(7.5f*16f/9*ObliqueProjection.YawSin+7.5f/ObliqueProjection.GroundScale*ObliqueProjection.YawCos),"Limite vertical deve considerar o ângulo da câmera.");
-        Near(corner.x,PrototypeCityLayout.Bounds.xMax-(7.5f*16f/9*ObliqueProjection.YawCos+7.5f/ObliqueProjection.GroundScale*ObliqueProjection.YawSin),"Limite horizontal deve considerar o aspecto.");
+        foreach(var point in new[]{new Vector2(-35,23),new Vector2(35,23),new Vector2(-35,-23),new Vector2(35,-23),PrototypeSecretLayout.Altar+Vector2.down})
+            foreach(float aspect in new[]{16f/9,4f/3})
+            {
+                Vector2 focus=ObliqueProjection.CameraFocus(point,PrototypeCityLayout.Bounds,7.5f,aspect,false);
+                Vector2 relative=new Vector2(point.x-focus.x,point.y-focus.y);
+                var foot=ObliqueProjection.ScreenPlane(relative);var head=ObliqueProjection.ScreenPlane(relative,1.45f);
+                Assert(Math.Abs(foot.x)<7.5f*aspect&&Math.Abs(foot.y)<7.5f&&Math.Abs(head.y)<7.5f,"Câmera deve manter pés/cabeça visíveis perto do altar e das extremidades.");
+                Assert(PrototypeCityLayout.Bounds.Contains(focus),"Acompanhamento nos cantos deve manter foco dentro da periferia.");
+                if(point==PrototypeSecretLayout.Altar+Vector2.down)
+                {
+                    var flame=ObliqueProjection.ScreenPlane(new Vector2(PrototypeSecretLayout.Altar.x-focus.x,PrototypeSecretLayout.Altar.y-focus.y),1.32f);
+                    Assert(Math.Abs(flame.x)<7.5f*aspect&&Math.Abs(flame.y)<7.5f,"Chama do altar deve ficar visível a partir do ponto de interação.");
+                }
+            }
 
         var world=ObliqueScenery.IslandData(); Validate(world,"Ilha e mar");
         // Area triangulada da superficie precisa corresponder ao contorno concavo.

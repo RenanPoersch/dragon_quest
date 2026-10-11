@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using DragonQuest.Exploration;
+using DragonQuest.Progression;
 
 namespace DragonQuest.Prototype
 {
@@ -38,6 +39,10 @@ namespace DragonQuest.Prototype
             var mesh = new ObliqueMeshData();
             Color color = ObliqueMeshData.Hex(hex);
             float w=size.x, d=size.y;
+            if(name.StartsWith("Monolito"))
+            { mesh.Box(0,0,w,d,0,1.1f,color);mesh.Roof(0,0,w,d,1.1f,1.25f,color);return mesh; }
+            if(name=="Altar antigo")
+            {mesh.Box(0,0,w,d,0,0.6f,color);mesh.Box(0,0,w+0.08f,d+0.08f,0.6f,0.72f,color);return mesh;}
             if (name.Contains("Arvore - detalhe") || name.Contains("Arvore - folhagem") || name.Contains("Coluna - detalhe")
                 || name == "Fonte - agua" || name == "Fonte - centro" || name == "Trono - ouro") return mesh;
             if (name.Contains("Arvore")) { Tree(mesh,0,0,w/2, d > 1 ? 2.8f : 1.1f,color); return mesh; }
@@ -199,16 +204,80 @@ namespace DragonQuest.Prototype
             return mesh;
         }
 
-        public void World(Transform parent)
+        public GameObject World(Transform parent)
         {
+            GameObject seal=null;
             Show("Ilha em relevo e mar",IslandData(),parent);
             foreach(CityBlock block in PrototypeWorldLayout.Blocks)
             {
                 if(block.Name=="Mar"||block.Name.StartsWith("Costa")||block.Name.StartsWith("Ilha -")) continue;
-                Transform model=Show(block.Name,BlockData(block.Name,block.Size,block.Color,block.Solid,block.Order),parent);
+                Transform model;
+                if(block.Name==PrototypeSecretLayout.SealedRocks)
+                {
+                    model=new GameObject(block.Name).transform;model.SetParent(parent,false);
+                    foreach(float side in new[]{-0.75f,0.75f})
+                    {
+                        Transform half=Show("Rochas",BlockData(block.Name,new Vector2(1.5f,1),block.Color,true,block.Order),model);
+                        half.localPosition=new Vector3(side,0,0);
+                    }
+                    seal=model.gameObject;
+                }
+                else model=Show(block.Name,BlockData(block.Name,block.Size,block.Color,block.Solid,block.Order),parent);
                 model.localPosition=block.Position;
                 if(block.Solid) model.gameObject.AddComponent<BoxCollider2D>().size=block.Size;
             }
+            if(seal==null) throw new InvalidOperationException("Barreira da passagem ausente.");
+            return seal;
+        }
+
+        public GameObject AltarFlame(Transform parent)
+        {
+            var mesh=new ObliqueMeshData();mesh.Cone(0,0,0.2f,0.72f,1.32f,ObliqueMeshData.Hex("E1AE61"),5);
+            GameObject flame=Show("Chama antiga",mesh,parent).gameObject;flame.SetActive(false);return flame;
+        }
+
+        public GameObject MonolithRune(MonolithSymbol symbol,Transform parent)
+        {
+            var mesh=new ObliqueMeshData();float y=-0.41f, h=0.75f;
+            Color rune=ObliqueMeshData.Hex("C4C0A5");
+            int points=symbol==MonolithSymbol.Star?10:12;
+            for(int i=0;i<points;i++)
+            {
+                double a=i*Math.PI*2/points,b=(i+1)*Math.PI*2/points;
+                float radiusA=symbol==MonolithSymbol.Star&&i%2==1?0.1f:0.22f;
+                float radiusB=symbol==MonolithSymbol.Star&&(i+1)%2==1?0.1f:0.22f;
+                mesh.Triangle(ObliqueMeshData.V(0,y,h),ObliqueMeshData.V((float)Math.Sin(a)*radiusA,y,h+(float)Math.Cos(a)*radiusA),
+                    ObliqueMeshData.V((float)Math.Sin(b)*radiusB,y,h+(float)Math.Cos(b)*radiusB),rune,false);
+            }
+            Show("Simbolo gravado / "+symbol,mesh,parent);
+            if(symbol==MonolithSymbol.Moon)
+            {
+                var cut=new ObliqueMeshData();
+                cut.Quad(ObliqueMeshData.V(0.05f,y-0.005f,h-0.18f),ObliqueMeshData.V(-0.08f,y-0.005f,h),
+                    ObliqueMeshData.V(0.05f,y-0.005f,h+0.18f),ObliqueMeshData.V(0.22f,y-0.005f,h),ObliqueMeshData.Hex("727264"),false);
+                Show("Lua - recorte",cut,parent);
+            }
+            var glow=new ObliqueMeshData();glow.Cone(0,0,0.18f,1.28f,1.65f,ObliqueMeshData.Hex("DDD098"),6,0.09f);
+            GameObject light=Show("Luz do monolito",glow,parent).gameObject;light.SetActive(false);return light;
+        }
+
+        public void ClawMarks(Transform parent)
+        {
+            var mesh=new ObliqueMeshData();
+            foreach(float x in new[]{-0.2f,-0.07f,0.06f})
+                mesh.Quad(ObliqueMeshData.V(x-0.015f,-0.5f+0.18f/0.85f*0.6f-0.01f,0.18f),
+                    ObliqueMeshData.V(x+0.005f,-0.5f+0.5f/0.85f*0.6f-0.01f,0.5f),
+                    ObliqueMeshData.V(x+0.035f,-0.5f+0.5f/0.85f*0.6f-0.01f,0.5f),
+                    ObliqueMeshData.V(x+0.015f,-0.5f+0.18f/0.85f*0.6f-0.01f,0.18f),ObliqueMeshData.Hex("3F4B45"),false);
+            Show("Sulcos de garras",mesh,parent);
+        }
+
+        public void Hollow(Transform parent)
+        {
+            var mesh=new ObliqueMeshData();
+            mesh.Quad(ObliqueMeshData.V(-0.1f,-0.15f,0.1f),ObliqueMeshData.V(-0.09f,-0.15f,0.65f),
+                ObliqueMeshData.V(0.09f,-0.15f,0.65f),ObliqueMeshData.V(0.1f,-0.15f,0.1f),ObliqueMeshData.Hex("303F36"),false);
+            Show("Abertura entre raizes",mesh,parent);
         }
 
         public void CastleIcon(Transform parent)

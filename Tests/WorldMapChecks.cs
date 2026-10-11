@@ -142,6 +142,14 @@ internal static class WorldMapChecks
         Assert(world.Accessible(PrototypeWorldLayout.Trail), "Passagem oculta deve poder ser examinada.");
         Assert(!world.Accessible(PrototypeWorldLayout.Volcano), "Vulcao nao pode ser alcancado enquanto a trilha estiver bloqueada.");
         Assert(!world.Walkable(new Vector2(3, 6.5f)), "Rochas precisam impedir atravesar a trilha.");
+        var openWorld = new Paths(PrototypeWorldLayout.Bounds, WorldBlocks().Where(block=>block.Name!=PrototypeSecretLayout.SealedRocks),PrototypeWorldLayout.Spawn,true);
+        Assert(openWorld.Accessible(PrototypeWorldLayout.Volcano), "Remover o colisor dos selos deve abrir um caminho real ate o vulcao.");
+        Assert(openWorld.Accessible(PrototypeWorldLayout.Trail), "Trilha aberta deve permitir retornar ao sul da ilha.");
+        foreach(var block in PrototypeSecretLayout.WestMonoliths)
+            Assert(west.Accessible(block.Position+Vector2.down), "Cada monolito deve ter um ponto livre de interacao.");
+        Assert(west.Accessible(PrototypeSecretLayout.Inscription+Vector2.down), "Inscricao deve poder ser lida.");
+        Assert(east.Accessible(PrototypeSecretLayout.ClawStone+Vector2.down), "Pedra com marcas precisa ser acessivel.");
+        Assert(east.Accessible(PrototypeSecretLayout.HollowTree+Vector2.left*1.5f), "Arvore oca precisa de acesso dentro do alcance de E.");
         foreach (Vector2 water in new[] { new Vector2(-18, 0), new Vector2(18, 0), new Vector2(0, -12), new Vector2(0, 12), new Vector2(-14, -8) })
             Assert(!world.Walkable(water), "Mar e baia nao podem permitir caminhar fora da ilha.");
         Assert(west.Accessible(PrototypeWorldLayout.LocalExit) && east.Accessible(PrototypeWorldLayout.LocalExit), "Duas florestas devem ter saidas acessiveis.");

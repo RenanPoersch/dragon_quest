@@ -4,34 +4,31 @@ namespace DragonQuest.Interactions
 {
     public sealed class DialogueController : MonoBehaviour
     {
-        private string[] pages;
-        private int pageIndex;
+        private readonly DialogueSession session = new DialogueSession();
 
-        public bool IsOpen => pages != null;
-        public string Title { get; private set; }
-        public string Text => IsOpen ? pages[pageIndex] : string.Empty;
-        public int PageNumber => IsOpen ? pageIndex + 1 : 0;
-        public int PageCount => IsOpen ? pages.Length : 0;
+        public bool IsOpen => session.IsOpen;
+        public bool HasChoices => session.HasChoices;
+        public string Title => session.Title;
+        public string Text => session.Text;
+        public int PageNumber => session.PageNumber;
+        public int PageCount => session.PageCount;
+        public System.Collections.Generic.IReadOnlyList<string> Choices => session.Choices;
 
         public void Open(string title, params string[] messages)
         {
-            if (messages == null || messages.Length == 0) return;
-            Title = title;
-            pages = messages;
-            pageIndex = 0;
+            session.Open(title, null, messages);
         }
 
-        public void Advance()
-        {
-            if (!IsOpen) return;
-            pageIndex++;
-            if (pageIndex >= pages.Length) Close();
-        }
+        public void OpenWithCompletion(string title, System.Action completed, params string[] messages)
+            => session.Open(title, completed, messages);
+        public void OpenChoices(string title, string text, System.Collections.Generic.IReadOnlyList<string> choices, System.Action<int> selected)
+            => session.OpenChoices(title, text, choices, selected);
+        public bool Choose(int index) => session.Choose(index);
+        public void Advance() => session.Advance();
 
         public void Close()
         {
-            pages = null;
-            pageIndex = 0;
+            session.Close();
         }
     }
 }

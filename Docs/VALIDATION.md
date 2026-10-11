@@ -160,3 +160,14 @@ O usuário confirmou que as interações funcionaram em Play. Não houve valida�
 - Prévias da ilha, praça e sala do trono conferidas com rasterização externa das mesmas malhas/projeção. Não são capturas do Editor.
 - 57 verificações de caminhos da periferia, 88 de ilha/interiores/viagens, 1.518 de combate/inventário/lojas/progresso e 15 de exploração passaram.
 - Importação/compilação do shader na Unity, renderização pela GPU, passos/tampa animados, HUD, física e interações ao vivo ainda precisam do roteiro de Play em `Docs/VISUAL_25D.md`.
+
+## Parte 7B — três segredos
+
+- 159 verificações de segredos e escolhas passaram em `Tools/Test-Secrets.ps1`.
+- Confirmados poema com três versos, escolhas exatamente iguais aos versos, explicação completa antes de registrar a leitura, contador oculto até a primeira solução e consulta sem avanço de segredo.
+- Confirmados altar correto/errado, cancelamento sem solução, Lua/Estrela/Sol, reinício/apagamento por erro, símbolos inválidos sem mutação e conclusões sem duplicação.
+- Confirmadas as seis ordens possíveis de descoberta; todos os objetivos são necessários, e a passagem continua fechada até interação explícita. Abrir é uma operação única e não consome a escama.
+- Confirmados independência entre sessões, escolhas inválidas/repetidas, avanço que não escolhe automaticamente e callbacks que abrem outro diálogo sem que ele seja apagado.
+- 58 verificações de caminhos da periferia e 97 de ilha/interiores/viagens passaram, incluindo acesso ao altar, monólitos, inscrição, pedra e árvore oca. O vulcão é inacessível com o colisor dos selos e acessível após removê-lo, com retorno ao sul possível.
+- 1.444 verificações de câmera/malhas, 1.518 de combate/inventário/lojas/progresso e 15 de exploração passaram. Scripts compilaram com bibliotecas da Unity 6000.6.5f1. O acompanhamento nas extremidades da periferia foi ajustado e verificado para manter pés/cabeça e chama do altar visíveis.
+- Interações, seleção por clique/teclas, consulta com P, luzes, movimento das rochas, colisão ao vivo e UI aguardam Play em `Docs/PARTE_7B.md`. Interior do vulcão e dragão ficam na parte 7C.

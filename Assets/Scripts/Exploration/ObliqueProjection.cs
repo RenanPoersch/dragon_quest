@@ -37,8 +37,18 @@ namespace DragonQuest.Exploration
             float halfWidth = size * aspect, halfDepth = size / GroundScale;
             float halfX = halfWidth * YawCos + halfDepth * YawSin;
             float halfY = halfWidth * YawSin + halfDepth * YawCos;
-            return new Vector2(ClampAxis(hero.x, bounds.xMin, bounds.xMax, halfX),
+            var focus = new Vector2(ClampAxis(hero.x, bounds.xMin, bounds.xMax, halfX),
                 ClampAxis(hero.y, bounds.yMin, bounds.yMax, halfY));
+            var boundedHero = new Vector2(Math.Max(bounds.xMin,Math.Min(bounds.xMax,hero.x)),
+                Math.Max(bounds.yMin,Math.Min(bounds.yMax,hero.y)));
+            Vector2 relative = ScreenPlane(new Vector2(boundedHero.x-focus.x,boundedHero.y-focus.y));
+            float visibleX = Math.Max(0.1f,halfWidth-1), visibleY = Math.Max(0.1f,size-1.9f);
+            Vector2 correction = GroundDirection(new Vector2(
+                relative.x-Math.Max(-visibleX,Math.Min(visibleX,relative.x)),
+                (relative.y-Math.Max(-visibleY,Math.Min(visibleY,relative.y)))/GroundScale));
+            // Nos cantos, a planta rodada nao cabe no retangulo conservador: prioriza ver o heroi.
+            return new Vector2(Math.Max(bounds.xMin+0.01f,Math.Min(bounds.xMax-0.01f,focus.x+correction.x)),
+                Math.Max(bounds.yMin+0.01f,Math.Min(bounds.yMax-0.01f,focus.y+correction.y)));
         }
 
         private static float ClampAxis(float value, float min, float max, float half)

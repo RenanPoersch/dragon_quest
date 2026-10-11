@@ -20,3 +20,9 @@ Para recursos gerados durante o projeto, registrar a ferramenta, a data, as alte
 Os retângulos do cenário e dos personagens foram substituídos por malhas originais de poucos polígonos, geradas por C# em execução. Casas, torres, árvores, montanhas, costa, fonte, mobiliário, baú e personagens vêm de `ObliqueScenery.cs` e `ObliqueMeshData.cs`. O material usa `Assets/Resources/ObliqueWorld.shader`, criado para este projeto, com cores por face e teste de profundidade. Nenhuma imagem ou modelo de Final Fantasy foi importado.
 
 `ObliqueProjection.cs`, `CameraFollow.cs` e `ObliqueCharacter.cs` controlam perspectiva oblíqua, enquadramento e passos do herói. Os modelos são provisórios; texturas e acabamento artístico entram em entregas posteriores. Prévias técnicas exportadas fora do repositório são renderizações dessas malhas, não capturas do Editor.
+
+## Poema e objetos dos segredos — 11 de outubro de 2026
+
+Poema original de três versos em latim e textos de ambientação criados para a lenda fictícia deste projeto, em `LegendPoem.cs` e `AncientSecretInteraction.cs`. Vocabulário consultado em fontes acadêmicas listadas em `Docs/PARTE_7B.md`; o poema não é uma citação de obra histórica.
+
+Altar, chama, monólitos, símbolos de Sol/Lua/Estrela, marcas de garras, abertura entre raízes e duas partes móveis das rochas são malhas originais geradas por código em `ObliqueScenery.cs`. Não foram adicionadas imagens, modelos ou áudios externos.

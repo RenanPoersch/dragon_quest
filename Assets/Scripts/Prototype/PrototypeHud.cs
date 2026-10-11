@@ -1,6 +1,7 @@
 using UnityEngine;
 using DragonQuest.Exploration;
 using DragonQuest.Interactions;
+using DragonQuest.Progression;
 
 namespace DragonQuest.Prototype
 {
@@ -13,6 +14,7 @@ namespace DragonQuest.Prototype
         private PrototypeLocations locations;
         private PrototypeBattleController battle;
         private PrototypeShopController shops;
+        private AncientSecrets secrets;
         private GUIStyle titleStyle;
         private GUIStyle bodyStyle;
         private GUIStyle labelStyle;
@@ -20,7 +22,7 @@ namespace DragonQuest.Prototype
 
         public void Initialize(Camera worldCamera, PlayerInteraction playerInteraction,
             DialogueController dialogueController, ExplorationProgress explorationProgress, PrototypeLocations locationController,
-            PrototypeBattleController battleController, PrototypeShopController shopController)
+            PrototypeBattleController battleController, PrototypeShopController shopController, AncientSecrets ancientSecrets)
         {
             view = worldCamera;
             interaction = playerInteraction;
@@ -29,6 +31,7 @@ namespace DragonQuest.Prototype
             locations = locationController;
             battle = battleController;
             shops = shopController;
+            secrets = ancientSecrets;
         }
 
         private void OnGUI()
@@ -56,7 +59,7 @@ namespace DragonQuest.Prototype
                 DrawLabel(PrototypeCityLayout.Citizen + Vector2.up * 0.9f, "ALDEAO", scale);
                 DrawLabel(PrototypeCityLayout.Chest + Vector2.up * 0.9f, "BAU", scale);
                 DrawLabel(PrototypeCityLayout.Guard + Vector2.up * 0.9f, "GUARDA", scale);
-                DrawLabel(PrototypeCityLayout.Resident + Vector2.up * 0.9f, "MORADORA", scale);
+                DrawLabel(PrototypeCityLayout.Resident + Vector2.up * 0.9f, "CAMPONESA", scale);
                 DrawLabel(PrototypeCityLayout.Gardener + Vector2.up * 0.9f, "JARDINEIRO", scale);
                 DrawLabel(PrototypeCityLayout.Explorer + Vector2.up * 0.9f, "EXPLORADORA", scale);
                 DrawLabel(new Vector2(-24, 21), "CAPELA ANTIGA", scale);
@@ -82,20 +85,30 @@ namespace DragonQuest.Prototype
                 DrawLabel(PrototypeWorldLayout.LocalExit, "SAIDA PARA A ILHA", scale);
             }
 
-            GUI.DrawTexture(new Rect(16, 16, Mathf.Min(590, width - 32), 126), panelTexture);
+            GUI.DrawTexture(new Rect(16, 16, Mathf.Min(590, width - 32), secrets.IsDiscovered ? 172 : 126), panelTexture);
             GUI.Label(new Rect(30, 25, width - 60, 27), "DRAGON QUEST  /  " + locations.LocationName, titleStyle);
-            GUI.Label(new Rect(30, 54, width - 60, 24), "WASD ou setas para andar", bodyStyle);
-            GUI.Label(new Rect(30, 78, width - 60, 24), "E: interagir  |  I: inventario  |  Ouro: " + progress.Gold, bodyStyle);
+            GUI.Label(new Rect(30, 54, width - 60, 24), "WASD/setas: andar  |  E: interagir", bodyStyle);
+            GUI.Label(new Rect(30, 78, width - 60, 24), "I: inventario" + (secrets.KnowsPoem ? "  |  P: poema" : "") + "  |  Ouro: " + progress.Gold, bodyStyle);
             GUI.Label(new Rect(30, 104, Mathf.Min(442, width - 60), 34), shops.Quest.Summary, bodyStyle);
+            if(secrets.IsDiscovered) GUI.Label(new Rect(30,144,Mathf.Min(548,width-60),34),secrets.Summary,bodyStyle);
 
             if (dialogue.IsOpen)
             {
-                float panelTop = height - 205;
-                GUI.DrawTexture(new Rect(16, panelTop, width - 32, 189), panelTexture);
+                bool choosing=dialogue.HasChoices;
+                float panelTop = height - (choosing ? 320 : 205);
+                GUI.DrawTexture(new Rect(16, panelTop, width - 32, choosing ? 304 : 189), panelTexture);
                 GUI.Label(new Rect(30, panelTop + 12, width - 60, 27), dialogue.Title, titleStyle);
-                GUI.Label(new Rect(30, panelTop + 48, width - 60, 89), dialogue.Text, bodyStyle);
-                GUI.Label(new Rect(30, panelTop + 145, width - 60, 30),
-                    "E / Espaco / Enter: continuar   |   Esc: fechar   (" + dialogue.PageNumber + "/" + dialogue.PageCount + ")", bodyStyle);
+                GUI.Label(new Rect(30, panelTop + 48, width - 60, choosing ? 64 : 89), dialogue.Text, bodyStyle);
+                if(choosing)
+                {
+                    var choices=dialogue.Choices;
+                    for(int i=0;i<choices.Count;i++)
+                        if(GUI.Button(new Rect(30,panelTop+120+i*44,width-60,38),(i+1)+". "+choices[i]))
+                        {dialogue.Choose(i);break;}
+                }
+                GUI.Label(new Rect(30, panelTop + (choosing ? 262 : 145), width - 60, 30), choosing
+                    ? "1 / 2 / 3 ou clique: escolher  |  Esc: cancelar"
+                    : "E / Espaco / Enter: continuar   |   Esc: fechar   (" + dialogue.PageNumber + "/" + dialogue.PageCount + ")", bodyStyle);
             }
             else
             {

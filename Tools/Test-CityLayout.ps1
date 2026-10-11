@@ -22,6 +22,9 @@ $cityArguments += Get-ChildItem -LiteralPath $cityReferenceDirectory.FullName -F
 $cityArguments += Join-Path $cityProjectRoot 'Assets/Scripts/Prototype/PrototypeCityLayout.cs'
 $cityArguments += Join-Path $cityProjectRoot 'Assets/Scripts/Prototype/PrototypeWorldLayout.cs'
 $cityArguments += Join-Path $cityProjectRoot 'Assets/Scripts/Prototype/PrototypeTravel.cs'
+$cityArguments += Join-Path $cityProjectRoot 'Assets/Scripts/Prototype/PrototypeSecretLayout.cs'
+$cityArguments += Join-Path $cityProjectRoot 'Assets/Scripts/Progression/AncientSecrets.cs'
+$cityArguments += Join-Path $cityProjectRoot 'Assets/Scripts/Progression/LegendPoem.cs'
 $cityArguments += Join-Path $cityProjectRoot 'Tests/CityLayoutChecks.cs'
 $cityArguments += Join-Path $cityProjectRoot 'Tests/WorldMapChecks.cs'
 & $cityDotnet $cityCsc.FullName @cityArguments

@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using DragonQuest.Exploration;
 using DragonQuest.Interactions;
+using DragonQuest.Progression;
 
 namespace DragonQuest.Prototype
 {
@@ -10,6 +11,7 @@ namespace DragonQuest.Prototype
     {
         private ObliqueScenery scenery;
         private PhysicsMaterial2D frictionless;
+        private readonly AncientSecrets secrets = new AncientSecrets();
 
         private void Awake()
         {
@@ -36,10 +38,10 @@ namespace DragonQuest.Prototype
                 "O bairro residencial fica a oeste, os jardins a nordeste e as ruinas a sudeste. Ao sul, tres pontes atravessam o rio.",
                 "O tirano governa do castelo ao norte. Alguns dizem que os segredos desta cidade escondem algo ainda maior...");
             interactables.Add(citizen);
-            NpcInteraction resident = CreateNpc("Moradora", PrototypeCityLayout.Resident, "B77D8B", interactions);
-            resident.Initialize("Moradora", "Este e o bairro dos artesaos. A rua leva ate a capela antiga, ao norte.",
-                "Minha avo dizia que a capela guarda uma historia esquecida. Talvez ainda exista alguem capaz de entende-la.");
-            interactables.Add(resident);
+            GameObject peasant = CreateNpcFigure("Camponesa", PrototypeCityLayout.Resident, "B77D8B", interactions);
+            interactables.Add(AddSecret(peasant, SecretObject.Peasant));
+            Transform altar = obstacles.Find("Altar antigo");
+            interactables.Add(AddSecret(altar.gameObject, SecretObject.Altar, MonolithSymbol.Sun, scenery.AltarFlame(altar)));
             NpcInteraction gardener = CreateNpc("Jardineiro", PrototypeCityLayout.Gardener, "86A96B", interactions);
             gardener.Initialize("Jardineiro", "Os jardins ja foram abertos a todos. Hoje quase ninguem caminha por aqui.",
                 "Seguindo esta rua para o sul voce atravessa a ponte leste e chega as ruinas antigas.");
@@ -98,12 +100,12 @@ namespace DragonQuest.Prototype
             shops.Initialize(player.GetComponent<PlayerMovement>(), dialogue, battle, progress);
             gameObject.AddComponent<PrototypeShopHud>().Initialize(shops);
             gameObject.AddComponent<PrototypeBattleHud>().Initialize(battle);
-            gameObject.AddComponent<PrototypeMateriaHud>().Initialize(battle);
+            gameObject.AddComponent<PrototypeMateriaHud>().Initialize(battle, secrets);
             PlayerInteraction interaction = player.AddComponent<PlayerInteraction>();
             interaction.Initialize(new InteractionContext(dialogue, progress, locations.TravelTo,
-                battle.StartBattle, () => battle.IsBusy, shops.Open), interactables.ToArray());
+                battle.StartBattle, () => battle.IsBusy, shops.Open, secrets), interactables.ToArray());
             PrototypeHud hud = gameObject.AddComponent<PrototypeHud>();
-            hud.Initialize(camera, interaction, dialogue, progress, locations, battle, shops);
+            hud.Initialize(camera, interaction, dialogue, progress, locations, battle, shops, secrets);
         }
 
         private Transform Group(string groupName, Transform parent = null)
@@ -123,6 +125,13 @@ namespace DragonQuest.Prototype
 
         private NpcInteraction CreateNpc(string npcName, Vector2 position, string color, Transform parent)
             => CreateNpcFigure(npcName, position, color, parent).AddComponent<NpcInteraction>();
+
+        private AncientSecretInteraction AddSecret(GameObject target, SecretObject kind,
+            MonolithSymbol symbol = MonolithSymbol.Sun, GameObject light = null)
+        {
+            AncientSecretInteraction interaction = target.AddComponent<AncientSecretInteraction>();
+            interaction.Initialize(kind, secrets, symbol, light); return interaction;
+        }
 
         private GameObject CreateNpcFigure(string npcName, Vector2 position, string color, Transform parent)
         {
@@ -158,7 +167,7 @@ namespace DragonQuest.Prototype
         private Transform CreateWorld(List<Interactable> interactions)
         {
             Transform world = Group("Ilha - mapa global");
-            scenery.World(world);
+            GameObject rocks = scenery.World(world);
             foreach (BoxCollider2D collider in world.GetComponentsInChildren<BoxCollider2D>()) collider.sharedMaterial = frictionless;
             GameObject coast = Entity("Costa - limite do mar", Vector2.zero, world);
             EdgeCollider2D shoreline = coast.AddComponent<EdgeCollider2D>();
@@ -183,8 +192,12 @@ namespace DragonQuest.Prototype
 
             Transform volcano = Entity("Vulcao - icone global", PrototypeWorldLayout.Volcano, world).transform;
             scenery.VolcanoIcon(volcano);
+            NpcInteraction crater = volcano.gameObject.AddComponent<NpcInteraction>();
+            crater.Initialize("Cratera do vulcao", "Um sopro quente sobe da cratera. Uma trilha desce entre as rochas, e um rugido longinquo rompe o silencio.");
+            interactions.Add(crater);
             GameObject passage = Entity("Passagem oculta", PrototypeWorldLayout.Trail, world);
-            interactions.Add(passage.AddComponent<BlockedPassageInteraction>());
+            BlockedPassageInteraction gate = passage.AddComponent<BlockedPassageInteraction>();
+            gate.Initialize(rocks); interactions.Add(gate);
             return world;
         }
 
@@ -201,11 +214,31 @@ namespace DragonQuest.Prototype
             interactions.Add(CreateDoor("Saida da floresta", PrototypeWorldLayout.LocalExit, forest, PrototypeTravel.World, "Voltar para a ilha"));
             NpcInteraction inhabitant = CreateNpc(eastern ? "Viajante" : "Lenhador", new Vector2(1.5f, 1), eastern ? "C19862" : "879C6B", forest);
             inhabitant.Initialize(eastern ? "Viajante" : "Lenhador", eastern
-                ? "Vi um vulcao no norte da ilha. As montanhas bloqueiam o caminho para ele."
-                : "A ilha parece pequena, mas cada lugar esconde seus proprios caminhos.", eastern
-                ? "Dizem que um dragao dorme na cratera. So quem quebrar os tres selos podera encontra-lo."
-                : "Procure uma passagem entre as rochas, ao norte do castelo. A vegetacao quase esconde a trilha.");
+                ? "Encontrei marcas incomuns numa pedra ao norte. Nao parecem ter sido feitas por nenhum animal que eu conheca."
+                : "Os tres monolitos sao mais antigos que estas arvores. Uma inscricao sobrevive na pedra perto deles.", eastern
+                ? "Minha familia dizia que a floresta guarda aquilo que os homens esquecem. Nunca entendi muito bem."
+                : "Uma camponesa da periferia ainda canta as palavras dos antigos. Talvez voce tambem as conheca.");
             interactions.Add(inhabitant);
+            if (!eastern)
+            {
+                for (int i=0; i<PrototypeSecretLayout.WestMonoliths.Count; i++)
+                {
+                    CityBlock block=PrototypeSecretLayout.WestMonoliths[i];
+                    Transform monolith=forest.Find(block.Name);
+                    MonolithSymbol symbol=PrototypeSecretLayout.SymbolAt(i);
+                    interactions.Add(AddSecret(monolith.gameObject,SecretObject.Monolith,symbol,scenery.MonolithRune(symbol,monolith)));
+                }
+                interactions.Add(AddSecret(Entity("Inscricao da floresta",PrototypeSecretLayout.Inscription,forest),SecretObject.Inscription));
+            }
+            else
+            {
+                GameObject stone=Entity("Marcas na pedra",PrototypeSecretLayout.ClawStone,forest);
+                scenery.ClawMarks(stone.transform);
+                interactions.Add(AddSecret(stone,SecretObject.ClawStone));
+                GameObject tree=Entity("Raizes da arvore oca",PrototypeSecretLayout.HollowTree,forest);
+                scenery.Hollow(tree.transform);
+                interactions.Add(AddSecret(tree,SecretObject.HollowTree));
+            }
             return forest;
         }
 
