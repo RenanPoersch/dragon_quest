@@ -122,9 +122,9 @@ namespace DragonQuest.Prototype
                 string prompt = interaction.CurrentPrompt;
                 if (string.IsNullOrEmpty(prompt))
                     prompt = locations.IsInShop ? "Use E no lojista para comprar/vender; a saida fica ao sul."
-                        : locations.LocationId == PrototypeTravel.World ? "Explore a ilha. Use E perto do castelo, florestas e ruinas para entrar."
-                        : locations.IsInCity ? "Lojas ao redor da praca. Castelo ao norte; saida para a ilha ao sul. Use E nas entradas."
-                        : locations.LocationId == PrototypeTravel.Castle ? "O trono fica ao norte; use E na saida ao sul para voltar a periferia."
+                        : locations.LocationId == PrototypeTravel.World ? "Caminhe ate a entrada do castelo, florestas ou ruinas para entrar automaticamente."
+                        : locations.IsInCity ? "Lojas ao redor da praca. Castelo ao norte; saida para a ilha ao sul. Caminhe pelas entradas."
+                        : locations.LocationId == PrototypeTravel.Castle ? "O trono fica ao norte; caminhe ate a saida ao sul para voltar a periferia."
                         : locations.LocationId == PrototypeTravel.Ruins ? "Explore as ruinas. O altar fica ao norte; a saida para a ilha fica ao sul."
                         : "Converse com o morador usando E. A saida para a ilha fica ao sul.";
                 GUI.Label(new Rect(28, height - 57, width - 56, 38), prompt, bodyStyle);

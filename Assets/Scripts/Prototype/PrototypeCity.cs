@@ -12,6 +12,7 @@ namespace DragonQuest.Prototype
         private ObliqueScenery scenery;
         private PhysicsMaterial2D frictionless;
         private readonly AncientSecrets secrets = new AncientSecrets();
+        private readonly PrototypeTravel navigation = new PrototypeTravel();
 
         private void Awake()
         {
@@ -33,7 +34,7 @@ namespace DragonQuest.Prototype
             Transform interactions = Group("Moradores e bau", city);
             NpcInteraction citizen = CreateNpc("Aldeao", PrototypeCityLayout.Citizen, "8D9DB0", interactions);
             citizen.Initialize("Aldeao",
-                "Bem-vindo a periferia do castelo! Itens a noroeste, materias a nordeste e equipamentos a sudeste. Use E na porta e depois no vendedor.",
+                "Bem-vindo a periferia do castelo! Itens a noroeste, materias a nordeste e equipamentos a sudeste. Caminhe ate a porta para entrar e use E no vendedor.",
                 "Ha um bau a leste daqui. Talvez voce encontre moedas para sua jornada.",
                 "O bairro residencial fica a oeste, os jardins a nordeste e as ruinas a sudeste. Ao sul, tres pontes atravessam o rio.",
                 "O tirano governa do castelo ao norte. Alguns dizem que os segredos desta cidade escondem algo ainda maior...");
@@ -49,11 +50,11 @@ namespace DragonQuest.Prototype
                 "Encontrei marcas de escamas nas pedras. As lendas falam de um dragao, mas ele nunca aparece para qualquer viajante.");
             interactables.Add(explorer);
             interactables.Add(CreateChest(interactions));
-            interactables.Add(CreateDoor("Entrada da loja de itens", new Vector2(-9, 2.1f), city, "item-shop", "Entrar na loja de itens"));
-            interactables.Add(CreateDoor("Entrada da loja de materias", new Vector2(9, 2.1f), city, "materia-shop", "Entrar na loja de materias"));
-            interactables.Add(CreateDoor("Entrada da loja de equipamentos", new Vector2(9, -7.4f), city, "equipment-shop", "Entrar na loja de equipamentos"));
-            interactables.Add(CreateDoor("Portao para a ilha", PrototypeWorldLayout.CityExit, city, PrototypeTravel.World, "Sair para o mapa global"));
-            interactables.Add(CreateDoor("Entrada do castelo", PrototypeWorldLayout.CastleDoor, city, PrototypeTravel.Castle, "Entrar no castelo"));
+            CreatePassage("Entrada da loja de itens", PrototypeTravel.City, city, "item-shop");
+            CreatePassage("Entrada da loja de materias", PrototypeTravel.City, city, "materia-shop");
+            CreatePassage("Entrada da loja de equipamentos", PrototypeTravel.City, city, "equipment-shop");
+            CreatePassage("Portao para a ilha", PrototypeTravel.City, city, PrototypeTravel.World);
+            CreatePassage("Entrada do castelo", PrototypeTravel.City, city, PrototypeTravel.Castle);
             GameObject guard = Entity("Guarda do tirano", PrototypeCityLayout.Guard, city);
             BoxCollider2D guardCollider = guard.AddComponent<BoxCollider2D>();
             guardCollider.size = new Vector2(0.65f, 0.7f);
@@ -92,11 +93,12 @@ namespace DragonQuest.Prototype
             var progress = new ExplorationProgress(PrototypeShopFactory.StartingGold);
             DialogueController dialogue = gameObject.AddComponent<DialogueController>();
             PrototypeLocations locations = gameObject.AddComponent<PrototypeLocations>();
-            locations.Initialize(mapRoots, player.GetComponent<PlayerMovement>(), cameraFollow);
             PrototypeShopController shops = gameObject.AddComponent<PrototypeShopController>();
             PrototypeBattleController battle = gameObject.AddComponent<PrototypeBattleController>();
             battle.Initialize(player.GetComponent<PlayerMovement>(), dialogue, progress, () => shops.IsOpen);
             shops.Initialize(player.GetComponent<PlayerMovement>(), dialogue, battle, progress);
+            locations.Initialize(mapRoots, player.GetComponent<PlayerMovement>(), cameraFollow, navigation,
+                () => dialogue.IsOpen || battle.IsBusy);
             gameObject.AddComponent<PrototypeShopHud>().Initialize(shops);
             gameObject.AddComponent<PrototypeBattleHud>().Initialize(battle);
             gameObject.AddComponent<PrototypeMateriaHud>().Initialize(battle, secrets);
@@ -154,13 +156,11 @@ namespace DragonQuest.Prototype
             return interaction;
         }
 
-        private DoorInteraction CreateDoor(string doorName, Vector2 position, Transform parent, string destination, string prompt)
+        private void CreatePassage(string doorName, string source, Transform parent, string destination)
         {
-            GameObject door = Entity(doorName, position, parent);
+            Rect area = navigation.RouteFrom(source, destination).Entrance;
+            GameObject door = Entity(doorName, area.center, parent);
             Block(doorName + " - marca", Vector2.zero, new Vector2(0.9f, 0.14f), "E4C36E", door.transform, false, 4);
-            DoorInteraction interaction = door.AddComponent<DoorInteraction>();
-            interaction.Initialize(destination, prompt);
-            return interaction;
         }
 
         private Transform CreateWorld(List<Interactable> interactions)
@@ -180,20 +180,16 @@ namespace DragonQuest.Prototype
             Transform castle = Entity("Castelo - icone global", PrototypeWorldLayout.Castle, world).transform;
             scenery.CastleIcon(castle);
             castle.GetComponent<BoxCollider2D>().sharedMaterial = frictionless;
-            interactions.Add(CreateDoor("Castelo e arredores", PrototypeWorldLayout.Castle + Vector2.down * 0.85f, world,
-                PrototypeTravel.City, "Entrar na periferia do castelo"));
+            CreatePassage("Castelo e arredores", PrototypeTravel.World, world, PrototypeTravel.City);
             CreateForestIcon(world, PrototypeWorldLayout.WestForest);
             CreateForestIcon(world, PrototypeWorldLayout.EastForest);
-            interactions.Add(CreateDoor("Floresta oeste", PrototypeWorldLayout.WestForest + Vector2.down * 0.85f, world,
-                PrototypeTravel.WestForest, "Entrar na floresta oeste"));
-            interactions.Add(CreateDoor("Floresta leste", PrototypeWorldLayout.EastForest + Vector2.down * 0.85f, world,
-                PrototypeTravel.EastForest, "Entrar na floresta leste"));
+            CreatePassage("Floresta oeste", PrototypeTravel.World, world, PrototypeTravel.WestForest);
+            CreatePassage("Floresta leste", PrototypeTravel.World, world, PrototypeTravel.EastForest);
 
             Transform ruins = Entity("Ruinas - icone global",PrototypeWorldLayout.Ruins,world).transform;
             scenery.RuinsIcon(ruins);
             ruins.GetComponent<BoxCollider2D>().sharedMaterial=frictionless;
-            interactions.Add(CreateDoor("Ruinas antigas",PrototypeWorldLayout.Ruins+Vector2.down*0.85f,world,
-                PrototypeTravel.Ruins,"Entrar nas ruinas antigas"));
+            CreatePassage("Ruinas antigas", PrototypeTravel.World, world, PrototypeTravel.Ruins);
 
             Transform volcano = Entity("Vulcao - icone global", PrototypeWorldLayout.Volcano, world).transform;
             scenery.VolcanoIcon(volcano);
@@ -216,7 +212,7 @@ namespace DragonQuest.Prototype
         {
             Transform forest = Group(eastern ? "Floresta leste - interior" : "Floresta oeste - interior");
             DrawBlocks(PrototypeWorldLayout.CreateForestBlocks(eastern), forest);
-            interactions.Add(CreateDoor("Saida da floresta", PrototypeWorldLayout.LocalExit, forest, PrototypeTravel.World, "Voltar para a ilha"));
+            CreatePassage("Saida da floresta", eastern ? PrototypeTravel.EastForest : PrototypeTravel.WestForest, forest, PrototypeTravel.World);
             NpcInteraction inhabitant = CreateNpc(eastern ? "Viajante" : "Lenhador", new Vector2(1.5f, 1), eastern ? "C19862" : "879C6B", forest);
             inhabitant.Initialize(eastern ? "Viajante" : "Lenhador", eastern
                 ? "Encontrei marcas incomuns numa pedra ao norte. Nao parecem ter sido feitas por nenhum animal que eu conheca."
@@ -251,7 +247,7 @@ namespace DragonQuest.Prototype
         {
             Transform castle = Group("Castelo - interior");
             DrawBlocks(PrototypeWorldLayout.CastleBlocks, castle);
-            interactions.Add(CreateDoor("Saida do castelo", PrototypeWorldLayout.CastleExit, castle, PrototypeTravel.City, "Voltar para a periferia"));
+            CreatePassage("Saida do castelo", PrototypeTravel.Castle, castle, PrototypeTravel.City);
             NpcInteraction tyrant = CreateNpc("Tirano", PrototypeWorldLayout.Throne, "9A5979", castle);
             tyrant.Initialize("Tirano", "Todo caminho nesta ilha termina diante do meu trono.",
                 "Por um instante, uma segunda voz parece falar junto com a dele. Uma presenca estranha ocupa esta sala...");
@@ -265,7 +261,7 @@ namespace DragonQuest.Prototype
             DrawBlocks(PrototypeRuinsLayout.Blocks,ruins);
             Transform altar=ruins.Find("Altar antigo");
             interactions.Add(AddSecret(altar.gameObject,SecretObject.Altar,MonolithSymbol.Sun,scenery.AltarFlame(altar)));
-            interactions.Add(CreateDoor("Saida das ruinas",PrototypeRuinsLayout.Exit,ruins,PrototypeTravel.World,"Voltar para a ilha"));
+            CreatePassage("Saida das ruinas", PrototypeTravel.Ruins, ruins, PrototypeTravel.World);
             return ruins;
         }
 
@@ -294,7 +290,7 @@ namespace DragonQuest.Prototype
             MerchantInteraction merchant = CreateNpcFigure("Lojista", new Vector2(0, 0.9f), displayColor, shop).AddComponent<MerchantInteraction>();
             merchant.Initialize(shopId, shopName);
             interactions.Add(merchant);
-            interactions.Add(CreateDoor("Saida da loja", new Vector2(0, -4.1f), shop, "city", "Voltar para a cidade"));
+            CreatePassage("Saida da loja", shopId, shop, PrototypeTravel.City);
         }
 
         private void Building(string buildingName, Vector2 position, Vector2 size, string roofColor, Transform parent)

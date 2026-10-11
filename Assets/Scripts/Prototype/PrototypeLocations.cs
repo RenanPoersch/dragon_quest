@@ -11,6 +11,7 @@ namespace DragonQuest.Prototype
         private PrototypeTravel navigation;
         private PlayerMovement player;
         private CameraFollow cameraFollow;
+        private System.Func<bool> travelBlocked;
 
         public string LocationId => navigation?.Current.Id ?? PrototypeTravel.World;
         public bool IsInShop => navigation?.Current.IsShop ?? false;
@@ -19,10 +20,10 @@ namespace DragonQuest.Prototype
             : navigation?.Current.Name ?? "ILHA / MAPA GLOBAL";
 
         public void Initialize(Dictionary<string, GameObject> roots,
-            PlayerMovement hero, CameraFollow camera)
+            PlayerMovement hero, CameraFollow camera, PrototypeTravel travel, System.Func<bool> blocked)
         {
             mapRoots = roots; player = hero; cameraFollow = camera;
-            navigation = new PrototypeTravel();
+            navigation = travel; travelBlocked = blocked;
             foreach (MapDefinition map in navigation.Maps)
                 if (!mapRoots.ContainsKey(map.Id) || mapRoots[map.Id] == null)
                     throw new System.ArgumentException("Cenario ausente: " + map.Id);
@@ -33,6 +34,13 @@ namespace DragonQuest.Prototype
         {
             if (!navigation.TryTravel(locationId, out Vector2 arrival)) return;
             ApplyMap(arrival);
+        }
+
+        private void Update()
+        {
+            if (navigation == null || player == null) return;
+            if (navigation.TryEnter(player.transform.position, !Application.isFocused || travelBlocked(), out Vector2 arrival))
+                ApplyMap(arrival);
         }
 
         private void ApplyMap(Vector2 arrival)

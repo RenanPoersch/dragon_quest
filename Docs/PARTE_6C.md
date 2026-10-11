@@ -21,7 +21,7 @@ Novos marcos de reposição poderão ser ligados ao avanço da história nas pr�
 ## Roteiro em Play
 
 1. Abra `Assets/Scenes/CidadePrototipo.unity` na Unity 6000.6.5f1. Aguarde a compilação e confira o Console antes de entrar em Play.
-   A partir da parte 7A, a demo começa na ilha: use E perto do pequeno castelo para entrar na periferia e siga ao norte até a praça, onde começa o roteiro abaixo.
+   A partir da parte 7A, a demo começa na ilha: caminhe até a entrada do pequeno castelo para entrar na periferia e siga ao norte até a praça, onde começa o roteiro abaixo.
 2. Confirme 50 moedas, 2 poções e 1 antídoto. O HUD deve orientar a procurar o vendedor de itens para a entrega.
 3. Entre na loja de itens a noroeste, use E no vendedor e compre 1 poção. Ouro: 40; estoque do vendedor: 11; seu estoque: 3.
 4. Clique em **Aceitar entrega**, no topo direito do menu. Feche e saia. O HUD deve orientar a levar o pacote à loja de matérias, a nordeste.

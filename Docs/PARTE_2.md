@@ -14,10 +14,10 @@
 - Fechar a conversa deve permitir andar novamente. A mesma tecla que fecha não pode reabrir o diálogo no mesmo frame.
 - O baú está a sudeste da fonte. Pressione E perto dele para receber 25 moedas. O contador no cabeçalho deve mudar e a tampa deve abrir.
 - Interaja novamente: o baú deve informar que está vazio, sem dar mais moedas.
-- A loja de itens está a noroeste da praça. Aproxime-se da marca dourada diante da porta e pressione E.
+- A loja de itens está a noroeste da praça. Caminhe até a marca dourada diante da porta para entrar automaticamente.
 - O cenário deve trocar para o interior, com piso, estantes, balcão e lojista. O herói deve aparecer no tapete, ao sul.
 - Aproxime-se do balcão e converse com o lojista. Compras ainda não estão disponíveis.
-- Vá até a marca dourada ao sul e pressione E para voltar à cidade, diante da mesma porta.
+- Caminhe até a marca dourada ao sul para voltar à cidade, diante da mesma porta.
 - O ouro e a aparência aberta do baú devem permanecer. Reabrir o baú depois de voltar da loja não pode dar outra recompensa.
 - Entre e saia da loja várias vezes. Não deve haver duplicação de objetos ou diálogo com NPCs do ambiente desativado.
 - Sair de Play e entrar novamente inicia uma nova sessão: ouro zero e baú fechado. Salvamento em disco será implementado depois.

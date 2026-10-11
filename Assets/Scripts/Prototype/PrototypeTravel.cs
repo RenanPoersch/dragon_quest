@@ -22,7 +22,12 @@ namespace DragonQuest.Prototype
         public string From { get; }
         public string To { get; }
         public Vector2 Arrival { get; }
-        public MapRoute(string from, string to, Vector2 arrival) { From = from; To = to; Arrival = arrival; }
+        public Rect Entrance { get; }
+        public MapRoute(string from, string to, Vector2 entrance, Vector2 arrival)
+        {
+            From = from; To = to; Arrival = arrival;
+            Entrance = new Rect(entrance.x - 0.7f, entrance.y - 0.5f, 1.4f, 1f);
+        }
     }
 
     // Politica de viagem separada da Unity: somente conexoes declaradas podem trocar mapas.
@@ -52,22 +57,26 @@ namespace DragonQuest.Prototype
             foreach (MapDefinition map in definitions) maps.Add(map.Id, map);
             Maps = Array.AsReadOnly(definitions);
             var connections = new List<MapRoute>();
-            Connect(connections, World, City, PrototypeWorldLayout.Castle + Vector2.down * 2.5f);
-            Connect(connections, World, WestForest, PrototypeWorldLayout.WestForest + Vector2.down * 2.5f);
-            Connect(connections, World, EastForest, PrototypeWorldLayout.EastForest + Vector2.down * 2.5f);
-            Connect(connections, World, Ruins, PrototypeWorldLayout.Ruins + Vector2.down * 2.5f);
-            Connect(connections, City, Castle, new Vector2(0, 14.5f));
-            Connect(connections, City, "item-shop", new Vector2(-9, 1.7f));
-            Connect(connections, City, "materia-shop", new Vector2(9, 1.7f));
-            Connect(connections, City, "equipment-shop", new Vector2(9, -7.8f));
+            Connect(connections, World, City, PrototypeWorldLayout.Castle + Vector2.down * 0.85f,
+                PrototypeWorldLayout.CityExit, PrototypeWorldLayout.Castle + Vector2.down * 2.5f);
+            Connect(connections, World, WestForest, PrototypeWorldLayout.WestForest + Vector2.down * 0.85f,
+                PrototypeWorldLayout.LocalExit, PrototypeWorldLayout.WestForest + Vector2.down * 2.5f);
+            Connect(connections, World, EastForest, PrototypeWorldLayout.EastForest + Vector2.down * 0.85f,
+                PrototypeWorldLayout.LocalExit, PrototypeWorldLayout.EastForest + Vector2.down * 2.5f);
+            Connect(connections, World, Ruins, PrototypeWorldLayout.Ruins + Vector2.down * 0.85f,
+                PrototypeRuinsLayout.Exit, PrototypeWorldLayout.Ruins + Vector2.down * 2.5f);
+            Connect(connections, City, Castle, PrototypeWorldLayout.CastleDoor, PrototypeWorldLayout.CastleExit, new Vector2(0, 14.5f));
+            Connect(connections, City, "item-shop", new Vector2(-9, 2.1f), new Vector2(0, -4.1f), new Vector2(-9, 1));
+            Connect(connections, City, "materia-shop", new Vector2(9, 2.1f), new Vector2(0, -4.1f), new Vector2(9, 1));
+            Connect(connections, City, "equipment-shop", new Vector2(9, -7.4f), new Vector2(0, -4.1f), new Vector2(9, -8.5f));
             Routes = connections.AsReadOnly();
             Current = maps[World];
         }
 
-        private void Connect(List<MapRoute> connections, string outside, string inside, Vector2 returnPoint)
+        private void Connect(List<MapRoute> connections, string outside, string inside, Vector2 entrance, Vector2 exit, Vector2 returnPoint)
         {
-            AddRoute(connections, new MapRoute(outside, inside, maps[inside].Spawn));
-            AddRoute(connections, new MapRoute(inside, outside, returnPoint));
+            AddRoute(connections, new MapRoute(outside, inside, entrance, maps[inside].Spawn));
+            AddRoute(connections, new MapRoute(inside, outside, exit, returnPoint));
         }
         private void AddRoute(List<MapRoute> connections, MapRoute route)
         {
@@ -79,6 +88,19 @@ namespace DragonQuest.Prototype
             arrival = Current.Spawn;
             if (destination == null || !routes.TryGetValue((Current.Id, destination), out MapRoute route)) return false;
             Current = maps[destination]; arrival = route.Arrival; return true;
+        }
+
+        public MapRoute RouteFrom(string from, string destination) => routes[(from, destination)];
+
+        // O ponto no chao do heroi precisa entrar na area; menus suspendem a troca.
+        public bool TryEnter(Vector2 position, bool blocked, out Vector2 arrival)
+        {
+            arrival = Current.Spawn;
+            if (blocked) return false;
+            foreach (MapRoute route in Routes)
+                if (route.From == Current.Id && route.Entrance.Contains(position))
+                    return TryTravel(route.To, out arrival);
+            return false;
         }
     }
 }

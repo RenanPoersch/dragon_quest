@@ -30,7 +30,7 @@ Ouro, inventário, estoques, matérias, equipamentos, missão e Limit continuam 
 1. Saia de Play, aguarde a importação dos scripts e do shader e abra `Assets/Scenes/CidadePrototipo.unity`.
 2. Inicie Play. Confirme a ilha vista em ângulo e o personagem sobre o chão; verifique se o Console apresenta erro de shader ou material rosa.
 3. Caminhe com WASD e setas, incluindo diagonais. Confira a direção na tela, os passos e as colisões com mar e montanhas.
-4. Use E no castelo global. Explore a periferia, contorne casas, árvores, fonte e bancos e atravesse as três pontes.
+4. Caminhe até a entrada do castelo global. Explore a periferia, contorne casas, árvores, fonte e bancos e atravesse as três pontes.
 5. Entre nas três lojas, converse com os vendedores, abra o inventário e compre/venda um produto. Saia e confira ouro e estoques.
 6. Abra o baú. Confira a tampa aberta, as 25 moedas e a ausência de uma segunda recompensa ao examiná-lo novamente.
 7. Entre no castelo ao norte. Confira colunas, paredes, trono, diálogo do tirano e saída.

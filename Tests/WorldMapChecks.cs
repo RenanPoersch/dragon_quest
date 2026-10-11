@@ -102,12 +102,24 @@ internal static class WorldMapChecks
             Assert(arrival == route.Arrival && travel.Current.Bounds.Contains(arrival), "Rota deve usar sua chegada especifica dentro do novo mapa.");
             Assert(route.To == PrototypeTravel.City ? CityLayoutChecks.Accessible(arrival) : paths[route.To].Accessible(arrival),
                 "Chegada bloqueada ou sem caminho de retorno: " + route.From + " -> " + route.To);
+            travel = new PrototypeTravel(); NavigateTo(travel, route.From);
+            MapDefinition before = travel.Current;
+            Assert(route.From == PrototypeTravel.City ? CityLayoutChecks.Accessible(route.Entrance.center) : paths[route.From].Accessible(route.Entrance.center),
+                "Area automatica precisa ser alcancavel: " + route.From + " -> " + route.To);
+            Assert(!travel.TryEnter(new Vector2(route.Entrance.center.x,route.Entrance.yMin-0.01f),false,out _) && travel.Current==before,
+                "Aproximar-se sem entrar na area nao pode trocar o mapa.");
+            Assert(!travel.TryEnter(route.Entrance.center,true,out _) && travel.Current==before,
+                "Dialogo, inventario ou batalha suspendem a passagem.");
+            Assert(travel.TryEnter(route.Entrance.center,false,out arrival) && travel.Current.Id==route.To && arrival==route.Arrival,
+                "Entrar na area deve trocar o cenario sem uma tecla de confirmacao.");
+            Assert(!travel.TryEnter(arrival,false,out _) && travel.Current.Id==route.To,
+                "Chegada nao pode acionar a saida e devolver imediatamente ao mapa anterior.");
         }
         travel = new PrototypeTravel();
         for (int i = 0; i < 3; i++)
         {
             Assert(travel.TryTravel(PrototypeTravel.City, out _) && travel.TryTravel("item-shop", out _)
-                && travel.TryTravel(PrototypeTravel.City, out Vector2 shopReturn) && shopReturn == new Vector2(-9, 1.7f),
+                && travel.TryTravel(PrototypeTravel.City, out Vector2 shopReturn) && shopReturn == new Vector2(-9, 1),
                 "Entrar e sair da loja deve devolver a mesma porta da periferia.");
             Assert(travel.TryTravel(PrototypeTravel.Castle, out _) && travel.TryTravel(PrototypeTravel.City, out _)
                 && travel.TryTravel(PrototypeTravel.World, out Vector2 worldReturn) && worldReturn == PrototypeWorldLayout.Castle + Vector2.down * 2.5f,
@@ -129,6 +141,11 @@ internal static class WorldMapChecks
         travel.TryTravel(PrototypeTravel.World,out _);travel.TryTravel(PrototypeTravel.Ruins,out _);
         Assert(secrets.AltarSolved&&secrets.CompletedCount==1&&!secrets.TrySolveAltar(DragonQuest.Progression.LegendPoem.Flame),"Sair e retornar nao duplica nem apaga a solucao do altar.");
         Assert(new PrototypeTravel().Current.Id == PrototypeTravel.World, "Uma nova sessao nao pode herdar o mapa de outra.");
+        foreach (MapDefinition map in travel.Maps)
+        {
+            travel=new PrototypeTravel();NavigateTo(travel,map.Id);
+            Assert(!travel.TryEnter(map.Spawn,false,out _) && travel.Current.Id==map.Id,"Posicao inicial nao pode disparar uma passagem automaticamente.");
+        }
     }
 
     public static int Run(string exportDirectory = null)

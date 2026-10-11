@@ -21,7 +21,7 @@ Use essa versão do Editor para evitar migrações involuntárias.
 
 ## Parte 7A — ilha e cenários locais
 
-A demo começa no **mapa global de uma pequena ilha cercada pelo mar**. Castelo e florestas aparecem como ícones um pouco mais altos que o herói. Use E próximo dos pontos para entrar em cenários locais:
+A demo começa no **mapa global de uma pequena ilha cercada pelo mar**. Castelo e florestas aparecem como ícones um pouco mais altos que o herói. Caminhe até a área de entrada dos pontos para mudar automaticamente para os cenários locais:
 
 - Castelo no mapa global → **periferia do castelo**, reaproveitando a cidade de 72 × 48, com lojas, moradores, rio, pontes, missão e patrulha.
 - Porta ao norte da periferia → **interior do castelo**, com salão e trono. O tirano tem diálogo nesta entrega; a batalha e os finais entram na parte 8.
@@ -29,7 +29,7 @@ A demo começa no **mapa global de uma pequena ilha cercada pelo mar**. Castelo 
 - Ruínas antigas ao sudoeste da ilha → cenário próprio com colunas quebradas e o altar da lenda.
 - Passagem escondida ao norte → trilha para o vulcão, bloqueada por rochas e três selos. O dragão entra em uma entrega posterior.
 
-Saídas devolvem o herói ao ponto correspondente do mapa anterior. Ouro, inventário, equipamentos, missão, estoques e Limit usam a mesma sessão entre cenários.
+Entradas e saídas, incluindo lojas, funcionam ao caminhar pela área de passagem, sem confirmar com E. Chegadas ficam fora dessas áreas para evitar retorno imediato; diálogos, inventário, lojas abertas e batalhas suspendem a viagem. E continua sendo usado para conversar, examinar objetos e desfazer os selos da trilha. Ouro, inventário, equipamentos, missão, estoques e Limit usam a mesma sessão entre cenários.
 
 A apresentação agora usa **câmera oblíqua e modelos com volume**, substituindo os retângulos vistos de cima. A ilha tem costa elevada, montanhas, mar e ícones pequenos de locais; casas têm paredes, telhados e janelas; personagens têm um modelo simples com passos animados. No mapa mundial, a câmera está aproximadamente duas vezes mais próxima no enquadramento e acompanha o herói perto do centro da tela. Na periferia, ela também acompanha o herói mantendo o ângulo. Florestas, ruínas, castelo e lojas usam enquadramentos fixos. WASD/setas acompanham as direções da tela.
 

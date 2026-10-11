@@ -192,3 +192,11 @@ O usuário confirmou que as interações funcionaram em Play. Não houve valida�
 - Foco agora acompanha diretamente o personagem na ilha/periferia, com ponto de mira na altura do centro do corpo e suavização de 0,08 segundo. Zoom aproximado, ângulo e enquadramentos locais fixos preservados.
 - Scripts compilaram e 1.586 verificações de câmera/malhas passaram. A regressão confere centralização horizontal e vertical no início da ilha, pontos de interesse e bordas, em proporções 16:9, 4:3 e 3:4.
 - Movimento com suavização e aparência real ainda aguardam Play. Verificar caminhada em todas as direções, parada e entrada/saída de cenários.
+
+## Passagens automáticas entre mapas
+
+- As 16 rotas têm uma área de passagem de 1,4 × 1 unidade, definida junto à entrada/saída. O ponto do personagem no chão precisa entrar nessa área; não há confirmação com E.
+- A mesma definição posiciona as marcas no cenário e determina a viagem. Menus, diálogos, batalhas e perda de foco da janela suspendem as transições. Uma atualização realiza no máximo uma viagem.
+- Retornos das lojas foram afastados das portas. Todas as chegadas e posições iniciais ficam fora das passagens, evitando ciclos de entrada/saída.
+- Compilação dos scripts passou. Passaram 58 verificações da periferia e 204 de ilha/interiores/viagens, incluindo alcance das áreas, aproximação sem entrar, suspensão por bloqueio e ausência de retorno imediato.
+- Em Play: caminhar até cada entrada e saída sem E, parar após chegar, repetir as viagens e conferir preservação de ouro, equipamentos, matérias, segredos e Limit. E continua acionando moradores, vendedores, objetos e abertura dos selos.

@@ -70,7 +70,7 @@ internal static class CityLayoutChecks
             Assert(PrototypeCityLayout.DistrictAt(district.VisitPoint) == district.Name, "Nome do bairro incorreto em " + district.Name + ".");
         }
         foreach (Vector2 door in new[] { new Vector2(-9, 2.1f), new Vector2(9, 2.1f), new Vector2(9, -7.4f) }) CheckReachable(door, "porta da loja");
-        foreach (Vector2 exit in new[] { new Vector2(-9, 1.7f), new Vector2(9, 1.7f), new Vector2(9, -7.8f) }) CheckReachable(exit, "retorno da loja");
+        foreach (Vector2 exit in new[] { new Vector2(-9, 1), new Vector2(9, 1), new Vector2(9, -8.5f) }) CheckReachable(exit, "retorno da loja");
         CheckReachable(PrototypeCityLayout.Citizen + Vector2.down, "aldeao");
         CheckReachable(PrototypeCityLayout.Chest + Vector2.down, "bau");
         CheckReachable(PrototypeCityLayout.Guard + Vector2.down, "patrulha");
