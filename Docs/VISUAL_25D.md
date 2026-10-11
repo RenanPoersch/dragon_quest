@@ -19,7 +19,9 @@ O mundo passa a ser visto em ângulo, com modelos simples de poucos polígonos e
 
 `ObliqueScenery` cria os modelos a partir da planta. `ObliqueMeshData` armazena vértices, triângulos e cores por face, permitindo verificar a geometria sem iniciar o Editor. Os modelos são malhas criadas em execução, não arquivos importados do Final Fantasy. O material usa `Assets/Resources/ObliqueWorld.shader`, compatível com o renderer 2D URP existente, com profundidade para ordenar volumes.
 
-O chão físico continua em XY usando Rigidbody2D e Collider2D. A altura visual usa -Z. `ObliqueProjection` centraliza projeção, orientação dos controles e limites da câmera. A câmera inclinada mostra o relevo sem migrar os sistemas de colisão e interação para física 3D. `ObliqueCharacter` anima o modelo filho do objeto físico.
+O chão físico continua em XY usando Rigidbody2D e Collider2D. A altura visual usa -Z. `ObliqueProjection` centraliza projeção, orientação dos controles e enquadramento da câmera. A câmera inclinada mostra o relevo sem migrar os sistemas de colisão e interação para física 3D. `ObliqueCharacter` anima o modelo filho do objeto físico.
+
+Nos mapas com acompanhamento, o foco segue diretamente o herói, sem prendê-lo ao retângulo do mapa. O ponto de mira usa a altura de 0,72 do modelo, mantendo o centro do corpo próximo ao centro da tela; a suavização é de 0,08 segundo. A costa e as paredes continuam limitando o movimento por colisores. Ao chegar às bordas, parte do espaço externo pode aparecer no enquadramento. Cenários com câmera fixa mantêm o foco no centro do ambiente.
 
 Ouro, inventário, estoques, matérias, equipamentos, missão e Limit continuam nos mesmos controladores. Batalhas e menus ainda usam a interface provisória anterior. A trilha do vulcão continua bloqueada; esta mudança visual não implementa os três segredos nem o dragão.
 

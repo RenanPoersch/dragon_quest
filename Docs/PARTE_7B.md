@@ -53,6 +53,6 @@ A cratera tem uma interação de ambientação. O interior do vulcão, a batalha
 - `PrototypeRuinsLayout.cs`: cenário local das ruínas, posição inicial, saída, altar, colunas e paredes. A demo agora tem nove mapas e 16 rotas direcionais.
 - `BlockedPassageInteraction.cs`: abertura explícita da trilha e movimento das duas partes da barreira.
 
-Passaram 159 verificações de segredos/escolhas, 58 de caminhos da periferia, 115 de ilha/interiores/viagens, 1.538 de câmera/malhas na versão com zoom aproximado da ilha, 1.518 de combate/inventário/lojas/progresso e 15 de exploração. Os scripts compilaram com as bibliotecas da Unity 6000.6.5f1.
+Passaram 159 verificações de segredos/escolhas, 58 de caminhos da periferia, 115 de ilha/interiores/viagens, 1.586 de câmera/malhas na versão com zoom aproximado e acompanhamento centralizado, 1.518 de combate/inventário/lojas/progresso e 15 de exploração. Os scripts compilaram com as bibliotecas da Unity 6000.6.5f1.
 
 Os testes conferem a lógica de cancelamento, respostas, repetição, ordens de descoberta, progresso e caminho aberto/fechado. Eles não executam cliques, teclado, física, animação ou renderização na Unity. Esses pontos precisam do roteiro de Play acima. Progresso continua restrito à sessão, sem salvamento em disco.

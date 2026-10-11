@@ -5,7 +5,7 @@ namespace DragonQuest.Exploration
     [RequireComponent(typeof(Camera))]
     public sealed class CameraFollow : MonoBehaviour
     {
-        [SerializeField, Min(0.01f)] private float smoothTime = 0.12f;
+        [SerializeField, Min(0.01f)] private float smoothTime = 0.08f;
 
         private Transform target;
         private Camera view;
@@ -27,7 +27,7 @@ namespace DragonQuest.Exploration
             view.farClipPlane = 150f;
             transform.rotation = Quaternion.AngleAxis(ObliqueProjection.YawDegrees, Vector3.forward)
                 * Quaternion.Euler(-ObliqueProjection.TiltDegrees, 0, 0);
-            transform.position = GetBoundedPosition();
+            transform.position = GetFollowPosition();
             velocity = Vector3.zero;
         }
 
@@ -36,7 +36,7 @@ namespace DragonQuest.Exploration
             if (target == null || view == null) return;
             UpdateSize();
             transform.position = Vector3.SmoothDamp(
-                transform.position, GetBoundedPosition(), ref velocity, smoothTime);
+                transform.position, GetFollowPosition(), ref velocity, smoothTime);
         }
 
         private void UpdateSize()
@@ -44,11 +44,12 @@ namespace DragonQuest.Exploration
             view.orthographicSize = ObliqueProjection.FrameSize(requestedSize, worldBounds, view.aspect, fixedFrame);
         }
 
-        private Vector3 GetBoundedPosition()
+        private Vector3 GetFollowPosition()
         {
             Vector2 focus = ObliqueProjection.CameraFocus(target.position, worldBounds,
                 view.orthographicSize, view.aspect, fixedFrame);
-            return new Vector3(focus.x, focus.y, 0) - transform.forward * ObliqueProjection.Distance;
+            return ObliqueProjection.Point(focus, fixedFrame ? 0 : ObliqueProjection.HeroCenterHeight)
+                - transform.forward * ObliqueProjection.Distance;
         }
     }
 }

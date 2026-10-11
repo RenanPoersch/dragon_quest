@@ -29,11 +29,11 @@ internal static class ObliqueChecks
         Assert(!degenerate,name+": triângulo sem área.");
     }
 
-    private static void Export(string directory,string name,ObliqueMeshData data,Vector2 focus,float size)
+    private static void Export(string directory,string name,ObliqueMeshData data,Vector2 focus,float size,float focusHeight=0)
     {
         File.WriteAllText(Path.Combine(directory,name+".json"),JsonSerializer.Serialize(new {
             vertices=data.Vertices.Select(p=>new[]{p.x,p.y,p.z}),colors=data.Colors.Select(c=>new[]{c.r,c.g,c.b}),
-            triangles=data.Triangles,focus=new[]{focus.x,focus.y},size,
+            triangles=data.Triangles,focus=new[]{focus.x,focus.y},size,focusHeight,
             groundScale=ObliqueProjection.GroundScale,heightScale=ObliqueProjection.HeightScale,
             yawCos=ObliqueProjection.YawCos,yawSin=ObliqueProjection.YawSin
         }));
@@ -67,7 +67,7 @@ internal static class ObliqueChecks
             foreach(var hero in new[]{map.Spawn,new Vector2(map.Bounds.xMax,map.Bounds.yMax)})
             {
                 var focus=ObliqueProjection.CameraFocus(hero,map.Bounds,map.CameraSize,16f/9,map.FixedCamera);
-                Assert(map.Bounds.Contains(focus),"Foco da câmera deve continuar dentro do mapa.");
+                Assert(float.IsFinite(focus.x)&&float.IsFinite(focus.y),"Foco da câmera precisa ser finito.");
                 if(map.FixedCamera) Assert(focus==map.Bounds.center,"Câmera fixa não pode saltar com o personagem.");
             }
             foreach(float aspect in new[]{16f/9,4f/3,0.75f})
@@ -81,6 +81,16 @@ internal static class ObliqueChecks
                 }
             }
         }
+        foreach(var point in new[]{PrototypeWorldLayout.Spawn,PrototypeWorldLayout.Castle,PrototypeWorldLayout.WestForest,
+            PrototypeWorldLayout.EastForest,PrototypeWorldLayout.Ruins,PrototypeWorldLayout.Volcano,new Vector2(-14,0),new Vector2(12,-6)})
+            foreach(float aspect in new[]{16f/9,4f/3,0.75f})
+            {
+                Vector2 focus=ObliqueProjection.CameraFocus(point,PrototypeWorldLayout.Bounds,travel.Current.CameraSize,aspect,false);
+                Vector2 body=ObliqueProjection.ScreenPlane(new Vector2(point.x-focus.x,point.y-focus.y),ObliqueProjection.HeroCenterHeight);
+                Vector2 anchor=ObliqueProjection.ScreenPlane(Vector2.zero,ObliqueProjection.HeroCenterHeight);
+                Near(body.x,0,"Herói precisa ficar no centro horizontal da ilha, inclusive ao nascer e junto à costa.");
+                Near(body.y-anchor.y,0,"Foco elevado deve alinhar centro do corpo verticalmente.");
+            }
         foreach(var point in new[]{new Vector2(-35,23),new Vector2(35,23),new Vector2(-35,-23),new Vector2(35,-23)})
             foreach(float aspect in new[]{16f/9,4f/3})
             {
@@ -127,7 +137,7 @@ internal static class ObliqueChecks
         MapDefinition worldMap=travel.Current;
         float worldSize=ObliqueProjection.FrameSize(worldMap.CameraSize,worldMap.Bounds,16f/9,worldMap.FixedCamera);
         Vector2 worldFocus=ObliqueProjection.CameraFocus(PrototypeWorldLayout.Spawn,worldMap.Bounds,worldSize,16f/9,worldMap.FixedCamera);
-        Export(directory,"WorldOblique",world,worldFocus,worldSize);
+        Export(directory,"WorldOblique",world,worldFocus,worldSize,ObliqueProjection.HeroCenterHeight);
 
         var city=new ObliqueMeshData();
         foreach(var block in PrototypeCityLayout.Blocks)

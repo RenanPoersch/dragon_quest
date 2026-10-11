@@ -185,3 +185,10 @@ O usuário confirmou que as interações funcionaram em Play. Não houve valida�
 - Tamanho ortográfico da ilha ajustado para 6,85, aproximadamente metade do enquadramento anterior em 16:9. O ajuste automático que mostrava toda a ilha foi desligado nesse mapa; a câmera agora usa acompanhamento do herói.
 - Enquadramentos dos cenários locais, inclinação e orientação dos controles conservados.
 - Scripts compilaram e 1.538 verificações de câmera/malhas passaram. A contagem mudou porque a ilha passou de enquadramento fixo para acompanhamento. Conferência visual em Play pendente.
+
+## Acompanhamento centralizado
+
+- Corrigido o foco dos mapas com acompanhamento: os limites do retângulo prendiam a câmera ao centro do mapa em parte dos movimentos, deslocando o herói lateralmente na vista oblíqua.
+- Foco agora acompanha diretamente o personagem na ilha/periferia, com ponto de mira na altura do centro do corpo e suavização de 0,08 segundo. Zoom aproximado, ângulo e enquadramentos locais fixos preservados.
+- Scripts compilaram e 1.586 verificações de câmera/malhas passaram. A regressão confere centralização horizontal e vertical no início da ilha, pontos de interesse e bordas, em proporções 16:9, 4:3 e 3:4.
+- Movimento com suavização e aparência real ainda aguardam Play. Verificar caminhada em todas as direções, parada e entrada/saída de cenários.

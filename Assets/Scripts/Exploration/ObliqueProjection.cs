@@ -9,6 +9,7 @@ namespace DragonQuest.Exploration
         public const float TiltDegrees = 55f;
         public const float YawDegrees = 22f;
         public const float Distance = 60f;
+        public const float HeroCenterHeight = 0.72f;
         public static readonly float GroundScale = (float)Math.Cos(TiltDegrees * Math.PI / 180);
         public static readonly float HeightScale = (float)Math.Sin(TiltDegrees * Math.PI / 180);
         public static readonly float YawCos = (float)Math.Cos(YawDegrees * Math.PI / 180);
@@ -33,25 +34,9 @@ namespace DragonQuest.Exploration
 
         public static Vector2 CameraFocus(Vector2 hero, Rect bounds, float size, float aspect, bool fixedFrame)
         {
-            if (fixedFrame) return bounds.center;
-            float halfWidth = size * aspect, halfDepth = size / GroundScale;
-            float halfX = halfWidth * YawCos + halfDepth * YawSin;
-            float halfY = halfWidth * YawSin + halfDepth * YawCos;
-            var focus = new Vector2(ClampAxis(hero.x, bounds.xMin, bounds.xMax, halfX),
-                ClampAxis(hero.y, bounds.yMin, bounds.yMax, halfY));
-            var boundedHero = new Vector2(Math.Max(bounds.xMin,Math.Min(bounds.xMax,hero.x)),
-                Math.Max(bounds.yMin,Math.Min(bounds.yMax,hero.y)));
-            Vector2 relative = ScreenPlane(new Vector2(boundedHero.x-focus.x,boundedHero.y-focus.y));
-            float visibleX = Math.Max(0.1f,halfWidth-1), visibleY = Math.Max(0.1f,size-1.9f);
-            Vector2 correction = GroundDirection(new Vector2(
-                relative.x-Math.Max(-visibleX,Math.Min(visibleX,relative.x)),
-                (relative.y-Math.Max(-visibleY,Math.Min(visibleY,relative.y)))/GroundScale));
-            // Nos cantos, a planta rodada nao cabe no retangulo conservador: prioriza ver o heroi.
-            return new Vector2(Math.Max(bounds.xMin+0.01f,Math.Min(bounds.xMax-0.01f,focus.x+correction.x)),
-                Math.Max(bounds.yMin+0.01f,Math.Min(bounds.yMax-0.01f,focus.y+correction.y)));
+            // Os colliders limitam o heroi. Limitar o foco pelo retangulo do mapa
+            // deixa-o sair do centro da tela, especialmente com a camera rodada.
+            return fixedFrame ? bounds.center : hero;
         }
-
-        private static float ClampAxis(float value, float min, float max, float half)
-            => max - min <= half * 2 ? (min + max) / 2 : Math.Max(min + half, Math.Min(max - half, value));
     }
 }
