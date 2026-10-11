@@ -21,6 +21,7 @@ Novos marcos de reposição poderão ser ligados ao avanço da história nas pr�
 ## Roteiro em Play
 
 1. Abra `Assets/Scenes/CidadePrototipo.unity` na Unity 6000.6.5f1. Aguarde a compilação e confira o Console antes de entrar em Play.
+   A partir da parte 7A, a demo começa na ilha: use E perto do pequeno castelo para entrar na periferia e siga ao norte até a praça, onde começa o roteiro abaixo.
 2. Confirme 50 moedas, 2 poções e 1 antídoto. O HUD deve orientar a procurar o vendedor de itens para a entrega.
 3. Entre na loja de itens a noroeste, use E no vendedor e compre 1 poção. Ouro: 40; estoque do vendedor: 11; seu estoque: 3.
 4. Clique em **Aceitar entrega**, no topo direito do menu. Feche e saia. O HUD deve orientar a levar o pacote à loja de matérias, a nordeste.
@@ -56,4 +57,4 @@ Os testes incluem uma vitória com a equipe econômica sem compras nem uso de co
 
 Execute `Tools/Test-Combat.ps1`, `Tools/Test-ExplorationProgress.ps1` e `Tools/Test-UnityScripts.ps1`. A aparência e os cliques na Unity ainda precisam do roteiro em Play; não foi gerado executável.
 
-A ampliação da cidade foi implementada na parte 7A; veja `PARTE_7A.md` para o mapa atual. As próximas entregas serão os três segredos, o dragão e os caminhos finais.
+A cidade é a periferia do castelo na ilha global da parte 7A; veja `PARTE_7A.md` para as viagens e o mapa atual. As próximas entregas serão os três segredos, o vulcão, o dragão e os caminhos finais.

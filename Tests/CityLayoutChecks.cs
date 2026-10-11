@@ -58,7 +58,8 @@ internal static class CityLayoutChecks
     }
 
     private static void CheckReachable(Vector2 position, string label)
-        => Assert(Walkable(position) && reachable.Contains(Cell(position)), "Sem caminho livre ate " + label + ".");
+        => Assert(Accessible(position), "Sem caminho livre ate " + label + ".");
+    public static bool Accessible(Vector2 position) => Walkable(position) && reachable.Contains(Cell(position));
 
     private static void CheckPaths()
     {
@@ -108,6 +109,7 @@ internal static class CityLayoutChecks
             CheckPaths();
             if (args.Length > 0) ExportGeometry(args[0]);
             Console.WriteLine(checks + " verificacoes de caminhos da cidade passaram; " + reachable.Count * Step * Step + " unidades quadradas acessiveis na amostragem.");
+            Console.WriteLine(WorldMapChecks.Run(args.Length > 0 ? Path.GetDirectoryName(args[0]) : null) + " verificacoes de ilha, interiores e viagens passaram.");
             return 0;
         }
         catch (Exception exception) { Console.Error.WriteLine(exception.Message); return 1; }

@@ -46,7 +46,7 @@ namespace DragonQuest.Prototype
                 DrawLabel(new Vector2(0, 1.9f), "LOJISTA", scale);
                 DrawLabel(new Vector2(0, -3.7f), "SAIDA", scale);
             }
-            else
+            else if (locations.IsInCity)
             {
                 DrawLabel(new Vector2(-9, 4.3f), "ITENS", scale);
                 DrawLabel(new Vector2(9, 4.3f), "MATERIAS", scale);
@@ -61,10 +61,28 @@ namespace DragonQuest.Prototype
                 DrawLabel(PrototypeCityLayout.Explorer + Vector2.up * 0.9f, "EXPLORADORA", scale);
                 DrawLabel(new Vector2(-24, 21), "CAPELA ANTIGA", scale);
                 DrawLabel(new Vector2(24, -19.5f), "PEDESTAL", scale);
-                DrawLabel(new Vector2(0, -22), "PORTAO SUL", scale);
+                DrawLabel(PrototypeWorldLayout.CityExit, "SAIDA PARA A ILHA", scale);
+                DrawLabel(PrototypeWorldLayout.CastleDoor, "ENTRAR NO CASTELO", scale);
+            }
+            else if (locations.LocationId == PrototypeTravel.World)
+            {
+                DrawLabel(PrototypeWorldLayout.Castle + Vector2.up * 1.5f, "CASTELO E ARREDORES", scale);
+                DrawLabel(PrototypeWorldLayout.WestForest + Vector2.up * 1.5f, "FLORESTA OESTE", scale);
+                DrawLabel(PrototypeWorldLayout.EastForest + Vector2.up * 1.5f, "FLORESTA LESTE", scale);
+                DrawLabel(PrototypeWorldLayout.Volcano + Vector2.up * 1.4f, "VULCAO", scale);
+            }
+            else if (locations.LocationId == PrototypeTravel.Castle)
+            {
+                DrawLabel(PrototypeWorldLayout.Throne + Vector2.up, "TIRANO", scale);
+                DrawLabel(PrototypeWorldLayout.CastleExit, "SAIDA PARA A PERIFERIA", scale);
+            }
+            else
+            {
+                DrawLabel(new Vector2(1.5f, 1.9f), locations.LocationId == PrototypeTravel.EastForest ? "VIAJANTE" : "LENHADOR", scale);
+                DrawLabel(PrototypeWorldLayout.LocalExit, "SAIDA PARA A ILHA", scale);
             }
 
-            GUI.DrawTexture(new Rect(16, 16, Mathf.Min(470, width - 32), 126), panelTexture);
+            GUI.DrawTexture(new Rect(16, 16, Mathf.Min(590, width - 32), 126), panelTexture);
             GUI.Label(new Rect(30, 25, width - 60, 27), "DRAGON QUEST  /  " + locations.LocationName, titleStyle);
             GUI.Label(new Rect(30, 54, width - 60, 24), "WASD ou setas para andar", bodyStyle);
             GUI.Label(new Rect(30, 78, width - 60, 24), "E: interagir  |  I: inventario  |  Ouro: " + progress.Gold, bodyStyle);
@@ -84,7 +102,11 @@ namespace DragonQuest.Prototype
                 GUI.DrawTexture(new Rect(16, height - 64, width - 32, 48), panelTexture);
                 string prompt = interaction.CurrentPrompt;
                 if (string.IsNullOrEmpty(prompt))
-                    prompt = locations.IsInShop ? "Use E no lojista para comprar/vender; a saida fica ao sul." : "Use E perto dos moradores, bau, guarda ou portas das tres lojas.";
+                    prompt = locations.IsInShop ? "Use E no lojista para comprar/vender; a saida fica ao sul."
+                        : locations.LocationId == PrototypeTravel.World ? "Explore a ilha. Use E perto do castelo e das florestas para entrar."
+                        : locations.IsInCity ? "Lojas ao redor da praca. Castelo ao norte; saida para a ilha ao sul. Use E nas entradas."
+                        : locations.LocationId == PrototypeTravel.Castle ? "O trono fica ao norte; use E na saida ao sul para voltar a periferia."
+                        : "Converse com o morador usando E. A saida para a ilha fica ao sul.";
                 GUI.Label(new Rect(28, height - 57, width - 56, 38), prompt, bodyStyle);
             }
             GUI.matrix = previousMatrix;

@@ -11,5 +11,6 @@ Registrar cada conjunto de sprites, tiles, fontes, áudio ou outros recursos adi
 | Abas de equipamento/consumíveis e seleção de itens em batalha | Código criado para este projeto, em 10 de outubro de 2026 | Interface provisória desenhada por código; sem imagens externas | Assets/Scripts/Prototype/PrototypeMateriaHud.cs e PrototypeBattleHud.cs |
 | Interiores das três lojas e menu Comprar/Vender | Código criado para este projeto, em 10 de outubro de 2026 | Formas, cores e interface provisórias; sem imagens externas | Assets/Scripts/Prototype/PrototypeCity.cs e PrototypeShopHud.cs |
 | Cidade ampliada, rio, pontes, jardins, ruínas e moradores | Código criado para este projeto, em 10 de outubro de 2026 | Geometria, cores e textura branca geradas em execução; sem imagens externas | Assets/Scripts/Prototype/PrototypeCityLayout.cs e PrototypeCity.cs |
+| Ilha global, ícones pequenos de locais, florestas e interior do castelo | Código criado para este projeto, em 10 de outubro de 2026 | Blocos, cores e textura branca gerados em execução; sem imagens externas ou assets de Final Fantasy | Assets/Scripts/Prototype/PrototypeWorldLayout.cs e PrototypeCity.cs |
 
 Para recursos gerados durante o projeto, registrar a ferramenta, a data, as alterações realizadas e as condições aplicáveis. Para recursos externos, incluir a URL da fonte e a atribuição exigida.

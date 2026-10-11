@@ -139,3 +139,14 @@ O usuário confirmou que as interações funcionaram em Play. Não houve valida�
 - As 1.518 verificações de combate/inventário/lojas/progresso e 15 de exploração continuam passando; scripts compilaram com bibliotecas da Unity 6000.6.5f1.
 - Dados dos limites são compartilhados pela inicialização e pelo retorno das lojas. A câmera, física em movimento, diálogo, UI e transições ainda aguardam confirmação em Play: `Docs/PARTE_7A.md`.
 - Testes reproduzíveis: `Tools/Test-CityLayout.ps1`, `Tools/Test-UnityScripts.ps1`, `Tools/Test-Combat.ps1` e `Tools/Test-ExplorationProgress.ps1`.
+
+## Parte 7A — ilha global e cenários locais
+
+- 88 verificações da ilha, interiores e viagens passaram, junto das 57 verificações geométricas da periferia.
+- Confirmados início na ilha, classificação correta de lojas, oito mapas e funcionamento das 14 rotas direcionais. Atalhos não declarados, destinos inexistentes, viagens ao mesmo mapa e vulcão bloqueado não alteram o mapa atual.
+- Confirmados pontos de entrada globais acessíveis, costa/baía bloqueadas, passagem oculta alcançável para exame e vulcão inacessível com as rochas atuais.
+- Confirmados caminhos ao trono/saída do castelo, moradores/saídas das duas florestas e portas de entrada/saída da periferia.
+- Confirmados chegadas dentro dos limites e livres de obstáculos, retorno de cada floresta junto ao seu ícone, retorno de lojas às suas portas e ciclos repetidos ilha/periferia/loja/castelo.
+- Confirmada altura dos ícones de castelo/floresta um pouco acima do herói e conferida uma visão geral da ilha gerada pelos dados da geometria.
+- As 1.518 verificações de combate/inventário/lojas/progresso e 15 de exploração continuam passando; scripts compilaram com bibliotecas da Unity 6000.6.5f1.
+- Ativação de ambientes, física em movimento, câmera, UI e preservação real de estado entre grupos ainda precisam de Play: `Docs/PARTE_7A.md`. O tirano tem diálogo; suas batalhas e os finais permanecem na parte 8.

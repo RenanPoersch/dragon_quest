@@ -19,13 +19,18 @@ Use essa versão do Editor para evitar migrações involuntárias.
 4. Abra `Assets/Scenes/CidadePrototipo.unity`.
 5. Clique em **Play**, clique dentro da janela **Game** e use **WASD ou as setas** para andar; **E** interage com objetos próximos e **I** abre o inventário.
 
-## Parte 7A — cidade ampliada
+## Parte 7A — ilha e cenários locais
 
-A cidade passou de **36 × 24 para 72 × 48 unidades**, quatro vezes a área. Há um bairro residencial a oeste, jardins a nordeste, ruínas a sudeste, um rio com três pontes e um pátio diante do castelo ao norte. O cabeçalho indica o bairro atual; novos moradores orientam a exploração.
+A demo começa no **mapa global de uma pequena ilha cercada pelo mar**. Castelo e florestas aparecem como ícones um pouco mais altos que o herói. Use E próximo dos pontos para entrar em cenários locais:
 
-As três lojas continuam perto da praça. O guarda que inicia a batalha está agora no pátio do castelo, mais ao norte. Ao voltar de uma loja, a câmera recupera os limites do mapa ampliado.
+- Castelo no mapa global → **periferia do castelo**, reaproveitando a cidade de 72 × 48, com lojas, moradores, rio, pontes, missão e patrulha.
+- Porta ao norte da periferia → **interior do castelo**, com salão e trono. O tirano tem diálogo nesta entrega; a batalha e os finais entram na parte 8.
+- Duas florestas no mapa global → cenários próprios com clareira, árvores e moradores.
+- Passagem escondida ao norte → trilha para o vulcão, bloqueada por rochas e três selos. O dragão entra em uma entrega posterior.
 
-Abra `Assets/Scenes/CidadePrototipo.unity` e siga `Docs/PARTE_7A.md` para testar em Play. As formas continuam provisórias. A próxima entrega será implementar os três segredos, seguida do dragão e sua armadura.
+Saídas devolvem o herói ao ponto correspondente do mapa anterior. Ouro, inventário, equipamentos, missão, estoques e Limit usam a mesma sessão entre cenários. A câmera recupera os limites e o zoom de cada mapa.
+
+Abra `Assets/Scenes/CidadePrototipo.unity` e siga `Docs/PARTE_7A.md` para testar em Play. Os ambientes usam formas provisórias geradas por código. A próxima entrega será implementar os três segredos, seguida do vulcão, dragão e sua armadura.
 
 ## Parte 6C — recompensas e missão de entrega
 
@@ -150,6 +155,8 @@ O cenário usa formas coloridas geradas pelo código, sem imagens externas. Spri
 - `Assets/Scripts/Exploration/CameraFollow.cs`: acompanhamento e limites da câmera.
 - `Assets/Scripts/Prototype/PrototypeCity.cs`: mapa provisório, obstáculos e herói.
 - `Assets/Scripts/Prototype/PrototypeCityLayout.cs`: dimensões, bairros, construções, ruas, rio e pontes do mapa ampliado.
+- `Assets/Scripts/Prototype/PrototypeWorldLayout.cs`: ilha, costa, ícones globais, florestas e interior do castelo.
+- `Assets/Scripts/Prototype/PrototypeTravel.cs`: mapas, conexões permitidas e posições de chegada/retorno.
 - `Assets/Scripts/Prototype/PrototypeHud.cs`: controles e placas dos locais.
 
 Veja `Docs/PARTE_1.md` para o roteiro de verificação.
@@ -182,7 +189,7 @@ Veja `Docs/PARTE_1.md` para o roteiro de verificação.
 | 6A | Fogo, Gelo, fraquezas, resistências e combos elementais |
 | 6B | Três lojas com estoques limitados, compras, vendas e kit econômico |
 | 6C | Recompensas de batalha, primeira missão e reposição por progresso |
-| 7A | Cidade ampliada, bairros, pontes e moradores |
+| 7A | Ilha global, periferia, florestas, interior do castelo e viagens |
 | 7B | Três segredos e acesso ao dragão |
 | 7C | Batalha do dragão e armadura especial |
 | 8 | Tirano, espírito e dois finais |

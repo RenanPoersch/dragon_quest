@@ -20,7 +20,10 @@ $cityCoreAssembly = Join-Path $cityUnityData 'Managed/UnityEngine/UnityEngine.Co
 $cityArguments = @('-nologo', '-target:exe', '-nostdlib+', "-out:$cityOutputFile", "-reference:$cityCoreAssembly")
 $cityArguments += Get-ChildItem -LiteralPath $cityReferenceDirectory.FullName -Filter '*.dll' | ForEach-Object { "-reference:$($_.FullName)" }
 $cityArguments += Join-Path $cityProjectRoot 'Assets/Scripts/Prototype/PrototypeCityLayout.cs'
+$cityArguments += Join-Path $cityProjectRoot 'Assets/Scripts/Prototype/PrototypeWorldLayout.cs'
+$cityArguments += Join-Path $cityProjectRoot 'Assets/Scripts/Prototype/PrototypeTravel.cs'
 $cityArguments += Join-Path $cityProjectRoot 'Tests/CityLayoutChecks.cs'
+$cityArguments += Join-Path $cityProjectRoot 'Tests/WorldMapChecks.cs'
 & $cityDotnet $cityCsc.FullName @cityArguments
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 Copy-Item -LiteralPath $cityCoreAssembly -Destination $WorkDirectory -Force

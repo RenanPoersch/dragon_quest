@@ -20,7 +20,7 @@ namespace DragonQuest.Prototype
             squareSprite = Sprite.Create(squareTexture, new Rect(0, 0, 1, 1), new Vector2(0.5f, 0.5f), 1f);
             frictionless = new PhysicsMaterial2D("PrototypeFrictionless") { friction = 0f, bounciness = 0f };
 
-            Transform city = Group("Cidade");
+            Transform city = Group("Periferia do castelo");
             Transform ground = Group("Chao e ruas", city);
             Transform buildings = Group("Predios", city);
             Transform obstacles = Group("Obstaculos e limites", city);
@@ -35,7 +35,7 @@ namespace DragonQuest.Prototype
             Transform interactions = Group("Moradores e bau", city);
             NpcInteraction citizen = CreateNpc("Aldeao", PrototypeCityLayout.Citizen, "8D9DB0", interactions);
             citizen.Initialize("Aldeao",
-                "Bem-vindo! Itens a noroeste, materias a nordeste e equipamentos a sudeste. Use E na porta e depois no vendedor.",
+                "Bem-vindo a periferia do castelo! Itens a noroeste, materias a nordeste e equipamentos a sudeste. Use E na porta e depois no vendedor.",
                 "Ha um bau a leste daqui. Talvez voce encontre moedas para sua jornada.",
                 "O bairro residencial fica a oeste, os jardins a nordeste e as ruinas a sudeste. Ao sul, tres pontes atravessam o rio.",
                 "O tirano governa do castelo ao norte. Alguns dizem que os segredos desta cidade escondem algo ainda maior...");
@@ -56,6 +56,8 @@ namespace DragonQuest.Prototype
             interactables.Add(CreateDoor("Entrada da loja de itens", new Vector2(-9, 2.1f), city, "item-shop", "Entrar na loja de itens"));
             interactables.Add(CreateDoor("Entrada da loja de materias", new Vector2(9, 2.1f), city, "materia-shop", "Entrar na loja de materias"));
             interactables.Add(CreateDoor("Entrada da loja de equipamentos", new Vector2(9, -7.4f), city, "equipment-shop", "Entrar na loja de equipamentos"));
+            interactables.Add(CreateDoor("Portao para a ilha", PrototypeWorldLayout.CityExit, city, PrototypeTravel.World, "Sair para o mapa global"));
+            interactables.Add(CreateDoor("Entrada do castelo", PrototypeWorldLayout.CastleDoor, city, PrototypeTravel.Castle, "Entrar no castelo"));
             GameObject guard = Entity("Guarda do tirano", PrototypeCityLayout.Guard, city);
             BoxCollider2D guardCollider = guard.AddComponent<BoxCollider2D>();
             guardCollider.size = new Vector2(0.65f, 0.7f);
@@ -64,7 +66,14 @@ namespace DragonQuest.Prototype
             Block("Guarda - cabeca", new Vector2(0, 0.5f), new Vector2(0.5f, 0.4f), "D3BA91", guard.transform, false, 11);
             interactables.Add(guard.AddComponent<BattleInteraction>());
 
-            var shopRoots = new Dictionary<string, GameObject>();
+            var mapRoots = new Dictionary<string, GameObject>
+            {
+                { PrototypeTravel.World, CreateWorld(interactables).gameObject },
+                { PrototypeTravel.City, city.gameObject },
+                { PrototypeTravel.Castle, CreateCastle(interactables).gameObject },
+                { PrototypeTravel.WestForest, CreateForest(interactables, false).gameObject },
+                { PrototypeTravel.EastForest, CreateForest(interactables, true).gameObject }
+            };
             string[] shopIds = { "item-shop", "equipment-shop", "materia-shop" };
             string[] shopNames = { "Loja de itens", "Loja de equipamentos", "Loja de materias" };
             string[] shopColors = { "87B5A3", "91A6B3", "85CD90" };
@@ -72,8 +81,7 @@ namespace DragonQuest.Prototype
             {
                 Transform shop = Group(shopNames[i] + " - interior");
                 CreateShop(shop, interactables, shopIds[i], shopNames[i], shopColors[i]);
-                shopRoots.Add(shopIds[i], shop.gameObject);
-                shop.gameObject.SetActive(false);
+                mapRoots.Add(shopIds[i], shop.gameObject);
             }
 
             GameObject player = CreatePlayer();
@@ -85,13 +93,10 @@ namespace DragonQuest.Prototype
             }
             camera.backgroundColor = Hex("263E35");
             CameraFollow cameraFollow = camera.gameObject.AddComponent<CameraFollow>();
-            cameraFollow.Initialize(player.transform, PrototypeCityLayout.Bounds);
             var progress = new ExplorationProgress(PrototypeShopFactory.StartingGold);
             DialogueController dialogue = gameObject.AddComponent<DialogueController>();
             PrototypeLocations locations = gameObject.AddComponent<PrototypeLocations>();
-            var exits = new Dictionary<string, Vector2> { { "item-shop", new Vector2(-9, 1.7f) },
-                { "materia-shop", new Vector2(9, 1.7f) }, { "equipment-shop", new Vector2(9, -7.8f) } };
-            locations.Initialize(city.gameObject, shopRoots, exits, player.GetComponent<PlayerMovement>(), cameraFollow);
+            locations.Initialize(mapRoots, player.GetComponent<PlayerMovement>(), cameraFollow);
             PrototypeShopController shops = gameObject.AddComponent<PrototypeShopController>();
             PrototypeBattleController battle = gameObject.AddComponent<PrototypeBattleController>();
             battle.Initialize(player.GetComponent<PlayerMovement>(), dialogue, progress, () => shops.IsOpen);
@@ -158,6 +163,75 @@ namespace DragonQuest.Prototype
             return interaction;
         }
 
+        private Transform CreateWorld(List<Interactable> interactions)
+        {
+            Transform world = Group("Ilha - mapa global");
+            DrawBlocks(PrototypeWorldLayout.Blocks, world);
+            GameObject coast = Entity("Costa - limite do mar", Vector2.zero, world);
+            EdgeCollider2D shoreline = coast.AddComponent<EdgeCollider2D>();
+            var perimeter = new Vector2[PrototypeWorldLayout.Coast.Count + 1];
+            for (int i = 0; i < PrototypeWorldLayout.Coast.Count; i++) perimeter[i] = PrototypeWorldLayout.Coast[i];
+            perimeter[perimeter.Length - 1] = perimeter[0];
+            shoreline.points = perimeter;
+            shoreline.edgeRadius = 0.08f;
+            shoreline.sharedMaterial = frictionless;
+
+            Transform castle = Entity("Castelo - icone global", PrototypeWorldLayout.Castle, world).transform;
+            DrawBlocks(PrototypeWorldLayout.CastleIcon, castle);
+            interactions.Add(CreateDoor("Castelo e arredores", PrototypeWorldLayout.Castle + Vector2.down * 0.85f, world,
+                PrototypeTravel.City, "Entrar na periferia do castelo"));
+            CreateForestIcon(world, PrototypeWorldLayout.WestForest);
+            CreateForestIcon(world, PrototypeWorldLayout.EastForest);
+            interactions.Add(CreateDoor("Floresta oeste", PrototypeWorldLayout.WestForest + Vector2.down * 0.85f, world,
+                PrototypeTravel.WestForest, "Entrar na floresta oeste"));
+            interactions.Add(CreateDoor("Floresta leste", PrototypeWorldLayout.EastForest + Vector2.down * 0.85f, world,
+                PrototypeTravel.EastForest, "Entrar na floresta leste"));
+
+            Transform volcano = Entity("Vulcao - icone global", PrototypeWorldLayout.Volcano, world).transform;
+            DrawBlocks(PrototypeWorldLayout.VolcanoIcon, volcano);
+            GameObject passage = Entity("Passagem oculta", PrototypeWorldLayout.Trail, world);
+            interactions.Add(passage.AddComponent<BlockedPassageInteraction>());
+            return world;
+        }
+
+        private void CreateForestIcon(Transform world, Vector2 position)
+        {
+            Transform forest = Entity("Floresta - icone global", position, world).transform;
+            DrawBlocks(PrototypeWorldLayout.ForestIcon, forest);
+        }
+
+        private Transform CreateForest(List<Interactable> interactions, bool eastern)
+        {
+            Transform forest = Group(eastern ? "Floresta leste - interior" : "Floresta oeste - interior");
+            DrawBlocks(PrototypeWorldLayout.CreateForestBlocks(eastern), forest);
+            interactions.Add(CreateDoor("Saida da floresta", PrototypeWorldLayout.LocalExit, forest, PrototypeTravel.World, "Voltar para a ilha"));
+            NpcInteraction inhabitant = CreateNpc(eastern ? "Viajante" : "Lenhador", new Vector2(1.5f, 1), eastern ? "C19862" : "879C6B", forest);
+            inhabitant.Initialize(eastern ? "Viajante" : "Lenhador", eastern
+                ? "Vi um vulcao no norte da ilha. As montanhas bloqueiam o caminho para ele."
+                : "A ilha parece pequena, mas cada lugar esconde seus proprios caminhos.", eastern
+                ? "Dizem que um dragao dorme na cratera. So quem quebrar os tres selos podera encontra-lo."
+                : "Procure uma passagem entre as rochas, ao norte do castelo. A vegetacao quase esconde a trilha.");
+            interactions.Add(inhabitant);
+            return forest;
+        }
+
+        private Transform CreateCastle(List<Interactable> interactions)
+        {
+            Transform castle = Group("Castelo - interior");
+            DrawBlocks(PrototypeWorldLayout.CastleBlocks, castle);
+            interactions.Add(CreateDoor("Saida do castelo", PrototypeWorldLayout.CastleExit, castle, PrototypeTravel.City, "Voltar para a periferia"));
+            NpcInteraction tyrant = CreateNpc("Tirano", PrototypeWorldLayout.Throne, "9A5979", castle);
+            tyrant.Initialize("Tirano", "Todo caminho nesta ilha termina diante do meu trono.",
+                "Por um instante, uma segunda voz parece falar junto com a dele. Uma presenca estranha ocupa esta sala...");
+            interactions.Add(tyrant);
+            return castle;
+        }
+
+        private void DrawBlocks(IReadOnlyList<CityBlock> blocks, Transform parent)
+        {
+            foreach (CityBlock block in blocks) Block(block.Name, block.Position, block.Size, block.Color, parent, block.Solid, block.Order);
+        }
+
         private void CreateShop(Transform shop, List<Interactable> interactions, string shopId, string shopName, string displayColor)
         {
             Block("Piso de madeira", Vector2.zero, new Vector2(14, 10), "A78255", shop, false, -10);
@@ -198,7 +272,7 @@ namespace DragonQuest.Prototype
         {
             GameObject player = new GameObject("Heroi");
             player.transform.SetParent(transform, false);
-            player.transform.position = PrototypeCityLayout.Spawn;
+            player.transform.position = PrototypeWorldLayout.Spawn;
             Rigidbody2D body = player.AddComponent<Rigidbody2D>();
             body.gravityScale = 0f;
             BoxCollider2D collider = player.AddComponent<BoxCollider2D>();
