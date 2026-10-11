@@ -52,10 +52,16 @@ namespace DragonQuest.Prototype
                 DrawLabel(new Vector2(9, 4.3f), "MATERIAS", scale);
                 DrawLabel(new Vector2(-9, -5.2f), "HOSPEDARIA", scale);
                 DrawLabel(new Vector2(9, -5.2f), "EQUIPAMENTOS", scale);
-                DrawLabel(new Vector2(0, 8.8f), "CASTELO", scale);
-                DrawLabel(new Vector2(-3.4f, -2.1f), "ALDEAO", scale);
-                DrawLabel(new Vector2(3.6f, -2.3f), "BAU", scale);
-                DrawLabel(new Vector2(0, 6.2f), "GUARDA", scale);
+                DrawLabel(PrototypeCityLayout.Castle, "CASTELO", scale);
+                DrawLabel(PrototypeCityLayout.Citizen + Vector2.up * 0.9f, "ALDEAO", scale);
+                DrawLabel(PrototypeCityLayout.Chest + Vector2.up * 0.9f, "BAU", scale);
+                DrawLabel(PrototypeCityLayout.Guard + Vector2.up * 0.9f, "GUARDA", scale);
+                DrawLabel(PrototypeCityLayout.Resident + Vector2.up * 0.9f, "MORADORA", scale);
+                DrawLabel(PrototypeCityLayout.Gardener + Vector2.up * 0.9f, "JARDINEIRO", scale);
+                DrawLabel(PrototypeCityLayout.Explorer + Vector2.up * 0.9f, "EXPLORADORA", scale);
+                DrawLabel(new Vector2(-24, 21), "CAPELA ANTIGA", scale);
+                DrawLabel(new Vector2(24, -19.5f), "PEDESTAL", scale);
+                DrawLabel(new Vector2(0, -22), "PORTAO SUL", scale);
             }
 
             GUI.DrawTexture(new Rect(16, 16, Mathf.Min(470, width - 32), 126), panelTexture);

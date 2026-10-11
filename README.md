@@ -19,6 +19,14 @@ Use essa versão do Editor para evitar migrações involuntárias.
 4. Abra `Assets/Scenes/CidadePrototipo.unity`.
 5. Clique em **Play**, clique dentro da janela **Game** e use **WASD ou as setas** para andar; **E** interage com objetos próximos e **I** abre o inventário.
 
+## Parte 7A — cidade ampliada
+
+A cidade passou de **36 × 24 para 72 × 48 unidades**, quatro vezes a área. Há um bairro residencial a oeste, jardins a nordeste, ruínas a sudeste, um rio com três pontes e um pátio diante do castelo ao norte. O cabeçalho indica o bairro atual; novos moradores orientam a exploração.
+
+As três lojas continuam perto da praça. O guarda que inicia a batalha está agora no pátio do castelo, mais ao norte. Ao voltar de uma loja, a câmera recupera os limites do mapa ampliado.
+
+Abra `Assets/Scenes/CidadePrototipo.unity` e siga `Docs/PARTE_7A.md` para testar em Play. As formas continuam provisórias. A próxima entrega será implementar os três segredos, seguida do dragão e sua armadura.
+
 ## Parte 6C — recompensas e missão de entrega
 
 O ouro da vitória é a soma das recompensas dos inimigos derrotados: **Guarda do tirano: 25 moedas; Soldado: 10 moedas**. A patrulha atual rende 35, e outras formações terão totais conforme seus inimigos. O resultado mostra a composição, com pagamento único por batalha; derrota não paga. O baú conserva sua recompensa única de 25 moedas.
@@ -27,7 +35,7 @@ Na loja de itens, clique em **Aceitar entrega**. Leve o pacote ao vendedor de ma
 
 As 50 moedas iniciais, a missão, o baú e uma vitória somam 140: permitem comprar Fogo (50) e All (90) sem repetir encontros. Monte o combo no inventário com I, em um par ligado.
 
-Veja `Docs/PARTE_6C.md` para o roteiro atual. As três entregas da parte 6 estão implementadas; os testes automáticos passaram, e os cliques/aparência aguardam confirmação no Editor. A próxima etapa planejada é ampliar a cidade antes dos segredos e do dragão.
+Veja `Docs/PARTE_6C.md` para o roteiro de economia. As três entregas da parte 6 estão implementadas; os testes automáticos passaram, e os cliques/aparência aguardam confirmação no Editor. O roteiro do mapa atual está em `Docs/PARTE_7A.md`.
 
 ## Parte 6B — lojas e economia inicial
 
@@ -141,6 +149,7 @@ O cenário usa formas coloridas geradas pelo código, sem imagens externas. Spri
 - `Assets/Scripts/Exploration/PlayerMovement.cs`: teclado, velocidade e movimento físico.
 - `Assets/Scripts/Exploration/CameraFollow.cs`: acompanhamento e limites da câmera.
 - `Assets/Scripts/Prototype/PrototypeCity.cs`: mapa provisório, obstáculos e herói.
+- `Assets/Scripts/Prototype/PrototypeCityLayout.cs`: dimensões, bairros, construções, ruas, rio e pontes do mapa ampliado.
 - `Assets/Scripts/Prototype/PrototypeHud.cs`: controles e placas dos locais.
 
 Veja `Docs/PARTE_1.md` para o roteiro de verificação.
@@ -173,7 +182,9 @@ Veja `Docs/PARTE_1.md` para o roteiro de verificação.
 | 6A | Fogo, Gelo, fraquezas, resistências e combos elementais |
 | 6B | Três lojas com estoques limitados, compras, vendas e kit econômico |
 | 6C | Recompensas de batalha, primeira missão e reposição por progresso |
-| 7 | Segredos, dragão e recompensa |
+| 7A | Cidade ampliada, bairros, pontes e moradores |
+| 7B | Três segredos e acesso ao dragão |
+| 7C | Batalha do dragão e armadura especial |
 | 8 | Tirano, espírito e dois finais |
 | 9 | Arte, áudio, balanceamento e executável |
 

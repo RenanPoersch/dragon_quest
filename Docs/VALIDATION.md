@@ -129,3 +129,13 @@ O usuário confirmou que as interações funcionaram em Play. Não houve valida�
 - Confirmados proteção contra overflow da soma/saldo, ausência de pagamento parcial, aceitação do limite exato e recebimento pendente quando o saldo permitir.
 - Percurso econômico com missão, baú, patrulha e Fogo/All continua passando com saldo total de 140.
 - Scripts compilaram com bibliotecas da Unity 6000.6.5f1. A composição visual da recompensa ainda aguarda o roteiro em Play de `Docs/PARTE_6C.md`.
+
+## Parte 7A — cidade ampliada
+
+- 57 verificações de caminhos passaram sobre os dados usados para montar o mapa de 72 × 48 unidades.
+- Confirmados acesso aos seis bairros, novas extremidades, capela, pedestal, moradores, baú e patrulha; portas e posições de retorno das três lojas estão em áreas acessíveis.
+- Confirmadas travessias das três pontes, água/muralhas bloqueadas e ausência de células caminháveis isoladas na amostragem de 0,5 unidade. Colisores foram ampliados pelo tamanho do herói mais margem; a área acessível estimada foi 2.511 unidades quadradas.
+- Visão geral da geometria conferida por imagem gerada a partir dos mesmos dados, sem executar a Unity.
+- As 1.518 verificações de combate/inventário/lojas/progresso e 15 de exploração continuam passando; scripts compilaram com bibliotecas da Unity 6000.6.5f1.
+- Dados dos limites são compartilhados pela inicialização e pelo retorno das lojas. A câmera, física em movimento, diálogo, UI e transições ainda aguardam confirmação em Play: `Docs/PARTE_7A.md`.
+- Testes reproduzíveis: `Tools/Test-CityLayout.ps1`, `Tools/Test-UnityScripts.ps1`, `Tools/Test-Combat.ps1` e `Tools/Test-ExplorationProgress.ps1`.

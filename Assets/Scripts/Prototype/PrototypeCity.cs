@@ -8,7 +8,6 @@ namespace DragonQuest.Prototype
     // Cenário descartável para validar exploração antes dos tiles e sprites finais.
     public sealed class PrototypeCity : MonoBehaviour
     {
-        private static readonly Rect Bounds = new Rect(-18f, -12f, 36f, 24f);
         private Texture2D squareTexture;
         private Sprite squareSprite;
         private PhysicsMaterial2D frictionless;
@@ -26,47 +25,38 @@ namespace DragonQuest.Prototype
             Transform buildings = Group("Predios", city);
             Transform obstacles = Group("Obstaculos e limites", city);
 
-            Block("Gramado", Vector2.zero, new Vector2(36, 24), "45634D", ground, false, -10);
-            Block("Rua norte-sul", Vector2.zero, new Vector2(3.5f, 22), "C2AC80", ground, false, -9);
-            Block("Rua leste-oeste", Vector2.zero, new Vector2(35, 3.5f), "C2AC80", ground, false, -9);
-            Block("Praca", Vector2.zero, new Vector2(8, 7), "D1C19B", ground, false, -8);
-
-            Building("Loja de itens", new Vector2(-9, 4.5f), new Vector2(5, 4), "A86B49", buildings);
-            Building("Loja de materias", new Vector2(9, 4.5f), new Vector2(5, 4), "71638E", buildings);
-            Building("Hospedaria", new Vector2(-9, -5), new Vector2(5, 4), "7F8D68", buildings);
-            Building("Loja de equipamentos", new Vector2(9, -5), new Vector2(5, 4), "627C8C", buildings);
-            Building("Castelo do tirano", new Vector2(0, 9), new Vector2(7, 4), "636B79", buildings);
-
-            Block("Fonte - borda", Vector2.zero, new Vector2(2.6f, 2.6f), "747A80", obstacles, true, 2);
-            Block("Fonte - agua", Vector2.zero, new Vector2(2.05f, 2.05f), "5BA5B6", obstacles, false, 3);
-            Block("Fonte - centro", Vector2.zero, new Vector2(0.6f, 0.6f), "C8D2CB", obstacles, false, 4);
-            Block("Banco oeste", new Vector2(-3, 0), new Vector2(0.6f, 1.6f), "805E43", obstacles, true, 2);
-            Block("Banco leste", new Vector2(3, 0), new Vector2(0.6f, 1.6f), "805E43", obstacles, true, 2);
-
-            Block("Muralha norte", new Vector2(0, 11.7f), new Vector2(36, 0.6f), "434B55", obstacles, true, 5);
-            Block("Muralha sul", new Vector2(0, -11.7f), new Vector2(36, 0.6f), "434B55", obstacles, true, 5);
-            Block("Muralha oeste", new Vector2(-17.7f, 0), new Vector2(0.6f, 24), "434B55", obstacles, true, 5);
-            Block("Muralha leste", new Vector2(17.7f, 0), new Vector2(0.6f, 24), "434B55", obstacles, true, 5);
-
-            foreach (Vector2 position in new[] { new Vector2(-14, 8), new Vector2(14, 8), new Vector2(-14, -8), new Vector2(14, -8) })
-            {
-                Block("Arvore - copa", position, new Vector2(1.8f, 1.8f), "294936", obstacles, true, 2);
-                Block("Arvore - detalhe", position + new Vector2(-0.15f, 0.15f), new Vector2(1.1f, 1.1f), "3A6141", obstacles, false, 3);
-            }
+            foreach (CityBlock block in PrototypeCityLayout.Blocks)
+                Block(block.Name, block.Position, block.Size, block.Color,
+                    block.Solid || block.Order >= 0 ? obstacles : ground, block.Solid, block.Order);
+            foreach (CityBlock building in PrototypeCityLayout.Buildings)
+                Building(building.Name, building.Position, building.Size, building.Color, buildings);
 
             var interactables = new List<Interactable>();
-            Transform interactions = Group("NPC e bau", city);
-            NpcInteraction citizen = CreateNpc("Aldeao", new Vector2(-3.4f, -3), "8D9DB0", interactions);
+            Transform interactions = Group("Moradores e bau", city);
+            NpcInteraction citizen = CreateNpc("Aldeao", PrototypeCityLayout.Citizen, "8D9DB0", interactions);
             citizen.Initialize("Aldeao",
                 "Bem-vindo! Itens a noroeste, materias a nordeste e equipamentos a sudeste. Use E na porta e depois no vendedor.",
                 "Ha um bau a leste daqui. Talvez voce encontre moedas para sua jornada.",
+                "O bairro residencial fica a oeste, os jardins a nordeste e as ruinas a sudeste. Ao sul, tres pontes atravessam o rio.",
                 "O tirano governa do castelo ao norte. Alguns dizem que os segredos desta cidade escondem algo ainda maior...");
             interactables.Add(citizen);
+            NpcInteraction resident = CreateNpc("Moradora", PrototypeCityLayout.Resident, "B77D8B", interactions);
+            resident.Initialize("Moradora", "Este e o bairro dos artesaos. A rua leva ate a capela antiga, ao norte.",
+                "Minha avo dizia que a capela guarda uma historia esquecida. Talvez ainda exista alguem capaz de entende-la.");
+            interactables.Add(resident);
+            NpcInteraction gardener = CreateNpc("Jardineiro", PrototypeCityLayout.Gardener, "86A96B", interactions);
+            gardener.Initialize("Jardineiro", "Os jardins ja foram abertos a todos. Hoje quase ninguem caminha por aqui.",
+                "Seguindo esta rua para o sul voce atravessa a ponte leste e chega as ruinas antigas.");
+            interactables.Add(gardener);
+            NpcInteraction explorer = CreateNpc("Exploradora", PrototypeCityLayout.Explorer, "B79458", interactions);
+            explorer.Initialize("Exploradora", "Estas ruinas existiam antes do castelo. Repare no pedestal entre as paredes quebradas.",
+                "Encontrei marcas de escamas nas pedras. As lendas falam de um dragao, mas ele nunca aparece para qualquer viajante.");
+            interactables.Add(explorer);
             interactables.Add(CreateChest(interactions));
             interactables.Add(CreateDoor("Entrada da loja de itens", new Vector2(-9, 2.1f), city, "item-shop", "Entrar na loja de itens"));
             interactables.Add(CreateDoor("Entrada da loja de materias", new Vector2(9, 2.1f), city, "materia-shop", "Entrar na loja de materias"));
             interactables.Add(CreateDoor("Entrada da loja de equipamentos", new Vector2(9, -7.4f), city, "equipment-shop", "Entrar na loja de equipamentos"));
-            GameObject guard = Entity("Guarda do tirano", new Vector2(0, 5.3f), city);
+            GameObject guard = Entity("Guarda do tirano", PrototypeCityLayout.Guard, city);
             BoxCollider2D guardCollider = guard.AddComponent<BoxCollider2D>();
             guardCollider.size = new Vector2(0.65f, 0.7f);
             guardCollider.sharedMaterial = frictionless;
@@ -95,7 +85,7 @@ namespace DragonQuest.Prototype
             }
             camera.backgroundColor = Hex("263E35");
             CameraFollow cameraFollow = camera.gameObject.AddComponent<CameraFollow>();
-            cameraFollow.Initialize(player.transform, Bounds);
+            cameraFollow.Initialize(player.transform, PrototypeCityLayout.Bounds);
             var progress = new ExplorationProgress(PrototypeShopFactory.StartingGold);
             DialogueController dialogue = gameObject.AddComponent<DialogueController>();
             PrototypeLocations locations = gameObject.AddComponent<PrototypeLocations>();
@@ -147,7 +137,7 @@ namespace DragonQuest.Prototype
 
         private ChestInteraction CreateChest(Transform parent)
         {
-            GameObject chest = Entity("Bau da praca", new Vector2(3.6f, -3.2f), parent);
+            GameObject chest = Entity("Bau da praca", PrototypeCityLayout.Chest, parent);
             BoxCollider2D collider = chest.AddComponent<BoxCollider2D>();
             collider.size = new Vector2(0.9f, 0.7f);
             collider.sharedMaterial = frictionless;
@@ -208,7 +198,7 @@ namespace DragonQuest.Prototype
         {
             GameObject player = new GameObject("Heroi");
             player.transform.SetParent(transform, false);
-            player.transform.position = new Vector3(0, -4, 0);
+            player.transform.position = PrototypeCityLayout.Spawn;
             Rigidbody2D body = player.AddComponent<Rigidbody2D>();
             body.gravityScale = 0f;
             BoxCollider2D collider = player.AddComponent<BoxCollider2D>();

@@ -27,7 +27,7 @@ Novos marcos de reposição poderão ser ligados ao avanço da história nas pr�
 5. Entre na loja de matérias e clique em **Entregar pacote**. Ouro permanece 40; a orientação passa a pedir o retorno ao vendedor de itens.
 6. Volte à loja de itens e clique em **Receber 30 moedas**. Ouro: 70; estoque do vendedor: 12 poções novamente; seu estoque permanece 3. O HUD informa conclusão.
 7. Compre mais uma poção: ouro 60 e estoque do vendedor 11. Saia e volte: o estoque deve continuar 11, sem outra recompensa ou opção de aceitar a mesma missão.
-8. Abra o baú e vença a patrulha ao norte da fonte. Ouro deve aumentar em 25 e depois em 35. A tela de vitória deve mostrar **+35 moedas: Guarda do tirano (25) + Soldado (10)**; aguardar nela e retornar à cidade não pode duplicar o pagamento.
+8. Abra o baú e vença a patrulha no pátio do castelo, seguindo ao norte da fonte. Ouro deve aumentar em 25 e depois em 35. A tela de vitória deve mostrar **+35 moedas: Guarda do tirano (25) + Soldado (10)**; aguardar nela e retornar à cidade não pode duplicar o pagamento.
 9. Vença outra patrulha com os mesmos dois inimigos: são mais 35 legítimos, sem reposição de estoque. Uma derrota conserva o saldo e não paga recompensa.
 10. Confira que as três portas devolvem o herói aos locais corretos e que o inventário, as compras e as interações continuam disponíveis depois dos encontros.
 
@@ -56,4 +56,4 @@ Os testes incluem uma vitória com a equipe econômica sem compras nem uso de co
 
 Execute `Tools/Test-Combat.ps1`, `Tools/Test-ExplorationProgress.ps1` e `Tools/Test-UnityScripts.ps1`. A aparência e os cliques na Unity ainda precisam do roteiro em Play; não foi gerado executável.
 
-A próxima etapa planejada é ampliar a cidade antes de criar os três segredos, o dragão e os caminhos finais.
+A ampliação da cidade foi implementada na parte 7A; veja `PARTE_7A.md` para o mapa atual. As próximas entregas serão os três segredos, o dragão e os caminhos finais.
