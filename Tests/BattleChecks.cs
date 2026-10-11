@@ -178,6 +178,7 @@ internal static class BattleChecks
             checks += ElementalChecks.Run();
             checks += ShopChecks.Run();
             checks += ProgressionChecks.Run();
+            checks += DragonChecks.Run();
             Console.WriteLine(checks + " verificacoes de combate passaram.");
             return 0;
         }

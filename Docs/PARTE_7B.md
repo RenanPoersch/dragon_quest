@@ -28,7 +28,7 @@ O contador **Sinais antigos: 1/3** aparece somente após resolver o primeiro seg
 
 Com os três concluídos, volte à passagem entre as montanhas no mapa global e use **E**. A escama reage, os selos se desfazem e as rochas se afastam. O colisor central é desativado e existe um caminho real até o ícone do vulcão. A passagem permanece aberta entre viagens e a escama não é consumida.
 
-A cratera tem uma interação de ambientação. O interior do vulcão, a batalha do dragão e a armadura especial ficam na parte 7C. A Escama ancestral desta entrega é um objeto diferente da armadura futura.
+O ícone da cratera agora leva automaticamente ao interior do vulcão, adicionado na parte 7C. Veja `PARTE_7C.md` para a batalha do dragão e a Armadura dracônica; a Escama ancestral desta entrega é um objeto diferente desse equipamento.
 
 ## Roteiro em Play
 
@@ -40,7 +40,7 @@ A cratera tem uma interação de ambientação. O interior do vulcão, a batalha
 6. Saia e retorne à floresta: as luzes e a conclusão devem continuar. Teste P e confirme que ler o poema não gasta recursos nem altera o progresso.
 7. Entre na floresta leste. Examine a pedra em **(2; 3)**, siga a pista e examine as raízes da árvore em **(4,5; 5)**, aproximando-se pelo oeste. Confira a escama em I → Itens; repetir a interação não duplica o objeto.
 8. Antes de ter todos os objetivos, examine novamente a passagem: possuir somente a escama não basta. Com 3/3, as rochas continuam fechadas até usar E.
-9. Use E na passagem, aguarde as rochas se afastarem e caminhe ao vulcão. Examine a cratera e retorne pelo mesmo caminho. Não deve existir batalha do dragão nesta entrega.
+9. Use E na passagem, aguarde as rochas se afastarem e caminhe ao vulcão. A área do ícone agora leva ao interior da parte 7C; use sua saída ao sul para retornar à ilha. A batalha começa somente ao concluir a conversa com o dragão.
 10. Entre/saia de florestas, lojas e periferia. Confira a passagem aberta, escama preservada, ouro/estoques/equipamentos/matérias/Limit mantidos e ausência de interações de mapas inativos. Em uma nova sessão de Play, o progresso deve voltar ao início.
 
 ## Código e validação

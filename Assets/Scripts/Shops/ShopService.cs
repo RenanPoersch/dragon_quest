@@ -110,6 +110,7 @@ namespace DragonQuest.Shops
             string reason = product == null ? "Objeto nao comercializado por esta loja." : !product.CanSell ? "Item de historia: venda bloqueada." : null;
             if (equipment != null && Party.IsEquipped(equipment) || materia != null && Party.IsEquipped(materia)) reason = "Desequipe no inventario antes de vender.";
             if (equipment != null) foreach (MateriaInstance socket in equipment.Sockets) if (socket != null) reason = "Remova as materias antes de vender.";
+            if (equipment?.Definition.IsStoryItem == true) reason = "Item de historia: venda bloqueada.";
             return new SaleEntry(item, equipment, materia, quantity, product?.Price / 2 ?? 0,
                 product?.Description ?? "Objeto protegido ou sem preco de venda.", reason);
         }

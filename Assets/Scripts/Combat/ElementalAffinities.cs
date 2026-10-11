@@ -37,6 +37,26 @@ namespace DragonQuest.Combat
             return 100;
         }
 
+        public static ElementalAffinities Combine(params ElementalAffinities[] profiles)
+        {
+            ElementalAffinities single=null;int count=0;
+            foreach(ElementalAffinities profile in profiles)
+                if(profile!=null&&(profile.Weaknesses.Count>0||profile.Resistances.Count>0)) {single=profile;count++;}
+            if(count<2) return single??Neutral;
+            var weak = new HashSet<DamageElement>(); var resist = new HashSet<DamageElement>();
+            foreach (ElementalAffinities profile in profiles)
+            {
+                if (profile == null) continue;
+                foreach (DamageElement element in profile.Weaknesses) weak.Add(element);
+                foreach (DamageElement element in profile.Resistances) resist.Add(element);
+            }
+            // A protecao do equipamento prevalece sobre uma fraqueza do personagem.
+            weak.ExceptWith(resist);
+            var weaknesses = new DamageElement[weak.Count]; weak.CopyTo(weaknesses);
+            var resistances = new DamageElement[resist.Count]; resist.CopyTo(resistances);
+            return new ElementalAffinities(weaknesses, resistances);
+        }
+
         public static string NameOf(DamageElement element)
         {
             switch (element)

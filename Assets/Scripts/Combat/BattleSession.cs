@@ -148,6 +148,7 @@ namespace DragonQuest.Combat
                         ApplyDamage(actor, ability, enemy, false, report);
                 }
                 else ApplyDamage(actor, ability, target, true, report);
+                actor.IsCharging = false;
                 message = report.ToString();
             }
             else if (ability.Effect == AbilityEffect.Heal || ability.Effect == AbilityEffect.Cleanse || ability.Effect == AbilityEffect.Revive)
@@ -162,6 +163,11 @@ namespace DragonQuest.Combat
             {
                 actor.IsDefending = true;
                 message = actor.Definition.Name + " esta defendendo ate o inicio de seu proximo turno.";
+            }
+            else if (ability.Effect == AbilityEffect.Prepare)
+            {
+                actor.IsCharging = true;
+                message = actor.Definition.Name + " " + ability.Description;
             }
             else if (ability.Effect == AbilityEffect.Taunt)
             {

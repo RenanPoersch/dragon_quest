@@ -16,6 +16,16 @@ namespace DragonQuest.Prototype
         private float enemyActionTime;
         private DialogueController dialogue;
         private System.Func<bool> otherMenuOpen = () => false;
+        private AncientSecrets secrets;
+        private System.Action recoverAtInn;
+        public DragonProgress Dragon { get; private set; }
+        public bool IsDragonEncounter { get; private set; }
+        public string BattleTitle => IsDragonEncounter ? "DRAGAO CORROMPIDO" : "PATRULHA DO TIRANO";
+        public string ReturnLabel => IsDragonEncounter && Session.Outcome == BattleOutcome.Defeat ? "Voltar para a hospedaria" : "Continuar explorando";
+        public string OutcomeDescription => Session.Outcome == BattleOutcome.Victory
+            ? (IsDragonEncounter ? "A essencia do dragao foi libertada. " : "A patrulha foi vencida. ") + RewardMessage
+            : IsDragonEncounter ? "Sua equipe foi vencida. Acordara na hospedaria; Limit e progresso serao mantidos."
+            : "Sua equipe foi vencida. Reorganize-se para tentar novamente.";
 
         public bool IsActive { get; private set; }
         public bool IsMenuOpen { get; private set; }
@@ -27,12 +37,14 @@ namespace DragonQuest.Prototype
         public string RewardMessage { get; private set; }
 
         public void Initialize(PlayerMovement hero, DialogueController dialogueController, ExplorationProgress progress,
-            System.Func<bool> externalMenuOpen = null)
+            System.Func<bool> externalMenuOpen = null, DragonProgress dragonProgress = null,
+            AncientSecrets ancientSecrets = null, System.Action recovery = null)
         {
             movement = hero; dialogue = dialogueController;
             otherMenuOpen = externalMenuOpen ?? (() => false);
             Party = PrototypePartyFactory.Create();
             Rewards = new BattleRewards(progress);
+            Dragon = dragonProgress ?? new DragonProgress(); secrets = ancientSecrets; recoverAtInn = recovery;
         }
 
         public void CloseMenu()
@@ -44,7 +56,18 @@ namespace DragonQuest.Prototype
         public void StartBattle()
         {
             if (IsBusy) return;
-            Session = PrototypeBattleFactory.CreateEncounter(Party);
+            StartEncounter(PrototypeBattleFactory.CreateEncounter(Party),false);
+        }
+
+        public void StartDragonBattle()
+        {
+            if (IsBusy || dialogue.IsOpen || Dragon.IsDefeated || secrets?.PassageOpen != true) return;
+            StartEncounter(PrototypeBattleFactory.CreateDragonEncounter(Party),true);
+        }
+
+        private void StartEncounter(BattleSession encounter, bool dragonEncounter)
+        {
+            Session = encounter; IsDragonEncounter = dragonEncounter;
             IsActive = true;
             pendingEnemy = null;
             ErrorMessage = string.Empty;
@@ -72,9 +95,13 @@ namespace DragonQuest.Prototype
 
         private void AwardIfComplete()
         {
-            if (Session.Outcome != BattleOutcome.Victory || Rewards.HasClaimed(Session)) return;
-            Rewards.TryClaim(Session, out string message);
-            RewardMessage = message;
+            if (Session.Outcome != BattleOutcome.Victory) return;
+            if (IsDragonEncounter) Dragon.TryComplete(Session,Party);
+            if (!Rewards.HasClaimed(Session))
+            {
+                Rewards.TryClaim(Session,out string message);
+                RewardMessage = message + (IsDragonEncounter && Dragon.IsDefeated ? " Armadura draconica recebida!" : "");
+            }
         }
 
         private void Update()
@@ -110,6 +137,20 @@ namespace DragonQuest.Prototype
             IsActive = false;
             movement.SetMovementEnabled(true);
             pendingEnemy = null;
+            if (IsDragonEncounter && Session.Outcome == BattleOutcome.Defeat)
+            {
+                recoverAtInn?.Invoke();
+                dialogue.Open("Hospedaria","A equipe desperta em seguranca. Seus ferimentos foram tratados e o MP foi recuperado.",
+                    "O Limit acumulado permanece. Os consumiveis usados foram gastos; seus segredos, ouro e equipamentos continuam com voce.");
+                movement.SetMovementEnabled(false);
+            }
+            else if (IsDragonEncounter && Session.Outcome == BattleOutcome.Victory)
+            {
+                dialogue.Open("Essencia do dragao","A sombra abandona o dragao, revelando uma chama serena. A mesma presenca que ocupava seu corpo ainda vive no castelo.",
+                    "A essencia deixou a Armadura draconica. Equipe-a pelo inventario: ela podera revelar quem se esconde atras do trono.");
+                movement.SetMovementEnabled(false);
+            }
         }
+
     }
 }

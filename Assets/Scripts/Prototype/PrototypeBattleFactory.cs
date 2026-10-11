@@ -1,5 +1,6 @@
 using DragonQuest.Combat;
 using DragonQuest.Equipment;
+using DragonQuest.Progression;
 
 namespace DragonQuest.Prototype
 {
@@ -28,6 +29,23 @@ namespace DragonQuest.Prototype
             "Ataque individual que envenena por 3 turnos do afetado.", 4, 0, AbilityEffect.PhysicalDamage, TargetRule.Enemy, 3);
         public static readonly AbilityDefinition EnemySweep = new AbilityDefinition("enemy-sweep", "Varredura",
             "Ataque contra todos os aliados vivos.", 5, 0, AbilityEffect.PhysicalDamage, TargetRule.AllEnemies);
+        public static readonly AbilityDefinition DragonClaw = new AbilityDefinition("dragon-claw", "Garra draconica",
+            "Golpe fisico individual.",0,5,AbilityEffect.PhysicalDamage,TargetRule.Enemy);
+        public static readonly AbilityDefinition ChargeBreath = new AbilityDefinition("charge-breath", "Preparar sopro",
+            "concentra chamas! No proximo turno dele, o sopro atingira toda a equipe. Defenda-se!",0,0,AbilityEffect.Prepare,TargetRule.Self);
+        public static readonly AbilityDefinition DragonBreath = new AbilityDefinition("dragon-breath", "Sopro de fogo",
+            "Fogo em toda a equipe depois de um turno de preparacao.",0,36,AbilityEffect.MagicDamage,TargetRule.AllEnemies,element:DamageElement.Fire);
+
+        public static BattleSession CreateDragonEncounter(PartyProgress party)
+        {
+            var participants = new System.Collections.Generic.List<CombatantState>();
+            foreach (PartyMember member in party.Members) participants.Add(member.CreateCombatant());
+            var dragon = new CombatantDefinition("Dragao corrompido","Boss secreto",520,0,25,10,22,6,
+                new ElementalAffinities(new[]{DamageElement.Ice},new[]{DamageElement.Fire}),100,
+                DragonClaw,ChargeBreath,DragonBreath);
+            participants.Add(new CombatantState(DragonProgress.EnemyId,dragon,CombatTeam.Enemy));
+            return new BattleSession(party.Consumables,participants.ToArray());
+        }
 
         public static BattleSession CreateEncounter(PartyProgress party = null)
         {

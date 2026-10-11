@@ -2,22 +2,23 @@ namespace DragonQuest.Combat
 {
     public static class EnemyAI
     {
-        private static bool IsOffensive(AbilityDefinition ability) => ability.Effect == AbilityEffect.PhysicalDamage || ability.Effect == AbilityEffect.MagicDamage;
+        private static bool IsCycledAction(AbilityDefinition ability) => ability.Effect == AbilityEffect.PhysicalDamage
+            || ability.Effect == AbilityEffect.MagicDamage || ability.Effect == AbilityEffect.Prepare;
         public static AbilityDefinition ChooseAbility(BattleSession battle)
         {
             CombatantState actor = battle.CurrentActor;
             if (actor == null || actor.Team != CombatTeam.Enemy) return null;
-            // Alterna as ofensivas na ordem cadastrada; falta de MP usa a proxima opcao viavel.
+            // Alterna ataques e preparacoes na ordem cadastrada; falta de MP usa a proxima opcao viavel.
             int attacks = 0;
             foreach (AbilityDefinition ability in actor.Definition.Abilities)
-                if (IsOffensive(ability)) attacks++;
+                if (IsCycledAction(ability)) attacks++;
             for (int offset = 0; offset < attacks; offset++)
             {
                 int desired = (int)(((long)actor.TurnsTaken + offset) % attacks);
                 int index = 0;
                 foreach (AbilityDefinition ability in actor.Definition.Abilities)
                 {
-                    if (!IsOffensive(ability)) continue;
+                    if (!IsCycledAction(ability)) continue;
                     if (index++ == desired && ability.MpCost <= actor.Mp && battle.GetValidTargets(ability).Count > 0)
                         return ability;
                 }
@@ -35,7 +36,7 @@ namespace DragonQuest.Combat
             AbilityDefinition ability = ChooseAbility(battle);
             if (ability != null)
             {
-                if (ability.Effect == AbilityEffect.Defend) return battle.TryAct(actor, ability, actor, out message);
+                if (ability.Targets == TargetRule.Self) return battle.TryAct(actor, ability, actor, out message);
                 CombatantState weakest = null;
                 foreach (CombatantState target in battle.GetValidTargets(ability))
                     if (weakest == null || (long)target.Hp * weakest.Definition.MaxHp < (long)weakest.Hp * target.Definition.MaxHp)

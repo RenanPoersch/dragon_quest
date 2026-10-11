@@ -21,6 +21,7 @@ namespace DragonQuest.Equipment
         public int Attack => AttackWith(Weapon, Armor);
         public int Defense => DefenseWith(Weapon, Armor);
         public int Magic => MagicWith(Weapon, Armor);
+        public ElementalAffinities Affinities => ElementalAffinities.Combine(BaseStats.Affinities, Weapon?.Definition.Affinities, Armor?.Definition.Affinities);
 
         public PartyMember(string id, string name, CharacterClass characterClass, CombatantDefinition stats,
             EquipmentDefinition weapon, EquipmentDefinition armor)
@@ -52,7 +53,7 @@ namespace DragonQuest.Equipment
             var commands = new AbilityDefinition[abilities.Count];
             abilities.CopyTo(commands);
             var stats = new CombatantDefinition(Name, BaseStats.Role, BaseStats.MaxHp, BaseStats.MaxMp,
-                Attack, Defense, Magic, BaseStats.Speed, BaseStats.Affinities, BaseStats.GoldReward, commands);
+                Attack, Defense, Magic, BaseStats.Speed, Affinities, BaseStats.GoldReward, commands);
             return new CombatantState(Id, stats, CombatTeam.Party, Limit);
         }
     }
@@ -137,7 +138,7 @@ namespace DragonQuest.Equipment
 
         public bool TryRemoveOwnedEquipment(EquipmentLoadout item)
         {
-            if (item == null || IsEquipped(item)) return false;
+            if (item == null || item.Definition.IsStoryItem || IsEquipped(item)) return false;
             foreach (MateriaInstance socket in item.Sockets) if (socket != null) return false;
             return equipments.Remove(item);
         }

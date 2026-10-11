@@ -23,7 +23,7 @@ O chão físico continua em XY usando Rigidbody2D e Collider2D. A altura visual 
 
 Nos mapas com acompanhamento, o foco segue diretamente o herói, sem prendê-lo ao retângulo do mapa. O ponto de mira usa a altura de 0,72 do modelo, mantendo o centro do corpo próximo ao centro da tela; a suavização é de 0,08 segundo. A costa e as paredes continuam limitando o movimento por colisores. Ao chegar às bordas, parte do espaço externo pode aparecer no enquadramento. Cenários com câmera fixa mantêm o foco no centro do ambiente.
 
-Ouro, inventário, estoques, matérias, equipamentos, missão e Limit continuam nos mesmos controladores. Batalhas e menus ainda usam a interface provisória anterior. A trilha do vulcão continua bloqueada; esta mudança visual não implementa os três segredos nem o dragão.
+Ouro, inventário, estoques, matérias, equipamentos, missão e Limit continuam nos mesmos controladores. Batalhas e menus usam a interface provisória, agora com retrato próprio do dragão. Os três segredos e a abertura da trilha foram adicionados na parte 7B; interior do vulcão, dragão e hospedaria, na parte 7C.
 
 ## Conferir no Editor
 

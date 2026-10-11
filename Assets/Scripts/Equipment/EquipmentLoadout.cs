@@ -13,15 +13,19 @@ namespace DragonQuest.Equipment
         public int SocketCount { get; }
         public EquipmentSlot Slot { get; }
         public int MagicBonus { get; }
+        public DragonQuest.Combat.ElementalAffinities Affinities { get; }
+        public bool IsStoryItem { get; }
 
         public EquipmentDefinition(string name, int attackBonus, int defenseBonus, int socketCount,
-            EquipmentSlot slot = EquipmentSlot.Weapon, int magicBonus = 0)
+            EquipmentSlot slot = EquipmentSlot.Weapon, int magicBonus = 0,
+            DragonQuest.Combat.ElementalAffinities affinities = null, bool isStoryItem = false)
         {
             if (attackBonus < 0 || defenseBonus < 0 || magicBonus < 0 || socketCount < 0 || socketCount > 6 || socketCount % 2 != 0)
                 throw new ArgumentException("Equipamento exige bonus positivos e pares completos de encaixes, ate seis.");
             if (!Enum.IsDefined(typeof(EquipmentSlot), slot)) throw new ArgumentException("Tipo de equipamento desconhecido.");
             Name = name; AttackBonus = attackBonus; DefenseBonus = defenseBonus; SocketCount = socketCount;
             Slot = slot; MagicBonus = magicBonus;
+            Affinities = affinities ?? DragonQuest.Combat.ElementalAffinities.Neutral; IsStoryItem = isStoryItem;
         }
     }
 

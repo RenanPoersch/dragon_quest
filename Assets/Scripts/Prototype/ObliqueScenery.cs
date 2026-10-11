@@ -39,6 +39,19 @@ namespace DragonQuest.Prototype
             var mesh = new ObliqueMeshData();
             Color color = ObliqueMeshData.Hex(hex);
             float w=size.x, d=size.y;
+            if(name.StartsWith("Lava"))
+            {
+                mesh.Plane(0,0,w,d,0.035f,color);
+                for(float y=-d/2+0.5f;y<d/2;y+=1.2f)
+                    mesh.Plane(0,y,w*0.7f,0.1f,0.045f,ObliqueMeshData.Hex("E58E42"));
+                return mesh;
+            }
+            if(name.StartsWith("Cama"))
+            {
+                mesh.Box(0,0,w,d,0,0.35f,ObliqueMeshData.Hex("5C493B"));
+                mesh.Box(0,0,w*0.94f,d*0.95f,0.35f,0.52f,color);
+                mesh.Box(0,d*0.3f,w*0.85f,d*0.2f,0.52f,0.62f,ObliqueMeshData.Hex("E5D9BD"));return mesh;
+            }
             if(name.StartsWith("Monolito"))
             { mesh.Box(0,0,w,d,0,1.1f,color);mesh.Roof(0,0,w,d,1.1f,1.25f,color);return mesh; }
             if(name=="Altar antigo")
@@ -344,6 +357,44 @@ namespace DragonQuest.Prototype
 
         public void VolcanoIcon(Transform parent)
             => Show("Vulcao com cratera",VolcanoIconData(),parent);
+
+        public Transform Dragon(Transform parent) => Show("Dragao - corpo e asas",DragonData(),parent);
+        public Transform DragonEssence(Transform parent)
+        {
+            var mesh=new ObliqueMeshData();
+            mesh.Cone(0,0,0.3f,0.8f,1.4f,ObliqueMeshData.Hex("F2C879"),8,0);
+            mesh.Cone(0,0,0.16f,0.85f,1.25f,ObliqueMeshData.Hex("FFF0BE"),8,0);
+            return Show("Essencia do dragao",mesh,parent);
+        }
+
+        public static ObliqueMeshData DragonData()
+        {
+            var mesh=new ObliqueMeshData();
+            Color scales=ObliqueMeshData.Hex("863E3D"),bone=ObliqueMeshData.Hex("B99A78"),wing=ObliqueMeshData.Hex("543454");
+            mesh.Shadow(0,0,1.5f,1.4f);
+            mesh.Box(0,0.1f,1.3f,1.8f,0.6f,1.7f,scales);
+            mesh.Roof(0,0.1f,1.3f,1.8f,1.7f,2,scales);
+            mesh.Box(0,-0.7f,0.75f,0.15f,0.7f,1.5f,bone);
+            foreach(float side in new[]{-1f,1f})
+            {
+                mesh.Triangle(ObliqueMeshData.V(side*0.5f,0.6f,1.65f),ObliqueMeshData.V(side*2.8f,1,2.4f),ObliqueMeshData.V(side*1.6f,-0.5f,1.35f),wing);
+                mesh.Triangle(ObliqueMeshData.V(side*0.5f,0.6f,1.65f),ObliqueMeshData.V(side*1.6f,-0.5f,1.35f),ObliqueMeshData.V(side*0.7f,-0.9f,1.1f),wing);
+                mesh.Triangle(ObliqueMeshData.V(side*0.5f,0.6f,1.68f),ObliqueMeshData.V(side*2.8f,1,2.42f),ObliqueMeshData.V(side*1.6f,0.85f,2.25f),bone);
+                foreach(float y in new[]{-0.55f,0.7f})
+                {
+                    mesh.Box(side*0.65f,y,0.35f,0.42f,0.12f,0.85f,scales);
+                    mesh.Box(side*0.65f,y-0.15f,0.42f,0.65f,0.03f,0.25f,bone);
+                }
+                mesh.Cone(side*0.3f,-1.08f,0.12f,1.92f,2.42f,bone,6,0);
+                mesh.Box(side*0.43f,-1.38f,0.08f,0.18f,1.77f,1.88f,ObliqueMeshData.Hex("EBC05E"));
+            }
+            mesh.Box(0,-1.25f,0.85f,0.75f,1.4f,1.98f,scales);
+            mesh.Box(0,-1.7f,0.72f,0.45f,1.4f,1.65f,scales);
+            mesh.Box(0,-1.94f,0.62f,0.04f,1.45f,1.52f,ObliqueMeshData.Hex("30282E"));
+            mesh.Triangle(ObliqueMeshData.V(-0.36f,1,0.8f),ObliqueMeshData.V(0.36f,1,0.8f),ObliqueMeshData.V(0,3.1f,0.18f),scales);
+            for(int i=0;i<4;i++) mesh.Cone(0,0.3f+i*0.32f,0.12f,1.8f,2.25f,bone,5,0);
+            return mesh;
+        }
 
         public static ObliqueMeshData VolcanoIconData()
         {

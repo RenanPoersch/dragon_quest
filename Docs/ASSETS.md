@@ -28,3 +28,9 @@ Poema original de três versos em latim e textos de ambientação criados para a
 Altar, chama, monólitos, símbolos de Sol/Lua/Estrela, marcas de garras, abertura entre raízes e duas partes móveis das rochas são malhas originais geradas por código em `ObliqueScenery.cs`. Não foram adicionadas imagens, modelos ou áudios externos.
 
 O altar agora ocupa um cenário local de ruínas, acessível por um ícone de colunas quebradas no mapa global. Piso, paredes antigas, colunas quebradas, pedras e ícone são modelos originais gerados por código em `PrototypeRuinsLayout.cs` e `ObliqueScenery.cs`, adicionados em 11 de outubro de 2026. A capela da cidade permanece como elemento de cenário.
+
+## Vulcão, dragão e hospedaria
+
+Trilha de basalto, lava, arena, rochas, camas e dragão são modelos originais gerados por código em `PrototypeVolcanoLayout.cs`, `PrototypeInnLayout.cs` e `ObliqueScenery.cs`. A essência usa uma pequena chama dourada. Não foram importados assets de Final Fantasy ou de terceiros.
+
+`Assets/Resources/DragonPortrait.png` é uma imagem transparente original para a batalha, rasterizada a partir de `ObliqueScenery.DragonData()` com `Tools/Render-MeshPortrait.py`. Para regenerar: execute `Tools/Test-Oblique.ps1`, localize `DragonPortrait.json` no WorkDirectory e passe esse arquivo e o caminho do PNG ao script Python. O script requer NumPy e Pillow; o PNG salvo já permite executar a demo sem Python.

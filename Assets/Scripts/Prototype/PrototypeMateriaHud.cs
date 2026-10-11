@@ -160,7 +160,9 @@ namespace DragonQuest.Prototype
                     + " MAG +" + item.Definition.MagicBonus + " / " + item.Sockets.Count + " encaixes", button)) pendingGear = item;
             }
             GUI.EndScrollView();
-            GUI.Label(new Rect(690, 620, 535, 65), "Selecione um equipamento para comparar atributos. Clique em Equipar selecionado para confirmar a troca e devolver as materias.", small);
+            GUI.Label(new Rect(690, 620, 535, 65), pendingGear == null
+                ? "Selecione um equipamento para comparar atributos. A troca devolve as materias."
+                : pendingGear.Definition.Affinities.Description + (pendingGear.Definition.IsStoryItem ? " / Item de historia: protegido contra venda." : ""), small);
         }
 
         private void DrawConsumables(PartyProgress party)

@@ -43,6 +43,11 @@ namespace DragonQuest.Prototype
                 ApplyMap(arrival);
         }
 
+        public void RecoverAtInn()
+        {
+            if (navigation.TryRecoverAtInn(out Vector2 arrival)) ApplyMap(arrival);
+        }
+
         private void ApplyMap(Vector2 arrival)
         {
             foreach (var root in mapRoots) root.Value.SetActive(root.Key == LocationId);

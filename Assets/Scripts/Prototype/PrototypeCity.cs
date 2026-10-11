@@ -12,10 +12,13 @@ namespace DragonQuest.Prototype
         private ObliqueScenery scenery;
         private PhysicsMaterial2D frictionless;
         private readonly AncientSecrets secrets = new AncientSecrets();
-        private readonly PrototypeTravel navigation = new PrototypeTravel();
+        private PrototypeTravel navigation;
+        private PrototypeBattleController battle;
+        private readonly DragonProgress dragon = new DragonProgress();
 
         private void Awake()
         {
+            navigation = new PrototypeTravel(secrets);
             scenery = new ObliqueScenery();
             frictionless = new PhysicsMaterial2D("PrototypeFrictionless") { friction = 0f, bounciness = 0f };
 
@@ -55,6 +58,7 @@ namespace DragonQuest.Prototype
             CreatePassage("Entrada da loja de equipamentos", PrototypeTravel.City, city, "equipment-shop");
             CreatePassage("Portao para a ilha", PrototypeTravel.City, city, PrototypeTravel.World);
             CreatePassage("Entrada do castelo", PrototypeTravel.City, city, PrototypeTravel.Castle);
+            CreatePassage("Entrada da hospedaria",PrototypeTravel.City,city,PrototypeTravel.Inn);
             GameObject guard = Entity("Guarda do tirano", PrototypeCityLayout.Guard, city);
             BoxCollider2D guardCollider = guard.AddComponent<BoxCollider2D>();
             guardCollider.size = new Vector2(0.65f, 0.7f);
@@ -69,7 +73,9 @@ namespace DragonQuest.Prototype
                 { PrototypeTravel.Castle, CreateCastle(interactables).gameObject },
                 { PrototypeTravel.WestForest, CreateForest(interactables, false).gameObject },
                 { PrototypeTravel.EastForest, CreateForest(interactables, true).gameObject },
-                { PrototypeTravel.Ruins, CreateRuins(interactables).gameObject }
+                { PrototypeTravel.Ruins, CreateRuins(interactables).gameObject },
+                { PrototypeTravel.Volcano,CreateVolcano(interactables).gameObject },
+                { PrototypeTravel.Inn,CreateInn(interactables).gameObject }
             };
             string[] shopIds = { "item-shop", "equipment-shop", "materia-shop" };
             string[] shopNames = { "Loja de itens", "Loja de equipamentos", "Loja de materias" };
@@ -94,8 +100,8 @@ namespace DragonQuest.Prototype
             DialogueController dialogue = gameObject.AddComponent<DialogueController>();
             PrototypeLocations locations = gameObject.AddComponent<PrototypeLocations>();
             PrototypeShopController shops = gameObject.AddComponent<PrototypeShopController>();
-            PrototypeBattleController battle = gameObject.AddComponent<PrototypeBattleController>();
-            battle.Initialize(player.GetComponent<PlayerMovement>(), dialogue, progress, () => shops.IsOpen);
+            battle = gameObject.AddComponent<PrototypeBattleController>();
+            battle.Initialize(player.GetComponent<PlayerMovement>(), dialogue, progress, () => shops.IsOpen,dragon,secrets,locations.RecoverAtInn);
             shops.Initialize(player.GetComponent<PlayerMovement>(), dialogue, battle, progress);
             locations.Initialize(mapRoots, player.GetComponent<PlayerMovement>(), cameraFollow, navigation,
                 () => dialogue.IsOpen || battle.IsBusy);
@@ -193,9 +199,7 @@ namespace DragonQuest.Prototype
 
             Transform volcano = Entity("Vulcao - icone global", PrototypeWorldLayout.Volcano, world).transform;
             scenery.VolcanoIcon(volcano);
-            NpcInteraction crater = volcano.gameObject.AddComponent<NpcInteraction>();
-            crater.Initialize("Cratera do vulcao", "Um sopro quente sobe da cratera. Uma trilha desce entre as rochas, e um rugido longinquo rompe o silencio.");
-            interactions.Add(crater);
+            CreatePassage("Entrada do vulcao",PrototypeTravel.World,world,PrototypeTravel.Volcano);
             GameObject passage = Entity("Passagem oculta", PrototypeWorldLayout.Trail, world);
             BlockedPassageInteraction gate = passage.AddComponent<BlockedPassageInteraction>();
             gate.Initialize(rocks); interactions.Add(gate);
@@ -268,6 +272,33 @@ namespace DragonQuest.Prototype
         private void DrawBlocks(IReadOnlyList<CityBlock> blocks, Transform parent)
         {
             foreach (CityBlock block in blocks) Block(block.Name, block.Position, block.Size, block.Color, parent, block.Solid, block.Order);
+        }
+
+        private Transform CreateVolcano(List<Interactable> interactions)
+        {
+            Transform volcano=Group("Vulcao - trilha e arena");
+            DrawBlocks(PrototypeVolcanoLayout.Blocks,volcano);
+            CreatePassage("Saida do vulcao",PrototypeTravel.Volcano,volcano,PrototypeTravel.World);
+            GameObject boss=Entity("Dragao corrompido",PrototypeVolcanoLayout.Dragon,volcano);
+            BoxCollider2D collider=boss.AddComponent<BoxCollider2D>(); collider.size=new Vector2(1.8f,1.8f);collider.sharedMaterial=frictionless;
+            Transform model=scenery.Dragon(boss.transform);
+            Transform glow=scenery.DragonEssence(boss.transform);
+            DragonInteraction interaction=boss.AddComponent<DragonInteraction>();
+            interaction.Initialize(dragon,()=>battle.StartDragonBattle(),model.gameObject,glow.gameObject);
+            interactions.Add(interaction);
+            return volcano;
+        }
+
+        private Transform CreateInn(List<Interactable> interactions)
+        {
+            Transform inn=Group("Hospedaria - interior");
+            DrawBlocks(PrototypeInnLayout.Blocks,inn);
+            CreatePassage("Saida da hospedaria",PrototypeTravel.Inn,inn,PrototypeTravel.City);
+            NpcInteraction keeper=CreateNpc("Hospedeira",PrototypeInnLayout.Keeper,"B89673",inn);
+            keeper.Initialize("Hospedeira","Aqui voces estao em seguranca. Descansem e reorganizem seus equipamentos antes de retornar ao vulcao.",
+                "As chamas do dragao sao perigosas. As lojas vendem Gelo e suprimentos; guardem suas forcas quando ele preparar o sopro.");
+            interactions.Add(keeper);
+            return inn;
         }
 
         private void CreateShop(Transform shop, List<Interactable> interactions, string shopId, string shopName, string displayColor)

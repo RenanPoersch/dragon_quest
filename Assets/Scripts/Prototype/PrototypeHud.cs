@@ -85,6 +85,16 @@ namespace DragonQuest.Prototype
                 DrawLabel(PrototypeSecretLayout.Altar+Vector2.up*0.8f,"ALTAR ANTIGO",scale);
                 DrawLabel(PrototypeRuinsLayout.Exit,"SAIDA PARA A ILHA",scale);
             }
+            else if(locations.LocationId==PrototypeTravel.Volcano)
+            {
+                DrawLabel(PrototypeVolcanoLayout.Dragon+Vector2.up*2.8f,battle.Dragon.IsDefeated?"ESSENCIA LIBERTA":"DRAGAO CORROMPIDO",scale);
+                DrawLabel(PrototypeVolcanoLayout.Exit,"SAIDA PARA A ILHA",scale);
+            }
+            else if(locations.LocationId==PrototypeTravel.Inn)
+            {
+                DrawLabel(PrototypeInnLayout.Keeper+Vector2.up,"HOSPEDEIRA",scale);
+                DrawLabel(PrototypeInnLayout.Exit,"SAIDA PARA A PERIFERIA",scale);
+            }
             else
             {
                 DrawLabel(new Vector2(1.5f, 1.9f), locations.LocationId == PrototypeTravel.EastForest ? "VIAJANTE" : "LENHADOR", scale);
@@ -126,6 +136,8 @@ namespace DragonQuest.Prototype
                         : locations.IsInCity ? "Lojas ao redor da praca. Castelo ao norte; saida para a ilha ao sul. Caminhe pelas entradas."
                         : locations.LocationId == PrototypeTravel.Castle ? "O trono fica ao norte; caminhe ate a saida ao sul para voltar a periferia."
                         : locations.LocationId == PrototypeTravel.Ruins ? "Explore as ruinas. O altar fica ao norte; a saida para a ilha fica ao sul."
+                        : locations.LocationId == PrototypeTravel.Volcano ? "Siga a trilha entre a lava ate a arena. A saida fica ao sul."
+                        : locations.LocationId == PrototypeTravel.Inn ? "Reorganize sua equipe com I. Caminhe ate a saida ao sul para voltar a periferia."
                         : "Converse com o morador usando E. A saida para a ilha fica ao sul.";
                 GUI.Label(new Rect(28, height - 57, width - 56, 38), prompt, bodyStyle);
             }

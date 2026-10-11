@@ -27,7 +27,8 @@ A demo começa no **mapa global de uma pequena ilha cercada pelo mar**. Castelo 
 - Porta ao norte da periferia → **interior do castelo**, com salão e trono. O tirano tem diálogo nesta entrega; a batalha e os finais entram na parte 8.
 - Duas florestas no mapa global → cenários próprios com clareira, árvores e moradores.
 - Ruínas antigas ao sudoeste da ilha → cenário próprio com colunas quebradas e o altar da lenda.
-- Passagem escondida ao norte → trilha para o vulcão, bloqueada por rochas e três selos. O dragão entra em uma entrega posterior.
+- Passagem escondida ao norte → trilha para o vulcão, bloqueada por rochas e três selos. Depois de abri-la, o ícone leva ao caminho de lava e à arena do dragão.
+- Hospedaria ao sudoeste da praça → interior com camas; a equipe retorna para lá após perder para o dragão.
 
 Entradas e saídas, incluindo lojas, funcionam ao caminhar pela área de passagem, sem confirmar com E. Chegadas ficam fora dessas áreas para evitar retorno imediato; diálogos, inventário, lojas abertas e batalhas suspendem a viagem. E continua sendo usado para conversar, examinar objetos e desfazer os selos da trilha. Ouro, inventário, equipamentos, missão, estoques e Limit usam a mesma sessão entre cenários.
 
@@ -39,13 +40,19 @@ Abra `Assets/Scenes/CidadePrototipo.unity` e siga `Docs/PARTE_7A.md` e `Docs/VIS
 
 A camponesa do bairro residencial recita um poema original de três versos em latim e explica cada frase, sem identificar a resposta do altar. Termine a conversa para consultar o poema e suas explicações com **P**.
 
-- Altar nas ruínas antigas: saia da periferia e use E no ponto de interesse ao sudoeste da ilha. Dentro das ruínas, escolha o verso que corresponde à imagem de chama e reino destruído, com clique ou teclas 1/2/3.
+- Altar nas ruínas antigas: saia da periferia e caminhe até o ponto de interesse ao sudoeste da ilha. Dentro das ruínas, escolha o verso que corresponde à imagem de chama e reino destruído, com clique ou teclas 1/2/3.
 - Floresta oeste: interprete outro verso do mesmo poema para ativar os monólitos. Erros reiniciam sem punição.
 - Floresta leste: marcas de garras apontam para uma árvore oca que guarda a Escama ancestral, um objeto de história protegido contra venda.
 
 O contador fica oculto até concluir o primeiro segredo. Depois dos três, use **E** na passagem ao norte da ilha: a escama desfaz os selos, as rochas se afastam e a trilha fica livre até o vulcão. A escama permanece no inventário e o progresso persiste entre mapas da sessão.
 
-Veja `Docs/PARTE_7B.md` para o poema, soluções e roteiro de teste em Play. A próxima entrega é o interior do vulcão, o dragão e sua armadura; a cratera atual tem uma interação de ambientação.
+Veja `Docs/PARTE_7B.md` para o poema, soluções e roteiro de teste em Play.
+
+## Parte 7C — vulcão, dragão e armadura
+
+O vulcão tem um caminho curto entre lava e rochas até o **Dragão corrompido**, resistente a Fogo e fraco a Gelo. Ele alterna garra, preparação e sopro em área, com um turno de aviso para escolher Defender. A vitória liberta sua essência e concede uma única **Armadura dracônica** e as 100 moedas desse inimigo.
+
+A armadura dá **+16 de defesa, resistência a Fogo e quatro encaixes em dois pares ligados**. Qualquer personagem pode usá-la; o bônus do tank aumenta sua defesa base para +20. Ela é protegida contra venda e precisa ser equipada para a futura revelação do espírito. Na derrota, a equipe retorna à hospedaria, conservando Limit e progresso; consumíveis gastos continuam gastos. Veja `Docs/PARTE_7C.md` para testar. Tirano, espírito e dois finais são a próxima entrega.
 
 ## Parte 6C — recompensas e missão de entrega
 

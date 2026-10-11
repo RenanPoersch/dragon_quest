@@ -63,7 +63,7 @@ internal static class ObliqueChecks
         var travel=new PrototypeTravel();
         foreach(var map in travel.Maps)
         {
-            Assert(map.FixedCamera==(map.Id!=PrototypeTravel.City&&map.Id!=PrototypeTravel.World),"Ilha e cidade seguem o herói; ambientes locais menores usam enquadramento fixo.");
+            Assert(map.FixedCamera==(map.Id!=PrototypeTravel.City&&map.Id!=PrototypeTravel.World&&map.Id!=PrototypeTravel.Volcano),"Ilha, cidade e trilha do vulcao seguem o heroi; ambientes menores usam enquadramento fixo.");
             foreach(var hero in new[]{map.Spawn,new Vector2(map.Bounds.xMax,map.Bounds.yMax)})
             {
                 var focus=ObliqueProjection.CameraFocus(hero,map.Bounds,map.CameraSize,16f/9,map.FixedCamera);
@@ -162,6 +162,19 @@ internal static class ObliqueChecks
         {Validate(ObliqueScenery.BlockData(block.Name,block.Size,block.Color,block.Solid,block.Order),block.Name);AddBlock(ruins,block);}
         Person(ruins,PrototypeRuinsLayout.Spawn,"B4A078",true);
         Export(directory,"RuinsOblique",ruins,Vector2.zero,ObliqueProjection.FrameSize(8,PrototypeRuinsLayout.Bounds,16f/9,true));
+        var dragon=ObliqueScenery.DragonData();Validate(dragon,"Dragao e asas");
+        Export(directory,"DragonPortrait",dragon,new Vector2(0,0.5f),2.6f,1);
+        var cavern=new ObliqueMeshData();
+        foreach(var block in PrototypeVolcanoLayout.Blocks)
+        {Validate(ObliqueScenery.BlockData(block.Name,block.Size,block.Color,block.Solid,block.Order),block.Name);AddBlock(cavern,block);}
+        cavern.Append(dragon,ObliqueProjection.Point(PrototypeVolcanoLayout.Dragon));
+        Person(cavern,new Vector2(0,5),"B4A078",true);
+        Export(directory,"VolcanoOblique",cavern,new Vector2(0,5),7.5f,ObliqueProjection.HeroCenterHeight);
+        var inn=new ObliqueMeshData();
+        foreach(var block in PrototypeInnLayout.Blocks)
+        {Validate(ObliqueScenery.BlockData(block.Name,block.Size,block.Color,block.Solid,block.Order),block.Name);AddBlock(inn,block);}
+        Person(inn,PrototypeInnLayout.Spawn,"B4A078",true);Person(inn,PrototypeInnLayout.Keeper,"B89673",false);
+        Export(directory,"InnOblique",inn,Vector2.zero,ObliqueProjection.FrameSize(6,PrototypeInnLayout.Bounds,16f/9,true));
         foreach(bool eastern in new[]{false,true})
             foreach(var block in PrototypeWorldLayout.CreateForestBlocks(eastern))Validate(ObliqueScenery.BlockData(block.Name,block.Size,block.Color,block.Solid,block.Order),block.Name);
         Validate(ObliqueScenery.BlockData("Balcao",new Vector2(4,0.6f),"614533",true,4),"Balcão");

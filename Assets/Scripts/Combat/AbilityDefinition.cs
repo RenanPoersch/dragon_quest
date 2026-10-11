@@ -2,7 +2,7 @@ using System;
 
 namespace DragonQuest.Combat
 {
-    public enum AbilityEffect { PhysicalDamage, Heal, Defend, Cleanse, Revive, Taunt, Protect, MagicDamage }
+    public enum AbilityEffect { PhysicalDamage, Heal, Defend, Cleanse, Revive, Taunt, Protect, MagicDamage, Prepare }
     public enum TargetRule { Enemy, Ally, Self, AllEnemies, AllAllies }
 
     public sealed class AbilityDefinition
@@ -27,6 +27,8 @@ namespace DragonQuest.Combat
             if (mpCost < 0 || power < 0) throw new ArgumentOutOfRangeException(nameof(mpCost));
             if (effect == AbilityEffect.Defend && targets != TargetRule.Self)
                 throw new ArgumentException("Defesa deve ter o proprio usuario como alvo.");
+            if (effect == AbilityEffect.Prepare && targets != TargetRule.Self)
+                throw new ArgumentException("Preparacao exige o proprio usuario como alvo.");
             if (!Enum.IsDefined(typeof(AbilityEffect), effect) || !Enum.IsDefined(typeof(TargetRule), targets))
                 throw new ArgumentException("Efeito ou alvo desconhecido.");
             if (!Enum.IsDefined(typeof(DamageElement), element)

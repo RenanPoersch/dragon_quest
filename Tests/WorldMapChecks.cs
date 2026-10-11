@@ -44,6 +44,11 @@ internal static class WorldMapChecks
             return true;
         }
         public bool Accessible(Vector2 point) => Walkable(point) && reachable.Contains(Cell(point));
+        public Vector2? ReachablePoint(Rect area)
+        {
+            foreach(var cell in reachable) {Vector2 point=Point(cell);if(area.Contains(point)) return point;}
+            return null;
+        }
         public Paths(Rect limits, IEnumerable<CityBlock> blocks, Vector2 spawn, bool isIsland = false, Vector2? npc = null)
         {
             bounds = limits; island = isIsland;
@@ -97,23 +102,33 @@ internal static class WorldMapChecks
         }
         foreach (MapRoute route in travel.Routes)
         {
-            travel = new PrototypeTravel(); NavigateTo(travel, route.From);
+            travel = ReadyTravel(); NavigateTo(travel, route.From);
             Assert(travel.TryTravel(route.To, out Vector2 arrival) && travel.Current.Id == route.To, "Rota declarada deve trocar para o destino correto.");
             Assert(arrival == route.Arrival && travel.Current.Bounds.Contains(arrival), "Rota deve usar sua chegada especifica dentro do novo mapa.");
             Assert(route.To == PrototypeTravel.City ? CityLayoutChecks.Accessible(arrival) : paths[route.To].Accessible(arrival),
                 "Chegada bloqueada ou sem caminho de retorno: " + route.From + " -> " + route.To);
-            travel = new PrototypeTravel(); NavigateTo(travel, route.From);
+            travel = ReadyTravel(); NavigateTo(travel, route.From);
             MapDefinition before = travel.Current;
-            Assert(route.From == PrototypeTravel.City ? CityLayoutChecks.Accessible(route.Entrance.center) : paths[route.From].Accessible(route.Entrance.center),
+            Vector2? entry=route.From==PrototypeTravel.City ? (CityLayoutChecks.Accessible(route.Entrance.center)?route.Entrance.center:(Vector2?)null)
+                : paths[route.From].ReachablePoint(route.Entrance);
+            Assert(entry.HasValue,
                 "Area automatica precisa ser alcancavel: " + route.From + " -> " + route.To);
             Assert(!travel.TryEnter(new Vector2(route.Entrance.center.x,route.Entrance.yMin-0.01f),false,out _) && travel.Current==before,
                 "Aproximar-se sem entrar na area nao pode trocar o mapa.");
-            Assert(!travel.TryEnter(route.Entrance.center,true,out _) && travel.Current==before,
+            Assert(!travel.TryEnter(entry.Value,true,out _) && travel.Current==before,
                 "Dialogo, inventario ou batalha suspendem a passagem.");
-            Assert(travel.TryEnter(route.Entrance.center,false,out arrival) && travel.Current.Id==route.To && arrival==route.Arrival,
+            Assert(travel.TryEnter(entry.Value,false,out arrival) && travel.Current.Id==route.To && arrival==route.Arrival,
                 "Entrar na area deve trocar o cenario sem uma tecla de confirmacao.");
             Assert(!travel.TryEnter(arrival,false,out _) && travel.Current.Id==route.To,
                 "Chegada nao pode acionar a saida e devolver imediatamente ao mapa anterior.");
+            if(route.From==PrototypeTravel.World)
+                foreach(Vector2 side in new[]{new Vector2(route.Entrance.xMin+0.05f,route.Entrance.center.y),new Vector2(route.Entrance.xMax-0.05f,route.Entrance.center.y),
+                    new Vector2(route.Entrance.center.x,route.Entrance.yMin+0.05f),new Vector2(route.Entrance.center.x,route.Entrance.yMax-0.05f)})
+                {
+                    travel=ReadyTravel();
+                    Assert(paths[PrototypeTravel.World].Walkable(side)&&travel.TryEnter(side,false,out _)&&travel.Current.Id==route.To,
+                        "POI global deve aceitar entrada pelos quatro lados acessiveis: "+route.To);
+                }
         }
         travel = new PrototypeTravel();
         for (int i = 0; i < 3; i++)
@@ -143,9 +158,24 @@ internal static class WorldMapChecks
         Assert(new PrototypeTravel().Current.Id == PrototypeTravel.World, "Uma nova sessao nao pode herdar o mapa de outra.");
         foreach (MapDefinition map in travel.Maps)
         {
-            travel=new PrototypeTravel();NavigateTo(travel,map.Id);
+            travel=ReadyTravel();NavigateTo(travel,map.Id);
             Assert(!travel.TryEnter(map.Spawn,false,out _) && travel.Current.Id==map.Id,"Posicao inicial nao pode disparar uma passagem automaticamente.");
         }
+        travel=new PrototypeTravel();
+        Assert(!travel.TryEnter(travel.RouteFrom(PrototypeTravel.World,PrototypeTravel.Volcano).Entrance.center,false,out _)
+            &&travel.Current.Id==PrototypeTravel.World,"Entrada automatica do vulcao tambem exige selos abertos.");
+        Assert(!travel.TryRecoverAtInn(out _),"Recuperacao nao pode virar atalho de exploracao.");
+        travel=ReadyTravel();travel.TryTravel(PrototypeTravel.Volcano,out _);
+        Assert(travel.TryRecoverAtInn(out Vector2 recovery)&&travel.Current.Id==PrototypeTravel.Inn&&recovery==PrototypeInnLayout.Spawn,"Derrota no vulcao deve devolver a hospedaria.");
+        Assert(!travel.TryEnter(recovery,false,out _)&&travel.Current.Id==PrototypeTravel.Inn,"Recuperacao nao pode acionar a saida da hospedaria.");
+    }
+
+    private static PrototypeTravel ReadyTravel()
+    {
+        var secrets=new DragonQuest.Progression.AncientSecrets();
+        secrets.LearnPoem();secrets.TrySolveAltar(DragonQuest.Progression.LegendPoem.Flame);
+        secrets.Activate(DragonQuest.Progression.MonolithSymbol.Moon);secrets.Activate(DragonQuest.Progression.MonolithSymbol.Star);secrets.Activate(DragonQuest.Progression.MonolithSymbol.Sun);
+        secrets.TryCollectScale();secrets.TryOpenPassage();return new PrototypeTravel(secrets);
     }
 
     public static int Run(string exportDirectory = null)
@@ -155,15 +185,19 @@ internal static class WorldMapChecks
         var east = new Paths(PrototypeWorldLayout.ForestBounds, PrototypeWorldLayout.CreateForestBlocks(true), PrototypeWorldLayout.ForestSpawn, npc: new Vector2(1.5f, 1));
         var castle = new Paths(PrototypeWorldLayout.CastleBounds, PrototypeWorldLayout.CastleBlocks, PrototypeWorldLayout.CastleSpawn, npc: PrototypeWorldLayout.Throne);
         var ruins = new Paths(PrototypeRuinsLayout.Bounds,PrototypeRuinsLayout.Blocks,PrototypeRuinsLayout.Spawn);
+        var volcano=new Paths(PrototypeVolcanoLayout.Bounds,PrototypeVolcanoLayout.Blocks.Concat(new[]{new CityBlock("Dragao",0,8,1.8f,1.8f,"",true,0)}),PrototypeVolcanoLayout.Spawn);
+        var inn=new Paths(PrototypeInnLayout.Bounds,PrototypeInnLayout.Blocks,PrototypeInnLayout.Spawn,npc:PrototypeInnLayout.Keeper);
+        var openWorld = new Paths(PrototypeWorldLayout.Bounds, WorldBlocks().Where(block=>block.Name!=PrototypeSecretLayout.SealedRocks),PrototypeWorldLayout.Spawn,true);
         var shop = new Paths(new Rect(-7, -5, 14, 10), new[]
         {
             new CityBlock("Balcao", 0, 0.15f, 4, 0.6f, "", true, 0),
             new CityBlock("Estante oeste", -4.8f, 1.5f, 1.5f, 3, "", true, 0),
             new CityBlock("Estante leste", 4.8f, 1.5f, 1.5f, 3, "", true, 0)
-        }, new Vector2(0, -2.7f));
+        }.Concat(PrototypeInnLayout.Blocks.Where(block=>block.Name.StartsWith("Parede"))), new Vector2(0, -2.7f));
         var paths = new Dictionary<string, Paths>
         {
-            { PrototypeTravel.World, world }, { PrototypeTravel.WestForest, west }, { PrototypeTravel.EastForest, east },
+            { PrototypeTravel.World, openWorld }, { PrototypeTravel.WestForest, west }, { PrototypeTravel.EastForest, east },
+            { PrototypeTravel.Volcano,volcano }, { PrototypeTravel.Inn,inn },
             { PrototypeTravel.Castle, castle }, { PrototypeTravel.Ruins,ruins }, { "item-shop", shop }, { "equipment-shop", shop }, { "materia-shop", shop }
         };
         foreach (Vector2 icon in new[] { PrototypeWorldLayout.Castle, PrototypeWorldLayout.WestForest, PrototypeWorldLayout.EastForest,PrototypeWorldLayout.Ruins })
@@ -171,9 +205,10 @@ internal static class WorldMapChecks
         Assert(world.Accessible(PrototypeWorldLayout.Trail), "Passagem oculta deve poder ser examinada.");
         Assert(!world.Accessible(PrototypeWorldLayout.Volcano), "Vulcao nao pode ser alcancado enquanto a trilha estiver bloqueada.");
         Assert(!world.Walkable(new Vector2(3, 6.5f)), "Rochas precisam impedir atravesar a trilha.");
-        var openWorld = new Paths(PrototypeWorldLayout.Bounds, WorldBlocks().Where(block=>block.Name!=PrototypeSecretLayout.SealedRocks),PrototypeWorldLayout.Spawn,true);
         Assert(openWorld.Accessible(PrototypeWorldLayout.Volcano), "Remover o colisor dos selos deve abrir um caminho real ate o vulcao.");
         Assert(openWorld.Accessible(PrototypeWorldLayout.Trail), "Trilha aberta deve permitir retornar ao sul da ilha.");
+        Assert(volcano.Accessible(PrototypeVolcanoLayout.Dragon+Vector2.down*1.5f),"Trilha de basalto deve levar a um ponto de interacao do dragao.");
+        Assert(!volcano.Walkable(new Vector2(5,-5)),"A lava deve impedir caminhar fora da trilha.");
         foreach(var block in PrototypeSecretLayout.WestMonoliths)
             Assert(west.Accessible(block.Position+Vector2.down), "Cada monolito deve ter um ponto livre de interacao.");
         Assert(west.Accessible(PrototypeSecretLayout.Inscription+Vector2.down), "Inscricao deve poder ser lida.");
