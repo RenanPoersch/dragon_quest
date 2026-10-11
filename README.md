@@ -19,6 +19,17 @@ Use essa versão do Editor para evitar migrações involuntárias.
 4. Abra `Assets/Scenes/CidadePrototipo.unity`.
 5. Clique em **Play**, clique dentro da janela **Game** e use **WASD ou as setas** para andar; **E** interage com objetos próximos e **I** abre o inventário.
 
+## Parte 6A — elementos e afinidades
+
+Fogo e Gelo estão disponíveis como matérias verdes, junto de Raio. As três magias têm poder 22 e custo 6 MP. Fênix causa dano de Fogo. Fraquezas causam 150% do dano normal; resistências, 50%.
+
+- Guarda do tirano: fraco a Raio, resistente a Fogo. Soldado: fraco a Fogo, resistente a Gelo.
+- All mantém o elemento e calcula a afinidade de cada alvo. Infusão mantém o elemento e passa a usar ataque físico.
+- As fichas dos inimigos mostram afinidades; o relatório da ação indica elemento e resultado. A prévia de comandos no inventário também mostra o elemento.
+- Limit continua acumulando sobre o HP realmente perdido após defesa e resistência.
+
+Veja `Docs/PARTE_6A.md` para o roteiro e `Docs/PLANO_LOJAS.md` para as decisões das lojas. O kit econômico e as 50 moedas iniciais serão aplicados na parte 6B; esta entrega conserva o inventário de teste para validar os elementos.
+
 ## Parte 5B — equipamentos e consumíveis
 
 O menu aberto com **I** tem abas **Matérias**, **Equipamentos** e **Itens**. Na aba Equipamentos, escolha o personagem, selecione uma arma ou armadura, confira os atributos e clique em Equipar selecionado. Também é possível remover arma e armadura.
@@ -38,7 +49,7 @@ As habilidades especiais vêm das matérias equipadas. Qualquer personagem pode 
 
 | Cor | Tipo | Exemplos |
 | --- | --- | --- |
-| Verde | Magia | Raio (Thunder), Cura, Purificação, Vida |
+| Verde | Magia | Fogo, Gelo, Raio (Thunder), Cura, Purificação, Vida |
 | Azul | Suporte | All: aplica a matéria ligada a todos os alvos válidos |
 | Vermelha | Summon | Fênix: concede uma invocação de dano |
 | Roxa | Aprimoramento físico | Força, Corte, Guardião e Infusão |
@@ -137,7 +148,9 @@ Veja `Docs/PARTE_1.md` para o roteiro de verificação.
 | 4 | Ataque em área, purificar, reviver, provocar e proteger |
 | 5A | Matérias livres por classe, encaixes ligados, combos, afinidades e Limit Break |
 | 5B | Troca de equipamentos e inventário de consumíveis |
-| 6 | Compra de itens, equipamentos e magias |
+| 6A | Fogo, Gelo, fraquezas, resistências e combos elementais |
+| 6B | Três lojas com estoques limitados, compras, vendas e kit econômico |
+| 6C | Recompensas de batalha, primeira missão e reposição por progresso |
 | 7 | Segredos, dragão e recompensa |
 | 8 | Tirano, espírito e dois finais |
 | 9 | Arte, áudio, balanceamento e executável |

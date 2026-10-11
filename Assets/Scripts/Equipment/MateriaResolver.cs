@@ -45,7 +45,7 @@ namespace DragonQuest.Equipment
                         {
                             effect = AbilityEffect.PhysicalDamage;
                             name += " + Infusao";
-                            details += " Combo: golpe fisico com o poder da magia/invocacao; usa ataque e pode ser interceptado.";
+                            details += " Combo: golpe fisico que mantem o elemento; usa ataque e pode ser interceptado.";
                         }
                         if (member.Class == CharacterClass.Healer && (effect == AbilityEffect.MagicDamage || effect == AbilityEffect.Heal))
                         {
@@ -53,7 +53,7 @@ namespace DragonQuest.Equipment
                             details += " Afinidade: +25% no poder base.";
                         }
                         commands.Add(new AbilityDefinition(source.Id + "/" + original.Id, name, details, cost, power,
-                            effect, targets, original.PoisonTurns, original.UsesLimit, original.SourceAbilityId));
+                            effect, targets, original.PoisonTurns, original.UsesLimit, original.SourceAbilityId, original.Element));
                     }
                 }
             }

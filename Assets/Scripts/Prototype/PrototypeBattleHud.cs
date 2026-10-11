@@ -220,6 +220,7 @@ namespace DragonQuest.Prototype
             if (participant.Team == CombatTeam.Party)
                 DrawBar(new Rect(rect.x + 70, rect.y + 85, rect.width - 86, 15), participant.Limit.Charge,
                     100, new Color(0.81f, 0.38f, 0.76f), "LIMIT");
+            else GUI.Label(new Rect(rect.x + 70, rect.y + 84, rect.width - 80, 20), participant.Definition.Affinities.Description, small);
             string conditions = participant.IsDefending ? "DEFESA " : string.Empty;
             if (participant.PoisonTurns > 0) conditions += "VENENO " + participant.PoisonTurns + " ";
             if (participant.TauntTurns > 0) conditions += "PROVOCADO " + participant.TauntTurns + " ";

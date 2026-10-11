@@ -234,10 +234,20 @@ namespace DragonQuest.Combat
             }
             int offense = ability.Effect == AbilityEffect.MagicDamage ? actor.Definition.Magic : actor.Definition.Attack;
             long damage = Math.Max(1L, (long)offense + ability.Power - target.Definition.Defense);
+            int elementalPercent = target.Definition.Affinities.DamagePercent(ability.Element);
+            // Primeiro defesa numerica, depois afinidade (para baixo), por fim Defender (para cima).
+            damage = Math.Max(1L, damage * elementalPercent / 100);
             if (target.IsDefending) damage = (damage + 1) / 2;
             int previousHp = target.Hp;
             target.TakeDamage((int)Math.Min(int.MaxValue, damage));
             report.Append(target.Definition.Name).Append(" -").Append(previousHp - target.Hp).Append(" HP");
+            if (ability.Element != DamageElement.None)
+            {
+                report.Append(" (").Append(ElementalAffinities.NameOf(ability.Element));
+                if (elementalPercent == 150) report.Append(", fraqueza");
+                else if (elementalPercent == 50) report.Append(", resistencia");
+                report.Append(")");
+            }
             if (!target.IsAlive) report.Append(" (derrotado)");
             else if (ability.PoisonTurns > 0)
             {

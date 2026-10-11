@@ -12,10 +12,20 @@ namespace DragonQuest.Prototype
         public static readonly ConsumableDefinition Antidote = new ConsumableDefinition("antidote", "Antidoto", "Remove veneno de um aliado vivo. Usa uma unidade e um turno.", ItemEffect.CleansePoison, 0);
         public static readonly ConsumableDefinition PhoenixFeather = new ConsumableDefinition("phoenix-feather", "Pluma da Fenix", "Revive um aliado derrotado com 30% do HP maximo. Usa uma unidade e um turno.", ItemEffect.Revive, 30);
         public static readonly AbilityDefinition Thunder = new AbilityDefinition("thunder", "Thunder",
-            "Magia de raio contra um inimigo, poder 22. Custa 6 MP.", 6, 22, AbilityEffect.MagicDamage, TargetRule.Enemy);
+            "Magia de Raio contra um inimigo, poder 22. Custa 6 MP.", 6, 22, AbilityEffect.MagicDamage, TargetRule.Enemy,
+            element: DamageElement.Lightning);
+        public static readonly AbilityDefinition Fire = new AbilityDefinition("fire", "Fogo",
+            "Magia de Fogo contra um inimigo, poder 22. Custa 6 MP.", 6, 22, AbilityEffect.MagicDamage, TargetRule.Enemy,
+            element: DamageElement.Fire);
+        public static readonly AbilityDefinition Ice = new AbilityDefinition("ice", "Gelo",
+            "Magia de Gelo contra um inimigo, poder 22. Custa 6 MP.", 6, 22, AbilityEffect.MagicDamage, TargetRule.Enemy,
+            element: DamageElement.Ice);
         public static readonly AbilityDefinition Summon = new AbilityDefinition("summon", "Invocar Fenix",
-            "Invoca a Fenix para atingir um inimigo, poder 35. Custa 12 MP.", 12, 35, AbilityEffect.MagicDamage, TargetRule.Enemy);
+            "Invoca a Fenix com dano de Fogo, poder 35. Custa 12 MP.", 12, 35, AbilityEffect.MagicDamage, TargetRule.Enemy,
+            element: DamageElement.Fire);
         public static readonly MateriaDefinition ThunderMateria = new MateriaDefinition("thunder", "Raio", "Verde: concede Thunder.", MateriaType.Magic, abilities: new[] { Thunder });
+        public static readonly MateriaDefinition FireMateria = new MateriaDefinition("fire", "Fogo", "Verde: magia de Fogo, poder 22, 6 MP. Fraqueza x1,5; resistencia x0,5.", MateriaType.Magic, abilities: new[] { Fire });
+        public static readonly MateriaDefinition IceMateria = new MateriaDefinition("ice", "Gelo", "Verde: magia de Gelo, poder 22, 6 MP. Fraqueza x1,5; resistencia x0,5.", MateriaType.Magic, abilities: new[] { Ice });
         public static readonly MateriaDefinition CureMateria = new MateriaDefinition("cure", "Cura", "Verde: concede Curar.", MateriaType.Magic, abilities: new[] { PrototypeBattleFactory.Heal });
         public static readonly MateriaDefinition CleanseMateria = new MateriaDefinition("cleanse", "Purificacao", "Verde: remove veneno.", MateriaType.Magic, abilities: new[] { PrototypeBattleFactory.Cleanse });
         public static readonly MateriaDefinition ReviveMateria = new MateriaDefinition("revive", "Vida", "Verde: concede Reviver.", MateriaType.Magic, abilities: new[] { PrototypeBattleFactory.Revive });
@@ -38,7 +48,8 @@ namespace DragonQuest.Prototype
                 new CombatantDefinition("Bram", "Tank", 150, 30, 14, 13, 3, 8, MateriaResolver.Attack, MateriaResolver.Defend), weapon, armor);
             var inventory = new List<MateriaInstance>();
             foreach (MateriaDefinition definition in new[] { HeavyMateria, CleaveMateria, ThunderMateria, AllMateria,
-                CureMateria, CleanseMateria, ReviveMateria, SummonMateria, GuardianMateria, InfuseMateria, AllMateria, ThunderMateria })
+                CureMateria, CleanseMateria, ReviveMateria, SummonMateria, GuardianMateria, InfuseMateria, AllMateria, ThunderMateria,
+                FireMateria, IceMateria })
                 inventory.Add(new MateriaInstance("materia-" + inventory.Count, definition));
             var spareEquipment = new[]
             {

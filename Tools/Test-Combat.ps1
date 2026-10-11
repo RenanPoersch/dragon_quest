@@ -26,6 +26,7 @@ $testArguments += Join-Path $testProjectRoot 'Tests/BattleChecks.cs'
 $testArguments += Join-Path $testProjectRoot 'Tests/AbilityChecks.cs'
 $testArguments += Join-Path $testProjectRoot 'Tests/MateriaLimitChecks.cs'
 $testArguments += Join-Path $testProjectRoot 'Tests/EquipmentItemChecks.cs'
+$testArguments += Join-Path $testProjectRoot 'Tests/ElementalChecks.cs'
 & $testDotnet $testCsc.FullName @testArguments
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 $testRuntimeConfig = @{ runtimeOptions = @{ tfm = $testReferenceDirectory.Name; framework = @{ name = 'Microsoft.NETCore.App'; version = $testRuntimeFolder.Name } } }

@@ -89,3 +89,13 @@ O usuário confirmou que as interações funcionaram em Play. Não houve valida�
 - Abas, comparação de atributos, rolagem dos encaixes e uso de itens pela interface aguardam confirmação visual/interativa em Play.
 - Roteiro: `Docs/PARTE_5B.md`; testes: `Tools/Test-Combat.ps1` e `Tools/Test-ExplorationProgress.ps1`.
 - Sem compras, salvamento em disco, arte final ou executável nesta etapa.
+
+## Parte 6A — elementos e afinidades
+
+- Scripts do jogo compilados sem erros com Roslyn e bibliotecas da Unity 6000.6.5f1, incluindo Input System.
+- 1.362 verificações de combate passaram, incluindo regressões anteriores, dados elementais imutáveis, validação de perfis, fraquezas/resistências dos três elementos, arredondamento e limites numéricos.
+- Verificados dano por alvo em área com custo único, Infusão e afinidade de classe, interceptação com perfil do protetor, Defender, magia da IA e carga real de Limit.
+- Verificados comandos/estados sem elemento, perfis preservados no snapshot, definições de matéria intactas e Fogo + All no encontro jogável.
+- As 15 verificações de progresso de exploração continuam passando.
+- Prévia de elementos, fichas de afinidade e relatório visual aguardam confirmação em Play. Roteiro: `Docs/PARTE_6A.md`.
+- Inventário de teste mantido até a integração das lojas na parte 6B. Planejamento: `Docs/PLANO_LOJAS.md`.

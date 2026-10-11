@@ -13,11 +13,17 @@ namespace DragonQuest.Combat
         public int Defense { get; }
         public int Magic { get; }
         public int Speed { get; }
+        public ElementalAffinities Affinities { get; }
         public IReadOnlyList<AbilityDefinition> Abilities { get; }
 
         public CombatantDefinition(string name, string role, int maxHp, int maxMp, int attack,
             int defense, int magic, int speed, params AbilityDefinition[] abilities)
+            : this(name, role, maxHp, maxMp, attack, defense, magic, speed, ElementalAffinities.Neutral, abilities) { }
+
+        public CombatantDefinition(string name, string role, int maxHp, int maxMp, int attack,
+            int defense, int magic, int speed, ElementalAffinities affinities, params AbilityDefinition[] abilities)
         {
+            Affinities = affinities ?? throw new ArgumentNullException(nameof(affinities));
             if (maxHp <= 0 || maxMp < 0 || attack < 0 || defense < 0 || magic < 0 || speed < 0)
                 throw new ArgumentOutOfRangeException(nameof(maxHp), "Atributos invalidos.");
             if (abilities == null || abilities.Length == 0) throw new ArgumentException("Combatente precisa de habilidades.");

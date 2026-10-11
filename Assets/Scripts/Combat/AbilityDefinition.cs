@@ -17,9 +17,11 @@ namespace DragonQuest.Combat
         public int PoisonTurns { get; }
         public bool UsesLimit { get; }
         public string SourceAbilityId { get; }
+        public DamageElement Element { get; }
 
         public AbilityDefinition(string id, string name, string description, int mpCost, int power,
-            AbilityEffect effect, TargetRule targets, int poisonTurns = 0, bool usesLimit = false, string sourceAbilityId = null)
+            AbilityEffect effect, TargetRule targets, int poisonTurns = 0, bool usesLimit = false, string sourceAbilityId = null,
+            DamageElement element = DamageElement.None)
         {
             if (string.IsNullOrWhiteSpace(id)) throw new ArgumentException("Habilidade precisa de ID.", nameof(id));
             if (mpCost < 0 || power < 0) throw new ArgumentOutOfRangeException(nameof(mpCost));
@@ -27,6 +29,9 @@ namespace DragonQuest.Combat
                 throw new ArgumentException("Defesa deve ter o proprio usuario como alvo.");
             if (!Enum.IsDefined(typeof(AbilityEffect), effect) || !Enum.IsDefined(typeof(TargetRule), targets))
                 throw new ArgumentException("Efeito ou alvo desconhecido.");
+            if (!Enum.IsDefined(typeof(DamageElement), element)
+                || (element != DamageElement.None && effect != AbilityEffect.PhysicalDamage && effect != AbilityEffect.MagicDamage))
+                throw new ArgumentException("Elemento valido so pode ser usado em habilidades de dano.");
             if (poisonTurns < 0 || (poisonTurns > 0 && effect != AbilityEffect.PhysicalDamage))
                 throw new ArgumentException("Veneno exige um ataque fisico e duracao positiva.");
             if (targets == TargetRule.AllEnemies && effect != AbilityEffect.PhysicalDamage && effect != AbilityEffect.MagicDamage)
@@ -52,6 +57,7 @@ namespace DragonQuest.Combat
             PoisonTurns = poisonTurns;
             UsesLimit = usesLimit;
             SourceAbilityId = sourceAbilityId ?? id;
+            Element = element;
         }
     }
 }

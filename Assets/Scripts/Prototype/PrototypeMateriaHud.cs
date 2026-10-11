@@ -1,4 +1,5 @@
 using UnityEngine;
+using DragonQuest.Combat;
 using DragonQuest.Equipment;
 using DragonQuest.Inventory;
 
@@ -98,7 +99,8 @@ namespace DragonQuest.Prototype
                 new Rect(0, 0, 555, commands.Count * 28));
             for (int i = 0; i < commands.Count; i++)
                 GUI.Label(new Rect(0, i * 28, 550, 27), commands[i].Name + "  |  " + commands[i].MpCost + " MP"
-                    + (commands[i].UsesLimit ? "  |  Limit 100%" : "  |  Poder " + commands[i].Power), small);
+                    + (commands[i].UsesLimit ? "  |  Limit 100%" : "  |  Poder " + commands[i].Power)
+                    + (commands[i].Element == DamageElement.None ? "" : "  |  " + ElementalAffinities.NameOf(commands[i].Element)), small);
             GUI.EndScrollView();
             GUI.Label(new Rect(48, 642, 345, 44), message, small);
             bool enabled = GUI.enabled;
