@@ -179,7 +179,7 @@ O cenário usa formas coloridas geradas pelo código, sem imagens externas. Spri
 - `Assets/Scripts/Prototype/PrototypeCityLayout.cs`: dimensões, bairros, construções, ruas, rio e pontes do mapa ampliado.
 - `Assets/Scripts/Prototype/PrototypeWorldLayout.cs`: ilha, costa, ícones globais, florestas e interior do castelo.
 - `Assets/Scripts/Prototype/PrototypeTravel.cs`: mapas, conexões permitidas e posições de chegada/retorno.
-- `Assets/Scripts/Prototype/PrototypeHud.cs`: controles e placas dos locais.
+- `Assets/Scripts/Prototype/PrototypeHud.cs`: controles, nome do ambiente no cabeçalho e dicas de interação. Os cenários não exibem placas de texto flutuantes.
 
 Veja `Docs/PARTE_1.md` para o roteiro de verificação.
 

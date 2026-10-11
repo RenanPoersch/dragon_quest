@@ -27,6 +27,8 @@ Ouro, inventário, estoques, matérias, equipamentos, missão e Limit continuam 
 
 ## Conferir no Editor
 
+Os nomes sobre locais, moradores, objetos e saídas foram removidos para liberar a visão do cenário. O nome do mapa permanece no cabeçalho; a faixa inferior orienta a exploração e mostra as interações próximas.
+
 1. Saia de Play, aguarde a importação dos scripts e do shader e abra `Assets/Scenes/CidadePrototipo.unity`.
 2. Inicie Play. Confirme a ilha vista em ângulo e o personagem sobre o chão; verifique se o Console apresenta erro de shader ou material rosa.
 3. Caminhe com WASD e setas, incluindo diagonais. Confira a direção na tela, os passos e as colisões com mar e montanhas.

@@ -17,7 +17,6 @@ namespace DragonQuest.Prototype
         private AncientSecrets secrets;
         private GUIStyle titleStyle;
         private GUIStyle bodyStyle;
-        private GUIStyle labelStyle;
         private Texture2D panelTexture;
 
         public void Initialize(Camera worldCamera, PlayerInteraction playerInteraction,
@@ -43,63 +42,6 @@ namespace DragonQuest.Prototype
             GUI.matrix = Matrix4x4.Scale(new Vector3(scale, scale, 1));
             float width = Screen.width / scale;
             float height = Screen.height / scale;
-
-            if (locations.IsInShop)
-            {
-                DrawLabel(new Vector2(0, 1.9f), "LOJISTA", scale);
-                DrawLabel(new Vector2(0, -3.7f), "SAIDA", scale);
-            }
-            else if (locations.IsInCity)
-            {
-                DrawLabel(new Vector2(-9, 4.3f), "ITENS", scale);
-                DrawLabel(new Vector2(9, 4.3f), "MATERIAS", scale);
-                DrawLabel(new Vector2(-9, -5.2f), "HOSPEDARIA", scale);
-                DrawLabel(new Vector2(9, -5.2f), "EQUIPAMENTOS", scale);
-                DrawLabel(PrototypeCityLayout.Castle, "CASTELO", scale);
-                DrawLabel(PrototypeCityLayout.Citizen + Vector2.up * 0.9f, "ALDEAO", scale);
-                DrawLabel(PrototypeCityLayout.Chest + Vector2.up * 0.9f, "BAU", scale);
-                DrawLabel(PrototypeCityLayout.Guard + Vector2.up * 0.9f, "GUARDA", scale);
-                DrawLabel(PrototypeCityLayout.Resident + Vector2.up * 0.9f, "CAMPONESA", scale);
-                DrawLabel(PrototypeCityLayout.Gardener + Vector2.up * 0.9f, "JARDINEIRO", scale);
-                DrawLabel(PrototypeCityLayout.Explorer + Vector2.up * 0.9f, "EXPLORADORA", scale);
-                DrawLabel(new Vector2(-24, 21), "CAPELA ANTIGA", scale);
-                DrawLabel(new Vector2(24, -19.5f), "PEDESTAL", scale);
-                DrawLabel(PrototypeWorldLayout.CityExit, "SAIDA PARA A ILHA", scale);
-                DrawLabel(PrototypeWorldLayout.CastleDoor, "ENTRAR NO CASTELO", scale);
-            }
-            else if (locations.LocationId == PrototypeTravel.World)
-            {
-                DrawLabel(PrototypeWorldLayout.Castle + Vector2.up * 1.5f, "CASTELO E ARREDORES", scale);
-                DrawLabel(PrototypeWorldLayout.WestForest + Vector2.up * 1.5f, "FLORESTA OESTE", scale);
-                DrawLabel(PrototypeWorldLayout.EastForest + Vector2.up * 1.5f, "FLORESTA LESTE", scale);
-                DrawLabel(PrototypeWorldLayout.Ruins + Vector2.up * 1.5f,"RUINAS ANTIGAS",scale);
-                DrawLabel(PrototypeWorldLayout.Volcano + Vector2.up * 1.4f, "VULCAO", scale);
-            }
-            else if (locations.LocationId == PrototypeTravel.Castle)
-            {
-                DrawLabel(PrototypeWorldLayout.Throne + Vector2.up, "TIRANO", scale);
-                DrawLabel(PrototypeWorldLayout.CastleExit, "SAIDA PARA A PERIFERIA", scale);
-            }
-            else if(locations.LocationId==PrototypeTravel.Ruins)
-            {
-                DrawLabel(PrototypeSecretLayout.Altar+Vector2.up*0.8f,"ALTAR ANTIGO",scale);
-                DrawLabel(PrototypeRuinsLayout.Exit,"SAIDA PARA A ILHA",scale);
-            }
-            else if(locations.LocationId==PrototypeTravel.Volcano)
-            {
-                DrawLabel(PrototypeVolcanoLayout.Dragon+Vector2.up*2.8f,battle.Dragon.IsDefeated?"ESSENCIA LIBERTA":"DRAGAO CORROMPIDO",scale);
-                DrawLabel(PrototypeVolcanoLayout.Exit,"SAIDA PARA A ILHA",scale);
-            }
-            else if(locations.LocationId==PrototypeTravel.Inn)
-            {
-                DrawLabel(PrototypeInnLayout.Keeper+Vector2.up,"HOSPEDEIRA",scale);
-                DrawLabel(PrototypeInnLayout.Exit,"SAIDA PARA A PERIFERIA",scale);
-            }
-            else
-            {
-                DrawLabel(new Vector2(1.5f, 1.9f), locations.LocationId == PrototypeTravel.EastForest ? "VIAJANTE" : "LENHADOR", scale);
-                DrawLabel(PrototypeWorldLayout.LocalExit, "SAIDA PARA A ILHA", scale);
-            }
 
             GUI.DrawTexture(new Rect(16, 16, Mathf.Min(590, width - 32), secrets.IsDiscovered ? 172 : 126), panelTexture);
             GUI.Label(new Rect(30, 25, width - 60, 27), "DRAGON QUEST  /  " + locations.LocationName, titleStyle);
@@ -144,15 +86,6 @@ namespace DragonQuest.Prototype
             GUI.matrix = previousMatrix;
         }
 
-        private void DrawLabel(Vector2 worldPosition, string text, float scale)
-        {
-            Vector3 screen = view.WorldToScreenPoint(ObliqueProjection.Point(worldPosition, 1.5f));
-            if (screen.z <= 0 || screen.x < 0 || screen.x > Screen.width || screen.y < 0 || screen.y > Screen.height) return;
-            Rect rect = new Rect(screen.x / scale - 75, (Screen.height - screen.y) / scale - 13, 150, 26);
-            GUI.DrawTexture(rect, panelTexture);
-            GUI.Label(rect, text, labelStyle);
-        }
-
         private void EnsureStyles()
         {
             if (titleStyle != null) return;
@@ -160,7 +93,6 @@ namespace DragonQuest.Prototype
             titleStyle.normal.textColor = new Color(0.94f, 0.80f, 0.48f);
             bodyStyle = new GUIStyle(GUI.skin.label) { fontSize = 14, wordWrap = true };
             bodyStyle.normal.textColor = new Color(0.93f, 0.93f, 0.88f);
-            labelStyle = new GUIStyle(bodyStyle) { alignment = TextAnchor.MiddleCenter, fontSize = 12, fontStyle = FontStyle.Bold };
             panelTexture = new Texture2D(1, 1);
             panelTexture.SetPixel(0, 0, new Color(0.08f, 0.12f, 0.11f, 0.92f));
             panelTexture.Apply();
