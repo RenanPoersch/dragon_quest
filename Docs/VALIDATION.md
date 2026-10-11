@@ -119,3 +119,13 @@ O usuário confirmou que as interações funcionaram em Play. Não houve valida�
 - Confirmado percurso completo com kit econômico: vitória sem compras/consumíveis extras, missão, baú, saldo de 140, compra de Fogo/All e comando válido na batalha seguinte.
 - Scripts compilaram com bibliotecas da Unity 6000.6.5f1. UI da missão, recompensa visual e percurso entre lojas ainda aguardam teste em Play: `Docs/PARTE_6C.md`.
 - Sem salvamento em disco, arte final ou executável nesta fase.
+
+## Ajuste da parte 6C — ouro por inimigo
+
+- 1.518 verificações de combate/inventário/lojas/progresso passaram; as 15 verificações de exploração continuam passando.
+- Confirmados valores próprios por tipo de inimigo, soma de vários derrotados e contagem separada de cópias da mesma definição. A patrulha atual configura 25 no Guarda do tirano e 10 no Soldado.
+- Confirmados composição da recompensa no resultado, exclusão de aliados vivos/derrotados, valor zero e rejeição de valores negativos.
+- Confirmados ausência de pagamento durante o encontro ou após derrota com eliminação parcial, pagamento único e uso imediato nas lojas.
+- Confirmados proteção contra overflow da soma/saldo, ausência de pagamento parcial, aceitação do limite exato e recebimento pendente quando o saldo permitir.
+- Percurso econômico com missão, baú, patrulha e Fogo/All continua passando com saldo total de 140.
+- Scripts compilaram com bibliotecas da Unity 6000.6.5f1. A composição visual da recompensa ainda aguarda o roteiro em Play de `Docs/PARTE_6C.md`.

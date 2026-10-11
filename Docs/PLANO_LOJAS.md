@@ -6,7 +6,7 @@ Decisões acordadas em 10 de outubro de 2026. As partes 6A, 6B e 6C têm commits
 
 - Três lojas: itens, equipamentos e matérias, com entrada, vendedor e saída na cidade.
 - Todos os produtos têm estoque limitado. Consumíveis retornam ao estoque inicial em marcos da história, uma vez por marco; equipamentos e matérias não repõem.
-- Ouro vem de batalhas, baús e pequenas missões. Vitória no encontro atual: 35 moedas; derrota: zero. Baú atual: 25 moedas. Primeira missão de entrega entre comerciantes: 30 moedas; futuras missões: 30 a 60.
+- Ouro vem de batalhas, baús e pequenas missões. A vitória soma o ouro de cada inimigo derrotado: Guarda do tirano 25, Soldado 10 (35 na patrulha atual); derrota: zero. Baú atual: 25 moedas. Primeira missão de entrega entre comerciantes: 30 moedas; futuras missões: 30 a 60.
 - Cada vendedor compra objetos de sua categoria por 50% do preço, arredondado para baixo. Objetos em uso precisam ser desequipados antes; armadura do dragão e outros itens de história são protegidos.
 - Compra vai ao inventário. Equipar continua sendo feito no menu de inventário, devolvendo as matérias dos equipamentos trocados.
 - Menu Comprar/Vender com ouro, preço, estoque, quantidade e descrição. Equipamentos mostram atributos base e pares ligados antes da compra.

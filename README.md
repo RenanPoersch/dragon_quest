@@ -21,7 +21,7 @@ Use essa versão do Editor para evitar migrações involuntárias.
 
 ## Parte 6C — recompensas e missão de entrega
 
-Cada vitória contra a patrulha concede **35 moedas**, uma vez por batalha; derrota não paga. O baú conserva sua recompensa única de 25 moedas.
+O ouro da vitória é a soma das recompensas dos inimigos derrotados: **Guarda do tirano: 25 moedas; Soldado: 10 moedas**. A patrulha atual rende 35, e outras formações terão totais conforme seus inimigos. O resultado mostra a composição, com pagamento único por batalha; derrota não paga. O baú conserva sua recompensa única de 25 moedas.
 
 Na loja de itens, clique em **Aceitar entrega**. Leve o pacote ao vendedor de matérias, clique em **Entregar pacote** e volte à primeira loja para **Receber 30 moedas**. A conclusão repõe somente os consumíveis do vendedor, uma vez; equipamentos e matérias conservam os estoques restantes. O HUD mostra o objetivo atual.
 

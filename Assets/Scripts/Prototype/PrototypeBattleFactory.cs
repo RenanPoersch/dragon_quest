@@ -35,10 +35,10 @@ namespace DragonQuest.Prototype
             var participants = new System.Collections.Generic.List<CombatantState>();
             foreach (PartyMember member in party.Members) participants.Add(member.CreateCombatant());
             var guard = new CombatantDefinition("Guarda do tirano", "Inimigo", 180, 24, 18, 8, 0, 9,
-                new ElementalAffinities(new[] { DamageElement.Lightning }, new[] { DamageElement.Fire }),
+                new ElementalAffinities(new[] { DamageElement.Lightning }, new[] { DamageElement.Fire }), goldReward: 25,
                 PoisonStrike, Attack, EnemySweep, Defend);
             var soldier = new CombatantDefinition("Soldado", "Inimigo", 90, 0, 15, 6, 0, 7,
-                new ElementalAffinities(new[] { DamageElement.Fire }, new[] { DamageElement.Ice }), Attack, Defend);
+                new ElementalAffinities(new[] { DamageElement.Fire }, new[] { DamageElement.Ice }), goldReward: 10, Attack, Defend);
             participants.Add(new CombatantState("guard", guard, CombatTeam.Enemy));
             participants.Add(new CombatantState("soldier", soldier, CombatTeam.Enemy));
             return new BattleSession(party.Consumables, participants.ToArray());

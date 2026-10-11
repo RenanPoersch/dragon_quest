@@ -52,7 +52,7 @@ namespace DragonQuest.Equipment
             var commands = new AbilityDefinition[abilities.Count];
             abilities.CopyTo(commands);
             var stats = new CombatantDefinition(Name, BaseStats.Role, BaseStats.MaxHp, BaseStats.MaxMp,
-                Attack, Defense, Magic, BaseStats.Speed, BaseStats.Affinities, commands);
+                Attack, Defense, Magic, BaseStats.Speed, BaseStats.Affinities, BaseStats.GoldReward, commands);
             return new CombatantState(Id, stats, CombatTeam.Party, Limit);
         }
     }

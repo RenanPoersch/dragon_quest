@@ -9,21 +9,27 @@ namespace DragonQuest.Progression
     {
         private readonly HashSet<BattleSession> claimed = new HashSet<BattleSession>();
         private readonly ExplorationProgress progress;
-        public int GoldPerVictory { get; }
-        public BattleRewards(ExplorationProgress explorationProgress, int goldPerVictory = 35)
+        public BattleRewards(ExplorationProgress explorationProgress)
         {
             progress = explorationProgress ?? throw new ArgumentNullException(nameof(explorationProgress));
-            if (goldPerVictory <= 0) throw new ArgumentOutOfRangeException(nameof(goldPerVictory));
-            GoldPerVictory = goldPerVictory;
         }
         public bool HasClaimed(BattleSession battle) => battle != null && claimed.Contains(battle);
         public bool TryClaim(BattleSession battle, out string message)
         {
             if (battle == null || battle.Outcome != BattleOutcome.Victory) { message = "Recompensa exige uma batalha vencida."; return false; }
             if (claimed.Contains(battle)) { message = "Recompensa desta batalha ja recebida."; return false; }
-            if (!progress.TryAddGold(GoldPerVictory)) { message = "Nao foi possivel receber ouro: saldo no limite."; return false; }
+            long total = 0;
+            var breakdown = new List<string>();
+            foreach (CombatantState enemy in battle.Combatants)
+            {
+                if (enemy.Team != CombatTeam.Enemy || enemy.IsAlive) continue;
+                total += enemy.Definition.GoldReward;
+                breakdown.Add(enemy.Definition.Name + " (" + enemy.Definition.GoldReward + ")");
+            }
+            if (total > int.MaxValue || (total > 0 && !progress.TryAddGold((int)total)))
+            { message = "Nao foi possivel receber ouro: saldo no limite."; return false; }
             claimed.Add(battle);
-            message = "+" + GoldPerVictory + " moedas pela vitoria.";
+            message = "+" + total + " moedas: " + string.Join(" + ", breakdown) + ".";
             return true;
         }
     }
