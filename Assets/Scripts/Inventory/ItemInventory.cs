@@ -14,7 +14,7 @@ namespace DragonQuest.Inventory
             Quantity = quantity;
         }
         internal void Add(int amount) => Quantity += amount;
-        internal void Consume() => Quantity--;
+        internal void Consume(int amount = 1) => Quantity -= amount;
     }
 
     public sealed class ItemInventory
@@ -52,10 +52,13 @@ namespace DragonQuest.Inventory
             message = "Item adicionado."; return true;
         }
         internal bool TryConsume(ConsumableDefinition item)
+            => TryRemove(item, 1);
+
+        public bool TryRemove(ConsumableDefinition item, int amount)
         {
             ItemStack stack = Find(item);
-            if (stack == null || stack.Quantity == 0) return false;
-            stack.Consume(); return true;
+            if (stack == null || amount <= 0 || stack.Quantity < amount) return false;
+            stack.Consume(amount); return true;
         }
     }
 }

@@ -54,7 +54,7 @@ internal static class MateriaLimitChecks
 
     private static void CheckOwnershipAndFreeUse()
     {
-        PartyProgress party = PrototypePartyFactory.Create();
+        PartyProgress party = PrototypePartyFactory.CreateTestParty();
         PartyMember aren = Member(party, "aren"), lia = Member(party, "lia"), bram = Member(party, "bram");
         MateriaInstance cure = Materia(party, "cure"), guardian = Materia(party, "guardian");
         Assert(!HasCommand(aren.CreateCombatant(), "heal"), "Atacante nao possui cura sem a materia.");
@@ -97,7 +97,7 @@ internal static class MateriaLimitChecks
 
     private static void CheckFourComboTypes()
     {
-        PartyProgress party = PrototypePartyFactory.Create();
+        PartyProgress party = PrototypePartyFactory.CreateTestParty();
         PartyMember aren = Member(party, "aren"), bram = Member(party, "bram");
         MateriaInstance thunder = Materia(party, "thunder"), all = Materia(party, "all"), summon = Materia(party, "phoenix"), infuse = Materia(party, "infuse");
         CombatantState hero = aren.CreateCombatant();
@@ -152,14 +152,14 @@ internal static class MateriaLimitChecks
         Assert(Command(bram.CreateCombatant(), "heavy-strike").Targets == TargetRule.Enemy, "Azul + roxa nao deve aplicar All a comando fisico.");
         Assert(bram.Armor.LinkedSocket(0) == 1 && bram.Armor.LinkedSocket(3) == 2, "Ligacoes devem ser simetricas por par.");
         Assert(!HasCommand(bram.CreateCombatant(), "all"), "Suporte All nao concede um comando independente.");
-        party = PrototypePartyFactory.Create(); aren = Member(party, "aren");
+        party = PrototypePartyFactory.CreateTestParty(); aren = Member(party, "aren");
         Equip(party, aren, aren.Armor, 2, aren.Armor.Sockets[3]);
         Assert(Command(aren.CreateCombatant(), "thunder").Targets == TargetRule.AllEnemies, "Combo deve funcionar com o suporte antes da magia no par.");
     }
 
     private static void CheckHealingCombosAndAffinity()
     {
-        PartyProgress party = PrototypePartyFactory.Create();
+        PartyProgress party = PrototypePartyFactory.CreateTestParty();
         PartyMember aren = Member(party, "aren"), lia = Member(party, "lia"), bram = Member(party, "bram");
         MateriaInstance cure = Materia(party, "cure"), all = Materia(party, "all"), infuse = Materia(party, "infuse");
         Equip(party, lia, lia.Weapon, 1, all);
@@ -203,7 +203,7 @@ internal static class MateriaLimitChecks
 
     private static void CheckCarryAfterCompletedEncounter()
     {
-        PartyProgress party = PrototypePartyFactory.Create();
+        PartyProgress party = PrototypePartyFactory.CreateTestParty();
         BattleSession battle = PrototypeBattleFactory.CreateEncounter(party);
         int turns = 0;
         while (battle.Outcome == BattleOutcome.None && turns++ < 600)
@@ -224,7 +224,7 @@ internal static class MateriaLimitChecks
 
     private static void CheckMagicEnemyAndTaunt()
     {
-        PartyProgress party = PrototypePartyFactory.Create();
+        PartyProgress party = PrototypePartyFactory.CreateTestParty();
         CombatantState tank = Member(party, "bram").CreateCombatant(), ally = Member(party, "lia").CreateCombatant();
         var mage = new CombatantState("mage", new CombatantDefinition("Mago", "Inimigo", 100, 60, 0, 0, 20, 1,
             PrototypePartyFactory.Thunder), CombatTeam.Enemy);
@@ -240,7 +240,7 @@ internal static class MateriaLimitChecks
 
     private static void CheckLimitCarryAndSpending()
     {
-        PartyProgress party = PrototypePartyFactory.Create();
+        PartyProgress party = PrototypePartyFactory.CreateTestParty();
         PartyMember member = Member(party, "aren");
         var hero = member.CreateCombatant(); var enemy = Enemy("enemy", attack: 25);
         var battle = new BattleSession(hero, enemy);
@@ -270,7 +270,7 @@ internal static class MateriaLimitChecks
         Assert(next.Limit.Charge == 0 && next.Mp == previousMp && enemy.Hp == 937, "Limit deve consumir toda a carga, sem MP, e aplicar o golpe.");
         Assert(member.CreateCombatant().Limit.Charge == 0, "Limit gasto deve permanecer gasto no proximo encontro.");
         Assert(!battle.TryAct(battle.CurrentActor, limit, next, out _), "Outro combatente nao recebe comandos nem carga da equipe.");
-        Assert(Member(PrototypePartyFactory.Create(), "aren").Limit.Charge == 0, "Uma nova sessao deve ter barras independentes.");
+        Assert(Member(PrototypePartyFactory.CreateTestParty(), "aren").Limit.Charge == 0, "Uma nova sessao deve ter barras independentes.");
 
         // Veneno conta; a barra nao e limpa por cura ou ressuscitar.
         hero = member.CreateCombatant(); hero.PoisonTurns = 1;
@@ -285,7 +285,7 @@ internal static class MateriaLimitChecks
         Assert(hero.Limit.Charge == 100, "Reviver nao deve apagar a barra.");
 
         // Dano interceptado carrega o protetor, nunca o aliado poupado.
-        party = PrototypePartyFactory.Create();
+        party = PrototypePartyFactory.CreateTestParty();
         var tank = Member(party, "bram").CreateCombatant(); hero = Member(party, "lia").CreateCombatant();
         enemy = Enemy("enemy", speed: 1, attack: 40);
         battle = new BattleSession(tank, hero, enemy);

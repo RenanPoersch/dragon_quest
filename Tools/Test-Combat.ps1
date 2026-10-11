@@ -20,13 +20,17 @@ $testArguments += Get-ChildItem -LiteralPath $testReferenceDirectory.FullName -F
 $testArguments += Get-ChildItem -LiteralPath (Join-Path $testProjectRoot 'Assets/Scripts/Combat') -Filter '*.cs' | ForEach-Object { $_.FullName }
 $testArguments += Get-ChildItem -LiteralPath (Join-Path $testProjectRoot 'Assets/Scripts/Equipment') -Filter '*.cs' | ForEach-Object { $_.FullName }
 $testArguments += Get-ChildItem -LiteralPath (Join-Path $testProjectRoot 'Assets/Scripts/Inventory') -Filter '*.cs' | ForEach-Object { $_.FullName }
+$testArguments += Get-ChildItem -LiteralPath (Join-Path $testProjectRoot 'Assets/Scripts/Shops') -Filter '*.cs' | ForEach-Object { $_.FullName }
+$testArguments += Join-Path $testProjectRoot 'Assets/Scripts/Exploration/ExplorationProgress.cs'
 $testArguments += Join-Path $testProjectRoot 'Assets/Scripts/Prototype/PrototypeBattleFactory.cs'
 $testArguments += Join-Path $testProjectRoot 'Assets/Scripts/Prototype/PrototypePartyFactory.cs'
+$testArguments += Join-Path $testProjectRoot 'Assets/Scripts/Prototype/PrototypeShopFactory.cs'
 $testArguments += Join-Path $testProjectRoot 'Tests/BattleChecks.cs'
 $testArguments += Join-Path $testProjectRoot 'Tests/AbilityChecks.cs'
 $testArguments += Join-Path $testProjectRoot 'Tests/MateriaLimitChecks.cs'
 $testArguments += Join-Path $testProjectRoot 'Tests/EquipmentItemChecks.cs'
 $testArguments += Join-Path $testProjectRoot 'Tests/ElementalChecks.cs'
+$testArguments += Join-Path $testProjectRoot 'Tests/ShopChecks.cs'
 & $testDotnet $testCsc.FullName @testArguments
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 $testRuntimeConfig = @{ runtimeOptions = @{ tfm = $testReferenceDirectory.Name; framework = @{ name = 'Microsoft.NETCore.App'; version = $testRuntimeFolder.Name } } }

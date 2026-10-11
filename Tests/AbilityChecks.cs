@@ -230,7 +230,7 @@ internal static class AbilityChecks
     {
         for (int strategy = 0; strategy < 2; strategy++)
         {
-            BattleSession battle = PrototypeBattleFactory.CreateEncounter();
+            BattleSession battle = PrototypeBattleFactory.CreateEncounter(PrototypePartyFactory.CreateTestParty());
             Assert(battle.Combatants.Count == 5, "Encontro atual deve ter tres aliados e dois inimigos.");
             int actions = 0;
             bool usedArea = false, usedCleanse = false, usedTaunt = false;
@@ -270,7 +270,7 @@ internal static class AbilityChecks
             Assert(battle.Outcome == (strategy == 0 ? BattleOutcome.Victory : BattleOutcome.Defeat), "Encontro atual deve permitir vencer e perder.");
             if (strategy == 0) Assert(usedArea && usedCleanse && usedTaunt, "Estrategia vencedora deve exercitar habilidades dos tres papeis.");
         }
-        BattleSession fresh = PrototypeBattleFactory.CreateEncounter();
+        BattleSession fresh = PrototypeBattleFactory.CreateEncounter(PrototypePartyFactory.CreateTestParty());
         Assert(Find(fresh, "lia").Mp == 60 && Find(fresh, "bram").Mp == 30 && Find(fresh, "aren").Mp == 28, "Repeticao inicia com recursos novos.");
         foreach (CombatantState actor in fresh.Combatants)
             Assert(actor.PoisonTurns == 0 && actor.TauntTurns == 0 && actor.ProtectedBy == null && actor.TurnsTaken == 0, "Efeitos nao podem vazar entre encontros.");

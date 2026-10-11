@@ -7,6 +7,12 @@ namespace DragonQuest.Prototype
 {
     public static class PrototypePartyFactory
     {
+        public static readonly EquipmentDefinition InitialWeapon = new EquipmentDefinition("Arma inicial", 5, 0, 2);
+        public static readonly EquipmentDefinition InitialArmor = new EquipmentDefinition("Armadura inicial", 0, 6, 4, EquipmentSlot.Armor);
+        public static readonly EquipmentDefinition IronSword = new EquipmentDefinition("Espada de ferro", 9, 0, 2);
+        public static readonly EquipmentDefinition RunicStaff = new EquipmentDefinition("Cajado runico", 3, 0, 4, magicBonus: 6);
+        public static readonly EquipmentDefinition IronArmor = new EquipmentDefinition("Armadura de ferro", 0, 10, 2, EquipmentSlot.Armor);
+        public static readonly EquipmentDefinition ArcaneRobe = new EquipmentDefinition("Manto arcano", 0, 3, 6, EquipmentSlot.Armor, 4);
         public static readonly ConsumableDefinition Potion = new ConsumableDefinition("potion", "Pocao", "Recupera 40 HP de um aliado vivo e ferido. Usa uma unidade e um turno.", ItemEffect.RestoreHp, 40);
         public static readonly ConsumableDefinition Ether = new ConsumableDefinition("ether", "Eter", "Recupera 15 MP de um aliado vivo. Usa uma unidade e um turno.", ItemEffect.RestoreMp, 15);
         public static readonly ConsumableDefinition Antidote = new ConsumableDefinition("antidote", "Antidoto", "Remove veneno de um aliado vivo. Usa uma unidade e um turno.", ItemEffect.CleansePoison, 0);
@@ -38,8 +44,29 @@ namespace DragonQuest.Prototype
 
         public static PartyProgress Create()
         {
-            var weapon = new EquipmentDefinition("Arma inicial", 5, 0, 2);
-            var armor = new EquipmentDefinition("Armadura inicial", 0, 6, 4, EquipmentSlot.Armor);
+            var aren = new PartyMember("aren", "Aren", CharacterClass.Attacker,
+                new CombatantDefinition("Aren", "Atacante", 100, 28, 22, 7, 4, 14, MateriaResolver.Attack, MateriaResolver.Defend), InitialWeapon, InitialArmor);
+            var lia = new PartyMember("lia", "Lia", CharacterClass.Healer,
+                new CombatantDefinition("Lia", "Healer", 80, 60, 9, 5, 20, 12, MateriaResolver.Attack, MateriaResolver.Defend), InitialWeapon, InitialArmor);
+            var bram = new PartyMember("bram", "Bram", CharacterClass.Tank,
+                new CombatantDefinition("Bram", "Tank", 150, 30, 14, 13, 3, 8, MateriaResolver.Attack, MateriaResolver.Defend), InitialWeapon, InitialArmor);
+            var materias = new[] { new MateriaInstance("start-heavy", HeavyMateria), new MateriaInstance("start-thunder", ThunderMateria),
+                new MateriaInstance("start-cure", CureMateria), new MateriaInstance("start-cleanse", CleanseMateria), new MateriaInstance("start-guardian", GuardianMateria) };
+            var party = new PartyProgress(new[] { aren, lia, bram }, materias, consumables:
+                new ItemInventory(new ItemStack(Potion, 2), new ItemStack(Antidote, 1)));
+            party.TryEquip(aren, aren.Weapon, 0, materias[0], out _);
+            party.TryEquip(aren, aren.Armor, 0, materias[1], out _);
+            party.TryEquip(lia, lia.Weapon, 0, materias[2], out _);
+            party.TryEquip(lia, lia.Armor, 0, materias[3], out _);
+            party.TryEquip(bram, bram.Weapon, 0, materias[4], out _);
+            return party;
+        }
+
+        // Fixture das entregas 5/6A para manter os testes de combos e troca independentes da economia inicial.
+        public static PartyProgress CreateTestParty()
+        {
+            var weapon = InitialWeapon;
+            var armor = InitialArmor;
             var aren = new PartyMember("aren", "Aren", CharacterClass.Attacker,
                 new CombatantDefinition("Aren", "Atacante", 100, 28, 22, 7, 4, 14, MateriaResolver.Attack, MateriaResolver.Defend), weapon, armor);
             var lia = new PartyMember("lia", "Lia", CharacterClass.Healer,
@@ -53,10 +80,10 @@ namespace DragonQuest.Prototype
                 inventory.Add(new MateriaInstance("materia-" + inventory.Count, definition));
             var spareEquipment = new[]
             {
-                new EquipmentLoadout(new EquipmentDefinition("Espada de ferro", 9, 0, 2), "iron-sword"),
-                new EquipmentLoadout(new EquipmentDefinition("Cajado runico", 3, 0, 4, magicBonus: 6), "runic-staff"),
-                new EquipmentLoadout(new EquipmentDefinition("Armadura de ferro", 0, 10, 2, EquipmentSlot.Armor), "iron-armor"),
-                new EquipmentLoadout(new EquipmentDefinition("Manto arcano", 0, 3, 6, EquipmentSlot.Armor, 4), "arcane-robe")
+                new EquipmentLoadout(IronSword, "iron-sword"),
+                new EquipmentLoadout(RunicStaff, "runic-staff"),
+                new EquipmentLoadout(IronArmor, "iron-armor"),
+                new EquipmentLoadout(ArcaneRobe, "arcane-robe")
             };
             var consumables = new ItemInventory(new ItemStack(Potion, 6), new ItemStack(Ether, 3),
                 new ItemStack(Antidote, 3), new ItemStack(PhoenixFeather, 2));

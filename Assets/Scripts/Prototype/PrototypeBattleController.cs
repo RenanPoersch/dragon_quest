@@ -14,17 +14,19 @@ namespace DragonQuest.Prototype
         private CombatantState pendingEnemy;
         private float enemyActionTime;
         private DialogueController dialogue;
+        private System.Func<bool> otherMenuOpen = () => false;
 
         public bool IsActive { get; private set; }
         public bool IsMenuOpen { get; private set; }
-        public bool IsBusy => IsActive || IsMenuOpen;
+        public bool IsBusy => IsActive || IsMenuOpen || otherMenuOpen();
         public PartyProgress Party { get; private set; }
         public BattleSession Session { get; private set; }
         public string ErrorMessage { get; private set; }
 
-        public void Initialize(PlayerMovement hero, DialogueController dialogueController)
+        public void Initialize(PlayerMovement hero, DialogueController dialogueController, System.Func<bool> externalMenuOpen = null)
         {
             movement = hero; dialogue = dialogueController;
+            otherMenuOpen = externalMenuOpen ?? (() => false);
             Party = PrototypePartyFactory.Create();
         }
 
@@ -63,7 +65,7 @@ namespace DragonQuest.Prototype
         private void Update()
         {
             Keyboard keyboard = Keyboard.current;
-            if (!IsActive && !dialogue.IsOpen && keyboard != null)
+            if (!IsActive && !otherMenuOpen() && !dialogue.IsOpen && keyboard != null && Application.isFocused)
             {
                 if (IsMenuOpen && keyboard.escapeKey.wasPressedThisFrame) CloseMenu();
                 else if (keyboard.iKey.wasPressedThisFrame)

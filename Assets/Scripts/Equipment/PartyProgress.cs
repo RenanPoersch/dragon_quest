@@ -95,6 +95,56 @@ namespace DragonQuest.Equipment
             equipments.Add(item);
         }
 
+        public bool TryAddEquipments(params EquipmentLoadout[] additions)
+        {
+            if (additions == null || additions.Length == 0) return false;
+            var ids = new HashSet<string>();
+            foreach (EquipmentLoadout item in equipments) ids.Add(item.Id);
+            foreach (EquipmentLoadout item in additions)
+                if (item == null || !ids.Add(item.Id)) return false;
+            equipments.AddRange(additions); return true;
+        }
+
+        public bool TryAddMaterias(params MateriaInstance[] additions)
+        {
+            if (additions == null || additions.Length == 0) return false;
+            var ids = new HashSet<string>();
+            foreach (MateriaInstance item in materias) ids.Add(item.Id);
+            foreach (MateriaInstance item in additions)
+                if (item == null || !ids.Add(item.Id)) return false;
+            materias.AddRange(additions); return true;
+        }
+
+        public bool IsEquipped(EquipmentLoadout item)
+        {
+            if (item == null) return false;
+            foreach (PartyMember member in members)
+                if (member.Weapon == item || member.Armor == item) return true;
+            return false;
+        }
+
+        public bool IsEquipped(MateriaInstance materia)
+        {
+            if (materia == null) return false;
+            foreach (PartyMember member in members)
+                foreach (EquipmentLoadout equipment in new[] { member.Weapon, member.Armor })
+                {
+                    if (equipment == null) continue;
+                    foreach (MateriaInstance socket in equipment.Sockets) if (socket == materia) return true;
+                }
+            return false;
+        }
+
+        public bool TryRemoveOwnedEquipment(EquipmentLoadout item)
+        {
+            if (item == null || IsEquipped(item)) return false;
+            foreach (MateriaInstance socket in item.Sockets) if (socket != null) return false;
+            return equipments.Remove(item);
+        }
+
+        public bool TryRemoveOwnedMateria(MateriaInstance item)
+            => item != null && !IsEquipped(item) && materias.Remove(item);
+
         public string LocationOf(EquipmentLoadout item)
         {
             foreach (PartyMember member in members)

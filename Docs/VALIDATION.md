@@ -99,3 +99,12 @@ O usuário confirmou que as interações funcionaram em Play. Não houve valida�
 - As 15 verificações de progresso de exploração continuam passando.
 - Prévia de elementos, fichas de afinidade e relatório visual aguardam confirmação em Play. Roteiro: `Docs/PARTE_6A.md`.
 - Inventário de teste mantido até a integração das lojas na parte 6B. Planejamento: `Docs/PLANO_LOJAS.md`.
+
+## Parte 6B — lojas, transações e kit inicial
+
+- 1.415 verificações de combate/inventário/lojas passaram e as 15 verificações de exploração continuam passando.
+- Verificados kit econômico e saldo de 50, compra múltipla, cópias distintas e vazias, combos de matérias compradas, afinidade de equipamento e sessões independentes.
+- Verificados venda por metade com arredondamento por unidade, seleção antiga revalidada, bloqueio de objetos equipados, categoria errada, itens de história e estoque esgotado.
+- Verificados falhas sem mutação, produtos estrangeiros, lotes com IDs duplicados, limites de pilha e overflow de ouro/preço.
+- Scripts compilaram com bibliotecas da Unity 6000.6.5f1. Compilação reproduzível: `Tools/Test-UnityScripts.ps1`.
+- Três interiores, portas de retorno, UI de quantidade, bloqueio de movimento e interação aguardam verificação em Play: `Docs/PARTE_6B.md`.

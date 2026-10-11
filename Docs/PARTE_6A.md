@@ -2,6 +2,8 @@
 
 Fogo, Gelo e Raio são matérias verdes de dano mágico com poder base 22 e custo 6 MP. Fênix é uma invocação de Fogo, com poder 35 e custo 12 MP. Qualquer personagem pode equipá-las.
 
+Esta página registra a entrega 6A. Na versão 6B, a equipe começa com o kit econômico e compra matérias nas lojas; use `PARTE_6B.md` para validar a versão atual.
+
 ## Regras
 
 - Fraqueza: 150% do dano normal. Resistência: 50%. Os outros elementos causam 100%.

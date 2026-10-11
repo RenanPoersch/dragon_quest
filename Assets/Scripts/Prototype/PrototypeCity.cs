@@ -32,9 +32,9 @@ namespace DragonQuest.Prototype
             Block("Praca", Vector2.zero, new Vector2(8, 7), "D1C19B", ground, false, -8);
 
             Building("Loja de itens", new Vector2(-9, 4.5f), new Vector2(5, 4), "A86B49", buildings);
-            Building("Loja de magias", new Vector2(9, 4.5f), new Vector2(5, 4), "71638E", buildings);
+            Building("Loja de materias", new Vector2(9, 4.5f), new Vector2(5, 4), "71638E", buildings);
             Building("Hospedaria", new Vector2(-9, -5), new Vector2(5, 4), "7F8D68", buildings);
-            Building("Armaduras", new Vector2(9, -5), new Vector2(5, 4), "627C8C", buildings);
+            Building("Loja de equipamentos", new Vector2(9, -5), new Vector2(5, 4), "627C8C", buildings);
             Building("Castelo do tirano", new Vector2(0, 9), new Vector2(7, 4), "636B79", buildings);
 
             Block("Fonte - borda", Vector2.zero, new Vector2(2.6f, 2.6f), "747A80", obstacles, true, 2);
@@ -58,12 +58,14 @@ namespace DragonQuest.Prototype
             Transform interactions = Group("NPC e bau", city);
             NpcInteraction citizen = CreateNpc("Aldeao", new Vector2(-3.4f, -3), "8D9DB0", interactions);
             citizen.Initialize("Aldeao",
-                "Bem-vindo! A loja de itens fica a noroeste da praca. Aproxime-se da porta e pressione E para entrar.",
+                "Bem-vindo! Itens a noroeste, materias a nordeste e equipamentos a sudeste. Use E na porta e depois no vendedor.",
                 "Ha um bau a leste daqui. Talvez voce encontre moedas para sua jornada.",
                 "O tirano governa do castelo ao norte. Alguns dizem que os segredos desta cidade escondem algo ainda maior...");
             interactables.Add(citizen);
             interactables.Add(CreateChest(interactions));
             interactables.Add(CreateDoor("Entrada da loja de itens", new Vector2(-9, 2.1f), city, "item-shop", "Entrar na loja de itens"));
+            interactables.Add(CreateDoor("Entrada da loja de materias", new Vector2(9, 2.1f), city, "materia-shop", "Entrar na loja de materias"));
+            interactables.Add(CreateDoor("Entrada da loja de equipamentos", new Vector2(9, -7.4f), city, "equipment-shop", "Entrar na loja de equipamentos"));
             GameObject guard = Entity("Guarda do tirano", new Vector2(0, 5.3f), city);
             BoxCollider2D guardCollider = guard.AddComponent<BoxCollider2D>();
             guardCollider.size = new Vector2(0.65f, 0.7f);
@@ -72,9 +74,17 @@ namespace DragonQuest.Prototype
             Block("Guarda - cabeca", new Vector2(0, 0.5f), new Vector2(0.5f, 0.4f), "D3BA91", guard.transform, false, 11);
             interactables.Add(guard.AddComponent<BattleInteraction>());
 
-            Transform shop = Group("Loja de itens - interior");
-            CreateShop(shop, interactables);
-            shop.gameObject.SetActive(false);
+            var shopRoots = new Dictionary<string, GameObject>();
+            string[] shopIds = { "item-shop", "equipment-shop", "materia-shop" };
+            string[] shopNames = { "Loja de itens", "Loja de equipamentos", "Loja de materias" };
+            string[] shopColors = { "87B5A3", "91A6B3", "85CD90" };
+            for (int i = 0; i < shopIds.Length; i++)
+            {
+                Transform shop = Group(shopNames[i] + " - interior");
+                CreateShop(shop, interactables, shopIds[i], shopNames[i], shopColors[i]);
+                shopRoots.Add(shopIds[i], shop.gameObject);
+                shop.gameObject.SetActive(false);
+            }
 
             GameObject player = CreatePlayer();
             Camera camera = Camera.main;
@@ -86,17 +96,22 @@ namespace DragonQuest.Prototype
             camera.backgroundColor = Hex("263E35");
             CameraFollow cameraFollow = camera.gameObject.AddComponent<CameraFollow>();
             cameraFollow.Initialize(player.transform, Bounds);
-            var progress = new ExplorationProgress();
+            var progress = new ExplorationProgress(PrototypeShopFactory.StartingGold);
             DialogueController dialogue = gameObject.AddComponent<DialogueController>();
             PrototypeLocations locations = gameObject.AddComponent<PrototypeLocations>();
-            locations.Initialize(city.gameObject, shop.gameObject, player.GetComponent<PlayerMovement>(), cameraFollow);
+            var exits = new Dictionary<string, Vector2> { { "item-shop", new Vector2(-9, 1.7f) },
+                { "materia-shop", new Vector2(9, 1.7f) }, { "equipment-shop", new Vector2(9, -7.8f) } };
+            locations.Initialize(city.gameObject, shopRoots, exits, player.GetComponent<PlayerMovement>(), cameraFollow);
+            PrototypeShopController shops = gameObject.AddComponent<PrototypeShopController>();
             PrototypeBattleController battle = gameObject.AddComponent<PrototypeBattleController>();
-            battle.Initialize(player.GetComponent<PlayerMovement>(), dialogue);
+            battle.Initialize(player.GetComponent<PlayerMovement>(), dialogue, () => shops.IsOpen);
+            shops.Initialize(player.GetComponent<PlayerMovement>(), dialogue, battle, progress);
+            gameObject.AddComponent<PrototypeShopHud>().Initialize(shops);
             gameObject.AddComponent<PrototypeBattleHud>().Initialize(battle);
             gameObject.AddComponent<PrototypeMateriaHud>().Initialize(battle);
             PlayerInteraction interaction = player.AddComponent<PlayerInteraction>();
             interaction.Initialize(new InteractionContext(dialogue, progress, locations.TravelTo,
-                battle.StartBattle, () => battle.IsBusy), interactables.ToArray());
+                battle.StartBattle, () => battle.IsBusy, shops.Open), interactables.ToArray());
             PrototypeHud hud = gameObject.AddComponent<PrototypeHud>();
             hud.Initialize(camera, interaction, dialogue, progress, locations, battle);
         }
@@ -117,6 +132,9 @@ namespace DragonQuest.Prototype
         }
 
         private NpcInteraction CreateNpc(string npcName, Vector2 position, string color, Transform parent)
+            => CreateNpcFigure(npcName, position, color, parent).AddComponent<NpcInteraction>();
+
+        private GameObject CreateNpcFigure(string npcName, Vector2 position, string color, Transform parent)
         {
             GameObject npc = Entity(npcName, position, parent);
             BoxCollider2D collider = npc.AddComponent<BoxCollider2D>();
@@ -124,7 +142,7 @@ namespace DragonQuest.Prototype
             collider.sharedMaterial = frictionless;
             Block(npcName + " - corpo", Vector2.zero, new Vector2(0.65f, 0.75f), color, npc.transform, false, 10);
             Block(npcName + " - cabeca", new Vector2(0, 0.4f), new Vector2(0.5f, 0.4f), "E9CC9D", npc.transform, false, 11);
-            return npc.AddComponent<NpcInteraction>();
+            return npc;
         }
 
         private ChestInteraction CreateChest(Transform parent)
@@ -150,7 +168,7 @@ namespace DragonQuest.Prototype
             return interaction;
         }
 
-        private void CreateShop(Transform shop, List<Interactable> interactions)
+        private void CreateShop(Transform shop, List<Interactable> interactions, string shopId, string shopName, string displayColor)
         {
             Block("Piso de madeira", Vector2.zero, new Vector2(14, 10), "A78255", shop, false, -10);
             for (int y = -4; y <= 4; y++)
@@ -165,13 +183,10 @@ namespace DragonQuest.Prototype
             {
                 Block("Estante", new Vector2(x, 1.5f), new Vector2(1.5f, 3), "705033", shop, true, 3);
                 for (int shelf = 0; shelf < 3; shelf++)
-                    Block("Frasco", new Vector2(x, 0.7f + shelf * 0.8f), new Vector2(0.4f, 0.4f), "87B5A3", shop, false, 4);
+                    Block("Mercadoria provisoria", new Vector2(x, 0.7f + shelf * 0.8f), new Vector2(0.4f, 0.4f), displayColor, shop, false, 4);
             }
-            NpcInteraction merchant = CreateNpc("Lojista", new Vector2(0, 0.9f), "8DA17F", shop);
-            merchant.Initialize("Lojista",
-                "Bem-vindo a loja de itens! Pocoes e suprimentos vao ajudar sua equipe nas batalhas.",
-                "Ainda estou organizando os estoques. Volte mais tarde para negociar.",
-                "Para voltar a cidade, aproxime-se da marca dourada ao sul e pressione E.");
+            MerchantInteraction merchant = CreateNpcFigure("Lojista", new Vector2(0, 0.9f), displayColor, shop).AddComponent<MerchantInteraction>();
+            merchant.Initialize(shopId, shopName);
             interactions.Add(merchant);
             interactions.Add(CreateDoor("Saida da loja", new Vector2(0, -4.1f), shop, "city", "Voltar para a cidade"));
         }

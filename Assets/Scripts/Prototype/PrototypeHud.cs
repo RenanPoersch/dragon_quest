@@ -47,9 +47,9 @@ namespace DragonQuest.Prototype
             else
             {
                 DrawLabel(new Vector2(-9, 4.3f), "ITENS", scale);
-                DrawLabel(new Vector2(9, 4.3f), "MAGIAS", scale);
+                DrawLabel(new Vector2(9, 4.3f), "MATERIAS", scale);
                 DrawLabel(new Vector2(-9, -5.2f), "HOSPEDARIA", scale);
-                DrawLabel(new Vector2(9, -5.2f), "ARMADURAS", scale);
+                DrawLabel(new Vector2(9, -5.2f), "EQUIPAMENTOS", scale);
                 DrawLabel(new Vector2(0, 8.8f), "CASTELO", scale);
                 DrawLabel(new Vector2(-3.4f, -2.1f), "ALDEAO", scale);
                 DrawLabel(new Vector2(3.6f, -2.3f), "BAU", scale);
@@ -59,7 +59,7 @@ namespace DragonQuest.Prototype
             GUI.DrawTexture(new Rect(16, 16, Mathf.Min(420, width - 32), 94), panelTexture);
             GUI.Label(new Rect(30, 25, width - 60, 27), "DRAGON QUEST  /  " + locations.LocationName, titleStyle);
             GUI.Label(new Rect(30, 54, width - 60, 24), "WASD ou setas para andar", bodyStyle);
-            GUI.Label(new Rect(30, 78, width - 60, 24), "E: interagir  |  I: materias  |  Ouro: " + progress.Gold, bodyStyle);
+            GUI.Label(new Rect(30, 78, width - 60, 24), "E: interagir  |  I: inventario  |  Ouro: " + progress.Gold, bodyStyle);
 
             if (dialogue.IsOpen)
             {
@@ -75,7 +75,7 @@ namespace DragonQuest.Prototype
                 GUI.DrawTexture(new Rect(16, height - 64, width - 32, 48), panelTexture);
                 string prompt = interaction.CurrentPrompt;
                 if (string.IsNullOrEmpty(prompt))
-                    prompt = locations.IsInShop ? "Fale com o lojista ou procure a saida ao sul." : "Aproxime-se do aldeao, do bau ou da porta da loja de itens.";
+                    prompt = locations.IsInShop ? "Use E no lojista para comprar/vender; a saida fica ao sul." : "Use E perto dos moradores, bau, guarda ou portas das tres lojas.";
                 GUI.Label(new Rect(28, height - 57, width - 56, 38), prompt, bodyStyle);
             }
             GUI.matrix = previousMatrix;

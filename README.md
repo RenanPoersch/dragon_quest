@@ -19,6 +19,18 @@ Use essa versão do Editor para evitar migrações involuntárias.
 4. Abra `Assets/Scenes/CidadePrototipo.unity`.
 5. Clique em **Play**, clique dentro da janela **Game** e use **WASD ou as setas** para andar; **E** interage com objetos próximos e **I** abre o inventário.
 
+## Parte 6B — lojas e economia inicial
+
+Há três lojas: itens a noroeste, matérias a nordeste e equipamentos a sudeste. Use E na porta e depois no vendedor para abrir Comprar/Vender. Esc fecha o menu; a saída fica ao sul do interior.
+
+- Comece com 50 moedas, 2 poções, 1 antídoto, equipamento simples e cinco matérias iniciais. Extras de teste foram retirados do jogo.
+- Todos os produtos têm estoque limitado. Compras vão ao inventário e cada equipamento/matéria tem uma identidade própria.
+- Venda por 50% do preço por unidade, arredondado para baixo. Objetos equipados precisam ser desequipados antes; objetos de história são protegidos.
+- Quantidade, preço total, estoque e descrições aparecem antes da confirmação. Equipamentos mostram atributos base e encaixes ligados.
+- Entrar/sair e abrir/fechar lojas conserva ouro e estoque. Objetos vendidos não criam estoque de recompra.
+
+Veja `Docs/PARTE_6B.md` para o roteiro e `Docs/PLANO_LOJAS.md` para os catálogos. Recompensas de batalha, missão e reposição por progresso entram na parte 6C.
+
 ## Parte 6A — elementos e afinidades
 
 Fogo e Gelo estão disponíveis como matérias verdes, junto de Raio. As três magias têm poder 22 e custo 6 MP. Fênix causa dano de Fogo. Fraquezas causam 150% do dano normal; resistências, 50%.
@@ -28,7 +40,7 @@ Fogo e Gelo estão disponíveis como matérias verdes, junto de Raio. As três m
 - As fichas dos inimigos mostram afinidades; o relatório da ação indica elemento e resultado. A prévia de comandos no inventário também mostra o elemento.
 - Limit continua acumulando sobre o HP realmente perdido após defesa e resistência.
 
-Veja `Docs/PARTE_6A.md` para o roteiro e `Docs/PLANO_LOJAS.md` para as decisões das lojas. O kit econômico e as 50 moedas iniciais serão aplicados na parte 6B; esta entrega conserva o inventário de teste para validar os elementos.
+Veja `Docs/PARTE_6A.md` para as regras elementais e `Docs/PARTE_6B.md` para validar a versão atual, com compras e kit econômico.
 
 ## Parte 5B — equipamentos e consumíveis
 

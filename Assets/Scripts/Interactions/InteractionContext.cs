@@ -10,15 +10,17 @@ namespace DragonQuest.Interactions
         public Action<string> TravelTo { get; }
         public Action StartBattle { get; }
         public Func<bool> IsBusy { get; }
+        public Action<string> OpenShop { get; }
 
         public InteractionContext(DialogueController dialogue, ExplorationProgress progress, Action<string> travelTo,
-            Action startBattle = null, Func<bool> isBusy = null)
+            Action startBattle = null, Func<bool> isBusy = null, Action<string> openShop = null)
         {
             Dialogue = dialogue;
             Progress = progress;
             TravelTo = travelTo;
             StartBattle = startBattle;
             IsBusy = isBusy ?? (() => false);
+            OpenShop = openShop;
         }
     }
 }

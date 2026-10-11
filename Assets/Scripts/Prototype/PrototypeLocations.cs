@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 using DragonQuest.Exploration;
 
 namespace DragonQuest.Prototype
@@ -7,28 +8,33 @@ namespace DragonQuest.Prototype
     public sealed class PrototypeLocations : MonoBehaviour
     {
         private GameObject city;
-        private GameObject shop;
+        private Dictionary<string, GameObject> shops;
+        private Dictionary<string, Vector2> exits;
         private PlayerMovement player;
         private CameraFollow cameraFollow;
 
-        public bool IsInShop { get; private set; }
-        public string LocationName => IsInShop ? "LOJA DE ITENS" : "CIDADE";
+        public string LocationId { get; private set; } = "city";
+        public bool IsInShop => LocationId != "city";
+        public string LocationName => LocationId == "item-shop" ? "LOJA DE ITENS" : LocationId == "equipment-shop" ? "LOJA DE EQUIPAMENTOS"
+            : LocationId == "materia-shop" ? "LOJA DE MATERIAS" : "CIDADE";
 
-        public void Initialize(GameObject cityRoot, GameObject shopRoot, PlayerMovement hero, CameraFollow camera)
+        public void Initialize(GameObject cityRoot, Dictionary<string, GameObject> shopRoots, Dictionary<string, Vector2> outsideExits,
+            PlayerMovement hero, CameraFollow camera)
         {
             city = cityRoot;
-            shop = shopRoot;
+            shops = shopRoots; exits = outsideExits;
             player = hero;
             cameraFollow = camera;
         }
 
         public void TravelTo(string locationId)
         {
-            if (locationId != "city" && locationId != "item-shop") return;
-            IsInShop = locationId == "item-shop";
+            if (locationId != "city" && !shops.ContainsKey(locationId) || locationId == LocationId) return;
+            Vector2 exit = IsInShop ? exits[LocationId] : new Vector2(0, -4);
+            LocationId = locationId;
             city.SetActive(!IsInShop);
-            shop.SetActive(IsInShop);
-            player.Teleport(IsInShop ? new Vector2(0, -2.7f) : new Vector2(-9, 1.7f));
+            foreach (var shop in shops) shop.Value.SetActive(shop.Key == LocationId);
+            player.Teleport(IsInShop ? new Vector2(0, -2.7f) : exit);
             Rect bounds = IsInShop ? new Rect(-7, -5, 14, 10) : new Rect(-18, -12, 36, 24);
             cameraFollow.Initialize(player.transform, bounds, IsInShop ? 4f : 6f);
             Physics2D.SyncTransforms();

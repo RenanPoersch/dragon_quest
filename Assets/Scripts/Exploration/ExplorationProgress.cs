@@ -10,6 +10,24 @@ namespace DragonQuest.Exploration
 
         public int Gold { get; private set; }
 
+        public ExplorationProgress(int initialGold = 0)
+        {
+            if (initialGold < 0) throw new ArgumentOutOfRangeException(nameof(initialGold));
+            Gold = initialGold;
+        }
+
+        public bool CanReceiveGold(int amount) => amount > 0 && Gold <= int.MaxValue - amount;
+        public bool TryAddGold(int amount)
+        {
+            if (!CanReceiveGold(amount)) return false;
+            Gold += amount; return true;
+        }
+        public bool TrySpendGold(int amount)
+        {
+            if (amount <= 0 || amount > Gold) return false;
+            Gold -= amount; return true;
+        }
+
         public bool HasOpenedChest(string id) => openedChests.Contains(id);
 
         public bool TryOpenChest(string id, int goldReward)
