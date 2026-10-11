@@ -108,3 +108,14 @@ O usuário confirmou que as interações funcionaram em Play. Não houve valida�
 - Verificados falhas sem mutação, produtos estrangeiros, lotes com IDs duplicados, limites de pilha e overflow de ouro/preço.
 - Scripts compilaram com bibliotecas da Unity 6000.6.5f1. Compilação reproduzível: `Tools/Test-UnityScripts.ps1`.
 - Três interiores, portas de retorno, UI de quantidade, bloqueio de movimento e interação aguardam verificação em Play: `Docs/PARTE_6B.md`.
+
+## Parte 6C — recompensas, missão e reposição
+
+- 1.488 verificações de combate/inventário/lojas/progresso passaram; as 15 verificações de exploração continuam passando.
+- Confirmados pagamento de 35 por vitória, ausência de pagamento por derrota/resultado em andamento, repetição sem duplicação e uso imediato do ouro nas lojas.
+- Confirmados passos da entrega, vendedor e ordem corretos, pacote fora do catálogo comercial, pagamento de 30 uma vez e marcos independentes entre sessões.
+- Confirmados reposição ao estoque inicial somente de consumíveis, manutenção do estoque de equipamentos/matérias, inventário do jogador preservado e rejeição de repetição do marco.
+- Confirmadas recompensas pendentes sem corrupção em caso de limite de ouro e proteção contra seleções repetidas da mesma missão.
+- Confirmado percurso completo com kit econômico: vitória sem compras/consumíveis extras, missão, baú, saldo de 140, compra de Fogo/All e comando válido na batalha seguinte.
+- Scripts compilaram com bibliotecas da Unity 6000.6.5f1. UI da missão, recompensa visual e percurso entre lojas ainda aguardam teste em Play: `Docs/PARTE_6C.md`.
+- Sem salvamento em disco, arte final ou executável nesta fase.

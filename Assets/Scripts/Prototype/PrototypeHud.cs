@@ -12,6 +12,7 @@ namespace DragonQuest.Prototype
         private ExplorationProgress progress;
         private PrototypeLocations locations;
         private PrototypeBattleController battle;
+        private PrototypeShopController shops;
         private GUIStyle titleStyle;
         private GUIStyle bodyStyle;
         private GUIStyle labelStyle;
@@ -19,7 +20,7 @@ namespace DragonQuest.Prototype
 
         public void Initialize(Camera worldCamera, PlayerInteraction playerInteraction,
             DialogueController dialogueController, ExplorationProgress explorationProgress, PrototypeLocations locationController,
-            PrototypeBattleController battleController)
+            PrototypeBattleController battleController, PrototypeShopController shopController)
         {
             view = worldCamera;
             interaction = playerInteraction;
@@ -27,6 +28,7 @@ namespace DragonQuest.Prototype
             progress = explorationProgress;
             locations = locationController;
             battle = battleController;
+            shops = shopController;
         }
 
         private void OnGUI()
@@ -56,10 +58,11 @@ namespace DragonQuest.Prototype
                 DrawLabel(new Vector2(0, 6.2f), "GUARDA", scale);
             }
 
-            GUI.DrawTexture(new Rect(16, 16, Mathf.Min(420, width - 32), 94), panelTexture);
+            GUI.DrawTexture(new Rect(16, 16, Mathf.Min(470, width - 32), 126), panelTexture);
             GUI.Label(new Rect(30, 25, width - 60, 27), "DRAGON QUEST  /  " + locations.LocationName, titleStyle);
             GUI.Label(new Rect(30, 54, width - 60, 24), "WASD ou setas para andar", bodyStyle);
             GUI.Label(new Rect(30, 78, width - 60, 24), "E: interagir  |  I: inventario  |  Ouro: " + progress.Gold, bodyStyle);
+            GUI.Label(new Rect(30, 104, Mathf.Min(442, width - 60), 34), shops.Quest.Summary, bodyStyle);
 
             if (dialogue.IsOpen)
             {

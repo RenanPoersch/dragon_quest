@@ -76,7 +76,7 @@ namespace DragonQuest.Prototype
             {
                 GUI.Label(new Rect(60, 495, 1155, 42), battle.Outcome == BattleOutcome.Victory ? "VITORIA!" : "DERROTA", title);
                 GUI.Label(new Rect(60, 547, 1155, 45), battle.Outcome == BattleOutcome.Victory
-                    ? "A patrulha foi vencida. Sua equipe pode continuar explorando a cidade."
+                    ? "A patrulha foi vencida. " + controller.RewardMessage + " Sua equipe pode continuar explorando a cidade."
                     : "Sua equipe foi vencida. Volte a cidade para se reorganizar e tentar novamente.", text);
                 if (GUI.Button(new Rect(60, 615, 300, 48), "Voltar para a cidade", button)) controller.ReturnToCity();
             }

@@ -51,3 +51,5 @@ Decisões acordadas em 10 de outubro de 2026. As partes 6A, 6B e 6C têm commits
 - 6C: recompensas de batalha, primeira missão entre comerciantes e reposição por progresso.
 
 HP/MP continuam completos no início dos encontros nesta fase. Ouro, inventário, estoque e progresso ficam em memória durante Play; o salvamento em disco entra em uma entrega posterior.
+
+As três entregas foram implementadas em commits separados. O roteiro da versão atual está em `PARTE_6C.md`; os preços continuam sujeitos ao balanceamento após o teste em Play.

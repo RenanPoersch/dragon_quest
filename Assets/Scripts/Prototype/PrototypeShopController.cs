@@ -3,6 +3,7 @@ using UnityEngine.InputSystem;
 using DragonQuest.Exploration;
 using DragonQuest.Interactions;
 using DragonQuest.Shops;
+using DragonQuest.Progression;
 
 namespace DragonQuest.Prototype
 {
@@ -15,11 +16,13 @@ namespace DragonQuest.Prototype
         public ShopInventory ActiveShop { get; private set; }
         public bool IsOpen => ActiveShop != null;
         public string Message { get; private set; }
+        public DeliveryQuest Quest { get; private set; }
         public void Initialize(PlayerMovement hero, DialogueController dialogueController, PrototypeBattleController battleController,
             ExplorationProgress progress)
         {
             movement = hero; dialogue = dialogueController; battle = battleController;
             Service = PrototypeShopFactory.Create(battle.Party, progress);
+            Quest = new DeliveryQuest(Service);
         }
         public void Open(string id)
         {
@@ -46,6 +49,12 @@ namespace DragonQuest.Prototype
             if (!IsOpen) return false;
             bool accepted = Service.TrySell(ActiveShop, entry, quantity, out string message);
             Message = message; return accepted;
+        }
+        public void InteractQuest()
+        {
+            if (!IsOpen) return;
+            Quest.TryInteract(ActiveShop, out string message);
+            Message = message;
         }
         private void Update()
         {

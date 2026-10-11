@@ -8,6 +8,7 @@ namespace DragonQuest.Shops
     // Transacoes sincronas: valida todos os limites antes de alterar ouro, estoque ou propriedade.
     public sealed class ShopService
     {
+        private readonly HashSet<string> restockedMilestones = new HashSet<string>();
         public PartyProgress Party { get; }
         public ExplorationProgress Progress { get; }
         public IReadOnlyList<ShopInventory> Shops { get; }
@@ -33,6 +34,22 @@ namespace DragonQuest.Shops
             foreach (ShopInventory shop in Shops) if (shop.Id == id) return shop;
             return null;
         }
+
+        // Chamado pelo progresso da historia; abrir loja ou vencer batalha nao chama esta reposicao.
+        internal bool TryRestockConsumables(string milestoneId)
+        {
+            if (string.IsNullOrWhiteSpace(milestoneId) || restockedMilestones.Contains(milestoneId)) return false;
+            bool found = false;
+            foreach (ShopInventory shop in Shops)
+                if (shop.Category == ShopCategory.Items)
+                {
+                    found = true;
+                    foreach (ShopProduct product in shop.Products) product.Restock();
+                }
+            if (!found) return false;
+            restockedMilestones.Add(milestoneId); return true;
+        }
+        public bool HasRestockedMilestone(string milestoneId) => milestoneId != null && restockedMilestones.Contains(milestoneId);
         private bool Owns(ShopInventory shop) { foreach (ShopInventory owned in Shops) if (owned == shop) return true; return false; }
         private static bool Owns(ShopInventory shop, ShopProduct product)
         { foreach (ShopProduct owned in shop.Products) if (owned == product) return true; return false; }

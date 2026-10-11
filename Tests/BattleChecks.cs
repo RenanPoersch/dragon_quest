@@ -177,6 +177,7 @@ internal static class BattleChecks
             checks += EquipmentItemChecks.Run();
             checks += ElementalChecks.Run();
             checks += ShopChecks.Run();
+            checks += ProgressionChecks.Run();
             Console.WriteLine(checks + " verificacoes de combate passaram.");
             return 0;
         }

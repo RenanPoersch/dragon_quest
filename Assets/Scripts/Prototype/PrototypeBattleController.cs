@@ -4,6 +4,7 @@ using DragonQuest.Exploration;
 using DragonQuest.Equipment;
 using DragonQuest.Inventory;
 using DragonQuest.Interactions;
+using DragonQuest.Progression;
 using UnityEngine.InputSystem;
 
 namespace DragonQuest.Prototype
@@ -22,12 +23,16 @@ namespace DragonQuest.Prototype
         public PartyProgress Party { get; private set; }
         public BattleSession Session { get; private set; }
         public string ErrorMessage { get; private set; }
+        public BattleRewards Rewards { get; private set; }
+        public string RewardMessage { get; private set; }
 
-        public void Initialize(PlayerMovement hero, DialogueController dialogueController, System.Func<bool> externalMenuOpen = null)
+        public void Initialize(PlayerMovement hero, DialogueController dialogueController, ExplorationProgress progress,
+            System.Func<bool> externalMenuOpen = null)
         {
             movement = hero; dialogue = dialogueController;
             otherMenuOpen = externalMenuOpen ?? (() => false);
             Party = PrototypePartyFactory.Create();
+            Rewards = new BattleRewards(progress);
         }
 
         public void CloseMenu()
@@ -43,6 +48,7 @@ namespace DragonQuest.Prototype
             IsActive = true;
             pendingEnemy = null;
             ErrorMessage = string.Empty;
+            RewardMessage = string.Empty;
             movement.SetMovementEnabled(false);
         }
 
@@ -51,6 +57,7 @@ namespace DragonQuest.Prototype
             if (!IsActive || Session.CurrentActor == null || Session.CurrentActor.Team != CombatTeam.Party) return false;
             bool accepted = Session.TryAct(Session.CurrentActor, ability, target, out string message);
             ErrorMessage = accepted ? string.Empty : message;
+            if (accepted) AwardIfComplete();
             return accepted;
         }
 
@@ -59,7 +66,15 @@ namespace DragonQuest.Prototype
             if (!IsActive || Session.CurrentActor == null || Session.CurrentActor.Team != CombatTeam.Party) return false;
             bool accepted = Session.TryUseItem(Session.CurrentActor, item, target, out string message);
             ErrorMessage = accepted ? string.Empty : message;
+            if (accepted) AwardIfComplete();
             return accepted;
+        }
+
+        private void AwardIfComplete()
+        {
+            if (Session.Outcome != BattleOutcome.Victory || Rewards.HasClaimed(Session)) return;
+            Rewards.TryClaim(Session, out string message);
+            RewardMessage = message;
         }
 
         private void Update()
@@ -84,12 +99,14 @@ namespace DragonQuest.Prototype
             if (Time.unscaledTime < enemyActionTime) return;
             bool accepted = EnemyAI.TryTakeTurn(Session, out string message);
             ErrorMessage = accepted ? string.Empty : message;
+            if (accepted) AwardIfComplete();
             pendingEnemy = null;
         }
 
         public void ReturnToCity()
         {
             if (!IsActive || Session.Outcome == BattleOutcome.None) return;
+            AwardIfComplete();
             IsActive = false;
             movement.SetMovementEnabled(true);
             pendingEnemy = null;

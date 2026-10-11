@@ -104,7 +104,7 @@ namespace DragonQuest.Prototype
             locations.Initialize(city.gameObject, shopRoots, exits, player.GetComponent<PlayerMovement>(), cameraFollow);
             PrototypeShopController shops = gameObject.AddComponent<PrototypeShopController>();
             PrototypeBattleController battle = gameObject.AddComponent<PrototypeBattleController>();
-            battle.Initialize(player.GetComponent<PlayerMovement>(), dialogue, () => shops.IsOpen);
+            battle.Initialize(player.GetComponent<PlayerMovement>(), dialogue, progress, () => shops.IsOpen);
             shops.Initialize(player.GetComponent<PlayerMovement>(), dialogue, battle, progress);
             gameObject.AddComponent<PrototypeShopHud>().Initialize(shops);
             gameObject.AddComponent<PrototypeBattleHud>().Initialize(battle);
@@ -113,7 +113,7 @@ namespace DragonQuest.Prototype
             interaction.Initialize(new InteractionContext(dialogue, progress, locations.TravelTo,
                 battle.StartBattle, () => battle.IsBusy, shops.Open), interactables.ToArray());
             PrototypeHud hud = gameObject.AddComponent<PrototypeHud>();
-            hud.Initialize(camera, interaction, dialogue, progress, locations, battle);
+            hud.Initialize(camera, interaction, dialogue, progress, locations, battle, shops);
         }
 
         private Transform Group(string groupName, Transform parent = null)

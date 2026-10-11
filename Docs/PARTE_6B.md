@@ -2,6 +2,8 @@
 
 As lojas de itens (noroeste), matérias (nordeste) e equipamentos (sudeste) têm interiores. Use E na marca diante da porta, aproxime-se do vendedor e use E novamente. Esc ou Fechar encerra o menu; E na saída ao sul retorna à porta da loja correspondente.
 
+Esta página registra a entrega 6B. Use `PARTE_6C.md` para validar a versão atual, com recompensas, entrega e reposição.
+
 ## Economia inicial
 
 - A equipe inicia com 50 moedas, 2 poções e 1 antídoto. Aren tem Força/Raio, Lia tem Cura/Purificação e Bram tem Guardião, com armas e armaduras simples. Todas as matérias continuam transferíveis entre classes.

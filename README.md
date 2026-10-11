@@ -19,6 +19,16 @@ Use essa versão do Editor para evitar migrações involuntárias.
 4. Abra `Assets/Scenes/CidadePrototipo.unity`.
 5. Clique em **Play**, clique dentro da janela **Game** e use **WASD ou as setas** para andar; **E** interage com objetos próximos e **I** abre o inventário.
 
+## Parte 6C — recompensas e missão de entrega
+
+Cada vitória contra a patrulha concede **35 moedas**, uma vez por batalha; derrota não paga. O baú conserva sua recompensa única de 25 moedas.
+
+Na loja de itens, clique em **Aceitar entrega**. Leve o pacote ao vendedor de matérias, clique em **Entregar pacote** e volte à primeira loja para **Receber 30 moedas**. A conclusão repõe somente os consumíveis do vendedor, uma vez; equipamentos e matérias conservam os estoques restantes. O HUD mostra o objetivo atual.
+
+As 50 moedas iniciais, a missão, o baú e uma vitória somam 140: permitem comprar Fogo (50) e All (90) sem repetir encontros. Monte o combo no inventário com I, em um par ligado.
+
+Veja `Docs/PARTE_6C.md` para o roteiro atual. As três entregas da parte 6 estão implementadas; os testes automáticos passaram, e os cliques/aparência aguardam confirmação no Editor. A próxima etapa planejada é ampliar a cidade antes dos segredos e do dragão.
+
 ## Parte 6B — lojas e economia inicial
 
 Há três lojas: itens a noroeste, matérias a nordeste e equipamentos a sudeste. Use E na porta e depois no vendedor para abrir Comprar/Vender. Esc fecha o menu; a saída fica ao sul do interior.
@@ -29,7 +39,7 @@ Há três lojas: itens a noroeste, matérias a nordeste e equipamentos a sudeste
 - Quantidade, preço total, estoque e descrições aparecem antes da confirmação. Equipamentos mostram atributos base e encaixes ligados.
 - Entrar/sair e abrir/fechar lojas conserva ouro e estoque. Objetos vendidos não criam estoque de recompra.
 
-Veja `Docs/PARTE_6B.md` para o roteiro e `Docs/PLANO_LOJAS.md` para os catálogos. Recompensas de batalha, missão e reposição por progresso entram na parte 6C.
+Veja `Docs/PARTE_6B.md` para as regras de comércio, `Docs/PLANO_LOJAS.md` para os catálogos e `Docs/PARTE_6C.md` para validar a versão atual.
 
 ## Parte 6A — elementos e afinidades
 
@@ -139,7 +149,7 @@ Veja `Docs/PARTE_1.md` para o roteiro de verificação.
 
 - Cidade com exploração livre, lojas, NPCs e três segredos.
 - Equipe com atacante, healer e tank.
-- Combate por rodadas e habilidades próprias de cada papel.
+- Combate por rodadas, comandos básicos e habilidades concedidas por matérias.
 - Inventário, equipamentos e comandos concedidos por matérias equipadas em pares ligados.
 - Quatro tipos de matéria: magia, suporte, summon e aprimoramento físico.
 - Limit Break individual com carga mantida entre batalhas.

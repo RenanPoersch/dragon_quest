@@ -34,6 +34,9 @@ namespace DragonQuest.Prototype
             if (GUI.Button(new Rect(1000, 40, 220, 40), "Fechar / Esc", button)) controller.Close();
             if (GUI.Button(new Rect(30, 125, 240, 42), (!selling ? "> " : "") + "Comprar", button)) { selling = false; ResetSelection(); }
             if (GUI.Button(new Rect(285, 125, 240, 42), (selling ? "> " : "") + "Vender", button)) { selling = true; ResetSelection(); }
+            string questAction = controller.Quest.ActionLabel(shop.Id);
+            GUI.Label(new Rect(552, 119, questAction == null ? 675 : 405, 58), controller.Quest.ContextText(shop.Id), small);
+            if (questAction != null && GUI.Button(new Rect(972, 125, 278, 42), questAction, button)) controller.InteractQuest();
             Panel(new Rect(30, 182, 595, 435));
             Panel(new Rect(645, 182, 605, 435));
             if (selling) DrawSales(shop); else DrawProducts(shop);
