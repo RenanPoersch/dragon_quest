@@ -179,3 +179,9 @@ O usuário confirmou que as interações funcionaram em Play. Não houve valida�
 - Poema aprendido e altar resolvido continuam no mesmo estado da sessão ao sair e retornar às ruínas; a solução não duplica progresso.
 - 1.552 verificações de câmera/malhas passaram, incluindo ruínas locais, ícone com volume e enquadramento fixo da chama do altar. Scripts compilaram com bibliotecas da Unity 6000.6.5f1.
 - As verificações de segredos/escolhas, combate/inventário/lojas/progresso e exploração continuam passando. Roteiro de Play atualizado em `Docs/PARTE_7B.md`; cliques, física e transições reais ainda precisam da conferência no Editor.
+
+## Zoom do mapa mundial
+
+- Tamanho ortográfico da ilha ajustado para 6,85, aproximadamente metade do enquadramento anterior em 16:9. O ajuste automático que mostrava toda a ilha foi desligado nesse mapa; a câmera agora usa acompanhamento do herói.
+- Enquadramentos dos cenários locais, inclinação e orientação dos controles conservados.
+- Scripts compilaram e 1.538 verificações de câmera/malhas passaram. A contagem mudou porque a ilha passou de enquadramento fixo para acompanhamento. Conferência visual em Play pendente.

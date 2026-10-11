@@ -31,7 +31,7 @@ A demo começa no **mapa global de uma pequena ilha cercada pelo mar**. Castelo 
 
 Saídas devolvem o herói ao ponto correspondente do mapa anterior. Ouro, inventário, equipamentos, missão, estoques e Limit usam a mesma sessão entre cenários.
 
-A apresentação agora usa **câmera oblíqua e modelos com volume**, substituindo os retângulos vistos de cima. A ilha tem costa elevada, montanhas, mar e ícones pequenos de locais; casas têm paredes, telhados e janelas; personagens têm um modelo simples com passos animados. Ilha, florestas, castelo e lojas usam enquadramentos fixos. Na periferia, a câmera acompanha o herói mantendo o ângulo. WASD/setas acompanham as direções da tela.
+A apresentação agora usa **câmera oblíqua e modelos com volume**, substituindo os retângulos vistos de cima. A ilha tem costa elevada, montanhas, mar e ícones pequenos de locais; casas têm paredes, telhados e janelas; personagens têm um modelo simples com passos animados. No mapa mundial, a câmera está aproximadamente duas vezes mais próxima no enquadramento e acompanha o herói. Na periferia, ela também acompanha o herói mantendo o ângulo. Florestas, ruínas, castelo e lojas usam enquadramentos fixos. WASD/setas acompanham as direções da tela.
 
 Abra `Assets/Scenes/CidadePrototipo.unity` e siga `Docs/PARTE_7A.md` e `Docs/VISUAL_25D.md` para testar em Play. Os modelos ainda são provisórios, criados por código. A batalha e os menus conservam sua interface atual.
 

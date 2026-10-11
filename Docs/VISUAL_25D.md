@@ -10,7 +10,7 @@ O mundo passa a ser visto em ângulo, com modelos simples de poucos polígonos e
 - Interiores: paredes, colunas, trono, balcões e estantes. As paredes ao sul são baixas para permitir enxergar a entrada.
 - Personagens: corpo, cabeça, braços, pernas, capa e espada simples. O herói muda de orientação e alterna os passos ao caminhar.
 - Baú: tampa articulada ao abrir; conserva a recompensa única.
-- Câmera: inclinação de 55 graus em relação à vista perpendicular ao chão e rotação lateral de 22 graus. Projeção ortográfica oblíqua, sem rotação controlada pelo jogador. Ilha e ambientes pequenos têm enquadramento fixo; a periferia acompanha o herói. O tamanho do enquadramento fixo considera a proporção da janela.
+- Câmera: inclinação de 55 graus em relação à vista perpendicular ao chão e rotação lateral de 22 graus. Projeção ortográfica oblíqua, sem rotação controlada pelo jogador. Ilha e periferia acompanham o herói; ambientes locais pequenos têm enquadramento fixo. O tamanho do enquadramento fixo considera a proporção da janela. Na ilha, o tamanho ortográfico agora é 6,85: aproximadamente metade do enquadramento anterior de 13,7 em 16:9, deixando os elementos cerca de duas vezes maiores na tela. O ajuste automático para mostrar a ilha inteira foi desativado nesse mapa.
 - Controles: WASD/setas movimentam o herói de acordo com os eixos da tela.
 
 ## Como o código funciona

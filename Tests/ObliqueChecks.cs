@@ -63,7 +63,7 @@ internal static class ObliqueChecks
         var travel=new PrototypeTravel();
         foreach(var map in travel.Maps)
         {
-            Assert(map.FixedCamera==(map.Id!=PrototypeTravel.City),"A cidade segue o herói; ambientes menores usam enquadramento fixo.");
+            Assert(map.FixedCamera==(map.Id!=PrototypeTravel.City&&map.Id!=PrototypeTravel.World),"Ilha e cidade seguem o herói; ambientes locais menores usam enquadramento fixo.");
             foreach(var hero in new[]{map.Spawn,new Vector2(map.Bounds.xMax,map.Bounds.yMax)})
             {
                 var focus=ObliqueProjection.CameraFocus(hero,map.Bounds,map.CameraSize,16f/9,map.FixedCamera);
@@ -124,7 +124,10 @@ internal static class ObliqueChecks
         world.Append(volcano,ObliqueProjection.Point(PrototypeWorldLayout.Volcano));
         world.Append(ruinsIcon,ObliqueProjection.Point(PrototypeWorldLayout.Ruins));
         Person(world,PrototypeWorldLayout.Spawn,"B4A078",true);
-        Export(directory,"WorldOblique",world,Vector2.zero,ObliqueProjection.FrameSize(11.5f,PrototypeWorldLayout.Bounds,16f/9,true));
+        MapDefinition worldMap=travel.Current;
+        float worldSize=ObliqueProjection.FrameSize(worldMap.CameraSize,worldMap.Bounds,16f/9,worldMap.FixedCamera);
+        Vector2 worldFocus=ObliqueProjection.CameraFocus(PrototypeWorldLayout.Spawn,worldMap.Bounds,worldSize,16f/9,worldMap.FixedCamera);
+        Export(directory,"WorldOblique",world,worldFocus,worldSize);
 
         var city=new ObliqueMeshData();
         foreach(var block in PrototypeCityLayout.Blocks)
