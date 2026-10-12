@@ -32,7 +32,9 @@ namespace DragonQuest.Exploration
             walk.Advance(distance, Time.deltaTime, movement.HasMovementInput, teleported);
             var facing = PixelSpriteLayout.Facing(movement.FacingDirection, diagonalAtlas != null);
             var source = PixelSpriteLayout.IsDiagonal(facing) ? diagonalAtlas : atlas;
-            sprite.sprite = source.Sprites[PixelSpriteLayout.WalkFrame(facing, walk.Distance, walk.Walking)];
+            int pose = PixelSpriteLayout.WalkFrame(facing, walk.Distance, walk.Walking);
+            var next = source.Sprites[pose];
+            if (sprite.sprite != next) sprite.sprite = next;
         }
         private void FaceCamera()
         {

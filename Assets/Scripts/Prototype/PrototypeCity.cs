@@ -10,6 +10,7 @@ namespace DragonQuest.Prototype
     public sealed class PrototypeCity : MonoBehaviour
     {
         private ObliqueScenery scenery;
+        private PrototypeFramePacing framePacing;
         private PhysicsMaterial2D frictionless;
         private readonly AncientSecrets secrets = new AncientSecrets();
         private PrototypeTravel navigation;
@@ -20,6 +21,7 @@ namespace DragonQuest.Prototype
 
         private void Awake()
         {
+            framePacing = new PrototypeFramePacing();
             saves = gameObject.AddComponent<PrototypeSaveController>();
             navigation = new PrototypeTravel(secrets);
             scenery = new ObliqueScenery();
@@ -399,6 +401,7 @@ namespace DragonQuest.Prototype
 
         private void OnDestroy()
         {
+            framePacing?.Dispose();
             scenery?.Dispose();
             if (frictionless != null) Destroy(frictionless);
         }

@@ -76,3 +76,13 @@ O usuário confirmou que o deslocamento ficou fluido na Unity após esse ajuste.
 O acompanhamento contínuo ficou fluido, mas o usuário identificou um solavanco ao mudar de direção. PlayerMovement agora aproxima a velocidade do corpo da velocidade desejada com MovementDynamics, em vez de substituí-la instantaneamente. Aceleração padrão: 80 unidades/s²; desaceleração ao soltar as teclas: 100. Na física atual, a partida leva até cerca de 0,06 s, a parada cerca de 0,04 s e uma inversão completa cerca de 0,1 s. Velocidade de caminhada e normalização das diagonais continuam em 4 unidades/s.
 
 Menus, diálogos, perda de foco e teleportes zeram a velocidade diretamente. A interpolação do Rigidbody2D e o acompanhamento direto da câmera continuam ativos. Compilação passou; 591 verificações de sprites/materiais/movimento e 2313 de malhas/câmera passaram. Os novos casos cobrem todas as combinações das oito direções com três intervalos físicos, limites de velocidade, chegada ao novo sentido, partida, parada e caminhada constante. Em Play, testar curvas, inversões, aproximação de paredes e parada ao abrir um diálogo. A sensação das viradas ainda precisa dessa conferência.
+
+## Ritmo de renderização durante as viradas
+
+O protótipo passa a usar 60 FPS no Game view desde o início da cena. No executável, usa VSync com a frequência da tela. A configuração anterior é restaurada ao encerrar a cena, sem editar os arquivos de ProjectSettings. A Unity documenta o controle do Game view por `Application.targetFrameRate` e recomenda VSync no desktop para sincronização por hardware: [referência da Unity 6.6](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/Application-targetFrameRate.html).
+
+PixelCharacter só atribui um Sprite quando a pose realmente muda. As folhas cardinal e diagonal continuam carregadas antes da caminhada. Velocidade, oito direções, colisões, interpolação e acompanhamento da câmera conservam a configuração anterior.
+
+Para conferir: parar Play, aguardar compilação e iniciar novamente; alternar horizontal/vertical/diagonais em área livre da ilha, depois repetir na periferia e junto a paredes. O código de medição usado no diagnóstico é temporário e não faz parte da entrega final.
+
+A conferência na Unity confirmou caminhada fluida ao trocar de eixo com a configuração de 60 FPS. A captura real registrou 60 mudanças de direção em 21,71 s; mediana de quadro de 16,661 ms e máximo de 21,760 ms após os primeiros 0,5 s. Compilação e as 591 verificações de sprites/movimento e 2313 de câmera/malhas passaram. A versão exportada com VSync ainda precisa ser conferida.
