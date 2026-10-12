@@ -27,6 +27,7 @@ namespace DragonQuest.Prototype
 
             Transform city = Group("Periferia do castelo");
             Transform ground = Group("Chao e ruas", city);
+            scenery.CityGround(ground);
             Transform buildings = Group("Predios", city);
             Transform obstacles = Group("Obstaculos e limites", city);
 

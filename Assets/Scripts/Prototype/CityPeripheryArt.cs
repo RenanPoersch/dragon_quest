@@ -20,20 +20,10 @@ namespace DragonQuest.Prototype
 
         public static ObliqueMeshData Block(CityBlock block)
         {
-            if (block.Name == "Chao escuro da periferia")
-            {
-                // O terreno se interrompe no fosso: um piso continuo esconderia sua profundidade.
-                var ground = new ObliqueMeshData {DefaultSurface = PixelSurface.Grass};
-                float south = PrototypeCityLayout.Bridge.y - 2.4f, north = PrototypeCityLayout.Bridge.y + 2.4f;
-                Rect bounds = PrototypeCityLayout.Bounds;
-                ground.Plane(0, (bounds.yMin + south) / 2, bounds.width, south - bounds.yMin, 0, Iron);
-                ground.Plane(0, (north + bounds.yMax) / 2, bounds.width, bounds.yMax - north, 0, Iron);
-                return ground;
-            }
+            if (CityGroundArt.ReplacesBlock(block.Name)) return new ObliqueMeshData();
             if (block.Name.StartsWith("Fosso seco"))
             {
                 var pit = new ObliqueMeshData();
-                pit.Plane(0, 0, block.Size.x, block.Size.y, -0.7f, ObliqueMeshData.Hex("272D24"));
                 pit.DefaultSurface = PixelSurface.Wall;
                 foreach (float y in new[] {-block.Size.y / 2, block.Size.y / 2})
                     pit.Box(0, y, block.Size.x, 0.25f, -0.7f, 0.12f, Iron);
@@ -194,22 +184,7 @@ namespace DragonQuest.Prototype
         public static PeripheryBuildingArt Streets()
         {
             var art = new PeripheryBuildingArt();
-            // Viela principal sinuosa, com a mesma orientacao geral da referencia.
-            art.Body.DefaultSurface = PixelSurface.Dirt;
-            var road = PrototypeCityLayout.Street;
-            for (int i = 0; i < road.Count - 1; i++)
-            {
-                Vector2 a = road[i], b = road[i + 1];
-                art.Body.Quad(ObliqueMeshData.V(a.x - 1.65f, a.y, 0.06f), ObliqueMeshData.V(b.x - 1.65f, b.y, 0.06f),
-                    ObliqueMeshData.V(b.x + 1.65f, b.y, 0.06f), ObliqueMeshData.V(a.x + 1.65f, a.y, 0.06f), Iron, false);
-            }
-            foreach (Vector2 point in new[] {new Vector2(0.6f, -16), new Vector2(-1.1f, -6), new Vector2(0.8f, 2), new Vector2(1.2f, 8)})
-            {
-                art.Body.DefaultSurface = PixelSurface.Basalt;
-                art.Body.Plane(point.x, point.y, 1.2f, 0.75f, 0.09f, Iron);
-                art.Body.DefaultSurface = PixelSurface.None;
-                for (int i = -3; i <= 3; i++) art.Body.Plane(point.x + i * 0.14f, point.y, 0.035f, 0.65f, 0.094f, ObliqueMeshData.Hex("272B22"));
-            }
+            // Viela, patios, musgo e grelhas agora fazem parte da pintura unica do chao.
             // Tubulacoes altas cruzam a rua como na referencia, deixando o chao livre.
             foreach (float y in new[] {-5.5f, 3.2f})
             {

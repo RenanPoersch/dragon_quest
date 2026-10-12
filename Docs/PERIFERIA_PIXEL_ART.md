@@ -20,11 +20,18 @@ A periferia foi redesenhada a partir da referência enviada pelo usuário: bairr
 | Assets/Resources/PixelArt/CityMaterialsAtlas.png | Doze materiais gastos: musgo, terra, pavimento, areia, madeira, paredes, metal ondulado, ferro, folhagem, água, vidro e lona |
 | Assets/Resources/PixelArt/CityDetailsAtlas.png | Letreiros, portas, janelas, ventilação, brasão fictício e grelha |
 | Assets/Resources/PixelArt/CastleMaterialsAtlas.png | Alvenaria cinza, granito, pavimento, pedras de remate, porta de carvalho e estandartes |
-| Assets/Scripts/Prototype/CityPeripheryArt.cs | Geometria das casas, caldeira da loja de itens, fachadas, viela, ponte, fosso, tubulações e vapor |
+| Assets/Resources/PixelArt/CityGroundMap.png | Pintura contínua de toda a planta: terra, vielas, musgo, pátios, grelhas, leito do fosso e pavimento da ponte |
+| Assets/Scripts/Prototype/CityGroundArt.cs | Superfícies do chão e UVs normalizados da planta, usando a imagem inteira uma vez |
+| Assets/Resources/CityGround.shader | Material opaco do piso, sem divisão em células nem repetição |
+| Assets/Scripts/Prototype/CityPeripheryArt.cs | Geometria das casas, caldeira da loja de itens, fachadas, ponte, paredes do fosso, tubulações e vapor |
 | Assets/Scripts/Prototype/CastleFortressArt.cs | Fortaleza de pedra, ameias, arco do portão, seteiras, estandartes e ícone miniatura |
 | Assets/Resources/PixelGlow.shader | Vapor das chaminés com transparência/aditivo e teste de profundidade |
 
 Os dois atlas da periferia têm 1448 × 1086; o atlas do castelo tem 1447 × 1087. Foram gerados pela ferramenta integrada image_gen e mantidos sem alteração. Importadores usam Point, nenhuma compressão, mipmap ou redimensionamento NPOT. Prompts completos em `PERIFERIA_ART_PROMPTS.md`; origem em `ASSETS.md`.
+
+O chão usa uma imagem própria de 965 × 1629 pixels. Foi pintada com image_gen sobre um guia exato dos caminhos, pátios e fundações, preservado em `ArtInputs/CityGroundLayout.png`. Os antigos planos de terra/grama repetida, pátios retangulares sobrepostos e grelhas em malha foram substituídos pela pintura. Cada posição XY da planta corresponde à mesma posição na imagem; bordas entre materiais são desenhadas, sem repetir um pequeno tile. O importador usa Point, Clamp, limite 4096 e nenhuma compressão, mipmap ou redução. O PNG gerado foi copiado integralmente.
+
+A imagem é aplicada a quatro superfícies simples num único renderer/material: chão ao sul, chão ao norte, leito rebaixado do fosso e pavimento sobre a ponte. O leito fica 0,7 unidade abaixo; a pintura do tabuleiro fica a 0,058, ligeiramente acima do volume de pedra. A ponte mantém parapeitos e volume 3D. A textura acompanha a planta existente; alterar a disposição dos caminhos exige atualizar a pintura.
 
 A periferia usa materiais próprios. Os painéis recebem UVs locais para mostrar uma célula inteira, sem repetir letras. A iluminação das janelas e letreiros está pintada no atlas das fachadas; postes, lampiões salientes e círculos aditivos no chão foram retirados. É iluminação incorporada à arte, não um bake de lightmaps da Unity. Os mapas continuam montados em Play e usam o shader de materiais existente. Sombras e vapor usam materiais separados. O shader do cenário usa brilho padrão 1, com 0,8 nas casas e 0,95 na fortaleza, ponte/pátio e ícone do castelo. O ícone global tem ameias e mantém altura de 1,95, um pouco acima do herói.
 
@@ -44,6 +51,8 @@ Após a revisão do castelo, passaram 249 verificações dos nove PNGs/importado
 
 Na correção da iluminação e da profundidade dos sprites, os scripts compilaram e passaram 249 verificações dos PNGs/importadores, 161 de sprites/materiais e 2167 de malhas/câmera/profundidade. As novas verificações reproduzem a cabeça escondida na orientação anterior, conferem o sprite inteiro na frente do balcão e a oclusão correta atrás de balcão e parede. Prévias técnicas do balcão antes/depois e da periferia sem postes foram inspecionadas fora da Unity.
 
+Com o chão contínuo, passaram 259 verificações de PNGs/importadores, 197 de sprites/materiais, 2313 de malhas/câmera, 73 de caminhos e 269 de viagens/interiores. Conferidos UVs sem repetição/inversão, cobertura de entradas e vielas, alturas do fosso/ponte e ausência dos pisos antigos sobre a pintura. Scripts e dois estágios do shader novo compilaram externamente. Prévias da entrada, mercado e ponte foram inspecionadas fora da Unity; aplicação real no Editor permanece pendente de Play.
+
 Os scripts compilaram com as bibliotecas da Unity 6000.6.5f1. ObliqueWorld e PixelGlow compilaram externamente nos estágios de vértices/fragmentos com d3dcompiler_47 e os headers URP, sob as mesmas adaptações descritas em VALIDATION.md. Esse teste não substitui o renderer DirectX 12 da Unity.
 
 Prévias técnicas da entrada, mercado, bairro da capela e ponte foram renderizadas a partir das malhas e texturas e inspecionadas fora do Editor. Não são capturas da Unity. A inspeção permitiu ajustar a visibilidade dos letreiros e impedir que o piso escondesse o fosso.
@@ -57,4 +66,4 @@ A fortaleza teve prévias geral e junto ao portão inspecionadas. A vista geral 
 3. Siga a viela, entre nas três lojas e na hospedaria e retorne. Confira portas, letreiros, corpo do herói e ruas entre as casas, inclusive ao andar nas diagonais. As poses devem conservar o alinhamento do corpo e parar ao soltar as teclas ou ficar bloqueado. Encoste na frente e nas laterais do balcão: a cabeça deve permanecer inteira. Por trás de móveis e paredes, o corpo deve ser ocultado normalmente.
 4. Converse com os moradores, consulte o poema e abra o baú se ainda não tiver sido coletado. Verifique que progresso, ouro e estoque foram conservados.
 5. Siga ao norte, atravesse a ponte de pedra e caminhe até a porta central do castelo. O cenário deve mudar automaticamente. Saia do interior e confira o retorno ao lado norte da ponte, sem um ciclo de entrada/saída.
-6. Confira profundidade dos telhados, sombras e brilho pintado nas janelas/letreiros, sem postes nem círculos de luz no chão. GPU, interação e fluidez no Editor ainda precisam desta conferência.
+6. Confira o chão pintado contínuo, com bordas naturais nas vielas, pátios integrados e grelhas desenhadas, sem quadrados repetidos. Caminhe até a ponte e observe pavimento, leito rebaixado do fosso e sombras. Confira também telhados e brilho das janelas/letreiros, sem postes nem círculos de luz no chão. A aparência do novo piso no renderer da Unity ainda precisa desta conferência.

@@ -15,17 +15,23 @@ def check(condition, message):
     if not condition:
         raise ValueError(message)
 
-for name in ("ArenWalk", "ArenDiagonalWalk", "LiaWalk", "BramWalk", "NpcRoster", "TerrainAtlas", "CityMaterialsAtlas", "CityDetailsAtlas", "CastleMaterialsAtlas"):
+for name in ("ArenWalk", "ArenDiagonalWalk", "LiaWalk", "BramWalk", "NpcRoster", "TerrainAtlas", "CityMaterialsAtlas", "CityDetailsAtlas", "CastleMaterialsAtlas", "CityGroundMap"):
     path = directory / (name + ".png")
     with Image.open(path) as image:
         width, height = image.size
-        check(width >= 16 and height >= 12 and abs(width * 3 - height * 4) <= 8, name + ": grade irregular")
-        check(width <= 2048 and height <= 2048, name + ": tamanho acima do importador")
+        ground_map = name == "CityGroundMap"
+        check(width >= 16 and height >= 12 and (abs(width * 44 - height * 26) / (height * 26) < .02 if ground_map
+              else abs(width * 3 - height * 4) <= 8), name + ": proporcao irregular")
+        check(width <= (4096 if ground_map else 2048) and height <= (4096 if ground_map else 2048), name + ": tamanho acima do importador")
         meta = path.with_suffix(".png.meta").read_text(encoding="utf-8-sig")
         for setting in ("filterMode: 0", "enableMipMap: 0", "nPOTScale: 0", "textureCompression: 0"):
             check(setting in meta, name + ": importacao incorreta " + setting)
         entry = {"width": width, "height": height, "frames": []}
-        if name not in ("TerrainAtlas", "CityMaterialsAtlas", "CityDetailsAtlas", "CastleMaterialsAtlas"):
+        if ground_map:
+            check(image.mode in ("RGB", "RGBA") and (image.mode == "RGB" or image.getchannel("A").getextrema() == (255, 255)), name + ": mapa deve ser opaco")
+            for setting in ("wrapU: 1", "wrapV: 1", "maxTextureSize: 4096"):
+                check(setting in meta, name + ": mapa inteiro sem repeticao ou reducao " + setting)
+        elif name not in ("TerrainAtlas", "CityMaterialsAtlas", "CityDetailsAtlas", "CastleMaterialsAtlas"):
             check(image.mode == "RGBA", name + ": canal alpha ausente")
             check("isReadable: 1" in meta, name + ": alpha precisa ser legivel em runtime")
             alpha = image.getchannel("A")

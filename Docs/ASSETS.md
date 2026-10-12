@@ -64,3 +64,9 @@ Casas, toldos, caldeira, tubos, lampiões, grelhas, vapor, ponte de pedra e foss
 `Assets/Resources/PixelArt/CastleMaterialsAtlas.png` foi gerado com a ferramenta integrada `image_gen`, com materiais originais de pedra, madeira e tecido. O PNG de 1447 × 1087 foi mantido sem edição posterior. Prompt completo em `PERIFERIA_ART_PROMPTS.md`.
 
 `CastleFortressArt.cs` gera as muralhas, torres, ameias, seteiras, arco do portão, porta reforçada, estandartes e tochas. O castelo tem material próprio de alvenaria cinza; ponte/pátio de entrada e ícone global usam o mesmo atlas. O ícone mantém a escala pequena do mapa mundial. Modelos e materiais não foram extraídos de jogos ou bibliotecas externas.
+
+## Chão contínuo da periferia — 12 de outubro de 2026
+
+`Assets/Resources/PixelArt/CityGroundMap.png` é uma pintura original e opaca de 965 × 1629 pixels, criada com a ferramenta integrada `image_gen`. A ferramenta editou um guia geométrico original da planta, usando `CityMaterialsAtlas.png` como referência de materiais e cores. O guia está em `Docs/ArtInputs/CityGroundLayout.png`; o prompt completo está em `PERIFERIA_ART_PROMPTS.md`. O PNG final foi copiado sem edição posterior, confirmado pela igualdade do SHA-256 com a saída original.
+
+A pintura cobre toda a periferia, em vez de repetir células de materiais: terra, musgo, vielas, pátios, grelhas, leito do fosso e pavimento da ponte. `CityGroundArt.cs` gera quatro superfícies com UVs normalizados da planta; `CityGround.shader` amostra a imagem inteira. Casas e paredes continuam sendo volumes 3D. A arte não contém texturas ou imagens extraídas de jogos de terceiros.

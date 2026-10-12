@@ -33,10 +33,10 @@ internal static class ObliqueChecks
     }
 
     private static void Export(string directory,string name,ObliqueMeshData data,Vector2 focus,float size,float focusHeight=0, object[] sprites=null,
-        string atlas="TerrainAtlas", bool additive=false)
+        string atlas="TerrainAtlas", bool additive=false, bool singleTexture=false)
     {
         File.WriteAllText(Path.Combine(directory,name+".json"),JsonSerializer.Serialize(new {
-            vertices=data.Vertices.Select(p=>new[]{p.x,p.y,p.z}),colors=data.Colors.Select(c=>new[]{c.r,c.g,c.b,c.a}),atlas,additive,
+            vertices=data.Vertices.Select(p=>new[]{p.x,p.y,p.z}),colors=data.Colors.Select(c=>new[]{c.r,c.g,c.b,c.a}),atlas,additive,singleTexture,
             triangles=data.Triangles,focus=new[]{focus.x,focus.y},size,focusHeight,
             uv=data.UVs.Select(uv=>new[]{uv.x,uv.y}),surfaces=data.Surfaces.Select(s=>new[]{s.x,s.y}),sprites=sprites??Array.Empty<object>(),
             groundScale=ObliqueProjection.GroundScale,heightScale=ObliqueProjection.HeightScale,
@@ -58,6 +58,7 @@ internal static class ObliqueChecks
         PixelArtChecks.Run();
         CheckSpriteDepth(directory);
         CheckCameraTracking();
+        CheckPaintedGround(directory);
         Near(ObliqueProjection.ScreenPlane(new Vector2(4,3)).x,4*ObliqueProjection.YawCos+3*ObliqueProjection.YawSin,"Eixos do chão devem acompanhar rotação da câmera.");
         Near(ObliqueProjection.ScreenPlane(new Vector2(4,3)).y,(-4*ObliqueProjection.YawSin+3*ObliqueProjection.YawCos)*ObliqueProjection.GroundScale,"Profundidade do chão precisa comprimir na tela.");
         Near(ObliqueProjection.ScreenPlane(Vector2.zero,2).y,2*ObliqueProjection.HeightScale,"Altura deve subir na tela.");
@@ -177,8 +178,8 @@ internal static class ObliqueChecks
             cityDetails.Append(art.Details,offset);cityGlow.Append(art.Glow,offset);
         }
         var streets=CityPeripheryArt.Streets(); Validate(streets.Body,"Detalhes das ruas"); Validate(streets.Glow,"Transparencia das ruas");
-        var ground = CityPeripheryArt.Block(PrototypeCityLayout.Blocks.First(b=>b.Name=="Chao escuro da periferia"));
-        Assert(ground.Vertices.All(p=>p.y<=10.1f||p.y>=14.9f),"Piso da cidade nao pode cobrir o fosso seco sob a ponte.");
+        var ground = CityGroundArt.Build();
+        Assert(ground.Vertices.Where(p=>p.z==0).All(p=>p.y<=10.1f||p.y>=14.9f),"Piso da cidade nao pode cobrir o fosso seco sob a ponte.");
         var moat = CityPeripheryArt.Block(PrototypeCityLayout.Blocks.First(b=>b.Name.StartsWith("Fosso seco")));
         Assert(moat.Vertices.Any(p=>p.z>0.5f),"Fosso precisa ficar visualmente abaixo da rua, com bloqueio fisico definido no layout.");
         city.Append(streets.Body,Vector3.zero);cityGlow.Append(streets.Glow,Vector3.zero);
@@ -233,6 +234,36 @@ internal static class ObliqueChecks
         Validate(ObliqueScenery.BlockData("Balcao",new Vector2(4,0.6f),"614533",true,4),"Balcão");
         Validate(ObliqueScenery.BlockData("Estante",new Vector2(1.5f,3),"705033",true,3),"Estante");
         Console.WriteLine(checks+" verificacoes de perspectiva, camera e malhas passaram.");
+    }
+    private static void CheckPaintedGround(string directory)
+    {
+        var ground=CityGroundArt.Build();Validate(ground,"Pintura unica do chao");
+        var bounds=PrototypeCityLayout.Bounds;
+        Assert(ground.Vertices.Count==24&&ground.Triangles.Count==24,"Chao deve usar quatro superficies simples, com uma pintura inteira.");
+        Assert(ground.UVs.All(uv=>uv.x>=0&&uv.x<=1&&uv.y>=0&&uv.y<=1),"UV deve permanecer dentro da imagem, sem repeticao.");
+        for(int i=0;i<ground.Vertices.Count;i++)
+        {
+            var p=ground.Vertices[i];var uv=ground.UVs[i];
+            Near(uv.x*bounds.width+bounds.xMin,p.x,"Cada pixel horizontal precisa corresponder a mesma posicao na planta.");
+            Near(uv.y*bounds.height+bounds.yMin,p.y,"Norte e sul da imagem precisam corresponder a planta, sem inversao.");
+        }
+        foreach(var point in PrototypeCityLayout.Street.Concat(new[]{PrototypeCityLayout.Spawn,PrototypeCityLayout.ItemDoor,
+            PrototypeCityLayout.EquipmentDoor,PrototypeCityLayout.MateriaDoor,PrototypeCityLayout.InnDoor,PrototypeCityLayout.CastleDoor}))
+        {
+            float height=10-RayDistance(ObliqueProjection.Point(point,10),new Vector3(0,0,1),ground);
+            Assert(height>=-0.0001f&&height<=0.06f,"Vielas, retornos e portas devem permanecer cobertos pelo chao unico sem desnivel maior que a ponte.");
+        }
+        Near(10-RayDistance(ObliqueProjection.Point(PrototypeCityLayout.Spawn,10),new Vector3(0,0,1),ground),0,
+            "Piso da chegada deve permanecer na altura do chao.");
+        Near(10-RayDistance(ObliqueProjection.Point(PrototypeCityLayout.Bridge,10),new Vector3(0,0,1),ground),0.058f,
+            "Pintura da ponte deve ficar sobre o volume de pedra.");
+        foreach(float x in new[]{-7f,7f})
+            Near(10-RayDistance(ObliqueProjection.Point(new Vector2(x,PrototypeCityLayout.Bridge.y),10),new Vector3(0,0,1),ground),-0.7f,
+                "Fosso deve conservar profundidade mesmo compartilhando a pintura.");
+        foreach(var block in PrototypeCityLayout.Blocks.Where(b=>CityGroundArt.ReplacesBlock(b.Name)))
+            Assert(CityPeripheryArt.Block(block).Vertices.Count==0,"Pisos antigos nao podem cobrir a textura unica com blocos repetidos.");
+        Export(directory,"CityGround",ground,PrototypeCityLayout.Spawn,6,ObliqueProjection.HeroCenterHeight,
+            atlas:"CityGroundMap",singleTexture:true);
     }
     private static void CheckCameraTracking()
     {

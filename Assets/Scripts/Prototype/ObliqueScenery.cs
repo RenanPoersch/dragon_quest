@@ -12,7 +12,7 @@ namespace DragonQuest.Prototype
         private readonly List<Mesh> meshes = new List<Mesh>();
         private readonly Material material;
         private readonly Material shadowMaterial;
-        private readonly Material cityMaterial, cityDetailsMaterial, castleMaterial, glowMaterial;
+        private readonly Material cityMaterial, cityDetailsMaterial, castleMaterial, glowMaterial, cityGroundMaterial;
         public PixelSpriteLibrary PixelSprites { get; }
         public ObliqueScenery()
         {
@@ -27,9 +27,14 @@ namespace DragonQuest.Prototype
             cityDetailsMaterial = AtlasMaterial(shader, "CityDetailsAtlas", "Periferia / fachadas e letreiros");
             castleMaterial = AtlasMaterial(shader, "CastleMaterialsAtlas", "Castelo / alvenaria de pedra");
             castleMaterial.SetFloat("_Brightness", 0.95f);
+            var groundShader = Resources.Load<Shader>("CityGround");
+            var groundPainting = Resources.Load<Texture2D>("PixelArt/CityGroundMap");
+            if (groundShader == null || groundPainting == null) throw new InvalidOperationException("Pintura ou shader do chao da periferia ausente.");
+            cityGroundMaterial = new Material(groundShader) {name = "Periferia / chao pintado uma vez"};
+            cityGroundMaterial.SetTexture("_MainTex", groundPainting);
             var glowShader = Resources.Load<Shader>("PixelGlow");
             if (glowShader == null) throw new InvalidOperationException("Shader PixelGlow ausente.");
-            glowMaterial = new Material(glowShader) {name = "Periferia / lampioes e vapor"};
+            glowMaterial = new Material(glowShader) {name = "Periferia / vapor"};
             PixelSprites = new PixelSpriteLibrary();
             var shadowShader = Resources.Load<Shader>("PixelShadow");
             if (shadowShader == null) throw new InvalidOperationException("Shader PixelShadow ausente.");
@@ -70,10 +75,12 @@ namespace DragonQuest.Prototype
             => ShowWithMaterial("Volume da periferia", CityPeripheryArt.Block(block), parent,
                 block.Name.StartsWith("Ponte de pedra") || block.Name == "Patio da entrada do castelo" ? castleMaterial : cityMaterial);
 
+        public void CityGround(Transform parent) => ShowWithMaterial("Chao continuo da periferia", CityGroundArt.Build(), parent, cityGroundMaterial);
+
         public void CityBuilding(string name, Vector2 size, string hex, Transform parent)
             => ShowCityArt(name, CityPeripheryArt.Building(name, size, hex), parent);
 
-        public void CityStreets(Transform parent) => ShowCityArt("Grelhas e tubulacoes", CityPeripheryArt.Streets(), parent);
+        public void CityStreets(Transform parent) => ShowCityArt("Tubulacoes sobre as vielas", CityPeripheryArt.Streets(), parent);
 
         private void ShowCityArt(string name, PeripheryBuildingArt art, Transform parent)
         {
@@ -601,6 +608,7 @@ namespace DragonQuest.Prototype
             UnityEngine.Object.Destroy(material); UnityEngine.Object.Destroy(shadowMaterial);
             UnityEngine.Object.Destroy(cityMaterial); UnityEngine.Object.Destroy(cityDetailsMaterial); UnityEngine.Object.Destroy(glowMaterial);
             UnityEngine.Object.Destroy(castleMaterial);
+            UnityEngine.Object.Destroy(cityGroundMaterial);
             PixelSprites.Dispose();
         }
     }
