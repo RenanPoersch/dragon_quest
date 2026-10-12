@@ -35,7 +35,13 @@ namespace DragonQuest.Exploration
         private void FaceCamera()
         {
             if (view == null) view = Camera.main;
-            if (view != null) transform.rotation = view.transform.rotation;
+            if (view != null)
+            {
+                // O sprite permanece vertical: inclina-lo com a camera empurra a cabeca para dentro dos objetos.
+                transform.rotation = Quaternion.LookRotation(PixelSpriteLayout.HorizontalCameraForward(view.transform.forward), PixelSpriteLayout.UprightUp);
+                // Conserva tamanho e proporcoes vistos na tela, compensando a projecao obliqua.
+                transform.localScale = new Vector3(1, PixelSpriteLayout.UprightScaleY, 1);
+            }
         }
     }
 }

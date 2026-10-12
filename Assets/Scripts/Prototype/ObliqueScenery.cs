@@ -73,7 +73,7 @@ namespace DragonQuest.Prototype
         public void CityBuilding(string name, Vector2 size, string hex, Transform parent)
             => ShowCityArt(name, CityPeripheryArt.Building(name, size, hex), parent);
 
-        public void CityStreets(Transform parent) => ShowCityArt("Lampioes, grelhas e tubulacoes", CityPeripheryArt.Streets(), parent);
+        public void CityStreets(Transform parent) => ShowCityArt("Grelhas e tubulacoes", CityPeripheryArt.Streets(), parent);
 
         private void ShowCityArt(string name, PeripheryBuildingArt art, Transform parent)
         {
@@ -81,8 +81,8 @@ namespace DragonQuest.Prototype
             if (art.Details.Vertices.Count > 0) ShowWithMaterial(name + " / fachadas", art.Details, parent, cityDetailsMaterial);
             if (art.Glow.Vertices.Count > 0)
             {
-                var light = new GameObject(name + " / luz e vapor"); light.transform.SetParent(parent, false);
-                RenderMesh(name + " / luz e vapor", art.Glow, art.Glow.Triangles, glowMaterial, light);
+                var vapor = new GameObject(name + " / vapor"); vapor.transform.SetParent(parent, false);
+                RenderMesh(name + " / vapor", art.Glow, art.Glow.Triangles, glowMaterial, vapor);
             }
         }
 

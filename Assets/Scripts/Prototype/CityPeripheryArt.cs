@@ -15,8 +15,6 @@ namespace DragonQuest.Prototype
     {
         private static readonly Color Iron = ObliqueMeshData.Hex("534A38");
         private static readonly Color Copper = ObliqueMeshData.Hex("946540");
-        private static readonly Color Amber = ObliqueMeshData.Hex("FFD169");
-        private static readonly Color Teal = ObliqueMeshData.Hex("76E4CF");
 
         public static bool IsRoyalCastle(string name) => name == "Castelo do tirano" || name.EndsWith("do castelo", StringComparison.Ordinal);
 
@@ -123,7 +121,6 @@ namespace DragonQuest.Prototype
                 body.DefaultSurface = PixelSurface.Fabric;
                 body.Quad(ObliqueMeshData.V(-w * 0.43f, front + 0.02f, 2.55f), ObliqueMeshData.V(w * 0.43f, front + 0.02f, 2.55f),
                     ObliqueMeshData.V(w * 0.43f, front - 0.65f, 2.25f), ObliqueMeshData.V(-w * 0.43f, front - 0.65f, 2.25f), Iron);
-                LightPool(art.Glow, 0, front - 0.85f, 1.8f, materia ? Teal : Amber, 0.36f);
             }
             else if (variant % 2 == 0)
                 Panel(art.Details, -w * 0.28f, front - 0.02f, 0.62f, 0.45f, 0.65f, 10);
@@ -137,9 +134,7 @@ namespace DragonQuest.Prototype
             body.Box(-w * 0.33f, -d * 0.37f, 0.48f, 0.45f, 0, 0.5f, Iron);
             body.DefaultSurface = PixelSurface.Basalt;
             body.Cone(w * 0.35f, -d * 0.32f, 0.22f, 0, 0.62f, Copper, 8, 0.22f);
-            // Um lampiao na fachada e vapor em blocos discretos, sem transparencia nos volumes solidos.
-            body.DefaultSurface = PixelSurface.None;
-            body.Box(-w * 0.42f, front - 0.12f, 0.13f, 0.16f, 1.75f, 1.96f, materia ? Teal : Amber);
+            // A luz das janelas e dos letreiros ja esta pintada no atlas de fachadas.
             Steam(art.Glow, chimneyX, chimneyY, chimneyBase + 1.3f, variant);
             return art;
         }
@@ -186,25 +181,6 @@ namespace DragonQuest.Prototype
             }
         }
 
-        public static void LightPool(ObliqueMeshData mesh, float x, float y, float radius, Color tint, float strength)
-        {
-            // Tres aneis sem sobreposicao, projetados sobre a rua; material aditivo proprio.
-            for (int ring = 0; ring < 3; ring++)
-            {
-                float inner = radius * ring / 3, outer = radius * (ring + 1) / 3;
-                Color color = new Color(tint.r, tint.g, tint.b, strength * (3 - ring) / 3);
-                for (int i = 0; i < 16; i++)
-                {
-                    double a = i * Math.PI / 8, b = (i + 1) * Math.PI / 8;
-                    Vector3 p = ObliqueMeshData.V(x + (float)Math.Cos(a) * inner, y + (float)Math.Sin(a) * inner, 0.105f);
-                    Vector3 q = ObliqueMeshData.V(x + (float)Math.Cos(a) * outer, y + (float)Math.Sin(a) * outer, 0.105f);
-                    Vector3 r = ObliqueMeshData.V(x + (float)Math.Cos(b) * outer, y + (float)Math.Sin(b) * outer, 0.105f);
-                    if (ring == 0) mesh.Triangle(p, q, r, color, false);
-                    else mesh.Quad(p, q, r, ObliqueMeshData.V(x + (float)Math.Cos(b) * inner, y + (float)Math.Sin(b) * inner, 0.105f), color, false);
-                }
-            }
-        }
-
         private static void Steam(ObliqueMeshData mesh, float x, float y, float height, int variation)
         {
             for (int i = 0; i < 4; i++)
@@ -226,17 +202,6 @@ namespace DragonQuest.Prototype
                 Vector2 a = road[i], b = road[i + 1];
                 art.Body.Quad(ObliqueMeshData.V(a.x - 1.65f, a.y, 0.06f), ObliqueMeshData.V(b.x - 1.65f, b.y, 0.06f),
                     ObliqueMeshData.V(b.x + 1.65f, b.y, 0.06f), ObliqueMeshData.V(a.x + 1.65f, a.y, 0.06f), Iron, false);
-            }
-            // Poste e luz ficam fora dos eixos de travessia, sem novos bloqueios de navegacao.
-            foreach (Vector2 point in new[] {new Vector2(-1.8f, -18), new Vector2(1.8f, -14), new Vector2(-1.8f, -9),
-                new Vector2(2.1f, -3), new Vector2(-1.8f, 4), new Vector2(1.8f, 8.8f),
-                new Vector2(-6.7f, -16.4f), new Vector2(-6.6f, -6), new Vector2(7, -12), new Vector2(-7, 6)})
-            {
-                art.Body.DefaultSurface = PixelSurface.None;
-                art.Body.Cone(point.x, point.y, 0.08f, 0, 2.2f, Iron, 6, 0.06f);
-                art.Body.Box(point.x, point.y, 0.2f, 0.2f, 2.1f, 2.4f, Amber);
-                art.Body.Cone(point.x, point.y, 0.2f, 2.4f, 2.55f, Iron, 6);
-                LightPool(art.Glow, point.x, point.y - 0.2f, 1.3f, Amber, 0.38f);
             }
             foreach (Vector2 point in new[] {new Vector2(0.6f, -16), new Vector2(-1.1f, -6), new Vector2(0.8f, 2), new Vector2(1.2f, 8)})
             {

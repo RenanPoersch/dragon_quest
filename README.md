@@ -4,7 +4,7 @@ RPG com apresentação 2.5D, exploração de uma ilha de fantasia e batalhas por
 
 Direção visual atual: **sprites e texturas em pixel art inspirados no FF6 original, com cenários 3D e câmera inclinada**. A parte 10A adiciona equipe, moradores e um primeiro atlas de materiais; veja `Docs/PARTE_10A.md` para testar. Bosses, efeitos e cenas finais ainda incluem arte provisória.
 
-A periferia atual é um **bairro compacto de fantasia industrial**, com vielas, madeira/metal gastos, telhados de lona, luzes e letreiros nas fachadas. Ao norte, uma única ponte de pedra leva à entrada automática de uma **fortaleza de pedra, com torres altas, ameias e portão em arco**. Veja `Docs/PERIFERIA_PIXEL_ART.md` para a planta, arte e testes.
+A periferia atual é um **bairro compacto de fantasia industrial**, com vielas, madeira/metal gastos, telhados de lona e iluminação pintada nas texturas das janelas e letreiros. Ao norte, uma única ponte de pedra leva à entrada automática de uma **fortaleza de pedra, com torres altas, ameias e portão em arco**. Veja `Docs/PERIFERIA_PIXEL_ART.md` para a planta, arte e testes.
 
 ## Ambiente
 

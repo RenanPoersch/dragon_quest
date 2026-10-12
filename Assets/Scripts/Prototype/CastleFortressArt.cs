@@ -51,7 +51,6 @@ namespace DragonQuest.Prototype
                     mesh.DefaultSurface = PixelSurface.None;
                     mesh.Cone(x, front - 0.21f, 0.12f, 1.6f, 2.1f, Dark, 6, 0.16f);
                     mesh.Cone(x, front - 0.21f, 0.17f, 2.1f, 2.65f, Fire, 6);
-                    CityPeripheryArt.LightPool(art.Glow, x, front - 0.7f, 1.2f, Fire, 0.2f);
                 }
             }
             return art;

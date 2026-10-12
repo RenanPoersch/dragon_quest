@@ -27,7 +27,7 @@ Os materiais cobrem terreno da ilha, mar, construções, florestas, ruínas, loj
 
 - `PixelSpriteLayout`: ordem das células, recortes/âncoras, direção relativa à câmera e ciclo de passos.
 - `PixelSpriteLibrary`: carrega PNGs, cria sprites e compartilha materiais; o HUD reutiliza as mesmas imagens.
-- `PixelCharacter`: orienta o sprite para a câmera e escolhe a pose pela caminhada real, ignorando teleportes como passos.
+- `PixelCharacter`: mantém o sprite vertical, voltado para a direção horizontal da câmera, e escolhe a pose pela caminhada real, ignorando teleportes como passos.
 - `PixelSurface`: seleciona materiais e projeta UVs no chão ou nas paredes usando a altura visual.
 - `ObliqueMeshData`: guarda UVs, material e iluminação por face junto às malhas existentes.
 - `ObliqueScenery`: cria os renderers, separa sombras transparentes e conserva os volumes da planta.
@@ -35,7 +35,7 @@ Os materiais cobrem terreno da ilha, mar, construções, florestas, ruínas, loj
 
 Importadores usam Point, nenhuma compressão/mipmap e nenhuma conversão de tamanho NPOT. As folhas de sprites precisam de Read/Write habilitado para analisar seu alpha em runtime. O atlas de materiais usa 64 amostras por célula e repetição a cada duas unidades do cenário, evitando mistura com as células vizinhas.
 
-O corpo físico continua no chão XY e a altura visual em −Z. As imagens ficam em planos orientados para a câmera; paredes e árvores podem ocultá-las conforme a profundidade. O pé é elevado discretamente acima do piso visual, com altura própria para o estrado do rei. Colisões, rotas, posição salva e câmera seguem a planta existente. Saves da parte 9 usam a mesma versão e continuam carregáveis.
+O corpo físico continua no chão XY e a altura visual em −Z. As imagens ficam em planos verticais que acompanham a direção horizontal da câmera. Uma compensação de escala conserva o tamanho na tela, sem inclinar a cabeça para dentro dos balcões. Paredes e árvores continuam ocultando o personagem conforme a profundidade. O pé é elevado discretamente acima do piso visual, com altura própria para o estrado do rei. Colisões, rotas, posição salva e câmera seguem a planta existente. Saves da parte 9 usam a mesma versão e continuam carregáveis.
 
 ## Verificação
 

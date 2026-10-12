@@ -56,6 +56,7 @@ internal static class ObliqueChecks
     {
         string directory=args[0];
         PixelArtChecks.Run();
+        CheckSpriteDepth(directory);
         Near(ObliqueProjection.ScreenPlane(new Vector2(4,3)).x,4*ObliqueProjection.YawCos+3*ObliqueProjection.YawSin,"Eixos do chão devem acompanhar rotação da câmera.");
         Near(ObliqueProjection.ScreenPlane(new Vector2(4,3)).y,(-4*ObliqueProjection.YawSin+3*ObliqueProjection.YawCos)*ObliqueProjection.GroundScale,"Profundidade do chão precisa comprimir na tela.");
         Near(ObliqueProjection.ScreenPlane(Vector2.zero,2).y,2*ObliqueProjection.HeightScale,"Altura deve subir na tela.");
@@ -156,9 +157,9 @@ internal static class ObliqueChecks
         foreach(var building in PrototypeCityLayout.Buildings)
         {
             var art=CityPeripheryArt.Building(building.Name,building.Size,building.Color);
-            Validate(art.Body,building.Name); Validate(art.Details,building.Name+" / detalhes"); Validate(art.Glow,building.Name+" / luz");
+            Validate(art.Body,building.Name); Validate(art.Details,building.Name+" / detalhes"); Validate(art.Glow,building.Name+" / vapor");
             Assert(art.Details.UVs.All(uv=>uv.x>0&&uv.x<1&&uv.y>0&&uv.y<1),"Painel deve usar uma celula inteira, sem repetir letras nem amostrar vizinhos.");
-            Assert(art.Glow.Colors.All(c=>c.a>0&&c.a<1),"Vapor e luz usam transparencia propria.");
+            Assert(art.Glow.Colors.All(c=>c.a>0&&c.a<1),"Vapor usa transparencia propria.");
             var offset=ObliqueProjection.Point(building.Position);
             if (CityPeripheryArt.IsRoyalCastle(building.Name))
             {
@@ -174,7 +175,7 @@ internal static class ObliqueChecks
             else city.Append(art.Body,offset);
             cityDetails.Append(art.Details,offset);cityGlow.Append(art.Glow,offset);
         }
-        var streets=CityPeripheryArt.Streets(); Validate(streets.Body,"Detalhes das ruas"); Validate(streets.Glow,"Luzes das ruas");
+        var streets=CityPeripheryArt.Streets(); Validate(streets.Body,"Detalhes das ruas"); Validate(streets.Glow,"Transparencia das ruas");
         var ground = CityPeripheryArt.Block(PrototypeCityLayout.Blocks.First(b=>b.Name=="Chao escuro da periferia"));
         Assert(ground.Vertices.All(p=>p.y<=10.1f||p.y>=14.9f),"Piso da cidade nao pode cobrir o fosso seco sob a ponte.");
         var moat = CityPeripheryArt.Block(PrototypeCityLayout.Blocks.First(b=>b.Name.StartsWith("Fosso seco")));
@@ -231,6 +232,68 @@ internal static class ObliqueChecks
         Validate(ObliqueScenery.BlockData("Balcao",new Vector2(4,0.6f),"614533",true,4),"Balcão");
         Validate(ObliqueScenery.BlockData("Estante",new Vector2(1.5f,3),"705033",true,3),"Estante");
         Console.WriteLine(checks+" verificacoes de perspectiva, camera e malhas passaram.");
+    }
+    private static void CheckSpriteDepth(string directory)
+    {
+        float s=ObliqueProjection.HeightScale,c=ObliqueProjection.GroundScale;
+        var forward=new Vector3(-ObliqueProjection.YawSin*s,ObliqueProjection.YawCos*s,c);
+        var horizontal=PixelSpriteLayout.HorizontalCameraForward(forward);
+        var right=new Vector3(horizontal.y,-horizontal.x,0);
+        var oldUp=new Vector3(-ObliqueProjection.YawSin*c,ObliqueProjection.YawCos*c,-s);
+        var newUp=PixelSpriteLayout.UprightUp*PixelSpriteLayout.UprightScaleY;
+        var foot=ObliqueProjection.Point(new Vector2(0,-0.5f),0.075f);
+        foreach(float x in new[]{-0.3f,0,0.3f}) foreach(float height in new[]{0,0.35f,0.7f,1.25f,1.45f})
+        {
+            // Os mesmos pixels mantem a posicao na tela, mas deixam de inclinar para dentro do balcao.
+            var oldPoint=foot+right*x+oldUp*(height*s);
+            var newPoint=foot+right*x+newUp*(height*s);
+            var oldScreen=ObliqueProjection.ScreenPlane(new Vector2(oldPoint.x,oldPoint.y),-oldPoint.z);
+            var newScreen=ObliqueProjection.ScreenPlane(new Vector2(newPoint.x,newPoint.y),-newPoint.z);
+            Near(oldScreen.x,newScreen.x,"Sprite vertical deve conservar a largura e a ancora na tela.");
+            Near(oldScreen.y,newScreen.y,"Sprite vertical deve conservar a altura aparente.");
+            Near(newPoint.y,foot.y+right.y*x,"Cabeca e pes devem permanecer na mesma linha vertical do mundo.");
+        }
+        var counter=new ObliqueMeshData();
+        counter.Append(ObliqueScenery.BlockData("Balcao",new Vector2(4,0.6f),"614533",true,4),new Vector3(0,0.15f,0));
+        var oldHead=foot+oldUp*(1.25f*s);
+        var newHead=foot+newUp*(1.25f*s);
+        float hit=RayDistance(newHead,forward,counter);
+        Assert(float.IsFinite(hit),"Regressao precisa sobrepor a cabeca ao tampo do balcao na tela.");
+        float tableDepth=Dot(newHead+forward*hit,forward);
+        Assert(Dot(oldHead,forward)>tableDepth,"Orientacao anterior deve reproduzir a cabeca escondida pelo balcao.");
+        Assert(Dot(newHead,forward)<tableDepth,"Personagem em frente ao balcao deve aparecer inteiro.");
+        var merchantFoot=ObliqueProjection.Point(new Vector2(0,0.9f),0.075f);
+        Assert(float.IsFinite(RayDistance(merchantFoot+PixelSpriteLayout.UprightUp*0.35f,-forward,counter)),
+            "Balcao deve continuar ocultando a parte inferior de quem esta atras.");
+        Assert(!float.IsFinite(RayDistance(merchantFoot+PixelSpriteLayout.UprightUp*1.25f,-forward,counter)),
+            "Cabeca acima do balcao deve continuar visivel.");
+        var wall=new ObliqueMeshData();wall.Box(0,0.15f,4,0.6f,0,2.4f,Color.white);
+        Assert(float.IsFinite(RayDistance(ObliqueProjection.Point(new Vector2(0,1),1.325f),-forward,wall)),
+            "Parede alta deve continuar ocultando quem esta atras, sem desenhar sprites sempre por cima.");
+        var scene=new ObliqueMeshData();
+        scene.Append(ObliqueScenery.BlockData("Piso de madeira",new Vector2(14,10),"A78255",false,-10),Vector3.zero);
+        scene.Append(counter,Vector3.zero);
+        Export(directory,"ShopDepth",scene,Vector2.zero,2.4f,ObliqueProjection.HeroCenterHeight,
+            new[]{Sprite("ArenWalk",3,new Vector2(0,-0.5f)),Sprite("NpcRoster",4,new Vector2(0,0.9f))});
+    }
+    private static float Dot(Vector3 a,Vector3 b)=>a.x*b.x+a.y*b.y+a.z*b.z;
+    private static Vector3 Cross(Vector3 a,Vector3 b)=>new Vector3(a.y*b.z-a.z*b.y,a.z*b.x-a.x*b.z,a.x*b.y-a.y*b.x);
+    private static float RayDistance(Vector3 origin,Vector3 direction,ObliqueMeshData mesh)
+    {
+        float nearest=float.PositiveInfinity;
+        for(int i=0;i<mesh.Triangles.Count;i+=3)
+        {
+            var a=mesh.Vertices[mesh.Triangles[i]];
+            var edge1=mesh.Vertices[mesh.Triangles[i+1]]-a;
+            var edge2=mesh.Vertices[mesh.Triangles[i+2]]-a;
+            var p=Cross(direction,edge2);float determinant=Dot(edge1,p);
+            if(Math.Abs(determinant)<0.00001f) continue;
+            var offset=origin-a;float u=Dot(offset,p)/determinant;
+            var q=Cross(offset,edge1);float v=Dot(direction,q)/determinant;
+            float distance=Dot(edge2,q)/determinant;
+            if(u>=0&&v>=0&&u+v<=1&&distance>0.00001f) nearest=Math.Min(nearest,distance);
+        }
+        return nearest;
     }
     private static object Sprite(string atlas,int frame,Vector2 position) => new {atlas,frame,position=new[]{position.x,position.y},footHeight=atlas=="NpcRoster"&&frame==11?0.15f:0.075f};
 }

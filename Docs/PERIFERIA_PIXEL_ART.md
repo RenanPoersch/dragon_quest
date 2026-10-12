@@ -20,17 +20,19 @@ A periferia foi redesenhada a partir da referência enviada pelo usuário: bairr
 | Assets/Resources/PixelArt/CityMaterialsAtlas.png | Doze materiais gastos: musgo, terra, pavimento, areia, madeira, paredes, metal ondulado, ferro, folhagem, água, vidro e lona |
 | Assets/Resources/PixelArt/CityDetailsAtlas.png | Letreiros, portas, janelas, ventilação, brasão fictício e grelha |
 | Assets/Resources/PixelArt/CastleMaterialsAtlas.png | Alvenaria cinza, granito, pavimento, pedras de remate, porta de carvalho e estandartes |
-| Assets/Scripts/Prototype/CityPeripheryArt.cs | Geometria das casas, caldeira da loja de itens, fachadas, viela, ponte, fosso, tubulações, lampiões e vapor |
+| Assets/Scripts/Prototype/CityPeripheryArt.cs | Geometria das casas, caldeira da loja de itens, fachadas, viela, ponte, fosso, tubulações e vapor |
 | Assets/Scripts/Prototype/CastleFortressArt.cs | Fortaleza de pedra, ameias, arco do portão, seteiras, estandartes e ícone miniatura |
-| Assets/Resources/PixelGlow.shader | Luzes no chão e vapor com transparência/aditivo e teste de profundidade |
+| Assets/Resources/PixelGlow.shader | Vapor das chaminés com transparência/aditivo e teste de profundidade |
 
 Os dois atlas da periferia têm 1448 × 1086; o atlas do castelo tem 1447 × 1087. Foram gerados pela ferramenta integrada image_gen e mantidos sem alteração. Importadores usam Point, nenhuma compressão, mipmap ou redimensionamento NPOT. Prompts completos em `PERIFERIA_ART_PROMPTS.md`; origem em `ASSETS.md`.
 
-A periferia usa materiais próprios. Os painéis recebem UVs locais para mostrar uma célula inteira, sem repetir letras. Sombras continuam separadas; luzes e vapor usam material próprio. O shader do cenário usa brilho padrão 1, com 0,8 nas casas e 0,95 na fortaleza, ponte/pátio e ícone do castelo. O ícone global tem ameias e mantém altura de 1,95, um pouco acima do herói.
+A periferia usa materiais próprios. Os painéis recebem UVs locais para mostrar uma célula inteira, sem repetir letras. A iluminação das janelas e letreiros está pintada no atlas das fachadas; postes, lampiões salientes e círculos aditivos no chão foram retirados. É iluminação incorporada à arte, não um bake de lightmaps da Unity. Os mapas continuam montados em Play e usam o shader de materiais existente. Sombras e vapor usam materiais separados. O shader do cenário usa brilho padrão 1, com 0,8 nas casas e 0,95 na fortaleza, ponte/pátio e ícone do castelo. O ícone global tem ameias e mantém altura de 1,95, um pouco acima do herói.
+
+Os personagens permanecem verticais no mundo, acompanhando apenas a direção horizontal da câmera. O tamanho aparente é conservado por compensação de escala. Isso corrige a cabeça que desaparecia dentro do balcão quando o sprite copiava também a inclinação da câmera. O teste de profundidade permanece ativo: objetos ainda escondem o corpo quando ele está atrás deles.
 
 A muralha central tem planta de 9,5 × 4,5, com duas torres de 3,4 × 3,6. O portão permanece alinhado ao fim da ponte e à passagem automática existente. O castelo tem terraços e ameias de pedra; as antigas coberturas industriais foram substituídas. Não houve mudança no zoom da câmera.
 
-O terreno visual é interrompido no fosso para mostrar a profundidade; colliders impedem andar fora da ponte. A ponte tem piso na altura do caminho e parapeitos sólidos. Tubulações cruzam a rua acima do personagem. Pequenos lampiões decorativos não adicionam obstáculos à navegação.
+O terreno visual é interrompido no fosso para mostrar a profundidade; colliders impedem andar fora da ponte. A ponte tem piso na altura do caminho e parapeitos sólidos. Tubulações cruzam a rua acima do personagem.
 
 ## Jornadas anteriores
 
@@ -39,6 +41,8 @@ IDs de mapas, lojas, baú, inventário e segredos foram conservados. Saves anter
 ## Verificação
 
 Após a revisão do castelo, passaram 249 verificações dos nove PNGs/importadores, 161 de sprites/materiais, 2116 de malhas/câmera, 73 de caminhos da periferia, 269 de viagens/interiores e 110 de salvamento. A busca por caminhos usa amostragem de 0,125 unidade para examinar as vielas estreitas com margem além do collider do herói. Toda área caminhável amostrada está conectada, incluindo moradores, portas, retornos e ponte.
+
+Na correção da iluminação e da profundidade dos sprites, os scripts compilaram e passaram 249 verificações dos PNGs/importadores, 161 de sprites/materiais e 2167 de malhas/câmera/profundidade. As novas verificações reproduzem a cabeça escondida na orientação anterior, conferem o sprite inteiro na frente do balcão e a oclusão correta atrás de balcão e parede. Prévias técnicas do balcão antes/depois e da periferia sem postes foram inspecionadas fora da Unity.
 
 Os scripts compilaram com as bibliotecas da Unity 6000.6.5f1. ObliqueWorld e PixelGlow compilaram externamente nos estágios de vértices/fragmentos com d3dcompiler_47 e os headers URP, sob as mesmas adaptações descritas em VALIDATION.md. Esse teste não substitui o renderer DirectX 12 da Unity.
 
@@ -50,7 +54,7 @@ A fortaleza teve prévias geral e junto ao portão inspecionadas. A vista geral 
 
 1. Pare Play, aguarde a importação/compilação e abra CidadePrototipo. Continue seu slot ou inicie uma jornada. Confira o Console sem novos erros.
 2. Entre pelo ícone global do castelo. A chegada deve mostrar o bairro compacto, com pousada/armas próximas e sem lago, rio ou pontes de madeira.
-3. Siga a viela, entre nas três lojas e na hospedaria e retorne. Confira portas, letreiros, corpo do herói e ruas entre as casas, inclusive ao andar nas diagonais.
+3. Siga a viela, entre nas três lojas e na hospedaria e retorne. Confira portas, letreiros, corpo do herói e ruas entre as casas, inclusive ao andar nas diagonais. Encoste na frente e nas laterais do balcão: a cabeça deve permanecer inteira. Por trás de móveis e paredes, o corpo deve ser ocultado normalmente.
 4. Converse com os moradores, consulte o poema e abra o baú se ainda não tiver sido coletado. Verifique que progresso, ouro e estoque foram conservados.
 5. Siga ao norte, atravesse a ponte de pedra e caminhe até a porta central do castelo. O cenário deve mudar automaticamente. Saia do interior e confira o retorno ao lado norte da ponte, sem um ciclo de entrada/saída.
-6. Confira profundidade dos telhados, sombras, letreiros e luzes, e aparência da textura durante a caminhada. GPU, interação e fluidez no Editor ainda precisam desta conferência.
+6. Confira profundidade dos telhados, sombras e brilho pintado nas janelas/letreiros, sem postes nem círculos de luz no chão. GPU, interação e fluidez no Editor ainda precisam desta conferência.

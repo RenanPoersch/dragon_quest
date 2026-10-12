@@ -18,6 +18,14 @@ namespace DragonQuest.Exploration
     public static class PixelSpriteLayout
     {
         public const int Columns = 4, Rows = 3, FrameCount = Columns * Rows;
+        public static readonly Vector3 UprightUp = new Vector3(0, 0, -1);
+        public static float UprightScaleY => 1f / ObliqueProjection.HeightScale;
+        public static Vector3 HorizontalCameraForward(Vector3 forward)
+        {
+            float length = (float)Math.Sqrt(forward.x * forward.x + forward.y * forward.y);
+            return length < 0.0001f ? new Vector3(-ObliqueProjection.YawSin, ObliqueProjection.YawCos, 0)
+                : new Vector3(forward.x / length, forward.y / length, 0);
+        }
         public static PixelFrame[] Read(int width, int height, byte[] alpha)
         {
             if (width < 16 || height < 12
