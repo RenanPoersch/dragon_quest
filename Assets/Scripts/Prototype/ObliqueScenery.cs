@@ -12,7 +12,7 @@ namespace DragonQuest.Prototype
         private readonly List<Mesh> meshes = new List<Mesh>();
         private readonly Material material;
         private readonly Material shadowMaterial;
-        private readonly Material cityMaterial, cityDetailsMaterial, castleMaterial, glowMaterial, cityGroundMaterial, citySurroundingMaterial;
+        private readonly Material cityMaterial, cityDetailsMaterial, castleMaterial, glowMaterial, cityGroundMaterial;
         public PixelSpriteLibrary PixelSprites { get; }
         public ObliqueScenery()
         {
@@ -32,10 +32,6 @@ namespace DragonQuest.Prototype
             if (groundShader == null || groundPainting == null) throw new InvalidOperationException("Pintura ou shader do chao da periferia ausente.");
             cityGroundMaterial = new Material(groundShader) {name = "Periferia / chao pintado uma vez"};
             cityGroundMaterial.SetTexture("_MainTex", groundPainting);
-            var surroundings = Resources.Load<Texture2D>("PixelArt/CityGroundSurroundings");
-            if (surroundings == null) throw new InvalidOperationException("Textura do terreno ao redor da periferia ausente.");
-            citySurroundingMaterial = new Material(groundShader) {name = "Periferia / terreno ao redor"};
-            citySurroundingMaterial.SetTexture("_MainTex", surroundings);
             var glowShader = Resources.Load<Shader>("PixelGlow");
             if (glowShader == null) throw new InvalidOperationException("Shader PixelGlow ausente.");
             glowMaterial = new Material(glowShader) {name = "Periferia / vapor"};
@@ -81,7 +77,6 @@ namespace DragonQuest.Prototype
 
         public void CityGround(Transform parent)
         {
-            ShowWithMaterial("Terreno ao redor da periferia", CityGroundArt.BuildSurroundings(), parent, citySurroundingMaterial);
             ShowWithMaterial("Chao continuo da periferia", CityGroundArt.Build(), parent, cityGroundMaterial);
         }
 
@@ -617,7 +612,6 @@ namespace DragonQuest.Prototype
             UnityEngine.Object.Destroy(cityMaterial); UnityEngine.Object.Destroy(cityDetailsMaterial); UnityEngine.Object.Destroy(glowMaterial);
             UnityEngine.Object.Destroy(castleMaterial);
             UnityEngine.Object.Destroy(cityGroundMaterial);
-            UnityEngine.Object.Destroy(citySurroundingMaterial);
             PixelSprites.Dispose();
         }
     }

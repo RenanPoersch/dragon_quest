@@ -1,0 +1,14 @@
+{
+  "width": 2305,
+  "height": 2975,
+  "core": {
+    "x": 670,
+    "y": 673,
+    "width": 965,
+    "height": 1629
+  },
+  "seed": 1201026,
+  "sourceSha256": "d3891297c6be19ae12ed00fa933d169f29a643f8b949d1ed8446c00a7f2d878a",
+  "sha256": "899ba6bf796cb8b8509d12a3fa597320ca03f52ac6b3cb7ffa9fadc45c72a769",
+  "resizedCore": false
+}

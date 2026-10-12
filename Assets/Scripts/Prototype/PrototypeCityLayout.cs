@@ -34,10 +34,15 @@ namespace DragonQuest.Prototype
     public static class PrototypeCityLayout
     {
         public static readonly Rect Bounds = new Rect(-13, -22, 26, 44);
-        public const float SurroundingMargin = 18f;
+        public const int GroundTextureWidth = 2305, GroundTextureHeight = 2975;
+        public const int GroundCoreWidth = 965, GroundCoreHeight = 1629;
+        // Correspondencia exata com os pixels da pintura original no centro do PNG, sem redimensiona-la.
         // Apenas terreno visivel: nao amplia a area de movimento nem altera portas/saves.
-        public static readonly Rect TerrainBounds = new Rect(Bounds.xMin - SurroundingMargin, Bounds.yMin - SurroundingMargin,
-            Bounds.width + 2 * SurroundingMargin, Bounds.height + 2 * SurroundingMargin);
+        public static readonly Rect TerrainBounds = new Rect(
+            -Bounds.width * GroundTextureWidth / GroundCoreWidth / 2,
+            -Bounds.height * GroundTextureHeight / GroundCoreHeight / 2,
+            Bounds.width * GroundTextureWidth / GroundCoreWidth,
+            Bounds.height * GroundTextureHeight / GroundCoreHeight);
         public static readonly Rect LegacyBounds = new Rect(-36, -24, 72, 48);
         public static readonly Vector2 Spawn = new Vector2(0, -10);
         public static readonly Vector2 Entry = new Vector2(0, -18.5f);

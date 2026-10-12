@@ -20,7 +20,8 @@ namespace DragonQuest.Prototype
 
         public static ObliqueMeshData Block(CityBlock block)
         {
-            if (CityGroundArt.ReplacesBlock(block.Name)) return new ObliqueMeshData();
+            // Limites externos conservam seus colliders, sem mureta visivel cortando a pintura.
+            if (CityGroundArt.ReplacesBlock(block.Name) || block.Name.StartsWith("Muralha ", StringComparison.Ordinal)) return new ObliqueMeshData();
             if (block.Name.StartsWith("Fosso seco"))
             {
                 var pit = new ObliqueMeshData();

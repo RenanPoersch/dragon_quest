@@ -67,12 +67,12 @@ Casas, toldos, caldeira, tubos, lampiões, grelhas, vapor, ponte de pedra e foss
 
 ## Chão contínuo da periferia — 12 de outubro de 2026
 
-`Assets/Resources/PixelArt/CityGroundMap.png` é uma pintura original e opaca de 965 × 1629 pixels, criada com a ferramenta integrada `image_gen`. A ferramenta editou um guia geométrico original da planta, usando `CityMaterialsAtlas.png` como referência de materiais e cores. O guia está em `Docs/ArtInputs/CityGroundLayout.png`; o prompt completo está em `PERIFERIA_ART_PROMPTS.md`. O PNG final foi copiado sem edição posterior, confirmado pela igualdade do SHA-256 com a saída original.
+A pintura original de 965 × 1629 pixels foi criada com a ferramenta integrada `image_gen`. A ferramenta editou um guia geométrico original da planta, usando `CityMaterialsAtlas.png` como referência de materiais e cores. O guia está em `Docs/ArtInputs/CityGroundLayout.png`; os pixels originais estão em `Docs/ArtInputs/CityGroundCore.png`. Essa pintura é a fonte preservada no centro da versão atual de `Assets/Resources/PixelArt/CityGroundMap.png`.
 
-A pintura cobre toda a periferia, em vez de repetir células de materiais: terra, musgo, vielas, pátios, grelhas, leito do fosso e pavimento da ponte. `CityGroundArt.cs` gera quatro superfícies com UVs normalizados da planta; `CityGround.shader` amostra a imagem inteira. Casas e paredes continuam sendo volumes 3D. A arte não contém texturas ou imagens extraídas de jogos de terceiros.
+A pintura cobre terra, musgo, vielas, pátios, grelhas, leito do fosso e pavimento da ponte. `CityGroundArt.cs` gera as superfícies de terreno e desníveis com UVs de uma única imagem; `CityGround.shader` amostra essa imagem inteira. Casas e ponte continuam sendo volumes 3D. A arte não contém texturas ou imagens extraídas de jogos de terceiros.
 
-## Extensão visual do terreno — 12 de outubro de 2026
+## Mapa único com detalhe nativo — 12 de outubro de 2026
 
-`Assets/Resources/PixelArt/CityGroundSurroundings.png` é uma pintura opaca de terra e musgo de 1105 × 1424 pixels, criada com a ferramenta integrada `image_gen`. O PNG final foi conservado sem edição posterior, com SHA-256 igual à saída original. A edição usou uma referência de expansão gerada a partir do piso existente e removeu todas as ruas/fundações da referência. Prompts completos em `PERIFERIA_ART_PROMPTS.md`.
+`Assets/Resources/PixelArt/CityGroundMap.png` tem 2305 × 2975 pixels. A composição/síntese em Python foi explicitamente autorizada pelo usuário após a geração de imagem não alcançar a resolução solicitada. O piso original fica no retângulo (670, 673, 965, 1629), com todos os pixels RGB preservados. Os arredores usam amostras da mesma fonte em escala nativa, sem ampliar a imagem de resolução baixa.
 
-A nova imagem aparece apenas nas quatro superfícies exteriores, num terreno visual de 62 × 80 unidades. O piso central original continua intacto, assim como a planta de movimento de 26 × 44. As duas pinturas usam o shader de chão existente e importação Point/Clamp, sem mipmaps/compressão/redimensionamento. Não há repetição da cidade na faixa exterior.
+`Tools/Build-UnifiedCityGround.py` permite reconstruir o PNG com semente fixa; `Docs/ArtInputs/CityGroundBake.json` registra dimensões e hashes. O cenário usa um material e uma textura de chão, com importação Point/Clamp sem redução/compressão. A imagem separada `CityGroundSurroundings.png` foi removida. As muretas externas deixam de ter malha visível; as colisões continuam limitando a área jogável. Modelos da fortaleza e ponte permanecem.

@@ -2,7 +2,7 @@
 import json
 import sys
 from pathlib import Path
-from PIL import Image
+from PIL import Image, ImageChops
 
 root = Path(__file__).resolve().parents[1]
 directory = root / "Assets/Resources/PixelArt"
@@ -15,12 +15,12 @@ def check(condition, message):
     if not condition:
         raise ValueError(message)
 
-for name in ("ArenWalk", "ArenDiagonalWalk", "LiaWalk", "BramWalk", "NpcRoster", "TerrainAtlas", "CityMaterialsAtlas", "CityDetailsAtlas", "CastleMaterialsAtlas", "CityGroundMap", "CityGroundSurroundings"):
+for name in ("ArenWalk", "ArenDiagonalWalk", "LiaWalk", "BramWalk", "NpcRoster", "TerrainAtlas", "CityMaterialsAtlas", "CityDetailsAtlas", "CastleMaterialsAtlas", "CityGroundMap"):
     path = directory / (name + ".png")
     with Image.open(path) as image:
         width, height = image.size
-        ground_map = name in ("CityGroundMap", "CityGroundSurroundings")
-        map_width, map_height = (62, 80) if name == "CityGroundSurroundings" else (26, 44)
+        ground_map = name == "CityGroundMap"
+        map_width, map_height = (62, 80)
         check(width >= 16 and height >= 12 and (abs(width * map_height - height * map_width) / (height * map_width) < .02 if ground_map
               else abs(width * 3 - height * 4) <= 8), name + ": proporcao irregular")
         check(width <= (4096 if ground_map else 2048) and height <= (4096 if ground_map else 2048), name + ": tamanho acima do importador")
@@ -29,6 +29,13 @@ for name in ("ArenWalk", "ArenDiagonalWalk", "LiaWalk", "BramWalk", "NpcRoster",
             check(setting in meta, name + ": importacao incorreta " + setting)
         entry = {"width": width, "height": height, "frames": []}
         if ground_map:
+            check(width >= 2304 and height >= 2974, name + ": resolucao insuficiente para conservar o detalhe original")
+            check((width, height) == (2305, 2975), name + ": dimensoes devem corresponder ao mapeamento nativo do chao")
+            with Image.open(root / 'Docs/ArtInputs/CityGroundCore.png') as original:
+                # Leitura apenas: confere cada pixel do piso original, sem ampliar nem reduzir.
+                core = image.crop((670, 673, 670 + 965, 673 + 1629)).convert('RGB')
+                check(ImageChops.difference(core, original.convert('RGB')).getbbox() is None,
+                      name + ": piso original sofreu perda de detalhe ou mudanca de pixels")
             check(image.mode in ("RGB", "RGBA") and (image.mode == "RGB" or image.getchannel("A").getextrema() == (255, 255)), name + ": mapa deve ser opaco")
             for setting in ("wrapU: 1", "wrapV: 1", "maxTextureSize: 4096"):
                 check(setting in meta, name + ": mapa inteiro sem repeticao ou reducao " + setting)

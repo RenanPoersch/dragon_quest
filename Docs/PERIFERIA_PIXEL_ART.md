@@ -2,11 +2,13 @@
 
 ## Terreno cobrindo todo o enquadramento
 
-A área jogável continua com 26 × 44 unidades, limitada pelas muralhas e colisores existentes. O terreno visual ocupa 62 × 80, com uma faixa de 18 unidades ao redor. A pintura central `CityGroundMap.png` permanece intacta; quatro superfícies exteriores usam `CityGroundSurroundings.png`, uma pintura natural de terra/musgo, sem repetir as ruas ou esticar o último pixel da imagem.
+A área jogável continua com 26 × 44 unidades, limitada por colisores invisíveis. O terreno visual ocupa aproximadamente 62,10 × 80,36 e usa uma única pintura de 2305 × 2975 pixels, `CityGroundMap.png`, com uma escala de UV para todo o chão. As muretas externas foram retiradas da arte; seus colisores continuam ativos. O piso original de 965 × 1629 foi preservado pixel por pixel no centro, sem redimensionamento; os arredores foram sintetizados na mesma densidade de detalhe.
+
+O comando de desenvolvimento `python Tools/Build-UnifiedCityGround.py --output Assets/Resources/PixelArt/CityGroundMap.png` recompõe o PNG com Pillow/NumPy, usando `Docs/ArtInputs/CityGroundCore.png` e a semente registrada em `CityGroundBake.json`. O jogo usa apenas a imagem pronta. Amostras da terra/musgo original são combinadas com costuras de menor erro e uma transição exterior curta. A estrada continua ao sul. Não há uma segunda textura de terreno no cenário.
 
 O foco da câmera acompanha diretamente o personagem e fica limitado ao retângulo da cidade. O cálculo da cobertura considera rotação, inclinação, altura do foco e rebaixo do fosso. Formatos de 9:16 até 21:9 conservam o tamanho 6; em formatos mais largos, o tamanho é limitado ao que a faixa de terreno consegue cobrir. Essa regra está ativa somente na periferia.
 
-Em Play, parar e reiniciar após a importação. Conferir aproximação das quatro muralhas e dos cantos, testar 16:9 e um formato largo no Game view, e entrar/sair de uma loja e do castelo. Toda a tela deve continuar coberta por terreno/cenário; o herói não deve atravessar as muralhas. Prévias externas e testes de raios sobre a geometria não substituem essa conferência no renderer da Unity.
+Em Play, parar e reiniciar após a importação. Conferir aproximação dos quatro limites e dos cantos, testar 16:9 e um formato largo no Game view, e entrar/sair de uma loja e do castelo. Toda a tela deve continuar coberta por terreno/cenário, sem mudança da escala dos detalhes ao cruzar o antigo limite visual. O herói deve parar no limite da área jogável, sem mureta desenhada. Ponte e fortaleza conservam seus elementos de pedra. Prévias externas e testes de raios sobre a geometria não substituem essa conferência no renderer da Unity.
 
 A periferia foi redesenhada a partir da referência enviada pelo usuário: bairro antigo de fantasia industrial, construções próximas, becos, metal oxidado, madeira, lonas remendadas e luzes amarelas/verdes. A apresentação mantém os cenários 3D, a câmera inclinada e os personagens em pixel art.
 
