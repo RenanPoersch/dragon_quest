@@ -35,16 +35,16 @@ Shader "DragonQuest/ObliqueWorld"
                     float2 cell = float2(fmod(index, 4), 2 - floor(index / 4));
                     float2 pixelUV = (floor(frac(input.uv) * 64) + 0.5) / 64;
                     float2 uv = (cell + pixelUV) / float2(4, 3);
-                    half3 texture = SAMPLE_TEXTURE2D_LOD(_PixelAtlas, sampler_PixelAtlas, uv, 0).rgb;
+                    half3 albedo = SAMPLE_TEXTURE2D_LOD(_PixelAtlas, sampler_PixelAtlas, uv, 0).rgb;
                     if (index == 0)
                     {
                         half3 green = half3(0.29h, 0.37h, 0.23h);
                         #if !defined(UNITY_COLORSPACE_GAMMA)
                         green = SRGBToLinear(green);
                         #endif
-                        texture = lerp(green, texture, 0.4h);
+                        albedo = lerp(green, albedo, 0.4h);
                     }
-                    return half4(texture * input.surface.y, 1);
+                    return half4(albedo * input.surface.y, 1);
                 }
                 #if defined(UNITY_COLORSPACE_GAMMA)
                 return half4(input.color.rgb, 1);

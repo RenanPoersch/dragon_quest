@@ -239,3 +239,10 @@ O usuário confirmou que as interações funcionaram em Play. Não houve valida�
 - Validação dos arquivos detectou corpos cruzando células no Bram e em parte dos moradores. A ferramenta de imagem reparou o espaçamento; passaram 186 verificações dos PNGs/importadores e 63 de sprites/materiais.
 - Scripts C# compilaram; passaram 2358 verificações de malhas/câmera, 107 de save, 58 da periferia e 269 de viagens. Prévias técnicas da ilha, cidade, hospedaria e salão foram inspecionadas. Não são capturas do Editor.
 - Compilação dos shaders pela Unity, importação efetiva, oclusão/sombras, movimento e interface aguardam Play segundo PARTE_10A.md. Dragão, espírito, invocações, efeitos, cenas finais e detalhes decorativos ainda têm arte provisória. Aparência do equipamento não muda o sprite nesta etapa.
+
+## Correção do cenário magenta — 12/10/2026
+
+- O log do Editor confirmou três erros de sintaxe em `ObliqueWorld.shader` no DirectX 12. A variável local `texture` usava um nome reservado do HLSL; foi renomeada para `albedo`, incluindo suas duas referências.
+- Verificação externa com `d3dcompiler_47.dll` e os headers URP instalados: a versão anterior reproduziu os três erros; a versão corrigida compilou nos estágios de vértices e fragmentos. Os shaders de personagens e sombras também compilaram, totalizando seis compilações bem-sucedidas.
+- Essa verificação usa perfis `vs_5_0`/`ps_5_0`, compatibilidade de tipos half e uma adaptação em memória da macro vazia PopMarker para o pré-processador legado. Nenhum pacote instalado foi alterado. O teste não substitui a recompilação DirectX 12 e a conferência visual no Editor.
+- Em Play: parar a execução, retornar à Unity e aguardar a reimportação do shader; limpar o Console e iniciar Play novamente. Conferir cenário com cores e ausência de novos erros de shader.
