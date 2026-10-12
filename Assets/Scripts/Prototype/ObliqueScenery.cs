@@ -451,13 +451,17 @@ namespace DragonQuest.Prototype
             return figure.transform;
         }
 
-        public static ObliqueMeshData PersonBodyData(string hex, bool armed)
+        public static ObliqueMeshData PersonBodyData(string hex, bool armed, bool spikyBlond = false)
         {
             var body=new ObliqueMeshData(); Color cloth=ObliqueMeshData.Hex(hex), skin=ObliqueMeshData.Hex("D4B294");
             body.Box(0,0,0.38f,0.26f,0.5f,1.02f,cloth);
             body.Box(0,0,0.2f,0.2f,1.02f,1.12f,skin);
             body.Box(0,-0.015f,0.29f,0.27f,1.1f,1.4f,skin);
-            body.Box(0,0.015f,0.32f,0.29f,1.34f,1.45f,ObliqueMeshData.Hex("4C4544"));
+            Color hair = ObliqueMeshData.Hex(spikyBlond ? "D9B35D" : "4C4544");
+            body.Box(0,0.015f,0.32f,0.29f,1.34f,1.45f,hair);
+            if (spikyBlond)
+                foreach (float x in new[] {-0.12f, -0.04f, 0.04f, 0.12f})
+                    body.Cone(x, 0.015f, 0.075f, 1.41f, 1.58f + (x < 0 ? 0.04f : 0), hair, 4);
             foreach(float x in new[]{-0.25f,0.25f}) body.Box(x,0,0.12f,0.19f,0.56f,0.98f,cloth);
             body.Box(0,0.16f,0.4f,0.05f,0.38f,1.02f,ObliqueMeshData.Hex(armed?"835A4A":"556577"));
             body.Box(0,-0.145f,0.39f,0.025f,0.54f,0.61f,ObliqueMeshData.Hex("B7A374"));
@@ -498,9 +502,9 @@ namespace DragonQuest.Prototype
             return visual;
         }
         public Transform Spirit(Transform parent) => Show("Espirito maligno",SpiritData(),parent);
-        private static ObliqueMeshData StandingPerson(string hex)
+        private static ObliqueMeshData StandingPerson(string hex, bool spikyBlond = false)
         {
-            var mesh=PersonBodyData(hex,true);Color cloth=ObliqueMeshData.Hex(hex);
+            var mesh=PersonBodyData(hex,true,spikyBlond);Color cloth=ObliqueMeshData.Hex(hex);
             mesh.Append(LegData(-0.12f,cloth),new Vector3(0,0,-0.5f));mesh.Append(LegData(0.12f,cloth),new Vector3(0,0,-0.5f));
             return mesh;
         }
@@ -555,7 +559,7 @@ namespace DragonQuest.Prototype
                 mesh.Cone(0.5f,2.2f,0.2f,0,0.12f,ObliqueMeshData.Hex("D8B968"),7,0.2f);
             }
             foreach(var pair in new[]{("B4A078",0f),("DADECB",-2.2f),("608DA1",2.2f)})
-                mesh.Append(StandingPerson(pair.Item1),new Vector3(pair.Item2,-1.5f,0));
+                mesh.Append(StandingPerson(pair.Item1, pair.Item2 == 0),new Vector3(pair.Item2,-1.5f,0));
             if(ending==GameEnding.HeroPossessed)
             {
                 mesh.Append(SpiritData(),new Vector3(0,-1.1f,-0.65f));

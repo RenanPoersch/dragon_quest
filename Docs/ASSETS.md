@@ -48,3 +48,5 @@ Criados com a ferramenta integrada `image_gen`: `Assets/Resources/PixelArt/ArenW
 Bram e moradores receberam uma revisão de layout pela mesma ferramenta para manter cada corpo dentro de sua célula. Rascunhos e prévias técnicas ficam fora do Git. Os sprites atuais têm trajes fixos; bosses, invocações, efeitos e cenas finais ainda usam elementos anteriores.
 
 Importadores e shaders foram configurados no projeto para preservar pixels e alpha. `PixelSpriteLayout`, `PixelSpriteLibrary`, `PixelCharacter` e `PixelSurface` foram criados em C# para esta integração. `Inspect-PixelArt.py` apenas lê/valida imagens e exporta metadados para análise; nenhuma imagem de terceiros foi usada.
+
+Revisão do Aren, em 12 de outubro de 2026: `ArenWalk.png` foi editado com a ferramenta integrada `image_gen` para cabelo loiro pontiagudo em todas as doze poses. Roupa, quatro direções, caminhada e transparência foram conservadas. O importador/GUID continua o mesmo; 186 verificações dos atlas/importadores passaram. O prompt de edição foi adicionado a `PIXEL_ART_PROMPTS.md`. A figura geométrica provisória do Aren nos finais também recebeu cabelo dourado com pontas, em `ObliqueScenery`.

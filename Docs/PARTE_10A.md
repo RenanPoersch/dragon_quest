@@ -6,7 +6,7 @@ A referência artística desta etapa é o Final Fantasy VI original. A apresenta
 
 | Arquivo em Assets/Resources/PixelArt | Uso |
 | --- | --- |
-| ArenWalk.png | Aren, quatro direções e poses de caminhada; exploração e batalha |
+| ArenWalk.png | Aren com cabelo loiro pontiagudo, quatro direções e poses de caminhada; exploração e batalha |
 | LiaWalk.png | Lia, quatro direções e poses de caminhada; batalha |
 | BramWalk.png | Bram, quatro direções e poses de caminhada; batalha |
 | NpcRoster.png | Doze sprites: moradores, comerciantes, hospedeira, lenhador, viajante, guarda e rei |

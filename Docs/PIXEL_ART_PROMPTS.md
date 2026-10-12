@@ -1,5 +1,11 @@
 # Prompts — pixel art, parte 10A
 
+## Aren — revisão do cabelo, 12 de outubro de 2026
+
+Edição pela ferramenta integrada `image_gen`, usando `Assets/Resources/PixelArt/ArenWalk.png` como alvo. A versão atual do herói tem cabelo loiro pontiagudo nas doze poses, com a grade e a transparência preservadas. O prompt de criação original abaixo registra a versão anterior.
+
+Use case: precise-object-edit. Edit target: the supplied ORIGINAL ArenWalk sprite sheet used in a Unity RPG. Change ONLY Aren's hair, in ALL TWELVE sprites, from brown to clearly GOLDEN BLOND with visibly SPIKY, POINTED, angular tufts pointing upward and outward. Use light golden highlights, warm blond midtones and darker golden-brown shadows; keep a dark selective pixel outline so the blond hair reads against the face. This is the SAME original character, not a recreation of a franchise hero. Preserve the existing pixel art style, exact face, eyes, tan/ochre outfit, rust cloak, sword, boots, poses, proportions and positions. Preserve the exact 1448x1086 canvas and perfectly uniform four-column by three-row sprite grid. Columns remain DOWN, LEFT, RIGHT, UP; rows remain idle, left-step, right-step. Hair must be blond and spiky in side and BACK views too. Keep complete heads and bodies inside their own cells with transparent padding; spikes must never touch or cross cell boundaries. Preserve the original genuine transparent alpha background. No background, shadows, grid lines, labels, text, logos, watermark, blur or smoothing. Do not move or resize the bodies or change any other item of clothing.
+
 Gerados com a ferramenta integrada `image_gen`, em 12 de outubro de 2026. Imagens originais para esta demo; FF6 original foi a referência visual, sem importação de assets do jogo. Bram e moradores tiveram uma revisão de espaçamento antes da integração. Os PNGs originais foram preservados; recortes de sprites são feitos em memória pela Unity.
 
 ## aren
