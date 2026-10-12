@@ -3,11 +3,14 @@ namespace DragonQuest.Combat
     public static class EnemyAI
     {
         private static bool IsCycledAction(AbilityDefinition ability) => ability.Effect == AbilityEffect.PhysicalDamage
-            || ability.Effect == AbilityEffect.MagicDamage || ability.Effect == AbilityEffect.Prepare;
+            || ability.Effect == AbilityEffect.MagicDamage || ability.Effect == AbilityEffect.Prepare
+            || ability.Effect == AbilityEffect.Drain || ability.Effect == AbilityEffect.Bind;
         public static AbilityDefinition ChooseAbility(BattleSession battle)
         {
             CombatantState actor = battle.CurrentActor;
             if (actor == null || actor.Team != CombatTeam.Enemy) return null;
+            AbilityDefinition scripted=battle.Rules?.ChooseEnemyAbility(battle);
+            if(scripted!=null) return scripted;
             // Alterna ataques e preparacoes na ordem cadastrada; falta de MP usa a proxima opcao viavel.
             int attacks = 0;
             foreach (AbilityDefinition ability in actor.Definition.Abilities)

@@ -20,6 +20,7 @@ namespace DragonQuest.Prototype
         private bool itemMode;
         private ConsumableDefinition selectedItem;
         private Texture2D dragonPortrait;
+        private Texture2D spiritPortrait,kingPortrait;
 
         public void Initialize(PrototypeBattleController battleController) => controller = battleController;
 
@@ -40,7 +41,9 @@ namespace DragonQuest.Prototype
 
             Panel(new Rect(40, 20, 1200, 70));
             GUI.Label(new Rect(58, 31, 650, 30), "BATALHA / " + controller.BattleTitle, title);
-            GUI.Label(new Rect(58, 62, 700, 23), "Cada personagem age uma vez por rodada. Escolha uma acao e um alvo.", small);
+            GUI.Label(new Rect(58, 62, 700, 23),controller.IsCastleEncounter&&controller.CastleRules.IsSpiritRevealed
+                ?"Derrote o espirito com o rei vivo. Golpes em area tambem atingem o rei."
+                :"Cada personagem age uma vez por rodada. Escolha uma acao e um alvo.", small);
             GUI.Label(new Rect(880, 40, 340, 34), "RODADA " + battle.Round, centered);
 
             int partyIndex = 0;
@@ -64,6 +67,7 @@ namespace DragonQuest.Prototype
                     figure = new Rect(445 + (fighterIndex == 1 ? -20 : 0), 135 + fighterIndex * 68, 44, 67);
                     fighterIndex++;
                 }
+                else if(controller.IsCastleEncounter) figure=participant.Id==CastleBattleRules.SpiritId?new Rect(715,138,110,112):new Rect(660,255,62,87);
                 else figure = controller.IsDragonEncounter ? new Rect(630,160,190,165) : new Rect(725, 145 + enemyFigureIndex++ * 115, 50, 77);
                 DrawFighter(figure, participant);
                 if (participant == actor)
@@ -71,8 +75,10 @@ namespace DragonQuest.Prototype
             }
 
             foreach(CombatantState enemy in battle.Combatants)
-                if(enemy.Team==CombatTeam.Enemy && enemy.IsAlive && enemy.IsCharging && battle.Outcome==BattleOutcome.None)
+                if(enemy.Id==DragonProgress.EnemyId && enemy.IsAlive && enemy.IsCharging && battle.Outcome==BattleOutcome.None)
                     GUI.Label(new Rect(392,350,440,32),"SOPRO NO PROXIMO TURNO DO DRAGAO! DEFENDA!",small);
+            if(controller.IsCastleEncounter&&battle.Outcome==BattleOutcome.None)
+                GUI.Label(new Rect(392,347,440,40),controller.CastleRules.Warning(battle),small);
 
             Panel(new Rect(385, 394, 855, 66));
             GUI.Label(new Rect(400, 402, 825, 51), battle.LastMessage, text);
@@ -80,7 +86,8 @@ namespace DragonQuest.Prototype
 
             if (battle.Outcome != BattleOutcome.None)
             {
-                GUI.Label(new Rect(60, 495, 1155, 42), battle.Outcome == BattleOutcome.Victory ? "VITORIA!" : "DERROTA", title);
+                GUI.Label(new Rect(60, 495, 1155, 42), battle.Outcome==BattleOutcome.Completed?"DESFECHO"
+                    :battle.Outcome == BattleOutcome.Victory ? "VITORIA!" : "DERROTA", title);
                 GUI.Label(new Rect(60, 547, 1155, 45),controller.OutcomeDescription,text);
                 if (GUI.Button(new Rect(60, 615, 300, 48),controller.ReturnLabel,button)) controller.ReturnToCity();
             }
@@ -225,7 +232,8 @@ namespace DragonQuest.Prototype
                 DrawBar(new Rect(rect.x + 70, rect.y + 85, rect.width - 86, 15), participant.Limit.Charge,
                     100, new Color(0.81f, 0.38f, 0.76f), "LIMIT");
             else GUI.Label(new Rect(rect.x + 70, rect.y + 84, rect.width - 80, 20), participant.Definition.Affinities.Description, small);
-            string conditions = participant.IsCharging ? "PREPARANDO SOPRO! " : participant.IsDefending ? "DEFESA " : string.Empty;
+            string conditions = participant.IsCharging ? (participant.Id==CastleBattleRules.TyrantId?"METEORO! ":"PREPARANDO SOPRO! ") : participant.IsDefending ? "DEFESA " : string.Empty;
+            if(participant.BoundActions>0) conditions+="CORRENTES ";
             if (participant.PoisonTurns > 0) conditions += "VENENO " + participant.PoisonTurns + " ";
             if (participant.TauntTurns > 0) conditions += "PROVOCADO " + participant.TauntTurns + " ";
             if (participant.ProtectedBy != null) conditions += "PROTEGIDO";
@@ -242,10 +250,11 @@ namespace DragonQuest.Prototype
 
         private void DrawFighter(Rect rect, CombatantState participant)
         {
-            if(participant.Id==DragonProgress.EnemyId && dragonPortrait!=null)
+            Texture2D portrait=participant.Id==DragonProgress.EnemyId?dragonPortrait:participant.Id==CastleBattleRules.SpiritId?spiritPortrait:participant.Id==CastleBattleRules.TyrantId?kingPortrait:null;
+            if(portrait!=null)
             {
                 Color previous=GUI.color;GUI.color=participant.IsAlive?Color.white:new Color(0.4f,0.4f,0.4f);
-                GUI.DrawTexture(rect,dragonPortrait,ScaleMode.ScaleToFit);GUI.color=previous;return;
+                GUI.DrawTexture(rect,portrait,ScaleMode.ScaleToFit);GUI.color=previous;return;
             }
             Color clothes = participant.Team == CombatTeam.Enemy ? new Color(0.69f, 0.29f, 0.27f)
                 : participant.Id == "lia" ? new Color(0.8f, 0.86f, 0.74f)
@@ -275,6 +284,7 @@ namespace DragonQuest.Prototype
             pixel.SetPixel(0, 0, Color.white);
             pixel.Apply();
             dragonPortrait=Resources.Load<Texture2D>("DragonPortrait");
+            spiritPortrait=Resources.Load<Texture2D>("SpiritPortrait");kingPortrait=Resources.Load<Texture2D>("KingPortrait");
             title = new GUIStyle(GUI.skin.label) { fontSize = 21, fontStyle = FontStyle.Bold };
             text = new GUIStyle(GUI.skin.label) { fontSize = 17, wordWrap = true };
             small = new GUIStyle(GUI.skin.label) { fontSize = 13, wordWrap = true };

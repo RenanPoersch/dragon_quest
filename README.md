@@ -24,7 +24,7 @@ Use essa versão do Editor para evitar migrações involuntárias.
 A demo começa no **mapa global de uma pequena ilha cercada pelo mar**. Castelo e florestas aparecem como ícones um pouco mais altos que o herói. Caminhe até a área de entrada dos pontos para mudar automaticamente para os cenários locais:
 
 - Castelo no mapa global → **periferia do castelo**, reaproveitando a cidade de 72 × 48, com lojas, moradores, rio, pontes, missão e patrulha.
-- Porta ao norte da periferia → **interior do castelo**, com salão e trono. O tirano tem diálogo nesta entrega; a batalha e os finais entram na parte 8.
+- Porta ao norte da periferia → **interior do castelo**, com salão, trono e confronto final da parte 8.
 - Duas florestas no mapa global → cenários próprios com clareira, árvores e moradores.
 - Ruínas antigas ao sudoeste da ilha → cenário próprio com colunas quebradas e o altar da lenda.
 - Passagem escondida ao norte → trilha para o vulcão, bloqueada por rochas e três selos. Depois de abri-la, o ícone leva ao caminho de lava e à arena do dragão.
@@ -52,7 +52,19 @@ Veja `Docs/PARTE_7B.md` para o poema, soluções e roteiro de teste em Play.
 
 O vulcão tem um caminho curto entre lava e rochas até o **Dragão corrompido**, resistente a Fogo e fraco a Gelo. Ele alterna garra, preparação e sopro em área, com um turno de aviso para escolher Defender. A vitória liberta sua essência e concede uma única **Armadura dracônica** e as 100 moedas desse inimigo.
 
-A armadura dá **+16 de defesa, resistência a Fogo e quatro encaixes em dois pares ligados**. Qualquer personagem pode usá-la; o bônus do tank aumenta sua defesa base para +20. Ela é protegida contra venda e precisa ser equipada para a futura revelação do espírito. Na derrota, a equipe retorna à hospedaria, conservando Limit e progresso; consumíveis gastos continuam gastos. Veja `Docs/PARTE_7C.md` para testar. Tirano, espírito e dois finais são a próxima entrega.
+A armadura dá **+16 de defesa, resistência a Fogo e quatro encaixes em dois pares ligados**. Qualquer personagem pode usá-la; o bônus do tank aumenta sua defesa base para +20. Ela é protegida contra venda e precisa ser equipada para revelar o espírito. Na derrota, a equipe retorna à hospedaria, conservando Limit e progresso; consumíveis gastos continuam gastos. Veja `Docs/PARTE_7C.md` para testar.
+
+## Parte 8 — tirano, espírito e três finais
+
+Use E no tirano e conclua a conversa para iniciar o confronto. Com a Armadura dracônica equipada, o espírito aparece desde o início e possui turno próprio, usando **Drenar vida, Correntes e Caos Magic em área**.
+
+O tirano usa golpes físicos fortes sem elemento. Aos **20% de HP**, prepara o meteoro por **dois turnos completos** e o lança no seguinte. Um portador vivo da armadura absorve o meteoro inteiro; revivê-lo antes do lançamento restaura essa proteção.
+
+- **Final bom:** derrotar o espírito com o tirano vivo. O rei justo é libertado, agradece à equipe e retoma seu governo.
+- **Final ruim:** meteoro lançado sem portador vivo; a equipe e o tirano são aniquilados e o castelo é destruído.
+- **Terceiro final:** matar o tirano primeiro; o espírito possui Aren. Matar os dois simultaneamente em área também leva a esse desfecho.
+
+Os finais têm cenas e três páginas de texto, com opção de reiniciar a demo. Derrota comum volta à hospedaria e permite outra tentativa. Veja `Docs/PARTE_8.md` para as regras e o roteiro em Play. Arte, áudio, salvamento, acabamento e executável ainda estão pendentes.
 
 ## Parte 6C — recompensas e missão de entrega
 
@@ -194,8 +206,9 @@ Veja `Docs/PARTE_1.md` para o roteiro de verificação.
 - Afinidades calculadas sobre os valores base de equipamentos ou habilidades.
 - Dragão secreto liberado ao concluir os três segredos.
 - Armadura especial como recompensa do dragão.
-- Final ruim ao derrotar o tirano sem a armadura equipada.
-- Caminho bom: usar a armadura, subjugar o tirano e derrotar o espírito que o controla.
+- Final ruim com castelo destruído pelo meteoro sem absorção.
+- Caminho bom: usar a armadura e derrotar o espírito preservando o rei vivo.
+- Terceiro final: matar o tirano primeiro entrega Aren ao espírito.
 
 ## Entregas
 
@@ -214,7 +227,7 @@ Veja `Docs/PARTE_1.md` para o roteiro de verificação.
 | 7A | Ilha global, periferia, florestas, interior do castelo e viagens |
 | 7B | Poema em latim, três segredos e abertura da trilha do vulcão |
 | 7C | Interior do vulcão, batalha do dragão e armadura especial |
-| 8 | Tirano, espírito e dois finais |
+| 8 | Tirano, espírito, meteoro e três finais |
 | 9 | Arte, áudio, balanceamento e executável |
 
 Cada entrega deve ser validada antes do commit e do envio ao GitHub. Sprites e cenários serão criados por conjuntos; as primeiras mecânicas usarão elementos provisórios.

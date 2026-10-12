@@ -168,6 +168,8 @@ internal static class WorldMapChecks
         travel=ReadyTravel();travel.TryTravel(PrototypeTravel.Volcano,out _);
         Assert(travel.TryRecoverAtInn(out Vector2 recovery)&&travel.Current.Id==PrototypeTravel.Inn&&recovery==PrototypeInnLayout.Spawn,"Derrota no vulcao deve devolver a hospedaria.");
         Assert(!travel.TryEnter(recovery,false,out _)&&travel.Current.Id==PrototypeTravel.Inn,"Recuperacao nao pode acionar a saida da hospedaria.");
+        travel=ReadyTravel();travel.TryTravel(PrototypeTravel.City,out _);travel.TryTravel(PrototypeTravel.Castle,out _);
+        Assert(travel.TryRecoverAtInn(out recovery)&&travel.Current.Id==PrototypeTravel.Inn&&!travel.TryEnter(recovery,false,out _),"Derrota comum no castelo tambem recupera na hospedaria sem retornar automaticamente.");
     }
 
     private static PrototypeTravel ReadyTravel()

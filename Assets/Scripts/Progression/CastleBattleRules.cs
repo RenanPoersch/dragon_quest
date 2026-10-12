@@ -1,0 +1,118 @@
+using System.Collections.Generic;
+using DragonQuest.Combat;
+using DragonQuest.Equipment;
+
+namespace DragonQuest.Progression
+{
+    public enum GameEnding { None, KingFreed, CastleDestroyed, HeroPossessed }
+
+    public sealed class CastleBattleRules : IBattleRules
+    {
+        public const string TyrantId="tyrant", SpiritId="evil-spirit";
+        public static readonly AbilityDefinition RoyalStrike=new AbilityDefinition("royal-strike","Golpe do tirano",
+            "Golpe fisico forte, sem elemento.",0,8,AbilityEffect.PhysicalDamage,TargetRule.Enemy);
+        public static readonly AbilityDefinition RoyalHeavy=new AbilityDefinition("royal-heavy","Golpe esmagador",
+            "Golpe fisico ainda mais forte, sem elemento.",0,14,AbilityEffect.PhysicalDamage,TargetRule.Enemy);
+        public static readonly AbilityDefinition PrepareMeteor=new AbilityDefinition("prepare-meteor","Carregar meteoro",
+            "Concentra o meteoro flamejante.",0,0,AbilityEffect.Prepare,TargetRule.Self);
+        public static readonly AbilityDefinition Meteor=new AbilityDefinition("flaming-meteor","Meteoro flamejante",
+            "Aniquila os presentes e destroi o castelo. Apenas um portador vivo da Armadura draconica pode absorve-lo.",
+            0,0,AbilityEffect.MagicDamage,TargetRule.Self,element:DamageElement.Fire);
+
+        private readonly HashSet<string> armorBearers=new HashSet<string>();
+        public bool IsSpiritRevealed => armorBearers.Count>0;
+        public bool MeteorStarted {get;private set;}
+        public bool MeteorAbsorbed {get;private set;}
+        public int PreparationsRemaining {get;private set;}
+        public GameEnding Ending {get;private set;}
+
+        public CastleBattleRules(PartyProgress party)
+        {
+            foreach(PartyMember member in party.Members)
+                if(member.Armor?.Definition==DragonProgress.Armor) armorBearers.Add(member.Id);
+        }
+        private static CombatantState Find(BattleSession battle,string id)
+        {
+            foreach(CombatantState participant in battle.Combatants) if(participant.Id==id) return participant;
+            return null;
+        }
+        public CombatantState LivingArmorBearer(BattleSession battle)
+        {
+            foreach(CombatantState participant in battle.Combatants)
+                if(participant.Team==CombatTeam.Party&&participant.IsAlive&&armorBearers.Contains(participant.Id)) return participant;
+            return null;
+        }
+        public string Warning(BattleSession battle)
+        {
+            if(Ending!=GameEnding.None) return string.Empty;
+            if(MeteorAbsorbed) return "Meteoro absorvido. Derrote o espirito e preserve o rei!";
+            if(!MeteorStarted) return IsSpiritRevealed?"Derrote o espirito. Matar o tirano entrega Aren a sombra.":string.Empty;
+            string timing=PreparationsRemaining>0?"Preparacoes restantes: "+PreparationsRemaining:"Lancamento no proximo turno do tirano!";
+            CombatantState bearer=LivingArmorBearer(battle);
+            return "METEORO / "+timing+" / "+(bearer!=null?"Armadura em "+bearer.Definition.Name:"Sem portador vivo para absorver!");
+        }
+        public AbilityDefinition ChooseEnemyAbility(BattleSession battle)
+        {
+            if(battle.CurrentActor?.Id!=TyrantId) return null;
+            if(MeteorStarted&&!MeteorAbsorbed) return PreparationsRemaining>0?PrepareMeteor:Meteor;
+            return battle.CurrentActor.TurnsTaken%2==0?RoyalStrike:RoyalHeavy;
+        }
+        public bool ValidateAction(CombatantState actor,AbilityDefinition ability,out string message)
+        {
+            message=string.Empty;
+            if(actor.Id!=TyrantId) return true;
+            if(ability==Meteor&&(!MeteorStarted||MeteorAbsorbed||PreparationsRemaining!=0))
+            {message="O meteoro exige duas preparacoes completas aos 20% de HP.";return false;}
+            if(ability==PrepareMeteor&&(!MeteorStarted||MeteorAbsorbed||PreparationsRemaining<=0))
+            {message="Nao ha preparacao de meteoro pendente.";return false;}
+            if(MeteorStarted&&!MeteorAbsorbed&&ability!=PrepareMeteor&&ability!=Meteor)
+            {message="O tirano esta concentrado no meteoro.";return false;}
+            return true;
+        }
+        public bool TryResolveAction(BattleSession battle,CombatantState actor,AbilityDefinition ability,out string message)
+        {
+            message=string.Empty;
+            if(actor.Id!=TyrantId) return false;
+            if(ability==PrepareMeteor)
+            {
+                actor.IsCharging=true;
+                if(PreparationsRemaining>0) PreparationsRemaining--;
+                message="O tirano concentra o meteoro. "+(PreparationsRemaining>0?"Falta mais um turno completo de preparacao.":"A preparacao terminou! O meteoro cai no proximo turno dele.");
+                return true;
+            }
+            if(ability!=Meteor) return false;
+            CombatantState bearer=LivingArmorBearer(battle);
+            actor.IsCharging=false;
+            if(bearer!=null)
+            {
+                MeteorAbsorbed=true;
+                message=bearer.Definition.Name+" ergue a Armadura draconica. O meteoro e absorvido por completo! O castelo permanece intacto.";
+            }
+            else
+            {
+                Ending=GameEnding.CastleDestroyed;
+                foreach(CombatantState participant in battle.Combatants) participant.TakeDamage(participant.Hp);
+                message="O meteoro flamejante aniquila a equipe e o tirano. O castelo desaba em chamas.";
+            }
+            return true;
+        }
+        public void AfterAction(BattleSession battle)
+        {
+            CombatantState tyrant=Find(battle,TyrantId);
+            if(Ending==GameEnding.None&&!MeteorStarted&&tyrant!=null&&tyrant.IsAlive
+                &&(long)tyrant.Hp*100<=(long)tyrant.Definition.MaxHp*20)
+            {MeteorStarted=true;PreparationsRemaining=2;tyrant.IsCharging=true;}
+        }
+        public BattleOutcome EvaluateOutcome(BattleSession battle)
+        {
+            if(Ending!=GameEnding.None) return BattleOutcome.Completed;
+            CombatantState tyrant=Find(battle,TyrantId),spirit=Find(battle,SpiritId);
+            if(tyrant!=null&&!tyrant.IsAlive) Ending=GameEnding.HeroPossessed;
+            else if(IsSpiritRevealed&&spirit!=null&&!spirit.IsAlive) Ending=GameEnding.KingFreed;
+            if(Ending==GameEnding.None) return BattleOutcome.None;
+            PreparationsRemaining=0;
+            if(tyrant!=null) tyrant.IsCharging=false;
+            return BattleOutcome.Completed;
+        }
+    }
+}

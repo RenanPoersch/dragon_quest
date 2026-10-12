@@ -5,7 +5,7 @@ using DragonQuest.Inventory;
 
 namespace DragonQuest.Combat
 {
-    public enum BattleOutcome { None, Victory, Defeat }
+    public enum BattleOutcome { None, Victory, Defeat, Completed }
 
     // Regras puras em C#: não dependem de cenas, menus ou animações da Unity.
     public sealed class BattleSession
@@ -16,6 +16,7 @@ namespace DragonQuest.Combat
 
         public IReadOnlyList<CombatantState> Combatants { get; }
         public ItemInventory Inventory { get; }
+        public IBattleRules Rules { get; }
         public BattleOutcome Outcome { get; private set; }
         public int Round { get; private set; }
         public string LastMessage { get; private set; }
@@ -23,8 +24,11 @@ namespace DragonQuest.Combat
 
         public BattleSession(params CombatantState[] participants) : this(new ItemInventory(), participants) { }
 
-        public BattleSession(ItemInventory inventory, params CombatantState[] participants)
+        public BattleSession(ItemInventory inventory, params CombatantState[] participants) : this(null,inventory,participants) { }
+
+        public BattleSession(IBattleRules rules, ItemInventory inventory, params CombatantState[] participants)
         {
+            Rules = rules;
             Inventory = inventory ?? throw new ArgumentNullException(nameof(inventory));
             if (participants == null) throw new ArgumentNullException(nameof(participants));
             combatants = new List<CombatantState>(participants);
@@ -118,7 +122,7 @@ namespace DragonQuest.Combat
             if (ability.Effect == AbilityEffect.Heal && target.Hp >= target.Definition.MaxHp) return false;
             if (ability.Effect == AbilityEffect.Cleanse && target.PoisonTurns == 0) return false;
             if (ability.Effect == AbilityEffect.Protect && target == actor) return false;
-            if ((ability.Effect == AbilityEffect.PhysicalDamage || ability.Effect == AbilityEffect.MagicDamage) && ability.Targets == TargetRule.Enemy
+            if ((ability.Effect == AbilityEffect.PhysicalDamage || ability.Effect == AbilityEffect.MagicDamage || ability.Effect == AbilityEffect.Drain || ability.Effect == AbilityEffect.Bind) && ability.Targets == TargetRule.Enemy
                 && actor.TauntTurns > 0 && actor.TauntedBy != null && actor.TauntedBy.IsAlive && target != actor.TauntedBy) return false;
             return true;
         }
@@ -131,6 +135,7 @@ namespace DragonQuest.Combat
             foreach (AbilityDefinition known in actor.Definition.Abilities)
                 if (known == ability) knownAbility = true;
             if (!knownAbility) { message = "Habilidade indisponivel para este personagem."; return false; }
+            if(Rules!=null&&!Rules.ValidateAction(actor,ability,out message)) return false;
             if (actor.Mp < ability.MpCost) { message = "MP insuficiente."; return false; }
             if (ability.UsesLimit && !actor.Limit.IsReady) { message = "Limit Break exige a barra em 100%."; return false; }
             if (target == null || !combatants.Contains(target) || !IsValidTarget(actor, ability, target))
@@ -138,7 +143,8 @@ namespace DragonQuest.Combat
 
             actor.SpendMp(ability.MpCost);
             if (ability.UsesLimit) actor.Limit.Spend();
-            if (ability.Effect == AbilityEffect.PhysicalDamage || ability.Effect == AbilityEffect.MagicDamage)
+            if (Rules != null && Rules.TryResolveAction(this,actor,ability,out message)) { }
+            else if (ability.Effect == AbilityEffect.PhysicalDamage || ability.Effect == AbilityEffect.MagicDamage || ability.Effect == AbilityEffect.Drain)
             {
                 var report = new StringBuilder(actor.Definition.Name + " usou " + ability.Name + ": ");
                 if (ability.Targets == TargetRule.AllEnemies)
@@ -147,7 +153,15 @@ namespace DragonQuest.Combat
                     foreach (CombatantState enemy in GetValidTargets(ability))
                         ApplyDamage(actor, ability, enemy, false, report);
                 }
-                else ApplyDamage(actor, ability, target, true, report);
+                else
+                {
+                    int drained=ApplyDamage(actor, ability, target, true, report);
+                    if(ability.Effect==AbilityEffect.Drain)
+                    {
+                        int before=actor.Hp;actor.RecoverHp(drained);
+                        report.Append(actor.Definition.Name).Append(" +").Append(actor.Hp-before).Append(" HP drenados. ");
+                    }
+                }
                 actor.IsCharging = false;
                 message = report.ToString();
             }
@@ -175,6 +189,11 @@ namespace DragonQuest.Combat
                 target.TauntTurns = ability.Power;
                 message = actor.Definition.Name + " provocou " + target.Definition.Name + " por " + ability.Power + " turnos do alvo.";
             }
+            else if(ability.Effect==AbilityEffect.Bind)
+            {
+                target.BoundActions=1;
+                message=actor.Definition.Name+" usou Correntes: "+target.Definition.Name+" perdera sua proxima acao.";
+            }
             else
             {
                 target.ProtectedBy = actor;
@@ -190,6 +209,7 @@ namespace DragonQuest.Combat
             actor.TurnsTaken++;
             if (actor.TauntTurns > 0 && --actor.TauntTurns == 0) actor.TauntedBy = null;
             RemoveDeadSources();
+            Rules?.AfterAction(this);
             CheckOutcome();
             // Veneno causa dano ao fim da acao do afetado, sem criar turnos extras.
             if (Outcome == BattleOutcome.None && actor.IsAlive && actor.PoisonTurns > 0)
@@ -200,6 +220,7 @@ namespace DragonQuest.Combat
                 message += " Veneno: " + actor.Definition.Name + " perdeu " + (previousHp - actor.Hp) + " HP.";
                 if (!actor.IsAlive) message += " Foi derrotado!";
                 RemoveDeadSources();
+                Rules?.AfterAction(this);
                 CheckOutcome();
             }
             LastMessage = message;
@@ -228,7 +249,7 @@ namespace DragonQuest.Combat
             }
         }
 
-        private static void ApplyDamage(CombatantState actor, AbilityDefinition ability, CombatantState target,
+        private static int ApplyDamage(CombatantState actor, AbilityDefinition ability, CombatantState target,
             bool allowProtection, StringBuilder report)
         {
             if (allowProtection && ability.Effect == AbilityEffect.PhysicalDamage && target.ProtectedBy != null && target.ProtectedBy.IsAlive)
@@ -238,7 +259,7 @@ namespace DragonQuest.Combat
                 report.Append(protector.Definition.Name).Append(" protegeu ").Append(target.Definition.Name).Append(". ");
                 target = protector;
             }
-            int offense = ability.Effect == AbilityEffect.MagicDamage ? actor.Definition.Magic : actor.Definition.Attack;
+            int offense = ability.Effect == AbilityEffect.MagicDamage || ability.Effect == AbilityEffect.Drain ? actor.Definition.Magic : actor.Definition.Attack;
             long damage = Math.Max(1L, (long)offense + ability.Power - target.Definition.Defense);
             int elementalPercent = target.Definition.Affinities.DamagePercent(ability.Element);
             // Primeiro defesa numerica, depois afinidade (para baixo), por fim Defender (para cima).
@@ -261,6 +282,7 @@ namespace DragonQuest.Combat
                 report.Append(" (veneno)");
             }
             report.Append(". ");
+            return previousHp-target.Hp;
         }
 
         private void RemoveDeadSources()
@@ -278,10 +300,18 @@ namespace DragonQuest.Combat
             CurrentActor.IsDefending = false;
             foreach (CombatantState participant in combatants)
                 if (participant.ProtectedBy == CurrentActor) participant.ProtectedBy = null;
+            if(CurrentActor.BoundActions>0)
+            {
+                CombatantState actor=CurrentActor;actor.BoundActions--;
+                string message=actor.Definition.Name+" perdeu sua acao por Correntes. As correntes se desfazem.";
+                CompleteAction(actor,ref message);
+            }
         }
 
         private void CheckOutcome()
         {
+            BattleOutcome scripted=Rules?.EvaluateOutcome(this)??BattleOutcome.None;
+            if(scripted!=BattleOutcome.None) {Outcome=scripted;return;}
             bool partyAlive = false, enemyAlive = false;
             foreach (CombatantState participant in combatants)
             {

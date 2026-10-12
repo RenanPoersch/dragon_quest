@@ -14,6 +14,7 @@ namespace DragonQuest.Combat
         public bool IsAlive => Hp > 0;
         public bool IsDefending { get; internal set; }
         public bool IsCharging { get; internal set; }
+        public int BoundActions { get; internal set; }
         public int PoisonTurns { get; internal set; }
         public int TauntTurns { get; internal set; }
         public CombatantState TauntedBy { get; internal set; }
@@ -47,6 +48,7 @@ namespace DragonQuest.Combat
         {
             IsDefending = false;
             IsCharging = false;
+            BoundActions = 0;
             PoisonTurns = 0;
             TauntTurns = 0;
             TauntedBy = null;

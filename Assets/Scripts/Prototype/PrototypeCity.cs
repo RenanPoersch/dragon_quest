@@ -100,8 +100,10 @@ namespace DragonQuest.Prototype
             DialogueController dialogue = gameObject.AddComponent<DialogueController>();
             PrototypeLocations locations = gameObject.AddComponent<PrototypeLocations>();
             PrototypeShopController shops = gameObject.AddComponent<PrototypeShopController>();
+            PrototypeEndingController endings=gameObject.AddComponent<PrototypeEndingController>();
+            endings.Initialize(mapRoots,player.GetComponent<PlayerMovement>(),camera,cameraFollow,scenery);
             battle = gameObject.AddComponent<PrototypeBattleController>();
-            battle.Initialize(player.GetComponent<PlayerMovement>(), dialogue, progress, () => shops.IsOpen,dragon,secrets,locations.RecoverAtInn);
+            battle.Initialize(player.GetComponent<PlayerMovement>(), dialogue, progress, () => shops.IsOpen,dragon,secrets,locations.RecoverAtInn,endings.Show);
             shops.Initialize(player.GetComponent<PlayerMovement>(), dialogue, battle, progress);
             locations.Initialize(mapRoots, player.GetComponent<PlayerMovement>(), cameraFollow, navigation,
                 () => dialogue.IsOpen || battle.IsBusy);
@@ -252,9 +254,13 @@ namespace DragonQuest.Prototype
             Transform castle = Group("Castelo - interior");
             DrawBlocks(PrototypeWorldLayout.CastleBlocks, castle);
             CreatePassage("Saida do castelo", PrototypeTravel.Castle, castle, PrototypeTravel.City);
-            NpcInteraction tyrant = CreateNpc("Tirano", PrototypeWorldLayout.Throne, "9A5979", castle);
-            tyrant.Initialize("Tirano", "Todo caminho nesta ilha termina diante do meu trono.",
-                "Por um instante, uma segunda voz parece falar junto com a dele. Uma presenca estranha ocupa esta sala...");
+            GameObject king=Entity("Tirano",PrototypeWorldLayout.Throne,castle);
+            BoxCollider2D collider=king.AddComponent<BoxCollider2D>();collider.size=new Vector2(0.55f,0.6f);collider.sharedMaterial=frictionless;
+            scenery.King(king.transform);
+            GameObject spirit=Entity("Espirito junto ao trono",PrototypeWorldLayout.Throne+Vector2.right*1.8f,castle);
+            scenery.Spirit(spirit.transform);spirit.SetActive(false);
+            TyrantInteraction tyrant=king.AddComponent<TyrantInteraction>();
+            tyrant.Initialize(()=>battle?.Party,()=>battle.StartCastleBattle(),spirit);
             interactions.Add(tyrant);
             return castle;
         }

@@ -43,5 +43,10 @@ for face in faces:
     visible = (u >= 0)&(v >= 0)&(w >= 0)&(pixel_depth <= region)
     region[visible] = pixel_depth[visible]
     rgba[ymin:ymax+1, xmin:xmax+1][visible] = np.append((colors[face[0]]*255).astype(np.uint8), 255)
-Image.fromarray(rgba).save(sys.argv[2])
+image = Image.fromarray(rgba)
+if len(sys.argv)>3 and sys.argv[3]=="--crop":
+    bounds = image.getchannel("A").getbbox()
+    if bounds:
+        image = image.crop((max(0,bounds[0]-12),max(0,bounds[1]-12),min(width,bounds[2]+12),min(height,bounds[3]+12)))
+image.save(sys.argv[2])
 print("Retrato original da malha salvo em " + sys.argv[2])

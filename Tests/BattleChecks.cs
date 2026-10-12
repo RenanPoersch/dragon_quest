@@ -179,12 +179,13 @@ internal static class BattleChecks
             checks += ShopChecks.Run();
             checks += ProgressionChecks.Run();
             checks += DragonChecks.Run();
+            checks += CastleChecks.Run();
             Console.WriteLine(checks + " verificacoes de combate passaram.");
             return 0;
         }
         catch (Exception error)
         {
-            Console.Error.WriteLine(error.Message);
+            Console.Error.WriteLine(error.ToString());
             return 1;
         }
     }

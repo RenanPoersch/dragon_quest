@@ -453,6 +453,74 @@ namespace DragonQuest.Prototype
             Transform hinge=Show("Bau - tampa articulada",lid,parent); hinge.localPosition=new Vector3(0,0.35f,-0.45f); return hinge;
         }
 
+        public Transform King(Transform parent) => Show("Rei e coroa",KingData(),parent);
+        public Transform Spirit(Transform parent) => Show("Espirito maligno",SpiritData(),parent);
+        private static ObliqueMeshData StandingPerson(string hex)
+        {
+            var mesh=PersonBodyData(hex,true);Color cloth=ObliqueMeshData.Hex(hex);
+            mesh.Append(LegData(-0.12f,cloth),new Vector3(0,0,-0.5f));mesh.Append(LegData(0.12f,cloth),new Vector3(0,0,-0.5f));
+            return mesh;
+        }
+        public static ObliqueMeshData KingData(bool possessed=true)
+        {
+            var mesh=StandingPerson("9A5979");Color gold=ObliqueMeshData.Hex("D8B968");
+            mesh.Box(0,0,0.34f,0.3f,1.4f,1.49f,gold);
+            foreach(float x in new[]{-0.12f,0.12f}) foreach(float y in new[]{-0.09f,0.09f}) mesh.Cone(x,y,0.06f,1.49f,1.72f,gold,5,0);
+            if(possessed) mesh.Box(0,-0.158f,0.2f,0.025f,1.24f,1.29f,ObliqueMeshData.Hex("BBA0ED"));
+            return mesh;
+        }
+        public static ObliqueMeshData SpiritData()
+        {
+            var mesh=new ObliqueMeshData();Color shadow=ObliqueMeshData.Hex("483858"),bone=ObliqueMeshData.Hex("ADA6BC");
+            mesh.Cone(0,0,0.48f,0.25f,1.35f,shadow,7,0.22f);
+            mesh.Cone(0,0.12f,0.34f,1.35f,2.1f,shadow,7,0);
+            mesh.Box(0,-0.14f,0.39f,0.29f,1.32f,1.65f,bone);
+            foreach(float side in new[]{-1f,1f})
+            {
+                mesh.Triangle(ObliqueMeshData.V(side*0.18f,0,1.25f),ObliqueMeshData.V(side*0.8f,-0.12f,1.1f),ObliqueMeshData.V(side*0.45f,-0.22f,0.72f),shadow);
+                mesh.Box(side*0.09f,-0.292f,0.08f,0.025f,1.47f,1.53f,ObliqueMeshData.Hex("D39DFF"));
+            }
+            mesh.Box(0,-0.292f,0.12f,0.025f,1.37f,1.4f,ObliqueMeshData.Hex("382B44"));
+            return mesh;
+        }
+        public static ObliqueMeshData RuinedCastleData()
+        {
+            var mesh=new ObliqueMeshData();Color stone=ObliqueMeshData.Hex("666169"),charcoal=ObliqueMeshData.Hex("45404B");
+            mesh.Box(0,0,8,4.5f,0,0.3f,stone);
+            mesh.Box(-3,1,1.6f,1.6f,0.3f,1.65f,charcoal);mesh.Box(3,1,1.6f,1.6f,0.3f,0.95f,charcoal);
+            mesh.Box(0,1.8f,4.3f,0.4f,0.3f,1.1f,stone);
+            mesh.Roof(-1,-0.4f,2.8f,1.5f,0.3f,0.75f,charcoal);
+            foreach(float x in new[]{-2.5f,0,2.3f})
+            {
+                mesh.Box(x,-0.8f,0.9f,0.7f,0.3f,0.58f,stone);
+                mesh.Cone(x,-0.6f,0.35f,0.58f,1.3f,ObliqueMeshData.Hex("C87740"),6,0);
+                mesh.Cone(x,-0.6f,0.16f,0.6f,1,ObliqueMeshData.Hex("EBC16A"),6,0);
+            }
+            return mesh;
+        }
+        public static ObliqueMeshData EndingSceneData(GameEnding ending)
+        {
+            var mesh=new ObliqueMeshData();
+            mesh.Plane(0,0,14,10,0,ObliqueMeshData.Hex(ending==GameEnding.CastleDestroyed?"433E47":"89818A"));
+            if(ending==GameEnding.CastleDestroyed) {mesh.Append(RuinedCastleData(),Vector3.zero);return mesh;}
+            var throne=BlockData("Trono - encosto",new Vector2(1.8f,1.4f),"77576B",true,3);
+            mesh.Append(throne,new Vector3(0,3.4f,0));
+            if(ending==GameEnding.KingFreed) mesh.Append(KingData(false),new Vector3(0,2.3f,0));
+            else
+            {
+                mesh.Box(0,2.3f,0.5f,1.2f,0,0.24f,ObliqueMeshData.Hex("9A5979"));
+                mesh.Cone(0.5f,2.2f,0.2f,0,0.12f,ObliqueMeshData.Hex("D8B968"),7,0.2f);
+            }
+            foreach(var pair in new[]{("B4A078",0f),("DADECB",-2.2f),("608DA1",2.2f)})
+                mesh.Append(StandingPerson(pair.Item1),new Vector3(pair.Item2,-1.5f,0));
+            if(ending==GameEnding.HeroPossessed)
+            {
+                mesh.Append(SpiritData(),new Vector3(0,-1.1f,-0.65f));
+                mesh.Box(0,-1.658f,0.2f,0.025f,1.24f,1.3f,ObliqueMeshData.Hex("CB9BEF"));
+            }
+            return mesh;
+        }
+
         public void Dispose()
         { foreach(Mesh mesh in meshes) if(mesh!=null) UnityEngine.Object.Destroy(mesh); UnityEngine.Object.Destroy(material); }
     }

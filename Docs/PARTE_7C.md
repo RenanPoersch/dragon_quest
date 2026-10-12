@@ -26,7 +26,7 @@ O balanceamento inicial permite vencer com os equipamentos básicos, Gelo equipa
 - Resistência a Fogo: metade do dano após a defesa numérica. A resistência é aplicada somente enquanto o equipamento estiver em uso.
 - Quatro encaixes, formando dois pares ligados. Qualquer personagem pode equipá-la; trocar ou remover equipamento continua devolvendo suas matérias ao inventário.
 - Objeto de história protegido contra venda, mesmo desequipado.
-- O estado registra quando ela está efetivamente equipada para a futura revelação do espírito. Tirano, espírito e finais pertencem à parte 8.
+- A armadura efetivamente equipada revela o espírito desde o início do confronto da parte 8. Seu portador precisa estar vivo para absorver o meteoro; veja `PARTE_8.md` para os três finais.
 
 ## Derrota e hospedaria
 

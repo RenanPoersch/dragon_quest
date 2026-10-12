@@ -2,7 +2,7 @@ using System;
 
 namespace DragonQuest.Combat
 {
-    public enum AbilityEffect { PhysicalDamage, Heal, Defend, Cleanse, Revive, Taunt, Protect, MagicDamage, Prepare }
+    public enum AbilityEffect { PhysicalDamage, Heal, Defend, Cleanse, Revive, Taunt, Protect, MagicDamage, Prepare, Drain, Bind }
     public enum TargetRule { Enemy, Ally, Self, AllEnemies, AllAllies }
 
     public sealed class AbilityDefinition
@@ -32,7 +32,7 @@ namespace DragonQuest.Combat
             if (!Enum.IsDefined(typeof(AbilityEffect), effect) || !Enum.IsDefined(typeof(TargetRule), targets))
                 throw new ArgumentException("Efeito ou alvo desconhecido.");
             if (!Enum.IsDefined(typeof(DamageElement), element)
-                || (element != DamageElement.None && effect != AbilityEffect.PhysicalDamage && effect != AbilityEffect.MagicDamage))
+                || (element != DamageElement.None && effect != AbilityEffect.PhysicalDamage && effect != AbilityEffect.MagicDamage && effect != AbilityEffect.Drain))
                 throw new ArgumentException("Elemento valido so pode ser usado em habilidades de dano.");
             if (poisonTurns < 0 || (poisonTurns > 0 && effect != AbilityEffect.PhysicalDamage))
                 throw new ArgumentException("Veneno exige um ataque fisico e duracao positiva.");
@@ -47,6 +47,10 @@ namespace DragonQuest.Combat
                 throw new ArgumentException("Area aliada exige cura, purificacao ou ressuscitar.");
             if (effect == AbilityEffect.Taunt && (targets != TargetRule.Enemy || power < 1))
                 throw new ArgumentException("Provocar exige um inimigo e duracao positiva.");
+            if (effect == AbilityEffect.Drain && targets != TargetRule.Enemy)
+                throw new ArgumentException("Drenar vida exige um inimigo individual.");
+            if (effect == AbilityEffect.Bind && (targets != TargetRule.Enemy || power != 1))
+                throw new ArgumentException("Correntes exige um inimigo e impede exatamente uma acao.");
             if (effect == AbilityEffect.Revive && (power < 1 || power > 100))
                 throw new ArgumentException("Reviver exige uma porcentagem de HP entre 1 e 100.");
             Id = id;

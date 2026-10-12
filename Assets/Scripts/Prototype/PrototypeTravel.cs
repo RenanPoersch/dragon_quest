@@ -105,7 +105,7 @@ namespace DragonQuest.Prototype
         public bool TryRecoverAtInn(out Vector2 arrival)
         {
             arrival = Current.Spawn;
-            if (Current.Id != Volcano) return false;
+            if (Current.Id != Volcano && Current.Id != Castle) return false;
             Current = maps[Inn]; arrival = Current.Spawn; return true;
         }
 

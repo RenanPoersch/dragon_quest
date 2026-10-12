@@ -1,0 +1,68 @@
+# Parte 8 — confronto no trono e três finais
+
+Entre no castelo pela periferia e use E perto do tirano. Termine o diálogo para iniciar a batalha; Esc cancela. Com a Armadura dracônica equipada em qualquer personagem, o espírito aparece ao lado do rei desde o começo, tanto no salão quanto como alvo com turno próprio na batalha. Guardar a armadura no inventário não revela o espírito.
+
+## Tirano e meteoro
+
+O tirano tem 600 HP, ataque 28, defesa 10 e velocidade 7. Alterna golpes físicos individuais de poder 8 e 14, sem elemento. Ao chegar a **20% de HP ou menos — 120 nesta versão —**, interrompe os golpes e inicia a preparação do meteoro.
+
+São **dois turnos completos do tirano preparando**, seguidos pelo lançamento no terceiro. O aviso permanece durante as ações dos demais combatentes, mostrando preparações restantes e o portador vivo da armadura. Ações de jogador, itens, golpes e veneno podem atualizar o limiar; a preparação não é reiniciada a cada mudança de HP.
+
+- Com um portador vivo: a Armadura dracônica absorve o meteoro inteiro, sem dano aos presentes e sem destruir o castelo. O confronto continua; não há um segundo meteoro em loop nessa tentativa.
+- Sem portador vivo: o meteoro aniquila equipe, tirano e espírito presente, ignorando Defender, defesa numérica e resistência comum a Fogo. O final de destruição começa.
+- Reviver o portador antes do lançamento restaura a absorção. Correntes não impede a propriedade passiva da armadura, desde que o portador esteja vivo.
+- Derrotar o espírito com o rei vivo cancela qualquer preparação e encerra imediatamente a luta.
+
+## Espírito maligno
+
+O espírito tem 280 HP, defesa 8, magia 26 e velocidade 10. Não possui afinidades elementais nesta versão. Seu ciclo de ações é:
+
+| Golpe | Efeito |
+| --- | --- |
+| Drenar vida | Magia individual, poder 8; recupera apenas o HP realmente retirado do alvo, até seu HP máximo |
+| Correntes | O alvo perde sua próxima ação; não gasta MP, item ou Limit. As correntes se desfazem após essa ação perdida |
+| Caos Magic | Magia sem elemento, poder 5, contra toda a equipe |
+
+Provocar pode direcionar as ações individuais; Caos Magic continua atingindo todos. Proteger intercepta os golpes físicos do tirano, mas não as magias do espírito. Defender reduz os danos normais e a drenagem, mas não detém o meteoro. Morte/revivência remove Correntes; Purificação continua removendo veneno.
+
+## Finais
+
+| Final | Condição | Cena |
+| --- | --- | --- |
+| Bom — O rei libertado | Espírito derrotado com tirano vivo | O antigo rei justo agradece à equipe e retoma seu governo; a ilha é libertada |
+| Ruim — Cinzas do castelo | Meteoro lançado sem portador vivo da armadura | Castelo em ruínas após a aniquilação da equipe e do tirano |
+| Terceiro — O novo hospedeiro | Tirano morto antes de libertar o rei | O espírito abandona o corpo do rei e possui Aren |
+
+Matar tirano e espírito no mesmo ataque em área também dá o terceiro final, pois o rei precisa sobreviver para ser libertado. O meteoro destrutivo tem prioridade sobre essa regra, produzindo o final de destruição.
+
+Os finais encerram o combate e não recebem recompensa de vitória comum. Clique em **Ver final** para abrir a cena com três páginas de narrativa. E, Espaço, Enter ou Continuar avançam. Na última página, **Reiniciar demo** recarrega a cena e inicia uma sessão nova, com ouro, segredos, matérias, estoques, Limit e bosses nos estados iniciais.
+
+Uma derrota por golpes normais, antes de qualquer desfecho, retorna à hospedaria. A equipe se recupera para tentar novamente; Limit e progresso permanecem, e consumíveis gastos continuam gastos. Essa derrota não conta como um dos três finais.
+
+## Roteiro em Play
+
+1. Pare Play, aguarde a importação e abra `Assets/Scenes/CidadePrototipo.unity`. Reinicie Play e confira o Console.
+2. Sem a armadura, entre no castelo e use E no tirano. Teste Esc para cancelar. Conclua a conversa: apenas o tirano deve ser inimigo; ele deve começar com golpes físicos, sem meteoros antecipados.
+3. Ataque até o HP chegar a 120 ou menos. Observe o aviso e os dois turnos de preparação. Use Defender para não matar o rei. No terceiro turno dele, toda a batalha deve ser aniquilada e o resultado deve indicar Cinzas do castelo. Clique em Ver final, leia as páginas e reinicie.
+4. Em outra tentativa, mate o tirano antes do lançamento para conferir o terceiro final, com Aren possuído. O desfecho deve acontecer imediatamente, sem permitir continuar atacando.
+5. Para o caminho bom, resolva os três segredos, vença o dragão e equipe sua armadura em qualquer aliado. Recoloque as matérias retiradas pela troca. Leve cura, éteres e uma forma de reviver.
+6. Volte ao salão: o espírito deve ficar visível. O inventário pode trocar o portador antes da luta, e o início do confronto deve usar a configuração final. Na batalha, confira os dois alvos, turnos independentes, drenagem, perda de ação por Correntes e dano em área.
+7. Ataque o espírito preservando o rei. Golpes em área e Limit atingem os dois inimigos. Ao derrotar a sombra, a batalha termina com o rei vivo e qualquer meteoro pendente cancelado. Confira o agradecimento do rei no final bom.
+8. Para testar a absorção, enfraqueça o tirano até 20% e mantenha o espírito vivo. Aguarde as duas preparações. Com o portador vivo, o lançamento não deve tirar HP de ninguém e o confronto deve continuar.
+9. Teste também o portador derrotado: reviva-o antes do lançamento para absorver; deixá-lo derrotado deve levar à destruição. Outra pessoa não absorve somente por ter resistência a Fogo.
+10. Teste uma derrota comum sem atingir 20% do HP do tirano. Volte à hospedaria, confira Limit e itens gastos, saia e retorne ao castelo para outra tentativa. Nenhum final deve ter sido registrado.
+11. Em cada cena final, confira os controles de páginas, pausa da exploração e Reiniciar demo. Ao reiniciar, confirme a ilha inicial, 50 moedas, 2 poções, 1 antídoto, segredos ocultos e ausência da armadura conquistada na sessão anterior.
+
+## Código e validação
+
+- `IBattleRules` permite regras particulares de um encontro sem colocar os IDs do tirano na engine genérica.
+- `CastleBattleRules` determina limiar, preparações, absorção e prioridade dos três finais.
+- `PrototypeCastleBattleFactory` configura os dois inimigos e os golpes do espírito.
+- `AbilityEffect.Drain`, `AbilityEffect.Bind` e `CombatantState.BoundActions` implementam drenagem e perda de ação.
+- `TyrantInteraction` revela a figura do espírito conforme a armadura e inicia o confronto após diálogo concluído.
+- `PrototypeEndingController` apresenta as cenas, trava a exploração e reinicia a cena configurada para build.
+- `EndingNarrative` guarda os textos; `ObliqueScenery` gera rei, espírito, ruínas e figuras dos finais.
+
+Passaram 1.983 verificações de combate/inventário/lojas/progresso, 58 de caminhos da periferia, 269 de ilha/interiores/viagens e 1.750 de câmera/malhas. A compilação usa as bibliotecas da Unity 6000.6.5f1. Os testes cobrem limiar exato e cruzado por golpe, dois turnos de preparação, rejeição de lançamento antecipado, absorção em qualquer classe, portador derrotado/revivido, drenagem real, Correntes, ataques em área, prioridade dos finais, batalhas completas com final bom e derrota comum, e recuperação na hospedaria.
+
+Os retratos e as prévias técnicas foram conferidos a partir das malhas originais. Prévias não são capturas da Unity. Aparência com shader, importação das imagens, cliques, diálogo, câmera final e reinício real ainda precisam do roteiro em Play. Modelos, interface, efeitos de batalha e cenas são provisórios; salvamento em disco, acabamento e executável continuam para as próximas entregas.

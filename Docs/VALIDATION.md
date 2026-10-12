@@ -210,3 +210,14 @@ O usuário confirmou que as interações funcionaram em Play. Não houve valida�
 - Derrota volta à hospedaria. Próxima batalha inicia com HP/MP completos, conservando Limit, segredos e consumíveis já gastos. O retorno à hospedaria não é uma rota normal nem um atalho para outros cenários.
 - Passaram 1.697 verificações de combate, 58 da periferia, 268 de viagens/interiores, 1.716 de câmera/malhas e 159 de segredos. Compilação passou; prévias técnicas da geometria e retrato foram inspecionadas fora do Editor.
 - Integração visual, cliques, importação da textura, diálogos, colisões e retorno efetivo ainda aguardam Play conforme `PARTE_7C.md`. Tirano, espírito, finais e salvamento em disco seguem pendentes.
+
+## Parte 8 — trono e três finais
+
+- Confronto único com tirano e, se a armadura estiver equipada, espírito visível desde o início. Golpes físicos sem elemento; aos 20% de HP, duas preparações completas do tirano e lançamento no turno seguinte.
+- Absorção integral por portador vivo, incluindo recuperação após reviver. Sem absorção, meteoro aniquila todos e determina destruição do castelo. Lançamento antecipado é recusado; a contagem não reinicia e não há repetição após absorção.
+- Espírito usa drenagem de HP real, Correntes por uma ação e Caos Magic em área. Condições e feedback de turno foram integrados ao HUD; combate comum e dragão mantiveram as verificações anteriores.
+- Três desfechos: rei libertado, castelo destruído e Aren possuído. Morte simultânea de rei/espírito determina possessão; meteoro destrutivo determina destruição. Nenhuma ação continua após um desfecho, e não há pagamento de vitória comum.
+- Cenas finais próprias com três páginas, exploração suspensa e reinício da cena. Derrota comum no castelo recupera na hospedaria com Limit e progresso conservados.
+- Passaram 1.983 verificações de combate, 58 da periferia, 269 de viagens/interiores e 1.750 de câmera/malhas; scripts compilaram com bibliotecas da Unity 6000.6.5f1. Prévia da geometria detectou e permitiu corrigir o alinhamento das pernas nos modelos estáticos novos.
+- Retratos e geometria das cenas foram inspecionados em prévias técnicas. Importação, GPU, UI, início/cancelamento da conversa, troca de câmera e reinício efetivo ainda precisam de Play conforme `PARTE_8.md`.
+- Salvamento em disco, arte/áudio final, efeitos, acabamento e executável seguem pendentes.

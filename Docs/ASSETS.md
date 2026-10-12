@@ -34,3 +34,9 @@ O altar agora ocupa um cenário local de ruínas, acessível por um ícone de co
 Trilha de basalto, lava, arena, rochas, camas e dragão são modelos originais gerados por código em `PrototypeVolcanoLayout.cs`, `PrototypeInnLayout.cs` e `ObliqueScenery.cs`. A essência usa uma pequena chama dourada. Não foram importados assets de Final Fantasy ou de terceiros.
 
 `Assets/Resources/DragonPortrait.png` é uma imagem transparente original para a batalha, rasterizada a partir de `ObliqueScenery.DragonData()` com `Tools/Render-MeshPortrait.py`. Para regenerar: execute `Tools/Test-Oblique.ps1`, localize `DragonPortrait.json` no WorkDirectory e passe esse arquivo e o caminho do PNG ao script Python. O script requer NumPy e Pillow; o PNG salvo já permite executar a demo sem Python.
+
+## Trono e cenas finais
+
+Rei com coroa, espírito, castelo em ruínas e figuras dos três finais são malhas originais de `ObliqueScenery.KingData`, `SpiritData`, `RuinedCastleData` e `EndingSceneData`, adicionadas em 12 de outubro de 2026. Os textos de `EndingNarrative` foram escritos para a demo.
+
+`Assets/Resources/KingPortrait.png` e `SpiritPortrait.png` são retratos transparentes derivados dessas malhas, usando os JSONs exportados por `Test-Oblique.ps1` e `Render-MeshPortrait.py` com a opção `--crop`. O jogo usa os PNGs prontos e não requer Python. Não foram usados modelos, imagens ou sons de terceiros.

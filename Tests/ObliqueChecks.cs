@@ -155,7 +155,14 @@ internal static class ObliqueChecks
         var hall=new ObliqueMeshData();
         foreach(var block in PrototypeWorldLayout.CastleBlocks)
         {Validate(ObliqueScenery.BlockData(block.Name,block.Size,block.Color,block.Solid,block.Order),block.Name);AddBlock(hall,block);}
-        Person(hall,PrototypeWorldLayout.CastleSpawn,"B4A078",true);Person(hall,PrototypeWorldLayout.Throne,"9A5979",false);
+        Person(hall,PrototypeWorldLayout.CastleSpawn,"B4A078",true);
+        var king=ObliqueScenery.KingData();var spirit=ObliqueScenery.SpiritData();
+        Validate(king,"Tirano e coroa");Validate(ObliqueScenery.KingData(false),"Rei liberto");Validate(spirit,"Espirito maligno");
+        Assert(king.Vertices.All(p=>p.z<=0),"Botas do rei nao podem ficar abaixo do piso.");
+        hall.Append(king,ObliqueProjection.Point(PrototypeWorldLayout.Throne));
+        hall.Append(spirit,ObliqueProjection.Point(PrototypeWorldLayout.Throne+Vector2.right*1.8f));
+        Export(directory,"KingPortrait",king,Vector2.zero,1.1f,0.85f);
+        Export(directory,"SpiritPortrait",spirit,Vector2.zero,1.4f,1.05f);
         Export(directory,"CastleOblique",hall,Vector2.zero,9);
         var ruins=new ObliqueMeshData();
         foreach(var block in PrototypeRuinsLayout.Blocks)
@@ -175,6 +182,12 @@ internal static class ObliqueChecks
         {Validate(ObliqueScenery.BlockData(block.Name,block.Size,block.Color,block.Solid,block.Order),block.Name);AddBlock(inn,block);}
         Person(inn,PrototypeInnLayout.Spawn,"B4A078",true);Person(inn,PrototypeInnLayout.Keeper,"B89673",false);
         Export(directory,"InnOblique",inn,Vector2.zero,ObliqueProjection.FrameSize(6,PrototypeInnLayout.Bounds,16f/9,true));
+        foreach(var ending in new[]{DragonQuest.Progression.GameEnding.KingFreed,DragonQuest.Progression.GameEnding.CastleDestroyed,DragonQuest.Progression.GameEnding.HeroPossessed})
+        {
+            var data=ObliqueScenery.EndingSceneData(ending);Validate(data,"Cena final / "+ending);
+            Assert(data.Vertices.All(p=>p.z<=0),"Atores das cenas finais devem ficar sobre o piso.");
+            Export(directory,"Ending"+ending,data,Vector2.zero,5.8f);
+        }
         foreach(bool eastern in new[]{false,true})
             foreach(var block in PrototypeWorldLayout.CreateForestBlocks(eastern))Validate(ObliqueScenery.BlockData(block.Name,block.Size,block.Color,block.Solid,block.Order),block.Name);
         Validate(ObliqueScenery.BlockData("Balcao",new Vector2(4,0.6f),"614533",true,4),"Balcão");

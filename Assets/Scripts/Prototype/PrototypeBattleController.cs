@@ -18,18 +18,24 @@ namespace DragonQuest.Prototype
         private System.Func<bool> otherMenuOpen = () => false;
         private AncientSecrets secrets;
         private System.Action recoverAtInn;
+        private System.Action<GameEnding> showEnding;
+        public bool HasEnded {get;private set;}
+        public CastleBattleRules CastleRules => Session?.Rules as CastleBattleRules;
+        public bool IsCastleEncounter => CastleRules!=null;
         public DragonProgress Dragon { get; private set; }
         public bool IsDragonEncounter { get; private set; }
-        public string BattleTitle => IsDragonEncounter ? "DRAGAO CORROMPIDO" : "PATRULHA DO TIRANO";
-        public string ReturnLabel => IsDragonEncounter && Session.Outcome == BattleOutcome.Defeat ? "Voltar para a hospedaria" : "Continuar explorando";
-        public string OutcomeDescription => Session.Outcome == BattleOutcome.Victory
+        public string BattleTitle => IsCastleEncounter ? (CastleRules.IsSpiritRevealed?"TIRANO E ESPIRITO":"TIRANO DOMINADO")
+            :IsDragonEncounter ? "DRAGAO CORROMPIDO" : "PATRULHA DO TIRANO";
+        public string ReturnLabel => IsCastleEncounter&&Session.Outcome==BattleOutcome.Completed?"Ver final"
+            :(IsDragonEncounter||IsCastleEncounter)&&Session.Outcome==BattleOutcome.Defeat?"Voltar para a hospedaria":"Continuar explorando";
+        public string OutcomeDescription => Session.Outcome==BattleOutcome.Completed?EndingNarrative.Title(CastleRules.Ending):Session.Outcome == BattleOutcome.Victory
             ? (IsDragonEncounter ? "A essencia do dragao foi libertada. " : "A patrulha foi vencida. ") + RewardMessage
-            : IsDragonEncounter ? "Sua equipe foi vencida. Acordara na hospedaria; Limit e progresso serao mantidos."
+            : IsDragonEncounter||IsCastleEncounter ? "Sua equipe foi vencida. Acordara na hospedaria; Limit e progresso serao mantidos."
             : "Sua equipe foi vencida. Reorganize-se para tentar novamente.";
 
         public bool IsActive { get; private set; }
         public bool IsMenuOpen { get; private set; }
-        public bool IsBusy => IsActive || IsMenuOpen || otherMenuOpen();
+        public bool IsBusy => HasEnded || IsActive || IsMenuOpen || otherMenuOpen();
         public PartyProgress Party { get; private set; }
         public BattleSession Session { get; private set; }
         public string ErrorMessage { get; private set; }
@@ -38,13 +44,14 @@ namespace DragonQuest.Prototype
 
         public void Initialize(PlayerMovement hero, DialogueController dialogueController, ExplorationProgress progress,
             System.Func<bool> externalMenuOpen = null, DragonProgress dragonProgress = null,
-            AncientSecrets ancientSecrets = null, System.Action recovery = null)
+            AncientSecrets ancientSecrets = null, System.Action recovery = null, System.Action<GameEnding> endingPresentation = null)
         {
             movement = hero; dialogue = dialogueController;
             otherMenuOpen = externalMenuOpen ?? (() => false);
             Party = PrototypePartyFactory.Create();
             Rewards = new BattleRewards(progress);
             Dragon = dragonProgress ?? new DragonProgress(); secrets = ancientSecrets; recoverAtInn = recovery;
+            showEnding=endingPresentation;
         }
 
         public void CloseMenu()
@@ -73,6 +80,12 @@ namespace DragonQuest.Prototype
             ErrorMessage = string.Empty;
             RewardMessage = string.Empty;
             movement.SetMovementEnabled(false);
+        }
+
+        public void StartCastleBattle()
+        {
+            if(IsBusy||dialogue.IsOpen) return;
+            StartEncounter(PrototypeCastleBattleFactory.Create(Party),false);
         }
 
         public bool TryPlayerAction(AbilityDefinition ability, CombatantState target)
@@ -107,7 +120,7 @@ namespace DragonQuest.Prototype
         private void Update()
         {
             Keyboard keyboard = Keyboard.current;
-            if (!IsActive && !otherMenuOpen() && !dialogue.IsOpen && keyboard != null && Application.isFocused)
+            if (!HasEnded && !IsActive && !otherMenuOpen() && !dialogue.IsOpen && keyboard != null && Application.isFocused)
             {
                 if (IsMenuOpen && keyboard.escapeKey.wasPressedThisFrame) CloseMenu();
                 else if (keyboard.iKey.wasPressedThisFrame)
@@ -133,11 +146,16 @@ namespace DragonQuest.Prototype
         public void ReturnToCity()
         {
             if (!IsActive || Session.Outcome == BattleOutcome.None) return;
+            if(IsCastleEncounter&&Session.Outcome==BattleOutcome.Completed)
+            {
+                IsActive=false;HasEnded=true;pendingEnemy=null;movement.SetMovementEnabled(false);
+                showEnding?.Invoke(CastleRules.Ending);return;
+            }
             AwardIfComplete();
             IsActive = false;
             movement.SetMovementEnabled(true);
             pendingEnemy = null;
-            if (IsDragonEncounter && Session.Outcome == BattleOutcome.Defeat)
+            if ((IsDragonEncounter||IsCastleEncounter) && Session.Outcome == BattleOutcome.Defeat)
             {
                 recoverAtInn?.Invoke();
                 dialogue.Open("Hospedaria","A equipe desperta em seguranca. Seus ferimentos foram tratados e o MP foi recuperado.",
