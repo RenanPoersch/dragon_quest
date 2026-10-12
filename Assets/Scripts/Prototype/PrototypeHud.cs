@@ -79,7 +79,7 @@ namespace DragonQuest.Prototype
                         : locations.LocationId == PrototypeTravel.Castle ? "O trono fica ao norte; caminhe ate a saida ao sul para voltar a periferia."
                         : locations.LocationId == PrototypeTravel.Ruins ? "Explore as ruinas. O altar fica ao norte; a saida para a ilha fica ao sul."
                         : locations.LocationId == PrototypeTravel.Volcano ? "Siga a trilha entre a lava ate a arena. A saida fica ao sul."
-                        : locations.LocationId == PrototypeTravel.Inn ? "Reorganize sua equipe com I. Caminhe ate a saida ao sul para voltar a periferia."
+                        : locations.LocationId == PrototypeTravel.Inn ? "F5: salvar jornada / E na hospedeira: salvar ou conversar / I: inventario. Saida ao sul."
                         : "Converse com o morador usando E. A saida para a ilha fica ao sul.";
                 GUI.Label(new Rect(28, height - 57, width - 56, 38), prompt, bodyStyle);
             }

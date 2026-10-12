@@ -17,5 +17,10 @@ namespace DragonQuest.Combat
         }
 
         internal void Spend() => Charge = 0;
+        internal void Restore(int charge)
+        {
+            if (charge < 0 || charge > 100) throw new ArgumentOutOfRangeException(nameof(charge));
+            Charge = charge;
+        }
     }
 }

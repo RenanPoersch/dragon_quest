@@ -18,11 +18,11 @@ namespace DragonQuest.Prototype
         public string Message { get; private set; }
         public DeliveryQuest Quest { get; private set; }
         public void Initialize(PlayerMovement hero, DialogueController dialogueController, PrototypeBattleController battleController,
-            ExplorationProgress progress)
+            ExplorationProgress progress, ShopService restoredService = null, DeliveryQuest restoredQuest = null)
         {
             movement = hero; dialogue = dialogueController; battle = battleController;
-            Service = PrototypeShopFactory.Create(battle.Party, progress);
-            Quest = new DeliveryQuest(Service);
+            Service = restoredService ?? PrototypeShopFactory.Create(battle.Party, progress);
+            Quest = restoredQuest ?? new DeliveryQuest(Service);
         }
         public void Open(string id)
         {

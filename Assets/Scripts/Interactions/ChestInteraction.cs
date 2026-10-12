@@ -8,14 +8,21 @@ namespace DragonQuest.Interactions
         private int goldReward;
         private System.Action openLid;
         private bool opened;
+        private System.Func<bool> wasOpened;
 
         public override string Prompt => opened ? "Examinar bau aberto" : "Abrir bau";
 
-        public void Initialize(string id, int reward, System.Action showOpened)
+        public void Initialize(string id, int reward, System.Action showOpened, System.Func<bool> isOpened = null)
         {
             chestId = id;
             goldReward = reward;
             openLid = showOpened;
+            wasOpened = isOpened;
+        }
+
+        private void Update()
+        {
+            if (!opened && wasOpened?.Invoke() == true) { opened = true; openLid?.Invoke(); }
         }
 
         public override void Interact(InteractionContext context)

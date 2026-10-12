@@ -1,0 +1,11 @@
+<linker>
+  <assembly fullname="Assembly-CSharp">
+    <type fullname="DragonQuest.Persistence.JourneyData" preserve="all" />
+    <type fullname="DragonQuest.Persistence.SecretData" preserve="all" />
+    <type fullname="DragonQuest.Persistence.MemberData" preserve="all" />
+    <type fullname="DragonQuest.Persistence.GearData" preserve="all" />
+    <type fullname="DragonQuest.Persistence.MateriaData" preserve="all" />
+    <type fullname="DragonQuest.Persistence.StackData" preserve="all" />
+    <type fullname="DragonQuest.Persistence.StockData" preserve="all" />
+  </assembly>
+</linker>

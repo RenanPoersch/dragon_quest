@@ -66,7 +66,15 @@ namespace DragonQuest.Equipment
         public IReadOnlyList<PartyMember> Members { get; }
         public IReadOnlyList<MateriaInstance> Materias { get; }
         public IReadOnlyList<EquipmentLoadout> Equipments { get; }
-        public ItemInventory Consumables { get; }
+        public ItemInventory Consumables { get; private set; }
+        public event Action Changed;
+
+        // Usado somente depois de validar um snapshot, em uma equipe ainda fora do jogo.
+        internal void RestoreInventory(EquipmentLoadout[] gear, MateriaInstance[] materia, ItemInventory items)
+        {
+            equipments.Clear(); equipments.AddRange(gear);
+            materias.Clear(); materias.AddRange(materia); Consumables = items;
+        }
 
         public PartyProgress(PartyMember[] party, MateriaInstance[] inventory,
             EquipmentLoadout[] spareEquipment = null, ItemInventory consumables = null)
@@ -103,7 +111,7 @@ namespace DragonQuest.Equipment
             foreach (EquipmentLoadout item in equipments) ids.Add(item.Id);
             foreach (EquipmentLoadout item in additions)
                 if (item == null || !ids.Add(item.Id)) return false;
-            equipments.AddRange(additions); return true;
+            equipments.AddRange(additions); Changed?.Invoke(); return true;
         }
 
         public bool TryAddMaterias(params MateriaInstance[] additions)
@@ -113,7 +121,7 @@ namespace DragonQuest.Equipment
             foreach (MateriaInstance item in materias) ids.Add(item.Id);
             foreach (MateriaInstance item in additions)
                 if (item == null || !ids.Add(item.Id)) return false;
-            materias.AddRange(additions); return true;
+            materias.AddRange(additions); Changed?.Invoke(); return true;
         }
 
         public bool IsEquipped(EquipmentLoadout item)
@@ -140,11 +148,14 @@ namespace DragonQuest.Equipment
         {
             if (item == null || item.Definition.IsStoryItem || IsEquipped(item)) return false;
             foreach (MateriaInstance socket in item.Sockets) if (socket != null) return false;
-            return equipments.Remove(item);
+            bool removed = equipments.Remove(item); if (removed) Changed?.Invoke(); return removed;
         }
 
         public bool TryRemoveOwnedMateria(MateriaInstance item)
-            => item != null && !IsEquipped(item) && materias.Remove(item);
+        {
+            bool removed = item != null && !IsEquipped(item) && materias.Remove(item);
+            if (removed) Changed?.Invoke(); return removed;
+        }
 
         public string LocationOf(EquipmentLoadout item)
         {
@@ -167,6 +178,7 @@ namespace DragonQuest.Equipment
             item.ClearMaterias();
             if (source != null) source.SetEquipment(item.Definition.Slot, previous);
             member.SetEquipment(item.Definition.Slot, item);
+            Changed?.Invoke();
             message = item.Definition.Name + " equipado. Materias dos equipamentos trocados voltaram ao inventario.";
             return true;
         }
@@ -179,6 +191,7 @@ namespace DragonQuest.Equipment
             if (item == null) { message = "Nao ha equipamento neste espaco."; return false; }
             item.ClearMaterias();
             member.SetEquipment(slot, null);
+            Changed?.Invoke();
             message = "Equipamento e suas materias voltaram ao inventario.";
             return true;
         }
@@ -212,6 +225,7 @@ namespace DragonQuest.Equipment
             // Troca atomica; a materia antiga vai para a origem ou fica no inventario.
             if (source != null) source.Set(sourceSlot, equipment.Sockets[slot]);
             equipment.Set(slot, materia);
+            Changed?.Invoke();
             message = materia.Definition.Name + " equipada em " + member.Name + ".";
             return true;
         }
@@ -220,7 +234,7 @@ namespace DragonQuest.Equipment
         {
             if (!ValidDestination(member, equipment, slot) || equipment.Sockets[slot] == null)
             { message = "Escolha um encaixe ocupado."; return false; }
-            equipment.Set(slot, null); message = "Materia devolvida ao inventario."; return true;
+            equipment.Set(slot, null); Changed?.Invoke(); message = "Materia devolvida ao inventario."; return true;
         }
 
         private bool ValidDestination(PartyMember member, EquipmentLoadout equipment, int slot) => member != null && members.Contains(member) && equipment != null

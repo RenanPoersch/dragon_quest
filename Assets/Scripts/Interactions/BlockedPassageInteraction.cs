@@ -8,7 +8,9 @@ namespace DragonQuest.Interactions
         private GameObject barrier;
         private float openingTime;
         private bool opening;
-        public void Initialize(GameObject rocks) => barrier=rocks;
+        private Progression.AncientSecrets secrets;
+        private bool fullyOpen;
+        public void Initialize(GameObject rocks, Progression.AncientSecrets progress = null) { barrier=rocks; secrets=progress; }
         public override void Interact(InteractionContext context)
         {
             if(context.Secrets.PassageOpen)
@@ -25,12 +27,21 @@ namespace DragonQuest.Interactions
         }
         private void Update()
         {
+            if (!opening && !fullyOpen && secrets?.PassageOpen == true && barrier != null)
+            {
+                barrier.GetComponent<BoxCollider2D>().enabled = false;
+                SetOffset(2.35f); fullyOpen = true; Physics2D.SyncTransforms();
+            }
             if(!opening || barrier==null) return;
             openingTime+=Time.unscaledDeltaTime;
             float offset=Mathf.SmoothStep(0.75f,2.35f,Mathf.Clamp01(openingTime/0.8f));
+            SetOffset(offset);
+            if(openingTime>=0.8f) { opening=false; fullyOpen=true; }
+        }
+        private void SetOffset(float offset)
+        {
             for(int i=0;i<barrier.transform.childCount;i++)
                 barrier.transform.GetChild(i).localPosition=new Vector3(i==0?-offset:offset,0,0);
-            if(openingTime>=0.8f) opening=false;
         }
     }
 }

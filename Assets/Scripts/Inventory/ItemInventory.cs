@@ -21,6 +21,7 @@ namespace DragonQuest.Inventory
     {
         private readonly List<ItemStack> items = new List<ItemStack>();
         public IReadOnlyList<ItemStack> Items { get; }
+        public event Action Changed;
         public ItemInventory(params ItemStack[] initialItems)
         {
             if (initialItems == null) throw new ArgumentNullException(nameof(initialItems));
@@ -49,6 +50,7 @@ namespace DragonQuest.Inventory
             if (existing != null && existing.Quantity > int.MaxValue - amount)
             { message = "Quantidade excede o limite do inventario."; return false; }
             if (existing == null) items.Add(new ItemStack(item, amount)); else existing.Add(amount);
+            Changed?.Invoke();
             message = "Item adicionado."; return true;
         }
         internal bool TryConsume(ConsumableDefinition item)
@@ -58,7 +60,7 @@ namespace DragonQuest.Inventory
         {
             ItemStack stack = Find(item);
             if (stack == null || amount <= 0 || stack.Quantity < amount) return false;
-            stack.Consume(amount); return true;
+            stack.Consume(amount); Changed?.Invoke(); return true;
         }
     }
 }

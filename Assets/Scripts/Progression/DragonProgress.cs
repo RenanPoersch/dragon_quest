@@ -9,6 +9,7 @@ namespace DragonQuest.Progression
         public static readonly EquipmentDefinition Armor = new EquipmentDefinition("Armadura draconica", 0, 16, 4,
             EquipmentSlot.Armor, affinities: new ElementalAffinities(resistances: new[] { DamageElement.Fire }), isStoryItem: true);
         public bool IsDefeated { get; private set; }
+        internal void Restore(bool defeated) => IsDefeated = defeated;
 
         public bool TryComplete(BattleSession battle, PartyProgress party)
         {

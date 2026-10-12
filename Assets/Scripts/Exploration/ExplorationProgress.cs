@@ -9,6 +9,10 @@ namespace DragonQuest.Exploration
         private readonly HashSet<string> openedChests = new HashSet<string>();
 
         public int Gold { get; private set; }
+        public event Action Changed;
+        internal string[] OpenedChests => new List<string>(openedChests).ToArray();
+        internal void Restore(int gold, string[] chests)
+        { Gold = gold; openedChests.Clear(); foreach (string id in chests) openedChests.Add(id); }
 
         public ExplorationProgress(int initialGold = 0)
         {
@@ -20,12 +24,12 @@ namespace DragonQuest.Exploration
         public bool TryAddGold(int amount)
         {
             if (!CanReceiveGold(amount)) return false;
-            Gold += amount; return true;
+            Gold += amount; Changed?.Invoke(); return true;
         }
         public bool TrySpendGold(int amount)
         {
             if (amount <= 0 || amount > Gold) return false;
-            Gold -= amount; return true;
+            Gold -= amount; Changed?.Invoke(); return true;
         }
 
         public bool HasOpenedChest(string id) => openedChests.Contains(id);
@@ -38,6 +42,7 @@ namespace DragonQuest.Exploration
             int total = checked(Gold + goldReward);
             openedChests.Add(id);
             Gold = total;
+            Changed?.Invoke();
             return true;
         }
     }

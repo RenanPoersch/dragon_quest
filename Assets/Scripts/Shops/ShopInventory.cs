@@ -36,6 +36,7 @@ namespace DragonQuest.Shops
         }
         internal void Consume(int quantity) => Stock -= quantity;
         internal void Restock() => Stock = InitialStock;
+        internal void RestoreStock(int stock) => Stock = stock;
     }
 
     public sealed class ShopInventory

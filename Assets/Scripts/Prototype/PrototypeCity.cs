@@ -14,10 +14,13 @@ namespace DragonQuest.Prototype
         private readonly AncientSecrets secrets = new AncientSecrets();
         private PrototypeTravel navigation;
         private PrototypeBattleController battle;
+        private PrototypeSaveController saves;
+        private ExplorationProgress progress;
         private readonly DragonProgress dragon = new DragonProgress();
 
         private void Awake()
         {
+            saves = gameObject.AddComponent<PrototypeSaveController>();
             navigation = new PrototypeTravel(secrets);
             scenery = new ObliqueScenery();
             frictionless = new PhysicsMaterial2D("PrototypeFrictionless") { friction = 0f, bounciness = 0f };
@@ -96,14 +99,14 @@ namespace DragonQuest.Prototype
             }
             camera.backgroundColor = Hex("263E35");
             CameraFollow cameraFollow = camera.gameObject.AddComponent<CameraFollow>();
-            var progress = new ExplorationProgress(PrototypeShopFactory.StartingGold);
+            progress = new ExplorationProgress(PrototypeShopFactory.StartingGold);
             DialogueController dialogue = gameObject.AddComponent<DialogueController>();
             PrototypeLocations locations = gameObject.AddComponent<PrototypeLocations>();
             PrototypeShopController shops = gameObject.AddComponent<PrototypeShopController>();
             PrototypeEndingController endings=gameObject.AddComponent<PrototypeEndingController>();
             endings.Initialize(mapRoots,player.GetComponent<PlayerMovement>(),camera,cameraFollow,scenery);
             battle = gameObject.AddComponent<PrototypeBattleController>();
-            battle.Initialize(player.GetComponent<PlayerMovement>(), dialogue, progress, () => shops.IsOpen,dragon,secrets,locations.RecoverAtInn,endings.Show);
+            battle.Initialize(player.GetComponent<PlayerMovement>(), dialogue, progress, () => shops.IsOpen || saves.IsMenuVisible,dragon,secrets,locations.RecoverAtInn,endings.Show);
             shops.Initialize(player.GetComponent<PlayerMovement>(), dialogue, battle, progress);
             locations.Initialize(mapRoots, player.GetComponent<PlayerMovement>(), cameraFollow, navigation,
                 () => dialogue.IsOpen || battle.IsBusy);
@@ -115,6 +118,20 @@ namespace DragonQuest.Prototype
                 battle.StartBattle, () => battle.IsBusy, shops.Open, secrets), interactables.ToArray());
             PrototypeHud hud = gameObject.AddComponent<PrototypeHud>();
             hud.Initialize(camera, interaction, dialogue, progress, locations, battle, shops, secrets);
+            saves.Initialize(player.GetComponent<PlayerMovement>(), battle, shops, locations, dialogue, progress, secrets, dragon, journey =>
+            {
+                progress = journey.Progress;
+                var s = journey.Secrets;
+                secrets.Restore(s.KnowsPoem, s.AltarSolved, s.MonolithStep, s.HasScale, s.PassageOpen);
+                dragon.Restore(journey.Dragon.IsDefeated);
+                battle.Initialize(player.GetComponent<PlayerMovement>(), dialogue, progress, () => shops.IsOpen || saves.IsMenuVisible,
+                    dragon, secrets, locations.RecoverAtInn, endings.Show, journey.Party);
+                shops.Initialize(player.GetComponent<PlayerMovement>(), dialogue, battle, progress, journey.Shops, journey.Quest);
+                interaction.Initialize(new InteractionContext(dialogue, progress, locations.TravelTo,
+                    battle.StartBattle, () => battle.IsBusy, shops.Open, secrets), interactables.ToArray());
+                hud.Initialize(camera, interaction, dialogue, progress, locations, battle, shops, secrets);
+                locations.Restore(journey.Data.Map, new Vector2(journey.Data.X, journey.Data.Y));
+            });
         }
 
         private Transform Group(string groupName, Transform parent = null)
@@ -160,7 +177,8 @@ namespace DragonQuest.Prototype
             collider.sharedMaterial = frictionless;
             Transform lid = scenery.Chest(chest.transform);
             ChestInteraction interaction = chest.AddComponent<ChestInteraction>();
-            interaction.Initialize("praca-primeiro-bau", 25, () => lid.localRotation = Quaternion.Euler(65, 0, 0));
+            interaction.Initialize("praca-primeiro-bau", 25, () => lid.localRotation = Quaternion.Euler(65, 0, 0),
+                () => progress?.HasOpenedChest("praca-primeiro-bau") == true);
             return interaction;
         }
 
@@ -204,7 +222,7 @@ namespace DragonQuest.Prototype
             CreatePassage("Entrada do vulcao",PrototypeTravel.World,world,PrototypeTravel.Volcano);
             GameObject passage = Entity("Passagem oculta", PrototypeWorldLayout.Trail, world);
             BlockedPassageInteraction gate = passage.AddComponent<BlockedPassageInteraction>();
-            gate.Initialize(rocks); interactions.Add(gate);
+            gate.Initialize(rocks, secrets); interactions.Add(gate);
             return world;
         }
 
@@ -300,9 +318,8 @@ namespace DragonQuest.Prototype
             Transform inn=Group("Hospedaria - interior");
             DrawBlocks(PrototypeInnLayout.Blocks,inn);
             CreatePassage("Saida da hospedaria",PrototypeTravel.Inn,inn,PrototypeTravel.City);
-            NpcInteraction keeper=CreateNpc("Hospedeira",PrototypeInnLayout.Keeper,"B89673",inn);
-            keeper.Initialize("Hospedeira","Aqui voces estao em seguranca. Descansem e reorganizem seus equipamentos antes de retornar ao vulcao.",
-                "As chamas do dragao sao perigosas. As lojas vendem Gelo e suprimentos; guardem suas forcas quando ele preparar o sopro.");
+            InnInteraction keeper=CreateNpcFigure("Hospedeira",PrototypeInnLayout.Keeper,"B89673",inn).AddComponent<InnInteraction>();
+            keeper.Initialize(() => saves.SaveManual());
             interactions.Add(keeper);
             return inn;
         }

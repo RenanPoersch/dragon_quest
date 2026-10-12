@@ -102,6 +102,15 @@ namespace DragonQuest.Prototype
 
         public MapRoute RouteFrom(string from, string destination) => routes[(from, destination)];
 
+        // Carregamento nao depende de uma rota: o mapa/posicao precisam existir e respeitar os selos.
+        public bool TryRestore(string mapId, Vector2 position)
+        {
+            if (mapId == null || !maps.TryGetValue(mapId, out var map) || float.IsNaN(position.x) || float.IsNaN(position.y)
+                || float.IsInfinity(position.x) || float.IsInfinity(position.y) || !map.Bounds.Contains(position)
+                || mapId == Volcano && secrets?.PassageOpen != true) return false;
+            Current = map; return true;
+        }
+
         public bool TryRecoverAtInn(out Vector2 arrival)
         {
             arrival = Current.Spawn;

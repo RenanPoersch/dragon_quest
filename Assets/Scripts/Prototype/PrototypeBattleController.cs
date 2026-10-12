@@ -19,6 +19,8 @@ namespace DragonQuest.Prototype
         private AncientSecrets secrets;
         private System.Action recoverAtInn;
         private System.Action<GameEnding> showEnding;
+        private bool notifiedCompletion;
+        public event System.Action<BattleOutcome> EncounterCompleted;
         public bool HasEnded {get;private set;}
         public CastleBattleRules CastleRules => Session?.Rules as CastleBattleRules;
         public bool IsCastleEncounter => CastleRules!=null;
@@ -44,14 +46,21 @@ namespace DragonQuest.Prototype
 
         public void Initialize(PlayerMovement hero, DialogueController dialogueController, ExplorationProgress progress,
             System.Func<bool> externalMenuOpen = null, DragonProgress dragonProgress = null,
-            AncientSecrets ancientSecrets = null, System.Action recovery = null, System.Action<GameEnding> endingPresentation = null)
+            AncientSecrets ancientSecrets = null, System.Action recovery = null, System.Action<GameEnding> endingPresentation = null,
+            PartyProgress restoredParty = null)
         {
             movement = hero; dialogue = dialogueController;
             otherMenuOpen = externalMenuOpen ?? (() => false);
-            Party = PrototypePartyFactory.Create();
+            Party = restoredParty ?? PrototypePartyFactory.Create();
             Rewards = new BattleRewards(progress);
             Dragon = dragonProgress ?? new DragonProgress(); secrets = ancientSecrets; recoverAtInn = recovery;
             showEnding=endingPresentation;
+        }
+
+        public void RestoreEnding(GameEnding ending)
+        {
+            if (ending == GameEnding.None) return;
+            HasEnded = true; movement.SetMovementEnabled(false); showEnding?.Invoke(ending);
         }
 
         public void CloseMenu()
@@ -75,6 +84,7 @@ namespace DragonQuest.Prototype
         private void StartEncounter(BattleSession encounter, bool dragonEncounter)
         {
             Session = encounter; IsDragonEncounter = dragonEncounter;
+            notifiedCompletion = false;
             IsActive = true;
             pendingEnemy = null;
             ErrorMessage = string.Empty;
@@ -108,13 +118,18 @@ namespace DragonQuest.Prototype
 
         private void AwardIfComplete()
         {
-            if (Session.Outcome != BattleOutcome.Victory) return;
-            if (IsDragonEncounter) Dragon.TryComplete(Session,Party);
-            if (!Rewards.HasClaimed(Session))
+            if (Session.Outcome == BattleOutcome.None) return;
+            if (Session.Outcome == BattleOutcome.Victory)
             {
-                Rewards.TryClaim(Session,out string message);
-                RewardMessage = message + (IsDragonEncounter && Dragon.IsDefeated ? " Armadura draconica recebida!" : "");
+                if (IsDragonEncounter) Dragon.TryComplete(Session,Party);
+                if (!Rewards.HasClaimed(Session))
+                {
+                    Rewards.TryClaim(Session,out string message);
+                    RewardMessage = message + (IsDragonEncounter && Dragon.IsDefeated ? " Armadura draconica recebida!" : "");
+                }
             }
+            if (notifiedCompletion) return;
+            notifiedCompletion = true; EncounterCompleted?.Invoke(Session.Outcome);
         }
 
         private void Update()

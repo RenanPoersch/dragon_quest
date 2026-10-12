@@ -12,6 +12,8 @@ namespace DragonQuest.Shops
         public PartyProgress Party { get; }
         public ExplorationProgress Progress { get; }
         public IReadOnlyList<ShopInventory> Shops { get; }
+        internal void RestoreDeliveryRestock(bool completed)
+        { restockedMilestones.Clear(); if (completed) restockedMilestones.Add(Progression.DeliveryQuest.MilestoneId); }
 
         public ShopService(PartyProgress party, ExplorationProgress progress, params ShopInventory[] shops)
         {

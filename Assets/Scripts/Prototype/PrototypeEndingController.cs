@@ -48,9 +48,9 @@ namespace DragonQuest.Prototype
             GUI.matrix=Matrix4x4.TRS(new Vector3((Screen.width-1280*scale)/2,(Screen.height-720*scale)/2,0),Quaternion.identity,new Vector3(scale,scale,1));
             Panel(new Rect(28,25,630,78));GUI.Label(new Rect(46,38,590,52),EndingNarrative.Title(ending),titleStyle);
             Panel(new Rect(28,540,1224,153));GUI.Label(new Rect(48,558,1180,69),pages[page],textStyle);
-            GUI.Label(new Rect(48,645,960,33),page<pages.Length-1?"E / Espaco / Enter ou Continuar / "+(page+1)+" de "+pages.Length:"Fim da demo. Reiniciar comeca uma nova jornada.",smallStyle);
+            GUI.Label(new Rect(48,645,960,33),page<pages.Length-1?"E / Espaco / Enter ou Continuar / "+(page+1)+" de "+pages.Length:"Fim da demo. Seu desfecho fica registrado no slot da jornada.",smallStyle);
             bool enabled=GUI.enabled;GUI.enabled=Time.frameCount>shownFrame;
-            if(GUI.Button(new Rect(1058,645,174,35),page<pages.Length-1?"Continuar":"Reiniciar demo",buttonStyle))
+            if(GUI.Button(new Rect(1058,645,174,35),page<pages.Length-1?"Continuar":"Voltar ao menu",buttonStyle))
             {
                 if(page<pages.Length-1) page++;
                 else SceneManager.LoadScene(SceneManager.GetActiveScene().path);

@@ -221,3 +221,12 @@ O usuário confirmou que as interações funcionaram em Play. Não houve valida�
 - Passaram 1.983 verificações de combate, 58 da periferia, 269 de viagens/interiores e 1.750 de câmera/malhas; scripts compilaram com bibliotecas da Unity 6000.6.5f1. Prévia da geometria detectou e permitiu corrigir o alinhamento das pernas nos modelos estáticos novos.
 - Retratos e geometria das cenas foram inspecionados em prévias técnicas. Importação, GPU, UI, início/cancelamento da conversa, troca de câmera e reinício efetivo ainda precisam de Play conforme `PARTE_8.md`.
 - Salvamento em disco, arte/áudio final, efeitos, acabamento e executável seguem pendentes.
+
+## Parte 9 — jornadas salvas
+
+- Menu inicial com três slots, Novo jogo e Continuar. Substituição de slot ocupado exige escolha explícita no menu; exploração, entradas automáticas e atalhos ficam suspensos até selecionar uma jornada.
+- Autosave por eventos de vitórias/desfechos, segredos, inventário, baú e entrega. Alterações de uma mesma transação são agrupadas e gravadas após sua conclusão. Movimento/viagem e combate em andamento não disparam salvamento; derrota comum não dispara autosave.
+- Salvamento manual por escolha no diálogo da hospedeira ou F5. Restauração recupera mapa/coordenadas, ouro, objetos, sockets, Limit, estoques, missão, segredos, passagem e dragão. Final salvo reapresenta o desfecho, com retorno ao menu.
+- Catálogo de IDs estáveis, formato JSON versionado, validação antes da instalação e link.xml para os tipos serializados. Arquivos em Application.persistentDataPath/Saves; substituição atômica e backup da revisão válida anterior. Corrupção recupera backup com aviso; versão incompatível bloqueia Continuar.
+- Passaram 107 verificações de save, 1.983 de combate, 159 de segredos, 58 de caminhos da periferia e 269 de viagens/interiores. Compilação passou com bibliotecas da Unity 6000.6.5f1. Os testes de arquivos usaram ../../work/SaveChecks porque o processo de teste teve escrita negada na pasta temporária do ambiente automático.
+- Em Play, conferir cliques/teclado do menu, objetos restaurados, caminho real em LocalLow e os três finais conforme PARTE_9.md. Saves reais da aplicação e GPU/UI não foram executados fora do Editor. Arte, áudio, acabamento, balanceamento e executável continuam pendentes.

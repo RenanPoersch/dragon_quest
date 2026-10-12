@@ -17,7 +17,8 @@ Use essa versão do Editor para evitar migrações involuntárias.
 2. No Unity Hub, abra **Projects → Add → Add project from disk** e selecione a raiz deste repositório (a pasta que contém `Assets`, `Packages` e `ProjectSettings`).
 3. Abra com o Editor **6000.6.5f1** e aguarde a importação dos pacotes e assets.
 4. Abra `Assets/Scenes/CidadePrototipo.unity`.
-5. Clique em **Play**, clique dentro da janela **Game** e use **WASD ou as setas** para andar; **E** interage com objetos próximos e **I** abre o inventário.
+5. Clique em **Play** e escolha **Novo jogo** ou **Continuar** em um dos três slots do menu.
+6. Clique dentro da janela **Game** e use **WASD ou as setas** para andar; **E** interage com objetos próximos, **I** abre o inventário e **F5** salva na hospedaria.
 
 ## Parte 7A — ilha e cenários locais
 
@@ -64,7 +65,13 @@ O tirano usa golpes físicos fortes sem elemento. Aos **20% de HP**, prepara o m
 - **Final ruim:** meteoro lançado sem portador vivo; a equipe e o tirano são aniquilados e o castelo é destruído.
 - **Terceiro final:** matar o tirano primeiro; o espírito possui Aren. Matar os dois simultaneamente em área também leva a esse desfecho.
 
-Os finais têm cenas e três páginas de texto, com opção de reiniciar a demo. Derrota comum volta à hospedaria e permite outra tentativa. Veja `Docs/PARTE_8.md` para as regras e o roteiro em Play. Arte, áudio, salvamento, acabamento e executável ainda estão pendentes.
+Os finais têm cenas e três páginas de texto, com opção de voltar ao menu inicial. Derrota comum volta à hospedaria e permite outra tentativa. Veja `Docs/PARTE_8.md` para as regras e o roteiro em Play. Arte, áudio, acabamento e executável ainda estão pendentes.
+
+### Salvamento — parte 9
+
+O menu inicial oferece Novo jogo e Continuar em três slots. Autosave após vitórias, segredos, baú, entrega e mudanças de inventário; salvamento manual com a hospedeira ou F5 na hospedaria. Carregar recupera o mapa e a posição do último save, equipamentos, encaixes, Limit, estoques e progresso. Andar e trocar de mapa não salvam por si só; combates em andamento não são gravados.
+
+Os saves ficam em `Application.persistentDataPath/Saves`, fora do Git, com backup da revisão anterior válida. Jornadas concluídas reabrem seu final. Veja `Docs/PARTE_9.md` para os detalhes e a conferência em Play.
 
 ## Parte 6C — recompensas e missão de entrega
 
@@ -169,7 +176,7 @@ Veja `Docs/PARTE_3.md` para regras e teste em Play. As regras independentes da U
 - Ouro e baú aberto preservados ao entrar/sair da loja.
 - Movimento suspenso enquanto o diálogo está aberto; E, Espaço ou Enter avançam, e Esc fecha.
 
-Teste a entrega com o roteiro em `Docs/PARTE_2.md`. A cena continua sendo `CidadePrototipo`; o estado reinicia ao sair de Play. Compras e salvamento serão adicionados em etapas posteriores.
+Teste a entrega com o roteiro em `Docs/PARTE_2.md`. A cena continua sendo `CidadePrototipo`. Compras foram adicionadas na parte 6 e salvamento em disco na parte 9.
 
 ## Parte 1 — exploração
 
@@ -228,7 +235,8 @@ Veja `Docs/PARTE_1.md` para o roteiro de verificação.
 | 7B | Poema em latim, três segredos e abertura da trilha do vulcão |
 | 7C | Interior do vulcão, batalha do dragão e armadura especial |
 | 8 | Tirano, espírito, meteoro e três finais |
-| 9 | Arte, áudio, balanceamento e executável |
+| 9 | Menu inicial, três slots, salvamento manual e automático |
+| 10 | Arte, áudio, balanceamento e executável |
 
 Cada entrega deve ser validada antes do commit e do envio ao GitHub. Sprites e cenários serão criados por conjuntos; as primeiras mecânicas usarão elementos provisórios.
 

@@ -48,6 +48,12 @@ namespace DragonQuest.Prototype
             if (navigation.TryRecoverAtInn(out Vector2 arrival)) ApplyMap(arrival);
         }
 
+        public void Restore(string map, Vector2 position)
+        {
+            if (!navigation.TryRestore(map, position)) throw new System.ArgumentException("Posicao de save invalida.");
+            ApplyMap(position);
+        }
+
         private void ApplyMap(Vector2 arrival)
         {
             foreach (var root in mapRoots) root.Value.SetActive(root.Key == LocationId);

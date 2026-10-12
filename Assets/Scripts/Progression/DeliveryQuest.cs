@@ -12,6 +12,8 @@ namespace DragonQuest.Progression
         public const int GoldReward = 30;
         private readonly ShopService shops;
         public DeliveryStage Stage { get; private set; }
+        public event Action Changed;
+        internal void Restore(DeliveryStage stage) => Stage = stage;
         public string Summary => Stage == DeliveryStage.Available ? "Entrega: fale com o vendedor de itens."
             : Stage == DeliveryStage.CarryingPackage ? "Entrega: leve o pacote ao vendedor de materias."
             : Stage == DeliveryStage.Delivered ? "Entrega: volte ao vendedor de itens para receber."
@@ -56,7 +58,7 @@ namespace DragonQuest.Progression
                 shops.TryRestockConsumables(MilestoneId);
                 message = "Entrega concluida: +30 moedas. Estoque de consumiveis reposto; materias e equipamentos conservam seu estoque.";
             }
-            return true;
+            Changed?.Invoke(); return true;
         }
     }
 }
