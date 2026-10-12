@@ -7,6 +7,8 @@ namespace DragonQuest.Exploration
     public sealed class PlayerMovement : MonoBehaviour
     {
         [SerializeField, Min(0.1f)] private float speed = 4f;
+        [SerializeField, Min(1f)] private float acceleration = MovementDynamics.DefaultAcceleration;
+        [SerializeField, Min(1f)] private float deceleration = MovementDynamics.DefaultDeceleration;
 
         private Rigidbody2D body;
         private Vector2 movement;
@@ -48,8 +50,11 @@ namespace DragonQuest.Exploration
 
         private void FixedUpdate()
         {
-            // A física resolve as colisões, inclusive ao deslizar ao longo de paredes.
-            body.linearVelocity = movement * speed;
+            // Evita trocar instantaneamente a velocidade e provocar um solavanco na camera.
+            // Parte da velocidade resolvida pela fisica, conservando colisao e deslizamento nas paredes.
+            body.linearVelocity = movementEnabled && Application.isFocused
+                ? MovementDynamics.StepVelocity(body.linearVelocity, movement * speed, Time.fixedDeltaTime, acceleration, deceleration)
+                : Vector2.zero;
         }
 
         public void SetMovementEnabled(bool enabled)

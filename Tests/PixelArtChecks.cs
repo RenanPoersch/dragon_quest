@@ -50,6 +50,7 @@ internal static class PixelArtChecks
         }
         Assert(PixelSpriteLayout.Facing(Vector2.zero, true) == PixelDirection.Down, "Direcao nula usa repouso cardinal valido.");
         CheckWalking();
+        CheckMovementTurns();
         var alpha = new byte[40 * 30];
         for (int i = 0; i < 12; i++)
         {
@@ -99,7 +100,41 @@ internal static class PixelArtChecks
             && combined.Surfaces[0].x == (int)PixelSurface.Paving, "Composicao preserva material e coordenadas da textura.");
         var shadow = new ObliqueMeshData {DefaultSurface=PixelSurface.Roof}; shadow.Shadow(0,0,1,1);
         Assert(shadow.Colors[0].a > 0 && shadow.Colors[0].a < 1 && shadow.Surfaces[0].x == -1, "Sombra deve ser transparente e nao herdar textura do telhado.");
-        Console.WriteLine(checks + " verificacoes de sprites e materiais passaram.");
+        Console.WriteLine(checks + " verificacoes de sprites, materiais e movimento passaram.");
+    }
+    private static void CheckMovementTurns()
+    {
+        var directions=new[]{Vector2.down,Vector2.left,Vector2.right,Vector2.up,
+            new Vector2(-1,-1).normalized,new Vector2(1,-1).normalized,
+            new Vector2(-1,1).normalized,new Vector2(1,1).normalized};
+        foreach(float dt in new[]{1f/30,1f/50,1f/120}) foreach(var start in directions) foreach(var finish in directions)
+        {
+            Vector2 current=ObliqueProjection.GroundDirection(start)*4;
+            Vector2 target=ObliqueProjection.GroundDirection(finish)*4;
+            float maxSpeed=0,maxChange=0;
+            for(int step=0;step<(int)Math.Ceiling(0.14f/dt);step++)
+            {
+                Vector2 next=MovementDynamics.StepVelocity(current,target,dt);
+                maxChange=Math.Max(maxChange,Vector2.Distance(current,next));
+                maxSpeed=Math.Max(maxSpeed,next.magnitude);
+                current=next;
+            }
+            Assert(maxChange<=80*dt+0.0001f,"Viradas devem ter variacao limitada de velocidade, em vez de salto instantaneo.");
+            Assert(maxSpeed<=4.0001f&&Vector2.Distance(current,target)<0.0001f,
+                "Todas as transicoes cardinais/diagonais devem atingir a velocidade normal sem aceleracao extra ou oscilacao.");
+        }
+        foreach(float dt in new[]{1f/30,1f/50,1f/120})
+        {
+            Vector2 current=Vector2.zero;
+            for(int i=0;i<(int)Math.Ceiling(0.06f/dt);i++) current=MovementDynamics.StepVelocity(current,Vector2.right*4,dt);
+            Assert(current==Vector2.right*4,"Partida deve atingir a velocidade normal em aproximadamente 0,06 s.");
+            for(int i=0;i<(int)Math.Ceiling(0.05f/dt);i++) current=MovementDynamics.StepVelocity(current,Vector2.zero,dt);
+            Assert(current==Vector2.zero,"Soltar as teclas deve encerrar o deslocamento em aproximadamente 0,05 s.");
+            Assert(MovementDynamics.StepVelocity(Vector2.right*4,Vector2.right*4,dt)==Vector2.right*4,
+                "Caminhada continua deve conservar a mesma velocidade, sem suavizacao da camera.");
+        }
+        Assert(MovementDynamics.StepVelocity(Vector2.right*4,Vector2.up*4,0)==Vector2.right*4,
+            "Quadro sem passagem de tempo nao deve mudar a velocidade.");
     }
     private static void CheckWalking()
     {
