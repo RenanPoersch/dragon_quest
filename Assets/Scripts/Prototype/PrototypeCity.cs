@@ -189,8 +189,8 @@ namespace DragonQuest.Prototype
         private void CreatePassage(string doorName, string source, Transform parent, string destination)
         {
             Rect area = navigation.RouteFrom(source, destination).Entrance;
-            GameObject door = Entity(doorName, area.center, parent);
-            Block(doorName + " - marca", Vector2.zero, new Vector2(0.9f, 0.14f), "E4C36E", door.transform, false, 4);
+            // Ancora na Hierarchy; a passagem usa a area invisivel declarada em PrototypeTravel.
+            Entity(doorName, area.center, parent);
         }
 
         private Transform CreateWorld(List<Interactable> interactions)

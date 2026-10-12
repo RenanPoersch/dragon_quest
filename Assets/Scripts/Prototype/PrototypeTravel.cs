@@ -65,7 +65,8 @@ namespace DragonQuest.Prototype
             Maps = Array.AsReadOnly(definitions);
             var connections = new List<MapRoute>();
             Connect(connections, World, City, PrototypeWorldLayout.Castle,
-                PrototypeWorldLayout.CityExit, PrototypeWorldLayout.Castle + Vector2.down * 2.5f);
+                PrototypeWorldLayout.CityExit, PrototypeWorldLayout.Castle + Vector2.down * 2.5f,
+                exitSize: PrototypeCityLayout.ExitSize);
             Connect(connections, World, WestForest, PrototypeWorldLayout.WestForest,
                 PrototypeWorldLayout.LocalExit, PrototypeWorldLayout.WestForest + Vector2.down * 2.5f);
             Connect(connections, World, EastForest, PrototypeWorldLayout.EastForest,
@@ -73,21 +74,22 @@ namespace DragonQuest.Prototype
             Connect(connections, World, Ruins, PrototypeWorldLayout.Ruins,
                 PrototypeRuinsLayout.Exit, PrototypeWorldLayout.Ruins + Vector2.down * 2.5f);
             Connect(connections, City, Castle, PrototypeWorldLayout.CastleDoor, PrototypeWorldLayout.CastleExit, PrototypeCityLayout.CastleReturn);
-            Connect(connections, City, "item-shop", PrototypeCityLayout.ItemDoor, new Vector2(0, -3.8f), PrototypeCityLayout.DoorReturn(PrototypeCityLayout.ItemDoor));
-            Connect(connections, City, "materia-shop", PrototypeCityLayout.MateriaDoor, new Vector2(0, -3.8f), PrototypeCityLayout.DoorReturn(PrototypeCityLayout.MateriaDoor));
-            Connect(connections, City, "equipment-shop", PrototypeCityLayout.EquipmentDoor, new Vector2(0, -3.8f), PrototypeCityLayout.DoorReturn(PrototypeCityLayout.EquipmentDoor));
-            Connect(connections, City, Inn, PrototypeCityLayout.InnDoor, PrototypeInnLayout.Exit, PrototypeCityLayout.DoorReturn(PrototypeCityLayout.InnDoor));
+            Connect(connections, City, "item-shop", PrototypeCityLayout.ItemDoor, new Vector2(0, -3.8f), PrototypeCityLayout.DoorReturn(PrototypeCityLayout.ItemDoor), entranceSize: PrototypeCityLayout.DoorSize);
+            Connect(connections, City, "materia-shop", PrototypeCityLayout.MateriaDoor, new Vector2(0, -3.8f), PrototypeCityLayout.DoorReturn(PrototypeCityLayout.MateriaDoor), entranceSize: PrototypeCityLayout.DoorSize);
+            Connect(connections, City, "equipment-shop", PrototypeCityLayout.EquipmentDoor, new Vector2(0, -3.8f), PrototypeCityLayout.DoorReturn(PrototypeCityLayout.EquipmentDoor), entranceSize: PrototypeCityLayout.DoorSize);
+            Connect(connections, City, Inn, PrototypeCityLayout.InnDoor, PrototypeInnLayout.Exit, PrototypeCityLayout.DoorReturn(PrototypeCityLayout.InnDoor), entranceSize: PrototypeCityLayout.DoorSize);
             Connect(connections, World, Volcano, PrototypeWorldLayout.Volcano,
                 PrototypeVolcanoLayout.Exit, PrototypeWorldLayout.Volcano+Vector2.down*1.8f);
             Routes = connections.AsReadOnly();
             Current = maps[World];
         }
 
-        private void Connect(List<MapRoute> connections, string outside, string inside, Vector2 entrance, Vector2 exit, Vector2 returnPoint)
+        private void Connect(List<MapRoute> connections, string outside, string inside, Vector2 entrance, Vector2 exit, Vector2 returnPoint,
+            Vector2? entranceSize = null, Vector2? exitSize = null)
         {
             AddRoute(connections, new MapRoute(outside, inside, entrance, maps[inside].Spawn,
-                outside==World?new Vector2(2.8f,2.2f):new Vector2(1.4f,1)));
-            AddRoute(connections, new MapRoute(inside, outside, exit, returnPoint,new Vector2(1.4f,1)));
+                entranceSize ?? (outside==World?new Vector2(2.8f,2.2f):new Vector2(1.4f,1))));
+            AddRoute(connections, new MapRoute(inside, outside, exit, returnPoint,exitSize ?? new Vector2(1.4f,1)));
         }
         private void AddRoute(List<MapRoute> connections, MapRoute route)
         {

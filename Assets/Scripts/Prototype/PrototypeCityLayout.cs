@@ -46,7 +46,8 @@ namespace DragonQuest.Prototype
         public static readonly Rect LegacyBounds = new Rect(-36, -24, 72, 48);
         public static readonly Vector2 Spawn = new Vector2(0, -10);
         public static readonly Vector2 Entry = new Vector2(0, -18.5f);
-        public static readonly Vector2 Exit = new Vector2(0, -20.2f);
+        public static readonly Vector2 Exit = new Vector2(0, -20.8f);
+        public static readonly Vector2 ExitSize = new Vector2(Bounds.width, 1.2f);
         public static readonly Vector2 Castle = new Vector2(0, 19);
         public static readonly Vector2 CastleDoor = new Vector2(0, 16.2f);
         public static readonly Vector2 CastleReturn = new Vector2(0, 15);
@@ -57,10 +58,19 @@ namespace DragonQuest.Prototype
         public static readonly Vector2 Resident = new Vector2(-8.2f, 0);
         public static readonly Vector2 Gardener = new Vector2(8, 7.4f);
         public static readonly Vector2 Explorer = new Vector2(7.7f, -0.2f);
-        public static readonly Vector2 ItemDoor = new Vector2(-4.9f, -8.375f);
-        public static readonly Vector2 EquipmentDoor = new Vector2(5.1f, -12.125f);
-        public static readonly Vector2 MateriaDoor = new Vector2(5, 0.25f);
-        public static readonly Vector2 InnDoor = new Vector2(-5.1f, -16.25f);
+        public static Vector2 ItemDoor => DoorAt("Loja de itens");
+        public static Vector2 EquipmentDoor => DoorAt("Loja de equipamentos");
+        public static Vector2 MateriaDoor => DoorAt("Loja de materias");
+        public static Vector2 InnDoor => DoorAt("Hospedaria");
+        public static readonly Vector2 DoorSize = new Vector2(1, 0.9f);
+        // A ancora coincide com o painel da porta; a faixa externa recebe os pes do heroi.
+        private static Vector2 DoorAt(string name)
+        {
+            foreach (CityBlock building in Buildings)
+                if (building.Name == name) return new Vector2(building.Position.x, building.Bounds.yMin - 0.035f);
+            throw new System.ArgumentException("Edificio sem porta: " + name);
+        }
+        public static Vector2 DoorApproach(Vector2 door) => door + Vector2.down * 0.425f;
         public static Vector2 DoorReturn(Vector2 door) => door + Vector2.down * 1.1f;
         public static IReadOnlyList<Vector2> Street { get; } = System.Array.AsReadOnly(new[] {
             Exit, Entry, new Vector2(-0.7f, -12), new Vector2(1.1f, -7), new Vector2(0, -1),

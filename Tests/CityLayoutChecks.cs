@@ -60,6 +60,15 @@ internal static class CityLayoutChecks
     private static void CheckReachable(Vector2 position, string label)
         => Assert(Accessible(position), "Sem caminho livre ate " + label + ".");
     public static bool Accessible(Vector2 position) => Walkable(position) && reachable.Contains(Cell(position));
+    public static Vector2? ReachablePoint(Rect area)
+    {
+        foreach (var cell in reachable)
+        {
+            Vector2 point = Position(cell.Item1, cell.Item2);
+            if (area.Contains(point)) return point;
+        }
+        return null;
+    }
 
     private static void CheckPaths()
     {
@@ -72,7 +81,7 @@ internal static class CityLayoutChecks
         foreach (Vector2 door in new[] {PrototypeCityLayout.ItemDoor, PrototypeCityLayout.EquipmentDoor,
             PrototypeCityLayout.MateriaDoor, PrototypeCityLayout.InnDoor})
         {
-            CheckReachable(door, "porta da loja/hospedaria em " + door.x + ", " + door.y);
+            CheckReachable(PrototypeCityLayout.DoorApproach(door), "acesso junto a porta da loja/hospedaria em " + door.x + ", " + door.y);
             CheckReachable(PrototypeCityLayout.DoorReturn(door), "retorno da loja/hospedaria");
         }
         CheckReachable(PrototypeCityLayout.Citizen + Vector2.down, "aldeao");
@@ -98,8 +107,8 @@ internal static class CityLayoutChecks
             && PrototypeCityLayout.SafeSavedPosition(new Vector2(-4, 12.5f)) == PrototypeCityLayout.Spawn,
             "Save antigo em casa, fora do bairro compacto ou dentro do fosso deve reaparecer na rua central.");
         Assert(PrototypeCityLayout.SafeSavedPosition(PrototypeCityLayout.Spawn) == PrototypeCityLayout.Spawn
-            && PrototypeCityLayout.SafeSavedPosition(PrototypeCityLayout.ItemDoor) == PrototypeCityLayout.ItemDoor,
-            "Posicoes livres salvas e portas devem conservar suas coordenadas.");
+            && PrototypeCityLayout.SafeSavedPosition(PrototypeCityLayout.DoorApproach(PrototypeCityLayout.ItemDoor)) == PrototypeCityLayout.DoorApproach(PrototypeCityLayout.ItemDoor),
+            "Posicoes livres salvas e acesso da porta devem conservar suas coordenadas.");
         foreach (Vector2 point in new[] {new Vector2(-12.5f, 0), new Vector2(12.5f, 0), new Vector2(0, -21.5f), new Vector2(0, 21.5f)})
             Assert(!Walkable(point), "Muralha deve bloquear a saida do mapa.");
 

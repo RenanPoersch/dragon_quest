@@ -109,7 +109,7 @@ internal static class WorldMapChecks
                 "Chegada bloqueada ou sem caminho de retorno: " + route.From + " -> " + route.To);
             travel = ReadyTravel(); NavigateTo(travel, route.From);
             MapDefinition before = travel.Current;
-            Vector2? entry=route.From==PrototypeTravel.City ? (CityLayoutChecks.Accessible(route.Entrance.center)?route.Entrance.center:(Vector2?)null)
+            Vector2? entry=route.From==PrototypeTravel.City ? CityLayoutChecks.ReachablePoint(route.Entrance)
                 : paths[route.From].ReachablePoint(route.Entrance);
             Assert(entry.HasValue,
                 "Area automatica precisa ser alcancavel: " + route.From + " -> " + route.To);
@@ -130,6 +130,7 @@ internal static class WorldMapChecks
                         "POI global deve aceitar entrada pelos quatro lados acessiveis: "+route.To);
                 }
         }
+        CheckCityDoorways();
         travel = new PrototypeTravel();
         for (int i = 0; i < 3; i++)
         {
@@ -170,6 +171,36 @@ internal static class WorldMapChecks
         Assert(!travel.TryEnter(recovery,false,out _)&&travel.Current.Id==PrototypeTravel.Inn,"Recuperacao nao pode acionar a saida da hospedaria.");
         travel=ReadyTravel();travel.TryTravel(PrototypeTravel.City,out _);travel.TryTravel(PrototypeTravel.Castle,out _);
         Assert(travel.TryRecoverAtInn(out recovery)&&travel.Current.Id==PrototypeTravel.Inn&&!travel.TryEnter(recovery,false,out _),"Derrota comum no castelo tambem recupera na hospedaria sem retornar automaticamente.");
+    }
+    private static void CheckCityDoorways()
+    {
+        foreach(var pair in new[]{("item-shop","Loja de itens"),("equipment-shop","Loja de equipamentos"),
+            ("materia-shop","Loja de materias"),(PrototypeTravel.Inn,"Hospedaria")})
+        {
+            var travel=new PrototypeTravel(); travel.TryTravel(PrototypeTravel.City,out _);
+            var route=travel.RouteFrom(PrototypeTravel.City,pair.Item1);
+            var building=PrototypeCityLayout.Buildings.First(b=>b.Name==pair.Item2);
+            var visibleDoor=new Vector2(building.Position.x,building.Bounds.yMin-0.035f);
+            Assert((route.Entrance.center-visibleDoor).sqrMagnitude<0.000001f,"Passagem deve coincidir com a porta da fachada: "+pair.Item2);
+            var approach=PrototypeCityLayout.DoorApproach(visibleDoor);
+            Assert(CityLayoutChecks.Accessible(approach),"Pes do heroi precisam alcancar a entrada sem atravessar o collider da casa.");
+            Assert(!travel.TryEnter(new Vector2(visibleDoor.x,route.Entrance.yMin-0.1f),false,out _),
+                "Passar no patio distante da porta nao pode entrar na loja.");
+            Assert(!travel.TryEnter(new Vector2(visibleDoor.x+building.Size.x*0.3f,approach.y),false,out _),
+                "Passar diante da janela nao pode entrar na loja.");
+            Assert(travel.TryEnter(approach,false,out _)&&travel.Current.Id==pair.Item1,"Encostar nos acessos das portas deve entrar automaticamente.");
+        }
+        int sampled=0;
+        for(float x=PrototypeCityLayout.Bounds.xMin+0.5f;x<PrototypeCityLayout.Bounds.xMax;x+=0.5f)
+        {
+            var point=new Vector2(x,PrototypeCityLayout.Exit.y);
+            if(!CityLayoutChecks.Accessible(point)) continue;
+            sampled++;
+            var travel=new PrototypeTravel(); travel.TryTravel(PrototypeTravel.City,out _);
+            Assert(travel.TryEnter(point,false,out _)&&travel.Current.Id==PrototypeTravel.World,
+                "Saida sul deve cobrir toda a faixa caminhavel, incluindo laterais: X="+x);
+        }
+        Assert(sampled>25,"Conferencia da saida deve cobrir varios pontos ao longo da largura da periferia.");
     }
 
     private static PrototypeTravel ReadyTravel()
