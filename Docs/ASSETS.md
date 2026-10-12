@@ -15,6 +15,12 @@ Registrar cada conjunto de sprites, tiles, fontes, áudio ou outros recursos adi
 
 Para recursos gerados durante o projeto, registrar a ferramenta, a data, as alterações realizadas e as condições aplicáveis. Para recursos externos, incluir a URL da fonte e a atribuição exigida.
 
+## Sprite do baú — 12 de outubro de 2026
+
+`Assets/Resources/PixelArt/ChestStates.png` foi criado com a ferramenta integrada `image_gen`: baú original de madeira com ferragens, fechado na célula esquerda e aberto/vazio na direita. PNG RGBA de 1774 × 887, preservado integralmente, sem edição posterior. SHA-256: `349b7068a92a5b34566bb67270de8f7b430c3168d2f32c86dac09c56d9b87484`. Prompt completo em `PIXEL_ART_PROMPTS.md`. Nenhum recurso extraído de jogos ou bancos externos foi utilizado.
+
+A Unity recorta as duas células em memória; o arquivo é importado como textura legível, Point/Clamp, sem mipmap, compressão ou redução. A escala vem do quadro fechado e é compartilhada pelos dois estados. A âncora horizontal usa a caixa, para que a tampa levantada não desloque sua base. `ObliqueScenery.Chest` monta o sprite vertical com o material de profundidade já usado pelos personagens, substituindo caixa/tampa geométricas. Sombra e colisor continuam no cenário. `ChestInteraction` acompanha o estado salvo, incluindo a volta ao quadro fechado quando outra jornada ainda não abriu o baú.
+
 ## Modelos 2.5D — 10 de outubro de 2026
 
 Os retângulos do cenário e dos personagens foram substituídos por malhas originais de poucos polígonos, geradas por C# em execução. Casas, torres, árvores, montanhas, costa, fonte, mobiliário, baú e personagens vêm de `ObliqueScenery.cs` e `ObliqueMeshData.cs`. O material usa `Assets/Resources/ObliqueWorld.shader`, criado para este projeto, com cores por face e teste de profundidade. Nenhuma imagem ou modelo de Final Fantasy foi importado.

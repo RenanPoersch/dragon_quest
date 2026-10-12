@@ -52,16 +52,37 @@ namespace DragonQuest.Exploration
                 : new Vector3(forward.x / length, forward.y / length, 0);
         }
         public static PixelFrame[] Read(int width, int height, byte[] alpha, bool stableWalkingAnchor = false)
+            => ReadGrid(width, height, alpha, Columns, Rows, stableWalkingAnchor);
+
+        public static PixelFrame[] ReadPropPair(int width, int height, byte[] alpha)
         {
-            if (width < 16 || height < 12
+            var frames = ReadGrid(width, height, alpha, 2, 1, false);
+            // O centro da base, abaixo da tampa, nao muda quando a silhueta aberta fica mais larga.
+            int baseRow = Math.Max(1, (int)Math.Round((frames[0].Width - 2) * 0.23f));
+            for (int i = 0; i < frames.Length; i++)
+            {
+                PixelFrame f = frames[i];
+                int y = f.Y + 1 + baseRow, left = f.X + f.Width, right = f.X - 1;
+                if (y >= f.Y + f.Height - 1) throw new ArgumentException("Base do objeto ausente.");
+                for (int x = f.X; x < f.X + f.Width; x++)
+                    if (alpha[y * width + x] >= 128) { left = Math.Min(left, x); right = Math.Max(right, x); }
+                if (right < left) throw new ArgumentException("Base do objeto vazia.");
+                frames[i] = new PixelFrame(f.X, f.Y, f.Width, f.Height, ((left + right + 1) / 2f - f.X) / f.Width);
+            }
+            return frames;
+        }
+
+        private static PixelFrame[] ReadGrid(int width, int height, byte[] alpha, int columns, int rows, bool stableWalkingAnchor)
+        {
+            if (width < columns * 4 || height < rows * 4
                 || alpha == null || alpha.Length != (long)width * height) throw new ArgumentException("Atlas de sprites invalido.");
-            var frames = new PixelFrame[FrameCount];
+            var frames = new PixelFrame[columns * rows];
             for (int index = 0; index < frames.Length; index++)
             {
                 // Divide toda a imagem, inclusive quando o tamanho tem um pixel a mais/menos.
-                int column = index % Columns, row = index / Columns;
-                int left = column * width / Columns, right = (column + 1) * width / Columns;
-                int bottom = height - (row + 1) * height / Rows, top = height - row * height / Rows;
+                int column = index % columns, row = index / columns;
+                int left = column * width / columns, right = (column + 1) * width / columns;
+                int bottom = height - (row + 1) * height / rows, top = height - row * height / rows;
                 int minX = right, maxX = left - 1, minY = top, maxY = bottom - 1;
                 for (int y = bottom; y < top; y++)
                     for (int x = left; x < right; x++)

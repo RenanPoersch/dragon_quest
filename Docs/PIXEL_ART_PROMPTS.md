@@ -1,5 +1,11 @@
 # Prompts — pixel art, parte 10A
 
+## Baú — fechado e aberto, 12 de outubro de 2026
+
+Ferramenta integrada `image_gen`, com fundo transparente. Nova arte, sem imagem de referência. PNG original de 1774 × 887 copiado integralmente para `Assets/Resources/PixelArt/ChestStates.png`; duas células horizontais, recortadas apenas em memória pela Unity. Não houve edição posterior do PNG.
+
+Use case: stylized-concept. Asset type: transparent sprite sheet for an original Unity fantasy RPG, two states of the SAME treasure chest. Generate exactly TWO sprites in a TWO-COLUMN, ONE-ROW sheet, ideally 1024x512. Left cell: chest fully CLOSED. Right cell: the identical chest OPEN with raised hinged lid and a dark EMPTY wooden interior (loot already taken). Style: crisp detailed 16-bit JRPG pixel art inspired by original 1990s SNES RPGs, stepped pixel clusters and dark outline, limited warm earthy palette matching a weathered medieval town. No copied game assets. Chest: aged amber oak planks, dark iron bands and rivets, small muted brass clasp; compact practical wooden chest, no magical ornaments. Fixed elevated three-quarter camera, front and right side visible, lid/top visible, identical viewing angle in both states. Neutral baked upper-left highlights and darker undersides; no strong ambient cast shadow, no glow. Each cell has generous truly TRANSPARENT padding. Both wooden BOX BASES MUST have EXACTLY the same apparent width, scale, position and silhouette alignment within their respective cells: horizontally centered, bottom contact point at 84% of cell height. Only the lid rotates upward in the right sprite. Open lid must stay entirely inside its cell. Chest base occupies around 62% of cell width. The open sprite is taller but its base never moves. Avoid backdrop, ground, checkerboard baked into pixels, text, labels, panels, UI, coins, gems, items, gradients, blur, photorealism, smooth 3D rendering, extra sprites. Deliver a clean RGBA transparent PNG.
+
 ## Aren — diagonais, 12 de outubro de 2026
 
 Ferramenta integrada `image_gen`, com `ArenWalk.png` como alvo/referência para criar uma folha complementar. Saída salva em `Assets/Resources/PixelArt/ArenDiagonalWalk.png`; a folha original foi conservada. Alpha e dimensões originais da saída foram mantidos, com recorte somente em memória pela Unity.

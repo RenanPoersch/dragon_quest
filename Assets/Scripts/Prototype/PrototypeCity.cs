@@ -179,9 +179,9 @@ namespace DragonQuest.Prototype
             BoxCollider2D collider = chest.AddComponent<BoxCollider2D>();
             collider.size = new Vector2(0.9f, 0.7f);
             collider.sharedMaterial = frictionless;
-            Transform lid = scenery.Chest(chest.transform);
+            System.Action<bool> showState = scenery.Chest(chest.transform);
             ChestInteraction interaction = chest.AddComponent<ChestInteraction>();
-            interaction.Initialize("praca-primeiro-bau", 25, () => lid.localRotation = Quaternion.Euler(65, 0, 0),
+            interaction.Initialize("praca-primeiro-bau", 25, showState,
                 () => progress?.HasOpenedChest("praca-primeiro-bau") == true);
             return interaction;
         }

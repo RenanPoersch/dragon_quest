@@ -6,23 +6,26 @@ namespace DragonQuest.Interactions
     {
         private string chestId;
         private int goldReward;
-        private System.Action openLid;
+        private System.Action<bool> showState;
         private bool opened;
         private System.Func<bool> wasOpened;
 
         public override string Prompt => opened ? "Examinar bau aberto" : "Abrir bau";
 
-        public void Initialize(string id, int reward, System.Action showOpened, System.Func<bool> isOpened = null)
+        public void Initialize(string id, int reward, System.Action<bool> setVisualState, System.Func<bool> isOpened = null)
         {
             chestId = id;
             goldReward = reward;
-            openLid = showOpened;
+            showState = setVisualState;
             wasOpened = isOpened;
+            opened = wasOpened?.Invoke() == true;
+            showState?.Invoke(opened);
         }
 
         private void Update()
         {
-            if (!opened && wasOpened?.Invoke() == true) { opened = true; openLid?.Invoke(); }
+            bool savedState = wasOpened?.Invoke() ?? opened;
+            if (savedState != opened) { opened = savedState; showState?.Invoke(opened); }
         }
 
         public override void Interact(InteractionContext context)
@@ -33,7 +36,7 @@ namespace DragonQuest.Interactions
                 context.Dialogue.Open("Bau da praca", "O bau esta vazio. Voce ja recolheu a recompensa.");
 
             opened = true;
-            openLid?.Invoke();
+            showState?.Invoke(true);
         }
     }
 }

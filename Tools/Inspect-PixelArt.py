@@ -15,14 +15,15 @@ def check(condition, message):
     if not condition:
         raise ValueError(message)
 
-for name in ("ArenWalk", "ArenDiagonalWalk", "LiaWalk", "BramWalk", "NpcRoster", "TerrainAtlas", "CityMaterialsAtlas", "CityDetailsAtlas", "CastleMaterialsAtlas", "CityGroundMap"):
+for name in ("ArenWalk", "ArenDiagonalWalk", "LiaWalk", "BramWalk", "NpcRoster", "ChestStates", "TerrainAtlas", "CityMaterialsAtlas", "CityDetailsAtlas", "CastleMaterialsAtlas", "CityGroundMap"):
     path = directory / (name + ".png")
     with Image.open(path) as image:
         width, height = image.size
         ground_map = name == "CityGroundMap"
+        prop_pair = name == "ChestStates"
         map_width, map_height = (62, 80)
         check(width >= 16 and height >= 12 and (abs(width * map_height - height * map_width) / (height * map_width) < .02 if ground_map
-              else abs(width * 3 - height * 4) <= 8), name + ": proporcao irregular")
+              else abs(width - height * 2) <= 8 if prop_pair else abs(width * 3 - height * 4) <= 8), name + ": proporcao irregular")
         check(width <= (4096 if ground_map else 2048) and height <= (4096 if ground_map else 2048), name + ": tamanho acima do importador")
         meta = path.with_suffix(".png.meta").read_text(encoding="utf-8-sig")
         for setting in ("filterMode: 0", "enableMipMap: 0", "nPOTScale: 0", "textureCompression: 0"):
@@ -44,10 +45,12 @@ for name in ("ArenWalk", "ArenDiagonalWalk", "LiaWalk", "BramWalk", "NpcRoster",
             check("isReadable: 1" in meta, name + ": alpha precisa ser legivel em runtime")
             alpha = image.getchannel("A")
             check(alpha.getextrema() == (0, 255), name + ": transparencia incorreta")
-            for index in range(12):
-                column, row = index % 4, index // 4
-                left, top = column * width // 4, row * height // 3
-                right, bottom = (column + 1) * width // 4, (row + 1) * height // 3
+            columns, rows_count = (2, 1) if prop_pair else (4, 3)
+            base_widths, base_bottoms = [], []
+            for index in range(columns * rows_count):
+                column, row = index % columns, index // columns
+                left, top = column * width // columns, row * height // rows_count
+                right, bottom = (column + 1) * width // columns, (row + 1) * height // rows_count
                 # Apenas leitura da regiao para analise, sem criar assets derivados.
                 region = alpha.crop((left, top, right, bottom))
                 mask = region.point(lambda value: 255 if value >= 128 else 0)
@@ -61,9 +64,20 @@ for name in ("ArenWalk", "ArenDiagonalWalk", "LiaWalk", "BramWalk", "NpcRoster",
                 xs = [x + 0.5 for y in rows for x in range(x0, x1) if region.getpixel((x, y)) >= 128]
                 frame = {"x": left + x0 - 1, "y": top + y0 - 1, "width": x1 - x0 + 2, "height": y1 - y0 + 2,
                          "footX": (sum(xs) / len(xs) - x0 + 1) / (x1 - x0 + 2)}
+                if prop_pair:
+                    base_row = round(((entry['frames'][0]['width'] if index else frame['width']) - 2) * .23)
+                    body_xs = [x for x in range(x0, x1) if region.getpixel((x, y1 - 1 - base_row)) >= 128]
+                    check(bool(body_xs), name + ": base ausente")
+                    frame['footX'] = ((min(body_xs) + max(body_xs) + 1) / 2 - x0 + 1) / frame['width']
+                    base_widths.append(max(body_xs) - min(body_xs) + 1)
+                    base_bottoms.append(y1)
                 check(0 < frame["footX"] < 1, name + ": ancora fora do sprite")
                 entry["frames"].append(frame)
             entry["maxHeight"] = max(frame["height"] for frame in entry["frames"])
+            if prop_pair:
+                entry['pixelsPerUnit'] = entry['frames'][0]['width'] / 1.1
+                check(abs(base_widths[0] - base_widths[1]) < base_widths[0] * .04, name + ": caixa muda de largura ao abrir")
+                check(abs(base_bottoms[0] - base_bottoms[1]) <= 2, name + ": base vertical desalinhada")
         result[name] = entry
 
 if len(sys.argv) > 1:

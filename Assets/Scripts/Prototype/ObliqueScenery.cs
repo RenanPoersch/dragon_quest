@@ -520,13 +520,16 @@ namespace DragonQuest.Prototype
             return mesh;
         }
 
-        public Transform Chest(Transform parent)
+        public Action<bool> Chest(Transform parent)
         {
-            var mesh=new ObliqueMeshData();
-            mesh.Box(0,0,0.9f,0.7f,0,0.45f,ObliqueMeshData.Hex("8C6B4C"));
-            mesh.Box(0,-0.36f,0.12f,0.03f,0.2f,0.55f,ObliqueMeshData.Hex("D6BB7D")); Show("Bau - caixa",mesh,parent);
-            var lid=new ObliqueMeshData(); lid.Box(0,-0.35f,0.94f,0.74f,0,0.16f,ObliqueMeshData.Hex("B1956B"));
-            Transform hinge=Show("Bau - tampa articulada",lid,parent); hinge.localPosition=new Vector3(0,0.35f,-0.45f); return hinge;
+            var shadow = new ObliqueMeshData(); shadow.Shadow(0, 0, 0.4f, 0.27f);
+            Show("Sombra do bau", shadow, parent).localPosition = Vector3.back * 0.035f;
+            var visual = PixelSprites.Create(parent, "ChestStates");
+            // Base apoiada na frente do collider, inteiramente acima do piso.
+            visual.localPosition = new Vector3(ObliqueProjection.YawSin * 0.35f, -ObliqueProjection.YawCos * 0.35f, -0.075f);
+            var renderer = visual.GetComponent<SpriteRenderer>();
+            var states = PixelSprites.Atlas("ChestStates").Sprites;
+            return opened => { var next = states[opened ? 1 : 0]; if (renderer.sprite != next) renderer.sprite = next; };
         }
 
         public Transform King(Transform parent) => Show("Rei e coroa",KingData(),parent);
