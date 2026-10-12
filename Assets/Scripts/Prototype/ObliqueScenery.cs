@@ -12,6 +12,7 @@ namespace DragonQuest.Prototype
         private readonly List<Mesh> meshes = new List<Mesh>();
         private readonly Material material;
         private readonly Material shadowMaterial;
+        private readonly Material cityMaterial, cityDetailsMaterial, glowMaterial;
         public PixelSpriteLibrary PixelSprites { get; }
         public ObliqueScenery()
         {
@@ -21,13 +22,29 @@ namespace DragonQuest.Prototype
             var atlas = Resources.Load<Texture2D>("PixelArt/TerrainAtlas");
             if (atlas == null) throw new InvalidOperationException("Atlas de materiais ausente.");
             material.SetTexture("_PixelAtlas", atlas);
+            cityMaterial = AtlasMaterial(shader, "CityMaterialsAtlas", "Periferia / materiais gastos");
+            cityMaterial.SetFloat("_Brightness", 0.8f);
+            cityDetailsMaterial = AtlasMaterial(shader, "CityDetailsAtlas", "Periferia / fachadas e letreiros");
+            var glowShader = Resources.Load<Shader>("PixelGlow");
+            if (glowShader == null) throw new InvalidOperationException("Shader PixelGlow ausente.");
+            glowMaterial = new Material(glowShader) {name = "Periferia / lampioes e vapor"};
             PixelSprites = new PixelSpriteLibrary();
             var shadowShader = Resources.Load<Shader>("PixelShadow");
             if (shadowShader == null) throw new InvalidOperationException("Shader PixelShadow ausente.");
             shadowMaterial = new Material(shadowShader) {name = "Sombra transparente no chao"};
         }
 
+        private static Material AtlasMaterial(Shader shader, string resource, string name)
+        {
+            var texture = Resources.Load<Texture2D>("PixelArt/" + resource);
+            if (texture == null) throw new InvalidOperationException("Atlas ausente: " + resource);
+            var appearance = new Material(shader) {name = name}; appearance.SetTexture("_PixelAtlas", texture); return appearance;
+        }
+
         public Transform Show(string name, ObliqueMeshData data, Transform parent)
+            => ShowWithMaterial(name, data, parent, material);
+
+        private Transform ShowWithMaterial(string name, ObliqueMeshData data, Transform parent, Material appearance)
         {
             GameObject model = new GameObject(name);
             model.transform.SetParent(parent, false);
@@ -38,13 +55,32 @@ namespace DragonQuest.Prototype
                 var target = data.Colors[data.Triangles[i]].a < 1 ? shadows : solid;
                 target.Add(data.Triangles[i]); target.Add(data.Triangles[i + 1]); target.Add(data.Triangles[i + 2]);
             }
-            if (solid.Count > 0) RenderMesh(name, data, solid, material, model);
+            if (solid.Count > 0) RenderMesh(name, data, solid, appearance, model);
             if (shadows.Count > 0)
             {
                 var shadow = new GameObject("Sombra transparente"); shadow.transform.SetParent(model.transform, false);
                 RenderMesh(name + " / sombra", data, shadows, shadowMaterial, shadow);
             }
             return model.transform;
+        }
+
+        public void CityBlock(CityBlock block, Transform parent)
+            => ShowWithMaterial("Volume da periferia", CityPeripheryArt.Block(block), parent, cityMaterial);
+
+        public void CityBuilding(string name, Vector2 size, string hex, Transform parent)
+            => ShowCityArt(name, CityPeripheryArt.Building(name, size, hex), parent);
+
+        public void CityStreets(Transform parent) => ShowCityArt("Lampioes, grelhas e tubulacoes", CityPeripheryArt.Streets(), parent);
+
+        private void ShowCityArt(string name, PeripheryBuildingArt art, Transform parent)
+        {
+            ShowWithMaterial(name + " / volumes", art.Body, parent, cityMaterial);
+            if (art.Details.Vertices.Count > 0) ShowWithMaterial(name + " / fachadas", art.Details, parent, cityDetailsMaterial);
+            if (art.Glow.Vertices.Count > 0)
+            {
+                var light = new GameObject(name + " / luz e vapor"); light.transform.SetParent(parent, false);
+                RenderMesh(name + " / luz e vapor", art.Glow, art.Glow.Triangles, glowMaterial, light);
+            }
         }
 
         private void RenderMesh(string name, ObliqueMeshData data, List<int> triangles, Material appearance, GameObject model)
@@ -569,6 +605,11 @@ namespace DragonQuest.Prototype
         }
 
         public void Dispose()
-        { foreach(Mesh mesh in meshes) if(mesh!=null) UnityEngine.Object.Destroy(mesh); UnityEngine.Object.Destroy(material); UnityEngine.Object.Destroy(shadowMaterial); PixelSprites.Dispose(); }
+        {
+            foreach(Mesh mesh in meshes) if(mesh!=null) UnityEngine.Object.Destroy(mesh);
+            UnityEngine.Object.Destroy(material); UnityEngine.Object.Destroy(shadowMaterial);
+            UnityEngine.Object.Destroy(cityMaterial); UnityEngine.Object.Destroy(cityDetailsMaterial); UnityEngine.Object.Destroy(glowMaterial);
+            PixelSprites.Dispose();
+        }
     }
 }

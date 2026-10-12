@@ -52,3 +52,9 @@ Importadores e shaders foram configurados no projeto para preservar pixels e alp
 Revisão do Aren, em 12 de outubro de 2026: `ArenWalk.png` foi editado com a ferramenta integrada `image_gen` para cabelo loiro pontiagudo em todas as doze poses. Roupa, quatro direções, caminhada e transparência foram conservadas. O importador/GUID continua o mesmo; 186 verificações dos atlas/importadores passaram. O prompt de edição foi adicionado a `PIXEL_ART_PROMPTS.md`. A figura geométrica provisória do Aren nos finais também recebeu cabelo dourado com pontas, em `ObliqueScenery`.
 
 Diagonais do Aren, em 12 de outubro de 2026: `Assets/Resources/PixelArt/ArenDiagonalWalk.png` foi criado com a ferramenta integrada `image_gen`, usando a folha atual do Aren como referência para personagem, roupa, cabelo e estilo. São doze poses: quatro direções em três quartos, cada uma com repouso e dois passos. A imagem original de 1447 × 1087 pixels mantém alpha, sem edição posterior; a Unity recorta em memória. A folha cardinal foi conservada. Prompt completo em `PIXEL_ART_PROMPTS.md`.
+
+## Periferia compacta — 12 de outubro de 2026
+
+`Assets/Resources/PixelArt/CityMaterialsAtlas.png` e `CityDetailsAtlas.png` são atlas originais gerados com a ferramenta integrada `image_gen`, usando a imagem enviada pelo usuário como referência de atmosfera e materiais. Os PNGs têm 1448 × 1086 pixels e foram importados sem edição posterior. Não há imagens recortadas da referência no jogo. Prompts em `PERIFERIA_ART_PROMPTS.md`.
+
+Casas, toldos, caldeira, tubos, lampiões, grelhas, vapor, ponte de pedra e fosso seco são malhas originais geradas por C# em `CityPeripheryArt`. Os letreiros, portas e janelas são painéis das fachadas com UVs locais. `PixelGlow.shader` foi criado para a transparência/aditivo da iluminação. A planta compacta foi definida em `PrototypeCityLayout`; as pontes de madeira e o lago da versão anterior foram removidos.

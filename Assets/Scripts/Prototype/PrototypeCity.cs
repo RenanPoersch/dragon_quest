@@ -32,27 +32,28 @@ namespace DragonQuest.Prototype
 
             foreach (CityBlock block in PrototypeCityLayout.Blocks)
                 Block(block.Name, block.Position, block.Size, block.Color,
-                    block.Solid || block.Order >= 0 ? obstacles : ground, block.Solid, block.Order);
+                    block.Solid || block.Order >= 0 ? obstacles : ground, block.Solid, block.Order, cityAppearance: true);
             foreach (CityBlock building in PrototypeCityLayout.Buildings)
                 Building(building.Name, building.Position, building.Size, building.Color, buildings);
+            scenery.CityStreets(Group("Detalhes urbanos", city));
 
             var interactables = new List<Interactable>();
             Transform interactions = Group("Moradores e bau", city);
             NpcInteraction citizen = CreateNpc("Aldeao", PrototypeCityLayout.Citizen, "8D9DB0", interactions);
             citizen.Initialize("Aldeao",
-                "Bem-vindo a periferia do castelo! Itens a noroeste, materias a nordeste e equipamentos a sudeste. Caminhe ate a porta para entrar e use E no vendedor.",
-                "Ha um bau a leste daqui. Talvez voce encontre moedas para sua jornada.",
-                "O bairro residencial fica a oeste, os jardins a nordeste e as ruinas a sudeste. Ao sul, tres pontes atravessam o rio.",
-                "O tirano governa do castelo ao norte. Alguns dizem que os segredos desta cidade escondem algo ainda maior...");
+                "Bem-vindo a periferia! Siga a viela entre as casas. Pousada e armas ficam perto da entrada; mais adiante, procure os letreiros de itens e materias. Basta entrar na porta.",
+                "Ha um bau ao lado da rua do mercado. Talvez voce encontre moedas para sua jornada.",
+                "A capela e as casas antigas ficam no lado oeste. O pequeno jardim sobrevive entre as oficinas do lado leste.",
+                "Ao norte, a ponte de pedra leva a entrada do castelo. O tirano governa de la, longe de quem vive nestes becos...");
             interactables.Add(citizen);
             GameObject peasant = CreateNpcFigure("Camponesa", PrototypeCityLayout.Resident, "B77D8B", interactions);
             interactables.Add(AddSecret(peasant, SecretObject.Peasant));
             NpcInteraction gardener = CreateNpc("Jardineiro", PrototypeCityLayout.Gardener, "86A96B", interactions);
-            gardener.Initialize("Jardineiro", "Os jardins ja foram abertos a todos. Hoje quase ninguem caminha por aqui.",
-                "Seguindo esta rua para o sul voce atravessa a ponte leste e chega as ruinas antigas.");
+            gardener.Initialize("Jardineiro", "Antes havia grandes jardins. Agora cuido das plantas que ainda crescem entre as casas.",
+                "A unica ponte da periferia fica ao norte. Atravessa o fosso seco e leva a entrada do castelo.");
             interactables.Add(gardener);
             NpcInteraction explorer = CreateNpc("Exploradora", PrototypeCityLayout.Explorer, "B79458", interactions);
-            explorer.Initialize("Exploradora", "Estas ruinas existiam antes do castelo. Repare no pedestal entre as paredes quebradas.",
+            explorer.Initialize("Exploradora", "Ainda encontro pedras das antigas ruinas nos alicerces destas oficinas.",
                 "Encontrei marcas de escamas nas pedras. As lendas falam de um dragao, mas ele nunca aparece para qualquer viajante.");
             interactables.Add(explorer);
             interactables.Add(CreateChest(interactions));
@@ -352,7 +353,7 @@ namespace DragonQuest.Prototype
             GameObject building = Entity(buildingName, position, parent);
             BoxCollider2D collider = building.AddComponent<BoxCollider2D>();
             collider.size = size; collider.sharedMaterial = frictionless;
-            scenery.Building(buildingName, size, roofColor, building.transform);
+            scenery.CityBuilding(buildingName, size, roofColor, building.transform);
         }
 
         private GameObject CreatePlayer()
@@ -373,12 +374,13 @@ namespace DragonQuest.Prototype
         }
 
         private GameObject Block(string blockName, Vector2 position, Vector2 size, string color,
-            Transform parent, bool solid, int sortingOrder)
+            Transform parent, bool solid, int sortingOrder, bool cityAppearance = false)
         {
             GameObject block = new GameObject(blockName);
             block.transform.SetParent(parent, false);
             block.transform.localPosition = position;
-            scenery.Block(blockName, size, color, solid, sortingOrder, block.transform);
+            if (cityAppearance) scenery.CityBlock(new CityBlock(blockName, position.x, position.y, size.x, size.y, color, solid, sortingOrder), block.transform);
+            else scenery.Block(blockName, size, color, solid, sortingOrder, block.transform);
             if (solid)
             {
                 BoxCollider2D collider = block.AddComponent<BoxCollider2D>();

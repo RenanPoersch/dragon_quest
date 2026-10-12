@@ -48,7 +48,7 @@ namespace DragonQuest.Prototype
             var definitions = new[]
             {
                 new MapDefinition(World, "ILHA / MAPA GLOBAL", PrototypeWorldLayout.Bounds, PrototypeWorldLayout.Spawn, 6.85f),
-                new MapDefinition(City, "PERIFERIA DO CASTELO", PrototypeCityLayout.Bounds, PrototypeWorldLayout.CityEntry, 7.5f),
+                new MapDefinition(City, "PERIFERIA DO CASTELO", PrototypeCityLayout.Bounds, PrototypeWorldLayout.CityEntry, 6),
                 new MapDefinition(Castle, "INTERIOR DO CASTELO", PrototypeWorldLayout.CastleBounds, PrototypeWorldLayout.CastleSpawn, 9, false, true),
                 new MapDefinition(WestForest, "FLORESTA OESTE", PrototypeWorldLayout.ForestBounds, PrototypeWorldLayout.ForestSpawn, 8, false, true),
                 new MapDefinition(EastForest, "FLORESTA LESTE", PrototypeWorldLayout.ForestBounds, PrototypeWorldLayout.ForestSpawn, 8, false, true),
@@ -70,11 +70,11 @@ namespace DragonQuest.Prototype
                 PrototypeWorldLayout.LocalExit, PrototypeWorldLayout.EastForest + Vector2.down * 2.5f);
             Connect(connections, World, Ruins, PrototypeWorldLayout.Ruins,
                 PrototypeRuinsLayout.Exit, PrototypeWorldLayout.Ruins + Vector2.down * 2.5f);
-            Connect(connections, City, Castle, PrototypeWorldLayout.CastleDoor, PrototypeWorldLayout.CastleExit, new Vector2(0, 14.5f));
-            Connect(connections, City, "item-shop", new Vector2(-9, 2.1f), new Vector2(0, -3.8f), new Vector2(-9, 1));
-            Connect(connections, City, "materia-shop", new Vector2(9, 2.1f), new Vector2(0, -3.8f), new Vector2(9, 1));
-            Connect(connections, City, "equipment-shop", new Vector2(9, -7.4f), new Vector2(0, -3.8f), new Vector2(9, -8.5f));
-            Connect(connections, City, Inn, new Vector2(-9,-7.4f), PrototypeInnLayout.Exit, new Vector2(-9,-8.5f));
+            Connect(connections, City, Castle, PrototypeWorldLayout.CastleDoor, PrototypeWorldLayout.CastleExit, PrototypeCityLayout.CastleReturn);
+            Connect(connections, City, "item-shop", PrototypeCityLayout.ItemDoor, new Vector2(0, -3.8f), PrototypeCityLayout.DoorReturn(PrototypeCityLayout.ItemDoor));
+            Connect(connections, City, "materia-shop", PrototypeCityLayout.MateriaDoor, new Vector2(0, -3.8f), PrototypeCityLayout.DoorReturn(PrototypeCityLayout.MateriaDoor));
+            Connect(connections, City, "equipment-shop", PrototypeCityLayout.EquipmentDoor, new Vector2(0, -3.8f), PrototypeCityLayout.DoorReturn(PrototypeCityLayout.EquipmentDoor));
+            Connect(connections, City, Inn, PrototypeCityLayout.InnDoor, PrototypeInnLayout.Exit, PrototypeCityLayout.DoorReturn(PrototypeCityLayout.InnDoor));
             Connect(connections, World, Volcano, PrototypeWorldLayout.Volcano,
                 PrototypeVolcanoLayout.Exit, PrototypeWorldLayout.Volcano+Vector2.down*1.8f);
             Routes = connections.AsReadOnly();
@@ -106,7 +106,8 @@ namespace DragonQuest.Prototype
         public bool TryRestore(string mapId, Vector2 position)
         {
             if (mapId == null || !maps.TryGetValue(mapId, out var map) || float.IsNaN(position.x) || float.IsNaN(position.y)
-                || float.IsInfinity(position.x) || float.IsInfinity(position.y) || !map.Bounds.Contains(position)
+                || float.IsInfinity(position.x) || float.IsInfinity(position.y)
+                || !map.Bounds.Contains(position) && (mapId != City || !PrototypeCityLayout.LegacyBounds.Contains(position))
                 || mapId == Volcano && secrets?.PassageOpen != true) return false;
             Current = map; return true;
         }

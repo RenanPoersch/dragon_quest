@@ -87,6 +87,12 @@ internal static class SaveChecks
             var savedMap = RoundTrip(destination);
             Assert(savedMap.Data.Map == map.Id && savedMap.Data.X == map.Spawn.x && savedMap.Data.Y == map.Spawn.y, "Mapa e coordenadas exatas persistem em todos os interiores.");
         }
+        var oldCity = Initial(); oldCity.Map = PrototypeTravel.City; oldCity.X = -25.5f; oldCity.Y = -3;
+        var legacyCity = RoundTrip(oldCity);
+        Assert(legacyCity.Progress.Gold == 50 && legacyCity.Data.Map == PrototypeTravel.City
+            && PrototypeCityLayout.SafeSavedPosition(new UnityEngine.Vector2(oldCity.X, oldCity.Y)) == PrototypeCityLayout.Spawn,
+            "Jornada da cidade ampla deve continuar carregavel, conservando progresso e usando chegada livre no bairro compacto.");
+        Invalid(oldCity, d => d.X = -40, "Posicao fora dos limites atuais e antigos da periferia");
         Invalid(data, d => d.Version = 99, "Versao desconhecida");
         Invalid(data, d => d.SavedUtc = "ontem", "Data invalida");
         Invalid(data, d => d.Gold = -1, "Ouro negativo");

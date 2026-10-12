@@ -254,3 +254,12 @@ O usuário confirmou que as interações funcionaram em Play. Não houve valida�
 - O PNG novo tem 1447 × 1087 pixels. O recorte agora distribui pixels restantes entre as células e examina toda a imagem, conservando a rejeição de sprites vazios ou cortados. Nenhum PNG foi redimensionado.
 - Scripts compilaram. Passaram 231 verificações de imagens/importadores, 161 de sprites/materiais e 2358 de perspectiva/câmera/malhas. Os testes incluem oito direções com câmera rodada, transições entre setores, ciclo dos passos, repouso diagonal e recorte de dimensões não divisíveis.
 - Em Play: conferir W+A, W+D, S+A e S+D na ilha e nos interiores, parada, mudança para um eixo e passagem entre mapas. A animação no Editor e sua aparência durante o movimento permanecem pendentes de conferência.
+
+## Periferia compacta e ponte de pedra
+
+- Substituída a planta ampla por bairro de 26 × 44, com 22 construções próximas e viela sinuosa. Removidos lago, rio e três pontes de madeira. Única ponte de pedra ao norte, sobre fosso seco, com entrada automática para o castelo ao fim da travessia.
+- Dois atlas originais gerados com image_gen e importados sem edição posterior. Casas/toldos/metais, janelas e letreiros nas fachadas, tubulações, caldeira da loja de itens, lampiões e vapor. Materiais próprios da periferia; brilho padrão do restante do cenário conservado.
+- Portas, retornos, moradores, patrulha e baú agora usam a planta compacta. Textos de orientação atualizados. Carregar jornadas do mapa amplo conserva progresso; posições agora bloqueadas ou fora dos novos limites voltam à rua central.
+- Passaram 243 verificações de PNGs/importadores, 161 de sprites/materiais, 2107 de malhas/câmera, 73 de caminhos, 269 de viagens/interiores e 110 de salvamento. A amostragem de 0,125 unidade confirma toda área caminhável conectada, acesso a moradores/lojas e ponte, além de retornos sem reentrada imediata.
+- Scripts compilaram. ObliqueWorld e PixelGlow passaram nos dois estágios da compilação externa HLSL, sob as condições do registro da correção do shader magenta. Importação detectada no log do Editor não confirma a renderização em Play.
+- Prévias técnicas da entrada, mercado, capela e ponte foram inspecionadas. Correções visuais: placas na borda dos toldos e piso recortado para não ocultar o fosso. Conferência de GPU, profundidade, movimento e interações no Editor pendente conforme PERIFERIA_PIXEL_ART.md.

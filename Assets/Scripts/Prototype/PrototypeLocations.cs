@@ -51,6 +51,7 @@ namespace DragonQuest.Prototype
         public void Restore(string map, Vector2 position)
         {
             if (!navigation.TryRestore(map, position)) throw new System.ArgumentException("Posicao de save invalida.");
+            if (map == PrototypeTravel.City) position = PrototypeCityLayout.SafeSavedPosition(position);
             ApplyMap(position);
         }
 

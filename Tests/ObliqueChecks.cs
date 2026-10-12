@@ -32,10 +32,11 @@ internal static class ObliqueChecks
         Assert(!degenerate,name+": triângulo sem área.");
     }
 
-    private static void Export(string directory,string name,ObliqueMeshData data,Vector2 focus,float size,float focusHeight=0, object[] sprites=null)
+    private static void Export(string directory,string name,ObliqueMeshData data,Vector2 focus,float size,float focusHeight=0, object[] sprites=null,
+        string atlas="TerrainAtlas", bool additive=false)
     {
         File.WriteAllText(Path.Combine(directory,name+".json"),JsonSerializer.Serialize(new {
-            vertices=data.Vertices.Select(p=>new[]{p.x,p.y,p.z}),colors=data.Colors.Select(c=>new[]{c.r,c.g,c.b,c.a}),
+            vertices=data.Vertices.Select(p=>new[]{p.x,p.y,p.z}),colors=data.Colors.Select(c=>new[]{c.r,c.g,c.b,c.a}),atlas,additive,
             triangles=data.Triangles,focus=new[]{focus.x,focus.y},size,focusHeight,
             uv=data.UVs.Select(uv=>new[]{uv.x,uv.y}),surfaces=data.Surfaces.Select(s=>new[]{s.x,s.y}),sprites=sprites??Array.Empty<object>(),
             groundScale=ObliqueProjection.GroundScale,heightScale=ObliqueProjection.HeightScale,
@@ -96,7 +97,7 @@ internal static class ObliqueChecks
                 Near(body.x,0,"Herói precisa ficar no centro horizontal da ilha, inclusive ao nascer e junto à costa.");
                 Near(body.y-anchor.y,0,"Foco elevado deve alinhar centro do corpo verticalmente.");
             }
-        foreach(var point in new[]{new Vector2(-35,23),new Vector2(35,23),new Vector2(-35,-23),new Vector2(35,-23)})
+        foreach(var point in new[]{new Vector2(-12,21),new Vector2(12,21),new Vector2(-12,-21),new Vector2(12,-21)})
             foreach(float aspect in new[]{16f/9,4f/3})
             {
                 Vector2 focus=ObliqueProjection.CameraFocus(point,PrototypeCityLayout.Bounds,7.5f,aspect,false);
@@ -144,18 +145,37 @@ internal static class ObliqueChecks
         Export(directory,"WorldOblique",world,worldFocus,worldSize,ObliqueProjection.HeroCenterHeight,
             new[]{Sprite("ArenWalk",0,PrototypeWorldLayout.Spawn)});
 
-        var city=new ObliqueMeshData();
+        var city=new ObliqueMeshData(); var cityDetails=new ObliqueMeshData(); var cityGlow=new ObliqueMeshData();
         foreach(var block in PrototypeCityLayout.Blocks)
-        {Validate(ObliqueScenery.BlockData(block.Name,block.Size,block.Color,block.Solid,block.Order),block.Name);AddBlock(city,block);}
+        {
+            var data=CityPeripheryArt.Block(block); Validate(data,block.Name);
+            city.Append(data,ObliqueProjection.Point(block.Position));
+        }
         foreach(var building in PrototypeCityLayout.Buildings)
         {
-            var data=ObliqueScenery.BuildingData(building.Size,building.Color,building.Name.Contains("Castelo")||building.Name.Contains("Torre"));
-            Validate(data,building.Name);city.Append(data,ObliqueProjection.Point(building.Position));
+            var art=CityPeripheryArt.Building(building.Name,building.Size,building.Color);
+            Validate(art.Body,building.Name); Validate(art.Details,building.Name+" / detalhes"); Validate(art.Glow,building.Name+" / luz");
+            Assert(art.Details.UVs.All(uv=>uv.x>0&&uv.x<1&&uv.y>0&&uv.y<1),"Painel deve usar uma celula inteira, sem repetir letras nem amostrar vizinhos.");
+            Assert(art.Glow.Colors.All(c=>c.a>0&&c.a<1),"Vapor e luz usam transparencia propria.");
+            var offset=ObliqueProjection.Point(building.Position);
+            city.Append(art.Body,offset);cityDetails.Append(art.Details,offset);cityGlow.Append(art.Glow,offset);
         }
+        var streets=CityPeripheryArt.Streets(); Validate(streets.Body,"Detalhes das ruas"); Validate(streets.Glow,"Luzes das ruas");
+        var ground = CityPeripheryArt.Block(PrototypeCityLayout.Blocks.First(b=>b.Name=="Chao escuro da periferia"));
+        Assert(ground.Vertices.All(p=>p.y<=10.1f||p.y>=14.9f),"Piso da cidade nao pode cobrir o fosso seco sob a ponte.");
+        var moat = CityPeripheryArt.Block(PrototypeCityLayout.Blocks.First(b=>b.Name.StartsWith("Fosso seco")));
+        Assert(moat.Vertices.Any(p=>p.z>0.5f),"Fosso precisa ficar visualmente abaixo da rua, com bloqueio fisico definido no layout.");
+        city.Append(streets.Body,Vector3.zero);cityGlow.Append(streets.Glow,Vector3.zero);
+        var sign=new ObliqueMeshData();CityPeripheryArt.Panel(sign,0,-2.1f,2,3,0.8f,1);
+        Near(sign.UVs[0].x,0.01f,"Placa inicia na borda esquerda da celula.");Near(sign.UVs[2].x,0.99f,"Placa termina na borda direita da celula.");
+        Assert(sign.Surfaces.All(s=>s.x==1&&s.y==1),"Letreiro nao pode receber material de grama ou escurecimento por face.");
+        Assert(sign.Vertices.All(p=>p.y< -2),"Letreiro precisa estar preso a fachada, nao flutuar sobre o telhado.");
         Validate(ObliqueScenery.PersonBodyData("B4A078",true),"Herói");
         foreach(float x in new[]{-0.12f,0.12f})Validate(ObliqueScenery.LegData(x,ObliqueMeshData.Hex("B4A078")),"Perna");
-        Export(directory,"CityOblique",city,new Vector2(0,0),7.5f,0,
-            new[]{Sprite("ArenWalk",0,PrototypeCityLayout.Spawn),Sprite("NpcRoster",0,PrototypeCityLayout.Citizen),Sprite("NpcRoster",10,PrototypeCityLayout.Guard)});
+        Export(directory,"CityOblique",city,PrototypeCityLayout.Spawn,6,ObliqueProjection.HeroCenterHeight,
+            new[]{Sprite("ArenWalk",0,PrototypeCityLayout.Spawn),Sprite("NpcRoster",0,PrototypeCityLayout.Citizen),Sprite("NpcRoster",10,PrototypeCityLayout.Guard)},"CityMaterialsAtlas");
+        Export(directory,"CityDetails",cityDetails,PrototypeCityLayout.Spawn,6,ObliqueProjection.HeroCenterHeight,atlas:"CityDetailsAtlas");
+        Export(directory,"CityGlow",cityGlow,PrototypeCityLayout.Spawn,6,ObliqueProjection.HeroCenterHeight,additive:true);
         var hall=new ObliqueMeshData();
         foreach(var block in PrototypeWorldLayout.CastleBlocks)
         {Validate(ObliqueScenery.BlockData(block.Name,block.Size,block.Color,block.Solid,block.Order),block.Name);AddBlock(hall,block);}

@@ -33,119 +33,109 @@ namespace DragonQuest.Prototype
 
     public static class PrototypeCityLayout
     {
-        public static readonly Rect Bounds = new Rect(-36, -24, 72, 48);
-        public static readonly Vector2 Spawn = new Vector2(0, -4);
+        public static readonly Rect Bounds = new Rect(-13, -22, 26, 44);
+        public static readonly Rect LegacyBounds = new Rect(-36, -24, 72, 48);
+        public static readonly Vector2 Spawn = new Vector2(0, -10);
+        public static readonly Vector2 Entry = new Vector2(0, -18.5f);
+        public static readonly Vector2 Exit = new Vector2(0, -20.2f);
         public static readonly Vector2 Castle = new Vector2(0, 19);
-        public static readonly Vector2 Guard = new Vector2(0, 12.5f);
-        public static readonly Vector2 Citizen = new Vector2(-3.4f, -3);
-        public static readonly Vector2 Chest = new Vector2(3.6f, -3.2f);
-        public static readonly Vector2 Resident = new Vector2(-25.5f, -3);
-        public static readonly Vector2 Gardener = new Vector2(26, 10);
-        public static readonly Vector2 Explorer = new Vector2(26, -15);
-
-        public static IReadOnlyList<CityDistrict> Districts { get; } = System.Array.AsReadOnly(new[]
-        {
-            new CityDistrict("BAIRRO RESIDENCIAL", new Rect(-36, -24, 19, 48), Resident + Vector2.down),
-            new CityDistrict("JARDINS REAIS", new Rect(17, 2, 19, 22), Gardener + Vector2.down),
-            new CityDistrict("RUINAS ANTIGAS", new Rect(17, -24, 19, 26), Explorer + Vector2.down),
-            new CityDistrict("DISTRITO DO CASTELO", new Rect(-17, 10, 34, 14), new Vector2(0, 14)),
-            new CityDistrict("PORTAO SUL", new Rect(-17, -24, 34, 14), new Vector2(0, -20)),
-            new CityDistrict("PRACA CENTRAL", new Rect(-17, -10, 34, 20), Spawn)
+        public static readonly Vector2 CastleDoor = new Vector2(0, 16.2f);
+        public static readonly Vector2 CastleReturn = new Vector2(0, 15);
+        public static readonly Vector2 Bridge = new Vector2(0, 12.5f);
+        public static readonly Vector2 Guard = new Vector2(0, 8.4f);
+        public static readonly Vector2 Citizen = new Vector2(-1.2f, -15);
+        public static readonly Vector2 Chest = new Vector2(1.8f, -4);
+        public static readonly Vector2 Resident = new Vector2(-7.4f, 0);
+        public static readonly Vector2 Gardener = new Vector2(8, 7.4f);
+        public static readonly Vector2 Explorer = new Vector2(7.2f, -0.2f);
+        public static readonly Vector2 ItemDoor = new Vector2(-3.8f, -8.375f);
+        public static readonly Vector2 EquipmentDoor = new Vector2(4.2f, -12.125f);
+        public static readonly Vector2 MateriaDoor = new Vector2(3.9f, 0.25f);
+        public static readonly Vector2 InnDoor = new Vector2(-4.2f, -16.25f);
+        public static Vector2 DoorReturn(Vector2 door) => door + Vector2.down * 1.1f;
+        public static IReadOnlyList<Vector2> Street { get; } = System.Array.AsReadOnly(new[] {
+            Exit, Entry, new Vector2(-0.7f, -12), new Vector2(1.1f, -7), new Vector2(0, -1),
+            new Vector2(-0.6f, 4.5f), new Vector2(0, 9.7f)
         });
-
+        public static IReadOnlyList<CityDistrict> Districts { get; } = System.Array.AsReadOnly(new[] {
+            new CityDistrict("PORTAO SUL", new Rect(-13, -22, 26, 5), Entry),
+            new CityDistrict("BECO DAS OFICINAS", new Rect(-13, -17, 26, 10), Spawn),
+            new CityDistrict("MERCADO ANTIGO", new Rect(-13, -7, 26, 10), new Vector2(0, -2)),
+            new CityDistrict("JARDIM ENTRE CASAS", new Rect(2, 3, 11, 7), Gardener + Vector2.down),
+            new CityDistrict("BAIRRO DA CAPELA", new Rect(-13, 3, 15, 7), new Vector2(-0.5f, 5)),
+            new CityDistrict("PONTE DO CASTELO", new Rect(-13, 10, 26, 12), Bridge)
+        });
         public static string DistrictAt(Vector2 position)
         {
             foreach (CityDistrict district in Districts) if (district.Bounds.Contains(position)) return district.Name;
-            return "CIDADE";
+            return "PERIFERIA";
         }
-
-        // Nos edificios, Color representa a cor do telhado.
-        public static IReadOnlyList<CityBlock> Buildings { get; } = System.Array.AsReadOnly(new[]
+        // Jornadas do mapa amplo continuam aceitas; uma coordenada agora bloqueada volta a rua central.
+        public static Vector2 SafeSavedPosition(Vector2 position)
         {
-            new CityBlock("Loja de itens", -9, 4.5f, 5, 4, "A86B49", true, 1),
-            new CityBlock("Loja de materias", 9, 4.5f, 5, 4, "71638E", true, 1),
-            new CityBlock("Hospedaria", -9, -5, 5, 4, "7F8D68", true, 1),
-            new CityBlock("Loja de equipamentos", 9, -5, 5, 4, "627C8C", true, 1),
-            new CityBlock("Castelo do tirano", Castle.x, Castle.y, 9, 6, "636B79", true, 1),
-            new CityBlock("Torre oeste do castelo", -11, 19, 3, 5, "586374", true, 1),
-            new CityBlock("Torre leste do castelo", 11, 19, 3, 5, "586374", true, 1),
-            new CityBlock("Casa do tecelao", -29, 6, 5, 4, "98674F", true, 1),
-            new CityBlock("Casa do padeiro", -19, 6, 5, 4, "B07B53", true, 1),
-            new CityBlock("Casa das flores", -29, 15, 5, 4, "8D677B", true, 1),
-            new CityBlock("Casa do carpinteiro", -19, 15, 5, 4, "80644C", true, 1),
-            new CityBlock("Capela antiga", -24, 21, 7, 3, "707B91", true, 1),
-            new CityBlock("Casa ribeirinha oeste", -29, -21, 5, 3, "9A735B", true, 1),
-            new CityBlock("Casa ribeirinha leste", -19, -21, 5, 3, "936458", true, 1),
-            new CityBlock("Pavilhao dos jardins", 20, 19, 5, 3, "728C79", true, 1),
-            new CityBlock("Torre em ruinas", 29, -19, 4, 5, "6B6A66", true, 1)
+            if (!Bounds.Contains(position)) return Spawn;
+            foreach (CityBlock block in Buildings)
+                if (OverlapsHero(block, position)) return Spawn;
+            foreach (CityBlock block in Blocks)
+                if (block.Solid && OverlapsHero(block, position)) return Spawn;
+            foreach (Vector2 npc in new[] {Citizen, Resident, Gardener, Explorer})
+                if (OverlapsHero(new CityBlock("Morador", npc.x, npc.y, 0.55f, 0.6f, "", true, 0), position)) return Spawn;
+            if (OverlapsHero(new CityBlock("Guarda", Guard.x, Guard.y, 0.65f, 0.7f, "", true, 0), position)
+                || OverlapsHero(new CityBlock("Bau", Chest.x, Chest.y, 0.9f, 0.7f, "", true, 0), position)) return Spawn;
+            return position;
+        }
+        private static bool OverlapsHero(CityBlock block, Vector2 position)
+        {
+            Rect bounds = block.Bounds;
+            return position.x + 0.274f > bounds.xMin && position.x - 0.274f < bounds.xMax
+                && position.y + 0.299f > bounds.yMin && position.y - 0.299f < bounds.yMax;
+        }
+        public static IReadOnlyList<CityBlock> Buildings { get; } = System.Array.AsReadOnly(new[] {
+            new CityBlock("Hospedaria", -4.2f, -14, 4, 3.6f, "8C7B59", true, 1),
+            new CityBlock("Loja de equipamentos", 4.2f, -10, 4, 3.4f, "746553", true, 1),
+            new CityBlock("Loja de itens", -3.8f, -6, 4.5f, 3.8f, "8B7052", true, 1),
+            new CityBlock("Loja de materias", 3.9f, 2.5f, 4, 3.6f, "76745B", true, 1),
+            new CityBlock("Casa do tecelao", -8.8f, -14.4f, 3.4f, 4, "887B61", true, 1),
+            new CityBlock("Casa do padeiro", 4.8f, -16, 3.6f, 4, "80684F", true, 1),
+            new CityBlock("Barracao sul", -8.7f, -19, 3.6f, 3, "746B56", true, 1),
+            new CityBlock("Abrigo sul leste", 9.2f, -17.5f, 3.4f, 5, "85765D", true, 1),
+            new CityBlock("Casa dos oleiros", 8.8f, -10.5f, 3.4f, 4.8f, "796A56", true, 1),
+            new CityBlock("Oficina das lanternas", 4.9f, -4.8f, 3.6f, 3.2f, "8E7B5B", true, 1),
+            new CityBlock("Armazem de sucata", 9.4f, -3.5f, 3.4f, 6, "776850", true, 1),
+            new CityBlock("Casa do carpinteiro", -8.8f, -8, 3.2f, 4.4f, "7C6B54", true, 1),
+            new CityBlock("Oficina do remendao", -8.5f, -3, 3.6f, 3.2f, "877B5B", true, 1),
+            new CityBlock("Capela antiga", -4.4f, 1.5f, 4, 3.6f, "8A7A61", true, 1),
+            new CityBlock("Casa das flores", -9, 3.2f, 3.4f, 4.6f, "82745E", true, 1),
+            new CityBlock("Oficina do relojoeiro", -4.1f, 6.3f, 4.2f, 3, "746A57", true, 1),
+            new CityBlock("Armazem das especiarias", 8.9f, 3.6f, 3.4f, 4, "7D6F58", true, 1),
+            new CityBlock("Pavilhao dos jardins", 4.7f, 7, 4, 3.6f, "8D8168", true, 1),
+            new CityBlock("Torre em ruinas", -9.1f, 7.8f, 3, 3.2f, "6F6A59", true, 1),
+            new CityBlock("Castelo do tirano", Castle.x, Castle.y, 7.5f, 4.5f, "636B79", true, 1),
+            new CityBlock("Torre oeste do castelo", -5.6f, 18.2f, 2.4f, 3.6f, "586374", true, 1),
+            new CityBlock("Torre leste do castelo", 5.6f, 18.2f, 2.4f, 3.6f, "586374", true, 1)
         });
-
         public static IReadOnlyList<CityBlock> Blocks { get; } = CreateBlocks();
-
         private static IReadOnlyList<CityBlock> CreateBlocks()
         {
-            var blocks = new List<CityBlock>
-            {
-                new CityBlock("Gramado", 0, 0, Bounds.width, Bounds.height, "45634D", false, -10),
-                new CityBlock("Jardim - gramado", 25, 13, 18, 19, "55795A", false, -9),
-                new CityBlock("Ruinas - terreno", 25, -17, 18, 11, "807C63", false, -9),
-                new CityBlock("Rua norte-sul", 0, -1, 3.5f, 43, "C2AC80", false, -8),
-                new CityBlock("Rua leste-oeste", 0, 0, 70, 3.5f, "C2AC80", false, -8),
-                new CityBlock("Rua residencial", -24, 0, 3.5f, 42, "C2AC80", false, -8),
-                new CityBlock("Rua dos jardins e ruinas", 24, 0, 3.5f, 42, "C2AC80", false, -8),
-                new CityBlock("Alameda dos jardins", 25, 10, 17, 3, "C2AC80", false, -8),
-                new CityBlock("Rua sul", 0, -18, 45, 3, "C2AC80", false, -8),
-                new CityBlock("Patio do castelo", 0, 13.5f, 15, 5, "C3C1B4", false, -7),
-                new CityBlock("Praca", 0, 0, 8, 7, "D1C19B", false, -7),
-                new CityBlock("Lago dos jardins", 29, 14, 5, 4, "5BA5B6", true, -6),
-                new CityBlock("Fonte - borda", 0, 0, 2.6f, 2.6f, "747A80", true, 2),
-                new CityBlock("Fonte - agua", 0, 0, 2.05f, 2.05f, "5BA5B6", false, 3),
-                new CityBlock("Fonte - centro", 0, 0, 0.6f, 0.6f, "C8D2CB", false, 4),
-                new CityBlock("Banco oeste", -3, 0, 0.6f, 1.6f, "805E43", true, 2),
-                new CityBlock("Banco leste", 3, 0, 0.6f, 1.6f, "805E43", true, 2),
-                new CityBlock("Banco do jardim", 20, 13, 2, 0.6f, "805E43", true, 2),
-                new CityBlock("Ruina - parede oeste", 19, -19, 0.8f, 5, "797A73", true, 2),
-                new CityBlock("Ruina - parede norte", 20, -16, 3, 0.8f, "797A73", true, 2),
-                new CityBlock("Ruina - parede sul", 24, -22, 7, 0.8f, "797A73", true, 2),
-                new CityBlock("Pedestal antigo", 24, -19.5f, 1, 1, "AEA98E", true, 2),
-                new CityBlock("Portao sul - torre oeste", -4, -22, 2, 2, "636B79", true, 3),
-                new CityBlock("Portao sul - torre leste", 4, -22, 2, 2, "636B79", true, 3),
-                new CityBlock("Muralha norte", 0, Bounds.yMax - 0.3f, Bounds.width, 0.6f, "434B55", true, 5),
-                new CityBlock("Muralha sul", 0, Bounds.yMin + 0.3f, Bounds.width, 0.6f, "434B55", true, 5),
-                new CityBlock("Muralha oeste", Bounds.xMin + 0.3f, 0, 0.6f, Bounds.height, "434B55", true, 5),
-                new CityBlock("Muralha leste", Bounds.xMax - 0.3f, 0, 0.6f, Bounds.height, "434B55", true, 5)
+            var blocks = new List<CityBlock> {
+                new CityBlock("Chao escuro da periferia", 0, 0, Bounds.width, Bounds.height, "454831", false, -10),
+                new CityBlock("Patio da hospedaria", -2.8f, -16.5f, 5, 2.8f, "887955", false, -8),
+                new CityBlock("Patio de equipamentos", 2.4f, -12.5f, 5.4f, 2, "887955", false, -8),
+                new CityBlock("Patio da loja de itens", -2.2f, -8.8f, 4.8f, 2.2f, "887955", false, -8),
+                new CityBlock("Patio das materias", 2, -0.2f, 5, 2.5f, "887955", false, -8),
+                new CityBlock("Canteiro do bairro", 9, 7.5f, 4, 3, "424D2F", false, -9),
+                new CityBlock("Fosso seco - oeste", -7.75f, Bridge.y, 10.5f, 4.8f, "34392D", true, -6),
+                new CityBlock("Fosso seco - leste", 7.75f, Bridge.y, 10.5f, 4.8f, "34392D", true, -6),
+                new CityBlock("Ponte de pedra - piso", 0, Bridge.y, 3.7f, 5.8f, "998C72", false, -5),
+                new CityBlock("Ponte de pedra - parapeito oeste", -2.05f, Bridge.y, 0.4f, 5.8f, "8C846D", true, 2),
+                new CityBlock("Ponte de pedra - parapeito leste", 2.05f, Bridge.y, 0.4f, 5.8f, "8C846D", true, 2),
+                new CityBlock("Patio da entrada do castelo", 0, 16, 8, 2.3f, "988B76", false, -7),
+                new CityBlock("Muralha norte", 0, Bounds.yMax - 0.3f, Bounds.width, 0.6f, "555442", true, 5),
+                new CityBlock("Muralha sul", 0, Bounds.yMin + 0.3f, Bounds.width, 0.6f, "555442", true, 5),
+                new CityBlock("Muralha oeste", Bounds.xMin + 0.3f, 0, 0.6f, Bounds.height, "555442", true, 5),
+                new CityBlock("Muralha leste", Bounds.xMax - 0.3f, 0, 0.6f, Bounds.height, "555442", true, 5)
             };
-
-            // O rio e solido; as tres lacunas sao atravessadas pelas pontes.
-            foreach (Vector2 span in new[] { new Vector2(-35.4f, -26), new Vector2(-22, -2), new Vector2(2, 22), new Vector2(26, 35.4f) })
-                blocks.Add(new CityBlock("Rio", (span.x + span.y) / 2, -12, span.y - span.x, 2.2f, "437D96", true, -6));
-            foreach (float x in new[] { -24f, 0f, 24f })
-            {
-                blocks.Add(new CityBlock("Ponte - piso", x, -12, 4, 4, "9C7950", false, -5));
-                for (int plank = -3; plank <= 3; plank++)
-                    blocks.Add(new CityBlock("Ponte - tabua", x, -12 + plank * 0.5f, 4, 0.07f, "69543D", false, -4));
-                foreach (float side in new[] { -2f, 2f })
-                    blocks.Add(new CityBlock("Ponte - corrimao", x + side, -12, 0.2f, 4, "69543D", true, 2));
-            }
-
-            foreach (Vector2 position in new[]
-            {
-                new Vector2(-14, 8), new Vector2(14, 8), new Vector2(-14, -8), new Vector2(14, -8),
-                new Vector2(-33, 10), new Vector2(-33, -5), new Vector2(-20, -5),
-                new Vector2(19, 5), new Vector2(29, 5), new Vector2(33, 10), new Vector2(33, 20),
-                new Vector2(28, 20), new Vector2(16, 21), new Vector2(-16, 21),
-                new Vector2(-32, -22), new Vector2(12, -20), new Vector2(-12, -20)
-            })
-            {
-                blocks.Add(new CityBlock("Arvore - copa", position.x, position.y, 1.8f, 1.8f, "294936", true, 2));
-                blocks.Add(new CityBlock("Arvore - detalhe", position.x - 0.15f, position.y + 0.15f, 1.1f, 1.1f, "3A6141", false, 3));
-            }
-            foreach (Vector2 position in new[] { new Vector2(20, 7), new Vector2(28, 7), new Vector2(20, 16), new Vector2(26, 18) })
-            {
-                blocks.Add(new CityBlock("Canteiro", position.x, position.y, 2, 1.2f, "36543A", false, -5));
-                foreach (float offset in new[] { -0.6f, 0f, 0.6f })
-                    blocks.Add(new CityBlock("Flores", position.x + offset, position.y, 0.25f, 0.3f, "D7B871", false, -4));
-            }
+            blocks.Add(new CityBlock("Arvore - copa", 10, 8, 1, 1, "3C4B2E", true, 2));
             return blocks.AsReadOnly();
         }
     }

@@ -134,7 +134,7 @@ internal static class WorldMapChecks
         for (int i = 0; i < 3; i++)
         {
             Assert(travel.TryTravel(PrototypeTravel.City, out _) && travel.TryTravel("item-shop", out _)
-                && travel.TryTravel(PrototypeTravel.City, out Vector2 shopReturn) && shopReturn == new Vector2(-9, 1),
+                && travel.TryTravel(PrototypeTravel.City, out Vector2 shopReturn) && shopReturn == PrototypeCityLayout.DoorReturn(PrototypeCityLayout.ItemDoor),
                 "Entrar e sair da loja deve devolver a mesma porta da periferia.");
             Assert(travel.TryTravel(PrototypeTravel.Castle, out _) && travel.TryTravel(PrototypeTravel.City, out _)
                 && travel.TryTravel(PrototypeTravel.World, out Vector2 worldReturn) && worldReturn == PrototypeWorldLayout.Castle + Vector2.down * 2.5f,

@@ -4,6 +4,8 @@ RPG com apresentação 2.5D, exploração de uma ilha de fantasia e batalhas por
 
 Direção visual atual: **sprites e texturas em pixel art inspirados no FF6 original, com cenários 3D e câmera inclinada**. A parte 10A adiciona equipe, moradores e um primeiro atlas de materiais; veja `Docs/PARTE_10A.md` para testar. Bosses, efeitos e cenas finais ainda incluem arte provisória.
 
+A periferia atual é um **bairro compacto de fantasia industrial**, com vielas, madeira/metal gastos, telhados de lona, luzes e letreiros nas fachadas. Ao norte, uma única ponte de pedra leva à entrada automática do castelo. Veja `Docs/PERIFERIA_PIXEL_ART.md` para a planta, arte e testes.
+
 ## Ambiente
 
 - Unity Editor **6000.6.5f1** (Unity 6.6).
@@ -26,18 +28,18 @@ Use essa versão do Editor para evitar migrações involuntárias.
 
 A demo começa no **mapa global de uma pequena ilha cercada pelo mar**. Castelo e florestas aparecem como ícones um pouco mais altos que o herói. Caminhe até a área de entrada dos pontos para mudar automaticamente para os cenários locais:
 
-- Castelo no mapa global → **periferia do castelo**, reaproveitando a cidade de 72 × 48, com lojas, moradores, rio, pontes, missão e patrulha.
-- Porta ao norte da periferia → **interior do castelo**, com salão, trono e confronto final da parte 8.
+- Castelo no mapa global → **periferia do castelo**, bairro de 26 × 44 com viela central, lojas, moradores, missão e patrulha.
+- Ponte de pedra ao norte e porta do castelo → **interior do castelo**, com salão, trono e confronto final da parte 8.
 - Duas florestas no mapa global → cenários próprios com clareira, árvores e moradores.
 - Ruínas antigas ao sudoeste da ilha → cenário próprio com colunas quebradas e o altar da lenda.
 - Passagem escondida ao norte → trilha para o vulcão, bloqueada por rochas e três selos. Depois de abri-la, o ícone leva ao caminho de lava e à arena do dragão.
-- Hospedaria ao sudoeste da praça → interior com camas; a equipe retorna para lá após perder para o dragão.
+- Hospedaria próxima à entrada sul → interior com camas; a equipe retorna para lá após perder para o dragão.
 
 Entradas e saídas, incluindo lojas, funcionam ao caminhar pela área de passagem, sem confirmar com E. Chegadas ficam fora dessas áreas para evitar retorno imediato; diálogos, inventário, lojas abertas e batalhas suspendem a viagem. E continua sendo usado para conversar, examinar objetos e desfazer os selos da trilha. Ouro, inventário, equipamentos, missão, estoques e Limit usam a mesma sessão entre cenários.
 
 A apresentação usa **câmera oblíqua e modelos com volume**, com sprites em pixel art para herói/moradores desde a parte 10A. A ilha tem costa elevada, montanhas, mar e ícones pequenos de locais; casas têm paredes, telhados e janelas texturizados. No mapa mundial, a câmera está aproximadamente duas vezes mais próxima no enquadramento e acompanha o herói perto do centro da tela. Na periferia, ela também acompanha o herói mantendo o ângulo. Florestas, ruínas, castelo e lojas usam enquadramentos fixos. WASD/setas acompanham as direções da tela.
 
-Abra `Assets/Scenes/CidadePrototipo.unity` e siga `Docs/PARTE_7A.md` e `Docs/VISUAL_25D.md` para testar em Play. Os modelos ainda são provisórios, criados por código. A batalha e os menus conservam sua interface atual.
+Abra `Assets/Scenes/CidadePrototipo.unity` e siga `Docs/PERIFERIA_PIXEL_ART.md` para a periferia atual. `Docs/PARTE_7A.md` e `Docs/VISUAL_25D.md` registram a implantação anterior da ilha/apresentação. A batalha e os menus conservam sua interface atual.
 
 ## Parte 7B — três segredos e poema em latim
 
@@ -71,7 +73,7 @@ Os finais têm cenas e três páginas de texto, com opção de voltar ao menu in
 
 ### Salvamento — parte 9
 
-O menu inicial oferece Novo jogo e Continuar em três slots. Autosave após vitórias, segredos, baú, entrega e mudanças de inventário; salvamento manual com a hospedeira ou F5 na hospedaria. Carregar recupera o mapa e a posição do último save, equipamentos, encaixes, Limit, estoques e progresso. Andar e trocar de mapa não salvam por si só; combates em andamento não são gravados.
+O menu inicial oferece Novo jogo e Continuar em três slots. Autosave após vitórias, segredos, baú, entrega e mudanças de inventário; salvamento manual com a hospedeira ou F5 na hospedaria. Carregar recupera mapa, posição livre do último save, equipamentos, encaixes, Limit, estoques e progresso. Se uma posição da periferia antiga estiver fora ou bloqueada na planta compacta, a equipe reaparece na rua central. Andar e trocar de mapa não salvam por si só; combates em andamento não são gravados.
 
 Os saves ficam em `Application.persistentDataPath/Saves`, fora do Git, com backup da revisão anterior válida. Jornadas concluídas reabrem seu final. Veja `Docs/PARTE_9.md` para os detalhes e a conferência em Play.
 
@@ -87,7 +89,7 @@ Veja `Docs/PARTE_6C.md` para o roteiro de economia. As três entregas da parte 6
 
 ## Parte 6B — lojas e economia inicial
 
-Há três lojas: itens a noroeste, matérias a nordeste e equipamentos a sudeste. Use E na porta e depois no vendedor para abrir Comprar/Vender. Esc fecha o menu; a saída fica ao sul do interior.
+Há três lojas ao longo da viela: procure os letreiros ITENS, MATERIA e ARMAS. Entre automaticamente ao caminhar até a porta e use E no vendedor para abrir Comprar/Vender. Esc fecha o menu; a saída fica ao sul do interior.
 
 - Comece com 50 moedas, 2 poções, 1 antídoto, equipamento simples e cinco matérias iniciais. Extras de teste foram retirados do jogo.
 - Todos os produtos têm estoque limitado. Compras vão ao inventário e cada equipamento/matéria tem uma identidade própria.

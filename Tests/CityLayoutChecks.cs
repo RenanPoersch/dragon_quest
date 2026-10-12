@@ -8,7 +8,7 @@ using UnityEngine;
 
 internal static class CityLayoutChecks
 {
-    private const float Step = 0.5f;
+    private const float Step = 0.125f;
     // Metade do collider do heroi mais margem para evitar passagens apertadas.
     private const float HalfWidth = 0.275f + 0.08f;
     private const float HalfHeight = 0.3f + 0.08f;
@@ -69,28 +69,46 @@ internal static class CityLayoutChecks
             CheckReachable(district.VisitPoint, district.Name);
             Assert(PrototypeCityLayout.DistrictAt(district.VisitPoint) == district.Name, "Nome do bairro incorreto em " + district.Name + ".");
         }
-        foreach (Vector2 door in new[] { new Vector2(-9, 2.1f), new Vector2(9, 2.1f), new Vector2(9, -7.4f) }) CheckReachable(door, "porta da loja");
-        foreach (Vector2 exit in new[] { new Vector2(-9, 1), new Vector2(9, 1), new Vector2(9, -8.5f) }) CheckReachable(exit, "retorno da loja");
+        foreach (Vector2 door in new[] {PrototypeCityLayout.ItemDoor, PrototypeCityLayout.EquipmentDoor,
+            PrototypeCityLayout.MateriaDoor, PrototypeCityLayout.InnDoor})
+        {
+            CheckReachable(door, "porta da loja/hospedaria em " + door.x + ", " + door.y);
+            CheckReachable(PrototypeCityLayout.DoorReturn(door), "retorno da loja/hospedaria");
+        }
         CheckReachable(PrototypeCityLayout.Citizen + Vector2.down, "aldeao");
         CheckReachable(PrototypeCityLayout.Chest + Vector2.down, "bau");
         CheckReachable(PrototypeCityLayout.Guard + Vector2.down, "patrulha");
-        CheckReachable(new Vector2(-24,18), "fachada da capela");
+        CheckReachable(PrototypeCityLayout.Resident + Vector2.down, "camponesa e poema da capela");
+        CheckReachable(PrototypeCityLayout.Explorer + Vector2.down, "exploradora");
         Assert(!PrototypeCityLayout.Blocks.Any(block=>block.Name=="Altar antigo"),"Altar do segredo nao pode permanecer na cidade.");
-        CheckReachable(new Vector2(24, -18), "pedestal nas ruinas");
-        foreach (float x in new[] { -24f, 0f, 24f })
-            for (int y = -15; y <= -9; y++) CheckReachable(new Vector2(x, y), "travessia da ponte em " + x);
-        foreach (Vector2 point in new[] { new Vector2(-32, 0), new Vector2(32, 0), new Vector2(0, 22.5f), new Vector2(0, -22.5f) })
-            CheckReachable(point, "extremidade ampliada " + point.x + ", " + point.y);
-        Assert(!Walkable(new Vector2(10, -12)) && !Walkable(new Vector2(-10, -12)), "Rio so pode ser cruzado pelas pontes.");
-        Assert(!Walkable(new Vector2(29, 14)), "Lago deve impedir caminhar sobre a agua.");
-        foreach (Vector2 point in new[] { new Vector2(-35.5f, 0), new Vector2(35.5f, 0), new Vector2(0, -23.5f), new Vector2(0, 23.5f) })
+        foreach (Vector2 point in PrototypeCityLayout.Street) CheckReachable(point, "trecho da viela principal");
+        for (float y = 9.6f; y <= 16.2f; y += 0.25f) CheckReachable(new Vector2(0, y), "travessia da ponte de pedra");
+        CheckReachable(PrototypeCityLayout.CastleDoor, "entrada do castelo apos a ponte");
+        Assert(!Walkable(new Vector2(-4, PrototypeCityLayout.Bridge.y)) && !Walkable(new Vector2(4, PrototypeCityLayout.Bridge.y)),
+            "Fosso seco precisa impedir atravessar fora da ponte.");
+        Assert(!PrototypeCityLayout.Blocks.Any(b=>b.Name.StartsWith("Lago")||b.Name=="Rio")
+            && PrototypeCityLayout.Blocks.Count(b=>b.Name=="Ponte de pedra - piso")==1,
+            "Periferia deve ter uma unica ponte ao norte, sem lago ou rio no inicio.");
+        Assert(PrototypeCityLayout.CastleDoor.y>PrototypeCityLayout.Bridge.y && PrototypeCityLayout.Bridge.y>PrototypeCityLayout.Spawn.y,
+            "Ponte e entrada do castelo precisam ficar ao norte do bairro.");
+        Assert(PrototypeCityLayout.Bounds.width<32 && PrototypeCityLayout.Bounds.height>PrototypeCityLayout.Bounds.width,
+            "Bairro deve ser compacto e alongado na orientacao norte-sul.");
+        Assert(PrototypeCityLayout.SafeSavedPosition(new Vector2(-3.8f, -6)) == PrototypeCityLayout.Spawn
+            && PrototypeCityLayout.SafeSavedPosition(new Vector2(-25.5f, -3)) == PrototypeCityLayout.Spawn
+            && PrototypeCityLayout.SafeSavedPosition(new Vector2(-4, 12.5f)) == PrototypeCityLayout.Spawn,
+            "Save antigo em casa, fora do bairro compacto ou dentro do fosso deve reaparecer na rua central.");
+        Assert(PrototypeCityLayout.SafeSavedPosition(PrototypeCityLayout.Spawn) == PrototypeCityLayout.Spawn
+            && PrototypeCityLayout.SafeSavedPosition(PrototypeCityLayout.ItemDoor) == PrototypeCityLayout.ItemDoor,
+            "Posicoes livres salvas e portas devem conservar suas coordenadas.");
+        foreach (Vector2 point in new[] {new Vector2(-12.5f, 0), new Vector2(12.5f, 0), new Vector2(0, -21.5f), new Vector2(0, 21.5f)})
             Assert(!Walkable(point), "Muralha deve bloquear a saida do mapa.");
 
-        int freeCells = 0;
+        int freeCells = 0; var isolated = new List<Vector2>();
         for (int x = 0; x <= PrototypeCityLayout.Bounds.width / Step; x++)
-            for (int y = 0; y <= PrototypeCityLayout.Bounds.height / Step; y++) if (Walkable(Position(x, y))) freeCells++;
-        Assert(reachable.Count == freeCells, "Mapa contem uma area caminhavel isolada do heroi.");
-        Assert(reachable.Count * Step * Step > 36 * 24 * 2, "Area caminhavel precisa crescer substancialmente, alem das medidas externas.");
+            for (int y = 0; y <= PrototypeCityLayout.Bounds.height / Step; y++) if (Walkable(Position(x, y)))
+            { freeCells++; if (!reachable.Contains((x,y))) isolated.Add(Position(x,y)); }
+        Assert(reachable.Count == freeCells, "Mapa contem uma area caminhavel isolada do heroi: "
+            + string.Join("; ", isolated.Take(12).Select(p=>p.x+", "+p.y)));
     }
 
     private static void ExportGeometry(string path)

@@ -1,6 +1,10 @@
 Shader "DragonQuest/ObliqueWorld"
 {
-    Properties { _PixelAtlas ("Materiais pixel art", 2D) = "white" {} }
+    Properties
+    {
+        _PixelAtlas ("Materiais pixel art", 2D) = "white" {}
+        _Brightness ("Brilho do cenario", Range(0, 1)) = 1
+    }
     SubShader
     {
         Tags { "RenderPipeline"="UniversalPipeline" "RenderType"="Opaque" "Queue"="Geometry" }
@@ -17,6 +21,9 @@ Shader "DragonQuest/ObliqueWorld"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Color.hlsl"
             TEXTURE2D(_PixelAtlas); SAMPLER(sampler_PixelAtlas);
+            CBUFFER_START(UnityPerMaterial)
+                half _Brightness;
+            CBUFFER_END
             struct Attributes { float4 positionOS : POSITION; half4 color : COLOR; float2 uv : TEXCOORD0; float2 surface : TEXCOORD1; };
             struct Varyings { float4 positionCS : SV_POSITION; half4 color : COLOR; float2 uv : TEXCOORD0; nointerpolation float2 surface : TEXCOORD1; };
             Varyings Vert(Attributes input)
@@ -44,12 +51,12 @@ Shader "DragonQuest/ObliqueWorld"
                         #endif
                         albedo = lerp(green, albedo, 0.4h);
                     }
-                    return half4(albedo * input.surface.y, 1);
+                    return half4(albedo * input.surface.y * _Brightness, 1);
                 }
                 #if defined(UNITY_COLORSPACE_GAMMA)
-                return half4(input.color.rgb, 1);
+                return half4(input.color.rgb * _Brightness, 1);
                 #else
-                return half4(SRGBToLinear(input.color.rgb), 1);
+                return half4(SRGBToLinear(input.color.rgb) * _Brightness, 1);
                 #endif
             }
             ENDHLSL

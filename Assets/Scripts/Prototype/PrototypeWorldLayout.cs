@@ -20,9 +20,9 @@ namespace DragonQuest.Prototype
         public static readonly Vector2 CastleSpawn = new Vector2(0, -5);
         public static readonly Vector2 CastleExit = new Vector2(0, -7);
         public static readonly Vector2 Throne = new Vector2(0, 5);
-        public static readonly Vector2 CityEntry = new Vector2(0, -20);
-        public static readonly Vector2 CityExit = new Vector2(0, -22);
-        public static readonly Vector2 CastleDoor = new Vector2(0, 15.5f);
+        public static readonly Vector2 CityEntry = PrototypeCityLayout.Entry;
+        public static readonly Vector2 CityExit = PrototypeCityLayout.Exit;
+        public static readonly Vector2 CastleDoor = PrototypeCityLayout.CastleDoor;
 
         public static IReadOnlyList<Vector2> Coast { get; } = BeveledCoast(new[]
         {
