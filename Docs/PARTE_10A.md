@@ -7,6 +7,7 @@ A referência artística desta etapa é o Final Fantasy VI original. A apresenta
 | Arquivo em Assets/Resources/PixelArt | Uso |
 | --- | --- |
 | ArenWalk.png | Aren com cabelo loiro pontiagudo, quatro direções e poses de caminhada; exploração e batalha |
+| ArenDiagonalWalk.png | Quatro diagonais do Aren, com repouso e dois passos; complemento usado na exploração |
 | LiaWalk.png | Lia, quatro direções e poses de caminhada; batalha |
 | BramWalk.png | Bram, quatro direções e poses de caminhada; batalha |
 | NpcRoster.png | Doze sprites: moradores, comerciantes, hospedeira, lenhador, viajante, guarda e rei |
@@ -14,7 +15,9 @@ A referência artística desta etapa é o Final Fantasy VI original. A apresenta
 
 As imagens são originais, geradas com a ferramenta integrada `image_gen`. Os prompts e a revisão de espaçamento estão em `PIXEL_ART_PROMPTS.md`. Não foram importados sprites de Final Fantasy. A folha do Bram e a dos moradores foram corrigidas antes da integração porque algumas poses encostavam nas divisões das células.
 
-Os cinco PNGs têm 1448 × 1086 pixels, divididos em quatro colunas e três linhas de células de 362 × 362. Nas folhas da equipe, as colunas representam baixo/esquerda/direita/cima e as linhas representam parado/primeiro passo/segundo passo. A leitura do alpha encontra o corpo completo dentro de cada célula, adiciona uma margem e ancora a imagem pelos pés. Isso é feito em memória; os PNGs mantêm sua transparência original.
+Os cinco PNGs iniciais têm 1448 × 1086 pixels, divididos em quatro colunas e três linhas de células de 362 × 362. Nas folhas da equipe, as colunas representam baixo/esquerda/direita/cima e as linhas representam parado/primeiro passo/segundo passo. A leitura do alpha encontra o corpo completo dentro de cada célula, adiciona uma margem e ancora a imagem pelos pés. Isso é feito em memória; os PNGs mantêm sua transparência original.
+
+A folha complementar `ArenDiagonalWalk.png` tem 1447 × 1087 pixels. Suas colunas representam baixo-esquerda, baixo-direita, cima-esquerda e cima-direita, com as mesmas três linhas de animação. O recorte distribui os pixels excedentes entre as células, sem redimensionar a imagem. A exploração usa oito direções relativas à câmera e conserva a orientação diagonal ao parar; batalha e direções cardinais usam a folha original.
 
 Aren troca direção e pose ao andar na ilha e nos interiores. NPCs usam poses estáticas. Lia e Bram aparecem com sprites próprios na batalha; as folhas já incluem suas direções/passos para usos futuros. Os trajes são a aparência inicial fixa desta etapa: trocar equipamento altera stats/encaixes, mas ainda não troca o desenho da armadura ou arma.
 
@@ -43,10 +46,12 @@ Para repetir a análise dos assets: `python Tools/Inspect-PixelArt.py`. Requer P
 ## Roteiro em Play
 
 1. Pare Play, aguarde a importação e abra `CidadePrototipo`. Comece Novo jogo ou Continue um slot existente. Confira o Console: ausência de erros de shader, textura não legível ou atlas cortado.
-2. Caminhe com WASD/setas nas quatro direções. Confira os perfis, costas, alternância dos passos, retorno à pose parada e personagem próximo ao centro da câmera. Passe pelas entradas: a chegada deve manter o sprite inteiro e sem salto de animação.
+2. Caminhe com WASD/setas nas oito direções, incluindo W+A, W+D, S+A e S+D. Confira diagonais de frente e costas, alternância dos passos, retorno à pose parada mantendo a orientação e personagem próximo ao centro da câmera. Passe pelas entradas: a chegada deve manter o sprite inteiro e sem salto de animação.
 3. Confira casas, grama, chão, mar, madeira e sombras. Passe atrás de paredes/árvores e à frente delas para verificar profundidade e transparência. Não devem aparecer retângulos pretos em torno dos personagens nem cores magenta nos materiais.
 4. Converse com camponesa, moradores e vendedores. Confira figuras distintas, lojas e hospedaria. Teste o salvamento pela hospedeira e carregue o mesmo slot.
 5. Enfrente a patrulha: Aren, Lia e Bram devem usar suas imagens próprias; derrotados ficam escurecidos. Equipamentos, matérias, itens e Limit devem funcionar como antes.
 6. Continue uma jornada com passagem aberta e dragão derrotado. Confira rochas, armadura, revelação do espírito e os finais. O conjunto de sprites para dragão/espírito/finais será refinado na próxima etapa artística.
 
 Importação real, compilação dos shaders pela GPU, sombras/profundidade do renderer 2D da Unity, cliques e aparência durante a caminhada ainda precisam dessa conferência em Play.
+
+Após adicionar as diagonais, passaram 231 verificações dos seis PNGs/importadores, 161 de recorte/direção/materiais e 2358 de malhas/câmera. A compilação dos scripts passou. O atlas novo foi inspecionado visualmente; a troca efetiva dos sprites durante o movimento ainda precisa de Play.

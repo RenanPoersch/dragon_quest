@@ -15,11 +15,11 @@ def check(condition, message):
     if not condition:
         raise ValueError(message)
 
-for name in ("ArenWalk", "LiaWalk", "BramWalk", "NpcRoster", "TerrainAtlas"):
+for name in ("ArenWalk", "ArenDiagonalWalk", "LiaWalk", "BramWalk", "NpcRoster", "TerrainAtlas"):
     path = directory / (name + ".png")
     with Image.open(path) as image:
         width, height = image.size
-        check(width % 4 == 0 and height % 3 == 0, name + ": grade irregular")
+        check(width >= 16 and height >= 12 and abs(width * 3 - height * 4) <= 8, name + ": grade irregular")
         check(width <= 2048 and height <= 2048, name + ": tamanho acima do importador")
         meta = path.with_suffix(".png.meta").read_text(encoding="utf-8-sig")
         for setting in ("filterMode: 0", "enableMipMap: 0", "nPOTScale: 0", "textureCompression: 0"):
@@ -30,16 +30,17 @@ for name in ("ArenWalk", "LiaWalk", "BramWalk", "NpcRoster", "TerrainAtlas"):
             check("isReadable: 1" in meta, name + ": alpha precisa ser legivel em runtime")
             alpha = image.getchannel("A")
             check(alpha.getextrema() == (0, 255), name + ": transparencia incorreta")
-            cw, ch = width // 4, height // 3
             for index in range(12):
-                left, top = index % 4 * cw, index // 4 * ch
+                column, row = index % 4, index // 4
+                left, top = column * width // 4, row * height // 3
+                right, bottom = (column + 1) * width // 4, (row + 1) * height // 3
                 # Apenas leitura da regiao para analise, sem criar assets derivados.
-                region = alpha.crop((left, top, left + cw, top + ch))
+                region = alpha.crop((left, top, right, bottom))
                 mask = region.point(lambda value: 255 if value >= 128 else 0)
                 box = mask.getbbox()
                 check(box is not None, name + ": celula vazia " + str(index))
                 x0, y0, x1, y1 = box
-                check(x0 > 0 and y0 > 0 and x1 < cw and y1 < ch, name + ": sprite cortado " + str(index))
+                check(x0 > 0 and y0 > 0 and x1 < right - left and y1 < bottom - top, name + ": sprite cortado " + str(index))
                 rows = range(max(y0, y1 - 6), y1)
                 xs = [x + 0.5 for y in rows for x in range(x0, x1) if region.getpixel((x, y)) >= 128]
                 frame = {"x": left + x0 - 1, "y": top + y0 - 1, "width": x1 - x0 + 2, "height": y1 - y0 + 2,

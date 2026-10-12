@@ -246,3 +246,11 @@ O usuário confirmou que as interações funcionaram em Play. Não houve valida�
 - Verificação externa com `d3dcompiler_47.dll` e os headers URP instalados: a versão anterior reproduziu os três erros; a versão corrigida compilou nos estágios de vértices e fragmentos. Os shaders de personagens e sombras também compilaram, totalizando seis compilações bem-sucedidas.
 - Essa verificação usa perfis `vs_5_0`/`ps_5_0`, compatibilidade de tipos half e uma adaptação em memória da macro vazia PopMarker para o pré-processador legado. Nenhum pacote instalado foi alterado. O teste não substitui a recompilação DirectX 12 e a conferência visual no Editor.
 - Em Play: parar a execução, retornar à Unity e aguardar a reimportação do shader; limpar o Console e iniciar Play novamente. Conferir cenário com cores e ausência de novos erros de shader.
+
+## Aren — movimento em oito direções
+
+- Atlas complementar com doze sprites diagonais, gerado pela ferramenta integrada image_gen e inspecionado visualmente. Cabelo loiro pontiagudo, trajes e alpha preservados; direções cardinais e HUD mantêm o atlas original.
+- Orientação considera o yaw da câmera, com oito setores de 45 graus. Caminhada usa distância percorrida e alterna os pés; parar conserva a direção em repouso. Atlas de quatro direções continuam usando a seleção anterior.
+- O PNG novo tem 1447 × 1087 pixels. O recorte agora distribui pixels restantes entre as células e examina toda a imagem, conservando a rejeição de sprites vazios ou cortados. Nenhum PNG foi redimensionado.
+- Scripts compilaram. Passaram 231 verificações de imagens/importadores, 161 de sprites/materiais e 2358 de perspectiva/câmera/malhas. Os testes incluem oito direções com câmera rodada, transições entre setores, ciclo dos passos, repouso diagonal e recorte de dimensões não divisíveis.
+- Em Play: conferir W+A, W+D, S+A e S+D na ilha e nos interiores, parada, mudança para um eixo e passagem entre mapas. A animação no Editor e sua aparência durante o movimento permanecem pendentes de conferência.

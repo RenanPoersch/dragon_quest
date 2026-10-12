@@ -8,12 +8,15 @@ namespace DragonQuest.Exploration
         private PlayerMovement movement;
         private SpriteRenderer sprite;
         private PixelSpriteAtlas atlas;
+        private PixelSpriteAtlas diagonalAtlas;
         private Camera view;
         private Vector3 previous;
         private float walkedDistance;
-        public void Initialize(Transform root, SpriteRenderer renderer, PixelSpriteAtlas source, int frame, bool animated)
+        public void Initialize(Transform root, SpriteRenderer renderer, PixelSpriteAtlas source, int frame, bool animated,
+            PixelSpriteAtlas diagonalSource = null)
         {
             anchor = root; sprite = renderer; atlas = source; view = Camera.main;
+            diagonalAtlas = diagonalSource;
             movement = animated ? root.GetComponent<PlayerMovement>() : null;
             previous = root.position; sprite.sprite = atlas.Sprites[frame]; FaceCamera();
         }
@@ -25,7 +28,9 @@ namespace DragonQuest.Exploration
             bool walking = distance > 0.0001f && distance < 0.5f;
             if (walking) walkedDistance += distance;
             else walkedDistance = 0;
-            sprite.sprite = atlas.Sprites[PixelSpriteLayout.WalkFrame(PixelSpriteLayout.Facing(movement.FacingDirection), walkedDistance, walking)];
+            var facing = PixelSpriteLayout.Facing(movement.FacingDirection, diagonalAtlas != null);
+            var source = PixelSpriteLayout.IsDiagonal(facing) ? diagonalAtlas : atlas;
+            sprite.sprite = source.Sprites[PixelSpriteLayout.WalkFrame(facing, walkedDistance, walking)];
         }
         private void FaceCamera()
         {

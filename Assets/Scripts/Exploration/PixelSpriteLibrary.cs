@@ -57,7 +57,8 @@ namespace DragonQuest.Exploration
             GameObject visual = new GameObject("Sprite pixel art / " + atlasName);
             visual.transform.SetParent(anchor, false);
             var renderer = visual.AddComponent<SpriteRenderer>(); renderer.sharedMaterial = Material;
-            visual.AddComponent<PixelCharacter>().Initialize(anchor, renderer, Atlas(atlasName), frame, animated);
+            var diagonals = animated && atlasName == "ArenWalk" ? Atlas("ArenDiagonalWalk") : null;
+            visual.AddComponent<PixelCharacter>().Initialize(anchor, renderer, Atlas(atlasName), frame, animated, diagonals);
             return visual.transform;
         }
         public static int NpcFrame(string name)

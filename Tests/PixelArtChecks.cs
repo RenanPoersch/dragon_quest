@@ -18,6 +18,37 @@ internal static class PixelArtChecks
             Assert(PixelSpriteLayout.WalkFrame(expected, 0.67f, true) == 8 + (int)expected, "Segundo passo.");
             Assert(PixelSpriteLayout.WalkFrame(expected, 2, false) == (int)expected, "Parar/teleportar volta ao idle.");
         }
+        var directions = new[] {
+            Vector2.down, Vector2.left, Vector2.right, Vector2.up,
+            new Vector2(-1, -1), new Vector2(1, -1), new Vector2(-1, 1), new Vector2(1, 1)
+        };
+        for (int i = 0; i < directions.Length; i++)
+        {
+            var ground = ObliqueProjection.GroundDirection(directions[i]);
+            var facing = PixelSpriteLayout.Facing(ground, true);
+            Assert(facing == (PixelDirection)i, "Oito direcoes devem corresponder aos controles mesmo com a camera rodada.");
+            Assert(PixelSpriteLayout.Facing(ground * 0.01f, true) == facing
+                && PixelSpriteLayout.Facing(ground * 10f, true) == facing, "Velocidade nao altera a orientacao do sprite.");
+            Assert(PixelSpriteLayout.IsDiagonal(facing) == (i >= 4), "Diagonais usam a folha complementar; cardinais mantem a original.");
+            if (i >= 4) Assert(!PixelSpriteLayout.IsDiagonal(PixelSpriteLayout.Facing(ground)), "Folhas de quatro direcoes nao podem selecionar um sprite diagonal ausente.");
+            int column = i % 4;
+            int[] rows = {0, 1, 0, 2, 0};
+            for (int step = 0; step < rows.Length; step++)
+                Assert(PixelSpriteLayout.WalkFrame(facing, step * 0.22f + 0.01f, true) == rows[step] * 4 + column,
+                    "Caminhada deve alternar repouso e os dois pes, sem sair da coluna ou ultrapassar a folha.");
+            Assert(PixelSpriteLayout.WalkFrame(facing, 2, false) == column, "Parar ou teleportar conserva a direcao e usa seu repouso.");
+        }
+        float[] angles = {20, 25, 65, 70, -20, -25, -65, -70};
+        PixelDirection[] sectors = {PixelDirection.Right, PixelDirection.UpRight, PixelDirection.UpRight, PixelDirection.Up,
+            PixelDirection.Right, PixelDirection.DownRight, PixelDirection.DownRight, PixelDirection.Down};
+        for (int i = 0; i < angles.Length; i++)
+        {
+            double radians = angles[i] * Math.PI / 180;
+            var input = new Vector2((float)Math.Cos(radians), (float)Math.Sin(radians));
+            Assert(PixelSpriteLayout.Facing(ObliqueProjection.GroundDirection(input), true) == sectors[i],
+                "Setores diagonais devem ocupar 45 graus entre os eixos, sem transformar movimento quase horizontal/vertical em diagonal.");
+        }
+        Assert(PixelSpriteLayout.Facing(Vector2.zero, true) == PixelDirection.Down, "Direcao nula usa repouso cardinal valido.");
         var alpha = new byte[40 * 30];
         for (int i = 0; i < 12; i++)
         {
@@ -30,6 +61,21 @@ internal static class PixelArtChecks
             Assert(frames[i].X == i % 4 * 10 + 2 && frames[i].Y == (2 - i / 4) * 10 + 1, "Recortes devem ler PNG de baixo para cima e devolver ordem superior primeiro.");
             Assert(frames[i].Width == 6 && frames[i].Height == 8 && Math.Abs(frames[i].FootX - 0.5f) < 0.001f, "Recorte com margem e ancora nos pes.");
         }
+        var oddAlpha = new byte[41 * 31];
+        for (int i = 0; i < 12; i++)
+        {
+            int x = i % 4 * 41 / 4, y = 31 - (i / 4 + 1) * 31 / 3;
+            for (int yy = y + 2; yy <= y + 7; yy++) for (int xx = x + 3; xx <= x + 6; xx++) oddAlpha[yy * 41 + xx] = 255;
+        }
+        var oddFrames = PixelSpriteLayout.Read(41, 31, oddAlpha);
+        for (int i = 0; i < oddFrames.Length; i++)
+            Assert(oddFrames[i].X == i % 4 * 41 / 4 + 2 && oddFrames[i].Y == 31 - (i / 4 + 1) * 31 / 3 + 1
+                && oddFrames[i].Width == 6 && oddFrames[i].Height == 8,
+                "Tamanhos nao divisiveis devem distribuir os pixels restantes e conservar corpos inteiros em todas as celulas.");
+        oddAlpha[30 * 41 + 40] = 255;
+        bool refusedOdd = false;
+        try { PixelSpriteLayout.Read(41, 31, oddAlpha); } catch (ArgumentException) { refusedOdd = true; }
+        Assert(refusedOdd, "Ultimo pixel da imagem tambem precisa ser verificado ao recortar a grade.");
         alpha[20 * 40] = 255;
         bool refused = false; try { PixelSpriteLayout.Read(40, 30, alpha); } catch (ArgumentException) { refused = true; }
         Assert(refused, "Sprite que toca a borda nao pode ser recortado silenciosamente.");
