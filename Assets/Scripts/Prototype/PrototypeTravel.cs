@@ -10,12 +10,13 @@ namespace DragonQuest.Prototype
         public string Id { get; }
         public string Name { get; }
         public Rect Bounds { get; }
+        public Rect? CoveredGroundBounds { get; }
         public Vector2 Spawn { get; }
         public float CameraSize { get; }
         public bool IsShop { get; }
         public bool FixedCamera { get; }
-        public MapDefinition(string id, string name, Rect bounds, Vector2 spawn, float cameraSize, bool isShop = false, bool fixedCamera = false)
-        { Id = id; Name = name; Bounds = bounds; Spawn = spawn; CameraSize = cameraSize; IsShop = isShop; FixedCamera = fixedCamera; }
+        public MapDefinition(string id, string name, Rect bounds, Vector2 spawn, float cameraSize, bool isShop = false, bool fixedCamera = false, Rect? coveredGroundBounds = null)
+        { Id = id; Name = name; Bounds = bounds; CoveredGroundBounds = coveredGroundBounds; Spawn = spawn; CameraSize = cameraSize; IsShop = isShop; FixedCamera = fixedCamera; }
     }
 
     public sealed class MapRoute
@@ -48,7 +49,8 @@ namespace DragonQuest.Prototype
             var definitions = new[]
             {
                 new MapDefinition(World, "ILHA / MAPA GLOBAL", PrototypeWorldLayout.Bounds, PrototypeWorldLayout.Spawn, 6.85f),
-                new MapDefinition(City, "PERIFERIA DO CASTELO", PrototypeCityLayout.Bounds, PrototypeWorldLayout.CityEntry, 6),
+                new MapDefinition(City, "PERIFERIA DO CASTELO", PrototypeCityLayout.Bounds, PrototypeWorldLayout.CityEntry, 6,
+                    coveredGroundBounds: PrototypeCityLayout.TerrainBounds),
                 new MapDefinition(Castle, "INTERIOR DO CASTELO", PrototypeWorldLayout.CastleBounds, PrototypeWorldLayout.CastleSpawn, 9, false, true),
                 new MapDefinition(WestForest, "FLORESTA OESTE", PrototypeWorldLayout.ForestBounds, PrototypeWorldLayout.ForestSpawn, 8, false, true),
                 new MapDefinition(EastForest, "FLORESTA LESTE", PrototypeWorldLayout.ForestBounds, PrototypeWorldLayout.ForestSpawn, 8, false, true),

@@ -15,12 +15,13 @@ def check(condition, message):
     if not condition:
         raise ValueError(message)
 
-for name in ("ArenWalk", "ArenDiagonalWalk", "LiaWalk", "BramWalk", "NpcRoster", "TerrainAtlas", "CityMaterialsAtlas", "CityDetailsAtlas", "CastleMaterialsAtlas", "CityGroundMap"):
+for name in ("ArenWalk", "ArenDiagonalWalk", "LiaWalk", "BramWalk", "NpcRoster", "TerrainAtlas", "CityMaterialsAtlas", "CityDetailsAtlas", "CastleMaterialsAtlas", "CityGroundMap", "CityGroundSurroundings"):
     path = directory / (name + ".png")
     with Image.open(path) as image:
         width, height = image.size
-        ground_map = name == "CityGroundMap"
-        check(width >= 16 and height >= 12 and (abs(width * 44 - height * 26) / (height * 26) < .02 if ground_map
+        ground_map = name in ("CityGroundMap", "CityGroundSurroundings")
+        map_width, map_height = (62, 80) if name == "CityGroundSurroundings" else (26, 44)
+        check(width >= 16 and height >= 12 and (abs(width * map_height - height * map_width) / (height * map_width) < .02 if ground_map
               else abs(width * 3 - height * 4) <= 8), name + ": proporcao irregular")
         check(width <= (4096 if ground_map else 2048) and height <= (4096 if ground_map else 2048), name + ": tamanho acima do importador")
         meta = path.with_suffix(".png.meta").read_text(encoding="utf-8-sig")

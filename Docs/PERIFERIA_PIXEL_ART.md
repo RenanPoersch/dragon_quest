@@ -1,5 +1,13 @@
 # Periferia compacta — vielas e ponte do castelo
 
+## Terreno cobrindo todo o enquadramento
+
+A área jogável continua com 26 × 44 unidades, limitada pelas muralhas e colisores existentes. O terreno visual ocupa 62 × 80, com uma faixa de 18 unidades ao redor. A pintura central `CityGroundMap.png` permanece intacta; quatro superfícies exteriores usam `CityGroundSurroundings.png`, uma pintura natural de terra/musgo, sem repetir as ruas ou esticar o último pixel da imagem.
+
+O foco da câmera acompanha diretamente o personagem e fica limitado ao retângulo da cidade. O cálculo da cobertura considera rotação, inclinação, altura do foco e rebaixo do fosso. Formatos de 9:16 até 21:9 conservam o tamanho 6; em formatos mais largos, o tamanho é limitado ao que a faixa de terreno consegue cobrir. Essa regra está ativa somente na periferia.
+
+Em Play, parar e reiniciar após a importação. Conferir aproximação das quatro muralhas e dos cantos, testar 16:9 e um formato largo no Game view, e entrar/sair de uma loja e do castelo. Toda a tela deve continuar coberta por terreno/cenário; o herói não deve atravessar as muralhas. Prévias externas e testes de raios sobre a geometria não substituem essa conferência no renderer da Unity.
+
 A periferia foi redesenhada a partir da referência enviada pelo usuário: bairro antigo de fantasia industrial, construções próximas, becos, metal oxidado, madeira, lonas remendadas e luzes amarelas/verdes. A apresentação mantém os cenários 3D, a câmera inclinada e os personagens em pixel art.
 
 ## Planta e passagens

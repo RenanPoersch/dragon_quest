@@ -59,6 +59,7 @@ internal static class ObliqueChecks
         CheckSpriteDepth(directory);
         CheckCameraTracking();
         CheckPaintedGround(directory);
+        CheckCityViewportCoverage(directory);
         Near(ObliqueProjection.ScreenPlane(new Vector2(4,3)).x,4*ObliqueProjection.YawCos+3*ObliqueProjection.YawSin,"Eixos do chão devem acompanhar rotação da câmera.");
         Near(ObliqueProjection.ScreenPlane(new Vector2(4,3)).y,(-4*ObliqueProjection.YawSin+3*ObliqueProjection.YawCos)*ObliqueProjection.GroundScale,"Profundidade do chão precisa comprimir na tela.");
         Near(ObliqueProjection.ScreenPlane(Vector2.zero,2).y,2*ObliqueProjection.HeightScale,"Altura deve subir na tela.");
@@ -264,6 +265,65 @@ internal static class ObliqueChecks
             Assert(CityPeripheryArt.Block(block).Vertices.Count==0,"Pisos antigos nao podem cobrir a textura unica com blocos repetidos.");
         Export(directory,"CityGround",ground,PrototypeCityLayout.Spawn,6,ObliqueProjection.HeroCenterHeight,
             atlas:"CityGroundMap",singleTexture:true);
+    }
+    private static void CheckCityViewportCoverage(string directory)
+    {
+        var inner = CityGroundArt.Build(); var outer = CityGroundArt.BuildSurroundings();
+        Validate(outer, "Terreno exterior da periferia");
+        var floor = new ObliqueMeshData(); floor.Append(inner, Vector3.zero); floor.Append(outer, Vector3.zero);
+        foreach (var block in PrototypeCityLayout.Blocks.Where(b => b.Name.StartsWith("Fosso seco")))
+            floor.Append(CityPeripheryArt.Block(block), ObliqueProjection.Point(block.Position));
+        Rect city = PrototypeCityLayout.Bounds, terrain = CityGroundArt.TerrainBounds;
+        Assert(outer.UVs.All(uv => uv.x >= 0 && uv.x <= 1 && uv.y >= 0 && uv.y <= 1),
+            "O terreno exterior precisa usar a imagem inteira sem repetir ou esticar pixels da borda.");
+        for (int i = 0; i < outer.Vertices.Count; i++)
+        {
+            Near(outer.UVs[i].x * terrain.width + terrain.xMin, outer.Vertices[i].x, "UV exterior deve corresponder ao terreno horizontal.");
+            Near(outer.UVs[i].y * terrain.height + terrain.yMin, outer.Vertices[i].y, "UV exterior deve corresponder ao terreno vertical.");
+        }
+        double area = 0;
+        for (int i = 0; i < outer.Triangles.Count; i += 3)
+        {
+            var a = outer.Vertices[outer.Triangles[i]]; var b = outer.Vertices[outer.Triangles[i + 1]]; var c = outer.Vertices[outer.Triangles[i + 2]];
+            area += Math.Abs((double)(b.x - a.x) * (c.y - a.y) - (double)(b.y - a.y) * (c.x - a.x)) / 2;
+        }
+        Assert(Math.Abs(area - (terrain.width * terrain.height - city.width * city.height)) < 0.001,
+            "A faixa exterior precisa cobrir apenas o que esta fora da pintura original.");
+        Assert(float.IsPositiveInfinity(RayDistance(ObliqueProjection.Point(city.center, 10), new Vector3(0, 0, 1), outer)),
+            "A extensao nao pode cobrir ou alterar a pintura central existente.");
+        var forward = new Vector3(-ObliqueProjection.YawSin * ObliqueProjection.HeightScale,
+            ObliqueProjection.YawCos * ObliqueProjection.HeightScale, ObliqueProjection.GroundScale);
+        var right = new Vector3(ObliqueProjection.YawCos, ObliqueProjection.YawSin, 0);
+        var up = new Vector3(-ObliqueProjection.YawSin * ObliqueProjection.GroundScale,
+            ObliqueProjection.YawCos * ObliqueProjection.GroundScale, -ObliqueProjection.HeightScale);
+        foreach (float aspect in new[] {9f/16, 3f/4, 1f, 4f/3, 16f/9, 21f/9, 32f/9, 5f})
+        {
+            float size = ObliqueProjection.FrameSize(6, city, aspect, false, terrain);
+            Assert(size > 0 && size <= 6, "Enquadramento coberto deve permanecer valido sem afastar a camera.");
+            if (aspect <= 21f/9) Near(size, 6, "Formatos usuais devem conservar o zoom da periferia.");
+            foreach (float x in new[] {city.xMin, city.center.x, city.xMax}) foreach (float y in new[] {city.yMin, city.center.y, city.yMax})
+            {
+                var hero = new Vector2(x, y);
+                var camera = ObliqueProjection.CameraPosition(hero, city, size, aspect, false, forward, terrain);
+                var focus = camera + forward * ObliqueProjection.Distance;
+                Near(focus.x, hero.x, "A extensao deve manter o heroi centrado, inclusive no limite oeste/leste.");
+                Near(focus.y, hero.y, "A extensao deve manter o heroi centrado, inclusive no limite norte/sul.");
+                foreach (float sx in new[] {-size * aspect, 0, size * aspect}) foreach (float sy in new[] {-size, 0, size})
+                {
+                    // Raios da camera sobre as malhas reais, sem reutilizar o calculo dos limites.
+                    float hit = RayDistance(camera + right * sx + up * sy, forward, floor);
+                    Assert(float.IsFinite(hit) && hit > 0.1f && hit < 150,
+                        $"Toda a tela deve atingir chao texturizado: aspecto {aspect}, tamanho {size}, heroi ({x}, {y}), tela ({sx}, {sy}), distancia {hit}.");
+                }
+            }
+            var clamped = ObliqueProjection.CameraFocus(new Vector2(city.xMax + 10, city.yMin - 10), city, size, aspect, false, terrain);
+            Assert(clamped == new Vector2(city.xMax, city.yMin), "A camera nao pode ultrapassar os limites da cidade.");
+        }
+        foreach (var map in new PrototypeTravel().Maps)
+            Assert(map.CoveredGroundBounds.HasValue == (map.Id == PrototypeTravel.City),
+                "A regra de cobertura so deve estar ativa na periferia nesta entrega.");
+        Export(directory, "CitySurroundings", outer, PrototypeCityLayout.Spawn, 6, ObliqueProjection.HeroCenterHeight,
+            atlas: "CityGroundSurroundings", singleTexture: true);
     }
     private static void CheckCameraTracking()
     {

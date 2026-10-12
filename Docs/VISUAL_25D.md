@@ -1,5 +1,11 @@
 # Apresentação 2.5D
 
+## Cobertura da tela nos mapas locais
+
+O mapa global mantém a ilha cercada pelo mar. Nos mapas locais, o cenário deve preencher o enquadramento inteiro, sem revelar o fundo da câmera além de uma textura que terminou. Separar os limites de movimento da extensão visual do terreno e conferir os cantos da tela com a câmera inclinada, incluindo formatos largos. Aplicar esse critério ao refinar cada ambiente.
+
+Nesta etapa, a periferia recebe a extensão visual e os limites de câmera; os demais ambientes mantêm sua apresentação atual. Ver `PERIFERIA_PIXEL_ART.md`.
+
 O mundo passa a ser visto em ângulo, com modelos simples de poucos polígonos e cores por face. A direção escolhida usa o tamanho reduzido dos locais no mapa global e ambientes locais com volume. Os modelos são originais e provisórios; esta entrega define a perspectiva, antes do acabamento artístico.
 
 ## O que muda
