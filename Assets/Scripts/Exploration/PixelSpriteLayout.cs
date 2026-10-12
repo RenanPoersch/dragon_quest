@@ -14,10 +14,35 @@ namespace DragonQuest.Exploration
         public Rect Rect => new Rect(X, Y, Width, Height);
     }
 
+    // Pequenos intervalos sem deslocamento entre amostras da fisica nao reiniciam o passo.
+    public struct PixelWalkCycle
+    {
+        public float Distance { get; private set; }
+        public bool Walking { get; private set; }
+        private float stationaryTime;
+        public void Advance(float distance, float deltaTime, bool movementRequested, bool teleported)
+        {
+            if (!movementRequested || teleported) { Reset(); return; }
+            if (distance > 0.0001f)
+            {
+                Distance = (Distance + distance) % (PixelSpriteLayout.WalkPoseDistance * 4);
+                stationaryTime = 0;
+                Walking = true;
+            }
+            else
+            {
+                stationaryTime += deltaTime;
+                if (stationaryTime >= 0.1f) Reset();
+            }
+        }
+        private void Reset() { Distance = 0; stationaryTime = 0; Walking = false; }
+    }
+
     // Alpha vem de baixo para cima, como GetPixels32. Recorte so em memoria, sem alterar os PNGs.
     public static class PixelSpriteLayout
     {
         public const int Columns = 4, Rows = 3, FrameCount = Columns * Rows;
+        public const float WalkPoseDistance = 0.4f;
         public static readonly Vector3 UprightUp = new Vector3(0, 0, -1);
         public static float UprightScaleY => 1f / ObliqueProjection.HeightScale;
         public static Vector3 HorizontalCameraForward(Vector3 forward)
@@ -26,7 +51,7 @@ namespace DragonQuest.Exploration
             return length < 0.0001f ? new Vector3(-ObliqueProjection.YawSin, ObliqueProjection.YawCos, 0)
                 : new Vector3(forward.x / length, forward.y / length, 0);
         }
-        public static PixelFrame[] Read(int width, int height, byte[] alpha)
+        public static PixelFrame[] Read(int width, int height, byte[] alpha, bool stableWalkingAnchor = false)
         {
             if (width < 16 || height < 12
                 || alpha == null || alpha.Length != (long)width * height) throw new ArgumentException("Atlas de sprites invalido.");
@@ -45,9 +70,12 @@ namespace DragonQuest.Exploration
                 if (maxX < minX || minX <= left || maxX >= right - 1
                     || minY <= bottom || maxY >= top - 1)
                     throw new ArgumentException("Sprite vazio ou cortado na celula " + index + ".");
-                // O centro dos pes e a ancora, evitando que capas/deslocamentos laterais movam o corpo.
+                // Em caminhada, a ancora horizontal acompanha o corpo; o pe que avanca nao deve arrasta-lo.
+                // Moradores estaticos continuam usando a base dos pes.
                 double sum = 0, count = 0;
-                for (int y = minY; y <= Math.Min(maxY, minY + 5); y++)
+                int anchorBottom = stableWalkingAnchor ? maxY - (maxY - minY) / 3 : minY;
+                int anchorTop = stableWalkingAnchor ? maxY : Math.Min(maxY, minY + 5);
+                for (int y = anchorBottom; y <= anchorTop; y++)
                     for (int x = minX; x <= maxX; x++) if (alpha[y * width + x] >= 128) { sum += x + 0.5; count++; }
                 int x0 = minX - 1, y0 = minY - 1, w = maxX - minX + 3, h = maxY - minY + 3;
                 frames[index] = new PixelFrame(x0, y0, w, h, (float)((sum / count - x0) / w));
@@ -69,7 +97,7 @@ namespace DragonQuest.Exploration
         public static bool IsDiagonal(PixelDirection facing) => (int)facing >= Columns;
         public static int WalkFrame(PixelDirection facing, float distance, bool walking)
         {
-            int phase = walking ? (int)(distance / 0.22f) % 4 : 0;
+            int phase = walking ? (int)(distance / WalkPoseDistance) % 4 : 0;
             int row = phase == 1 ? 1 : phase == 3 ? 2 : 0;
             return row * Columns + (int)facing % Columns;
         }

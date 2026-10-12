@@ -41,7 +41,9 @@ for name in ("ArenWalk", "ArenDiagonalWalk", "LiaWalk", "BramWalk", "NpcRoster",
                 check(box is not None, name + ": celula vazia " + str(index))
                 x0, y0, x1, y1 = box
                 check(x0 > 0 and y0 > 0 and x1 < right - left and y1 < bottom - top, name + ": sprite cortado " + str(index))
-                rows = range(max(y0, y1 - 6), y1)
+                # Mesma ancora usada em runtime: tronco estavel para Aren; pes para moradores estaticos.
+                walking_sheet = name in ("ArenWalk", "ArenDiagonalWalk")
+                rows = range(y0, y0 + (y1 - y0 - 1) // 3 + 1) if walking_sheet else range(max(y0, y1 - 6), y1)
                 xs = [x + 0.5 for y in rows for x in range(x0, x1) if region.getpixel((x, y)) >= 128]
                 frame = {"x": left + x0 - 1, "y": top + y0 - 1, "width": x1 - x0 + 2, "height": y1 - y0 + 2,
                          "footX": (sum(xs) / len(xs) - x0 + 1) / (x1 - x0 + 2)}

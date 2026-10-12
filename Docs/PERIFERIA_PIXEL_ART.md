@@ -54,7 +54,7 @@ A fortaleza teve prévias geral e junto ao portão inspecionadas. A vista geral 
 
 1. Pare Play, aguarde a importação/compilação e abra CidadePrototipo. Continue seu slot ou inicie uma jornada. Confira o Console sem novos erros.
 2. Entre pelo ícone global do castelo. A chegada deve mostrar o bairro compacto, com pousada/armas próximas e sem lago, rio ou pontes de madeira.
-3. Siga a viela, entre nas três lojas e na hospedaria e retorne. Confira portas, letreiros, corpo do herói e ruas entre as casas, inclusive ao andar nas diagonais. Encoste na frente e nas laterais do balcão: a cabeça deve permanecer inteira. Por trás de móveis e paredes, o corpo deve ser ocultado normalmente.
+3. Siga a viela, entre nas três lojas e na hospedaria e retorne. Confira portas, letreiros, corpo do herói e ruas entre as casas, inclusive ao andar nas diagonais. As poses devem conservar o alinhamento do corpo e parar ao soltar as teclas ou ficar bloqueado. Encoste na frente e nas laterais do balcão: a cabeça deve permanecer inteira. Por trás de móveis e paredes, o corpo deve ser ocultado normalmente.
 4. Converse com os moradores, consulte o poema e abra o baú se ainda não tiver sido coletado. Verifique que progresso, ouro e estoque foram conservados.
 5. Siga ao norte, atravesse a ponte de pedra e caminhe até a porta central do castelo. O cenário deve mudar automaticamente. Saia do interior e confira o retorno ao lado norte da ponte, sem um ciclo de entrada/saída.
 6. Confira profundidade dos telhados, sombras e brilho pintado nas janelas/letreiros, sem postes nem círculos de luz no chão. GPU, interação e fluidez no Editor ainda precisam desta conferência.

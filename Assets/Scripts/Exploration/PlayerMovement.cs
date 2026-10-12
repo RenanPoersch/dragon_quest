@@ -13,6 +13,8 @@ namespace DragonQuest.Exploration
         private bool movementEnabled = true;
 
         public Vector2 FacingDirection { get; private set; } = Vector2.down;
+        public bool HasMovementInput => movement.sqrMagnitude > 0;
+        public int TeleportRevision { get; private set; }
 
         private void Awake()
         {
@@ -62,6 +64,7 @@ namespace DragonQuest.Exploration
 
         public void Teleport(Vector2 position)
         {
+            unchecked { TeleportRevision++; }
             movement = Vector2.zero;
             body.linearVelocity = Vector2.zero;
             body.position = position;

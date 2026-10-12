@@ -14,7 +14,8 @@ namespace DragonQuest.Exploration
             if (Texture == null) throw new InvalidOperationException("Atlas ausente: " + resource);
             Color32[] pixels = Texture.GetPixels32(); var alpha = new byte[pixels.Length];
             for (int i = 0; i < pixels.Length; i++) alpha[i] = pixels[i].a;
-            var frames = PixelSpriteLayout.Read(Texture.width, Texture.height, alpha);
+            bool walkingSheet = resource == "ArenWalk" || resource == "ArenDiagonalWalk";
+            var frames = PixelSpriteLayout.Read(Texture.width, Texture.height, alpha, walkingSheet);
             int maxHeight = 1; foreach (var frame in frames) maxHeight = Math.Max(maxHeight, frame.Height);
             float pixelsPerUnit = maxHeight / (1.45f * ObliqueProjection.HeightScale);
             Sprites = new Sprite[frames.Length];

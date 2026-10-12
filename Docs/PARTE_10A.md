@@ -15,7 +15,7 @@ A referência artística desta etapa é o Final Fantasy VI original. A apresenta
 
 As imagens são originais, geradas com a ferramenta integrada `image_gen`. Os prompts e a revisão de espaçamento estão em `PIXEL_ART_PROMPTS.md`. Não foram importados sprites de Final Fantasy. A folha do Bram e a dos moradores foram corrigidas antes da integração porque algumas poses encostavam nas divisões das células.
 
-Os cinco PNGs iniciais têm 1448 × 1086 pixels, divididos em quatro colunas e três linhas de células de 362 × 362. Nas folhas da equipe, as colunas representam baixo/esquerda/direita/cima e as linhas representam parado/primeiro passo/segundo passo. A leitura do alpha encontra o corpo completo dentro de cada célula, adiciona uma margem e ancora a imagem pelos pés. Isso é feito em memória; os PNGs mantêm sua transparência original.
+Os cinco PNGs iniciais têm 1448 × 1086 pixels, divididos em quatro colunas e três linhas de células de 362 × 362. Nas folhas da equipe, as colunas representam baixo/esquerda/direita/cima e as linhas representam parado/primeiro passo/segundo passo. A leitura do alpha encontra o corpo completo dentro de cada célula e adiciona uma margem. A base vertical fica nos pés; nas folhas do Aren, a âncora horizontal usa a parte superior do corpo para impedir que o pé em movimento arraste a imagem para os lados. Moradores estáticos continuam ancorados pela base dos pés. Isso é feito em memória; os PNGs mantêm sua transparência original.
 
 A folha complementar `ArenDiagonalWalk.png` tem 1447 × 1087 pixels. Suas colunas representam baixo-esquerda, baixo-direita, cima-esquerda e cima-direita, com as mesmas três linhas de animação. O recorte distribui os pixels excedentes entre as células, sem redimensionar a imagem. A exploração usa oito direções relativas à câmera e conserva a orientação diagonal ao parar; batalha e direções cardinais usam a folha original.
 
@@ -26,6 +26,7 @@ Os materiais cobrem terreno da ilha, mar, construções, florestas, ruínas, loj
 ## Integração
 
 - `PixelSpriteLayout`: ordem das células, recortes/âncoras, direção relativa à câmera e ciclo de passos.
+- `PixelWalkCycle`: conserva a fase durante intervalos breves da física e retorna ao repouso ao soltar as teclas, bloquear o movimento ou teleportar.
 - `PixelSpriteLibrary`: carrega PNGs, cria sprites e compartilha materiais; o HUD reutiliza as mesmas imagens.
 - `PixelCharacter`: mantém o sprite vertical, voltado para a direção horizontal da câmera, e escolhe a pose pela caminhada real, ignorando teleportes como passos.
 - `PixelSurface`: seleciona materiais e projeta UVs no chão ou nas paredes usando a altura visual.
@@ -55,3 +56,11 @@ Para repetir a análise dos assets: `python Tools/Inspect-PixelArt.py`. Requer P
 Importação real, compilação dos shaders pela GPU, sombras/profundidade do renderer 2D da Unity, cliques e aparência durante a caminhada ainda precisam dessa conferência em Play.
 
 Após adicionar as diagonais, passaram 231 verificações dos seis PNGs/importadores, 161 de recorte/direção/materiais e 2358 de malhas/câmera. A compilação dos scripts passou. O atlas novo foi inspecionado visualmente; a troca efetiva dos sprites durante o movimento ainda precisa de Play.
+
+## Ajuste da fluidez das poses
+
+A âncora anterior usava o pé mais baixo em todas as poses. A análise dos PNGs encontrou deslocamento horizontal indevido da cabeça de até aproximadamente 47 pixels de origem entre poses diagonais, mesmo com o objeto físico parado. As duas folhas do Aren agora usam o centro da parte superior do corpo como referência horizontal; recortes, pés, capa e proporções permanecem inteiros.
+
+A troca de pose ocorre a cada 0,4 unidade percorrida, cerca de dez poses por segundo na velocidade inicial de 4 unidades/s. O ciclo conserva a distância nos intervalos sem movimento menores que 0,1 s; soltar as teclas retorna imediatamente ao repouso e ficar bloqueado por 0,1 s também encerra o passo. Teleportes são sinalizados explicitamente, inclusive os curtos, e não são confundidos com caminhada em quadros demorados. Movimento físico, interpolação, velocidade das diagonais e câmera mantêm sua configuração.
+
+Passaram 249 verificações dos PNGs/importadores, 197 de sprites/materiais/animação e 2167 de malhas/câmera/profundidade. Scripts compilaram; registro das poses foi inspecionado em prévia técnica fora do Editor. Em Play, testar as quatro diagonais numa área livre, trocar para movimentos cardinais, soltar as teclas, encostar numa parede e entrar/sair de uma loja. A fluidez efetiva no Editor ainda precisa dessa conferência.

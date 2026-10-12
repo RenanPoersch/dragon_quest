@@ -14,8 +14,8 @@ internal static class PixelArtChecks
             var expected = input.x < 0 ? PixelDirection.Left : input.x > 0 ? PixelDirection.Right : input.y > 0 ? PixelDirection.Up : PixelDirection.Down;
             Assert(PixelSpriteLayout.Facing(ObliqueProjection.GroundDirection(input)) == expected, "Sprite precisa seguir direcao da tela com yaw da camera.");
             Assert(PixelSpriteLayout.WalkFrame(expected, 0, false) == (int)expected, "Parado usa idle da direcao correta.");
-            Assert(PixelSpriteLayout.WalkFrame(expected, 0.23f, true) == 4 + (int)expected, "Primeiro passo.");
-            Assert(PixelSpriteLayout.WalkFrame(expected, 0.67f, true) == 8 + (int)expected, "Segundo passo.");
+            Assert(PixelSpriteLayout.WalkFrame(expected, 0.41f, true) == 4 + (int)expected, "Primeiro passo.");
+            Assert(PixelSpriteLayout.WalkFrame(expected, 1.21f, true) == 8 + (int)expected, "Segundo passo.");
             Assert(PixelSpriteLayout.WalkFrame(expected, 2, false) == (int)expected, "Parar/teleportar volta ao idle.");
         }
         var directions = new[] {
@@ -34,7 +34,7 @@ internal static class PixelArtChecks
             int column = i % 4;
             int[] rows = {0, 1, 0, 2, 0};
             for (int step = 0; step < rows.Length; step++)
-                Assert(PixelSpriteLayout.WalkFrame(facing, step * 0.22f + 0.01f, true) == rows[step] * 4 + column,
+                Assert(PixelSpriteLayout.WalkFrame(facing, step * 0.4f + 0.01f, true) == rows[step] * 4 + column,
                     "Caminhada deve alternar repouso e os dois pes, sem sair da coluna ou ultrapassar a folha.");
             Assert(PixelSpriteLayout.WalkFrame(facing, 2, false) == column, "Parar ou teleportar conserva a direcao e usa seu repouso.");
         }
@@ -49,6 +49,7 @@ internal static class PixelArtChecks
                 "Setores diagonais devem ocupar 45 graus entre os eixos, sem transformar movimento quase horizontal/vertical em diagonal.");
         }
         Assert(PixelSpriteLayout.Facing(Vector2.zero, true) == PixelDirection.Down, "Direcao nula usa repouso cardinal valido.");
+        CheckWalking();
         var alpha = new byte[40 * 30];
         for (int i = 0; i < 12; i++)
         {
@@ -99,5 +100,67 @@ internal static class PixelArtChecks
         var shadow = new ObliqueMeshData {DefaultSurface=PixelSurface.Roof}; shadow.Shadow(0,0,1,1);
         Assert(shadow.Colors[0].a > 0 && shadow.Colors[0].a < 1 && shadow.Surfaces[0].x == -1, "Sombra deve ser transparente e nao herdar textura do telhado.");
         Console.WriteLine(checks + " verificacoes de sprites e materiais passaram.");
+    }
+    private static void CheckWalking()
+    {
+        // Tronco fixo e pes alternados: o recorte muda de largura, mas o corpo nao deve saltar de lado.
+        var alpha=new byte[120*90];
+        for(int i=0;i<12;i++)
+        {
+            int x=i%4*30,y=(2-i/4)*30;
+            for(int yy=7;yy<=26;yy++) for(int xx=10;xx<=17;xx++) alpha[(y+yy)*120+x+xx]=255;
+            int boot=i/4==0?14:i/4==1?6:21;
+            for(int yy=2;yy<=6;yy++) for(int xx=boot;xx<boot+4;xx++) alpha[(y+yy)*120+x+xx]=255;
+        }
+        var oldFrames=PixelSpriteLayout.Read(120,90,alpha);
+        var frames=PixelSpriteLayout.Read(120,90,alpha,true);
+        Assert(Math.Abs((oldFrames[0].X+oldFrames[0].FootX*oldFrames[0].Width)
+            -(oldFrames[4].X+oldFrames[4].FootX*oldFrames[4].Width))>5,"Fixture deve reproduzir o salto causado pelo pe em movimento.");
+        for(int i=0;i<12;i++)
+        {
+            Assert(Math.Abs(frames[i].X+frames[i].FootX*frames[i].Width-(i%4*30+14))<0.0001f,
+                "Corpo deve permanecer sobre a ancora nas tres poses, inclusive diagonais.");
+            Assert(frames[i].Rect==oldFrames[i].Rect,"Estabilizar a ancora nao pode cortar pes, capa ou alterar o recorte.");
+        }
+        var walk=new PixelWalkCycle();
+        walk.Advance(0.41f,0.1f,true,false);
+        int step=PixelSpriteLayout.WalkFrame(PixelDirection.UpRight,walk.Distance,walk.Walking);
+        Assert(step==7,"Caminhada diagonal deve iniciar o primeiro passo no ritmo novo.");
+        walk.Advance(0,1f/144,true,false);
+        Assert(walk.Walking&&PixelSpriteLayout.WalkFrame(PixelDirection.UpRight,walk.Distance,true)==step,
+            "Um quadro sem deslocamento da fisica nao pode reiniciar a pose.");
+        walk.Advance(0,0.12f,true,false);
+        Assert(!walk.Walking&&walk.Distance==0,"Encostar numa parede deve parar a animacao em repouso.");
+        walk.Advance(0.41f,0.1f,true,false);
+        walk.Advance(0.02f,1f/60,false,false);
+        Assert(!walk.Walking&&walk.Distance==0,"Soltar as teclas deve parar imediatamente, mesmo durante interpolacao.");
+        walk.Advance(0.41f,0.1f,true,false);
+        walk.Advance(0.05f,1f/60,true,true);
+        Assert(!walk.Walking&&walk.Distance==0,"Teleportes curtos tambem devem reiniciar o passo sem gerar caminhada.");
+        walk.Advance(0.65f,0.16f,true,false);
+        Assert(walk.Walking,"Deslocamento real em um quadro demorado nao deve ser confundido com teleporte.");
+        foreach(int fps in new[]{30,60,144})
+        {
+            var cycle=new PixelWalkCycle();int changes=0,last=3;
+            for(int frame=0;frame<fps;frame++)
+            {
+                cycle.Advance(4f/fps,1f/fps,true,false);
+                int pose=PixelSpriteLayout.WalkFrame(PixelDirection.UpRight,cycle.Distance,cycle.Walking);
+                if(pose!=last) changes++;
+                last=pose;
+            }
+            Assert(changes>=9&&changes<=10,"A velocidade inicial deve trocar cerca de dez poses por segundo, independente do FPS.");
+        }
+        foreach(int fps in new[]{60,144})
+        {
+            var continuous=new PixelWalkCycle();var sampled=new PixelWalkCycle();
+            for(int frame=0;frame<fps;frame++)
+            {
+                continuous.Advance(4f/fps,1f/fps,true,false);
+                sampled.Advance(frame%2==0?8f/fps:0,1f/fps,true,false);
+            }
+            Assert(sampled.Walking&&Math.Abs(continuous.Distance-sampled.Distance)<0.0001f,
+                "Amostras intercaladas com quadros parados devem conservar o ciclo de caminhada.");
+        }
     }
 }
