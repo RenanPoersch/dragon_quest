@@ -9,6 +9,8 @@
   },
   "seed": 1201026,
   "sourceSha256": "d3891297c6be19ae12ed00fa933d169f29a643f8b949d1ed8446c00a7f2d878a",
-  "sha256": "899ba6bf796cb8b8509d12a3fa597320ca03f52ac6b3cb7ffa9fadc45c72a769",
-  "resizedCore": false
+  "sha256": "201d011f7714f87500c06853ecbe240ad613d3cc601656b8adec0950d94cdb74",
+  "resizedCore": false,
+  "corePixelSha256": "2cb52183744dc8b6b27d8a0d01de3c96c998f6395c04381059e97641be383a20",
+  "layout": "wider-streets-open-weapons-courtyard-full-width-moat"
 }

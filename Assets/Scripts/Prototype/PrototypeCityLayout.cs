@@ -36,7 +36,7 @@ namespace DragonQuest.Prototype
         public static readonly Rect Bounds = new Rect(-13, -22, 26, 44);
         public const int GroundTextureWidth = 2305, GroundTextureHeight = 2975;
         public const int GroundCoreWidth = 965, GroundCoreHeight = 1629;
-        // Correspondencia exata com os pixels da pintura original no centro do PNG, sem redimensiona-la.
+        // Correspondencia exata entre planta e pixels do PNG, na densidade da pintura-fonte.
         // Apenas terreno visivel: nao amplia a area de movimento nem altera portas/saves.
         public static readonly Rect TerrainBounds = new Rect(
             -Bounds.width * GroundTextureWidth / GroundCoreWidth / 2,
@@ -54,13 +54,13 @@ namespace DragonQuest.Prototype
         public static readonly Vector2 Guard = new Vector2(0, 8.4f);
         public static readonly Vector2 Citizen = new Vector2(-1.2f, -15);
         public static readonly Vector2 Chest = new Vector2(1.8f, -4);
-        public static readonly Vector2 Resident = new Vector2(-7.4f, 0);
+        public static readonly Vector2 Resident = new Vector2(-8.2f, 0);
         public static readonly Vector2 Gardener = new Vector2(8, 7.4f);
-        public static readonly Vector2 Explorer = new Vector2(7.2f, -0.2f);
-        public static readonly Vector2 ItemDoor = new Vector2(-3.8f, -8.375f);
-        public static readonly Vector2 EquipmentDoor = new Vector2(4.2f, -12.125f);
-        public static readonly Vector2 MateriaDoor = new Vector2(3.9f, 0.25f);
-        public static readonly Vector2 InnDoor = new Vector2(-4.2f, -16.25f);
+        public static readonly Vector2 Explorer = new Vector2(7.7f, -0.2f);
+        public static readonly Vector2 ItemDoor = new Vector2(-4.9f, -8.375f);
+        public static readonly Vector2 EquipmentDoor = new Vector2(5.1f, -12.125f);
+        public static readonly Vector2 MateriaDoor = new Vector2(5, 0.25f);
+        public static readonly Vector2 InnDoor = new Vector2(-5.1f, -16.25f);
         public static Vector2 DoorReturn(Vector2 door) => door + Vector2.down * 1.1f;
         public static IReadOnlyList<Vector2> Street { get; } = System.Array.AsReadOnly(new[] {
             Exit, Entry, new Vector2(-0.7f, -12), new Vector2(1.1f, -7), new Vector2(0, -1),
@@ -100,25 +100,25 @@ namespace DragonQuest.Prototype
                 && position.y + 0.299f > bounds.yMin && position.y - 0.299f < bounds.yMax;
         }
         public static IReadOnlyList<CityBlock> Buildings { get; } = System.Array.AsReadOnly(new[] {
-            new CityBlock("Hospedaria", -4.2f, -14, 4, 3.6f, "8C7B59", true, 1),
-            new CityBlock("Loja de equipamentos", 4.2f, -10, 4, 3.4f, "746553", true, 1),
-            new CityBlock("Loja de itens", -3.8f, -6, 4.5f, 3.8f, "8B7052", true, 1),
-            new CityBlock("Loja de materias", 3.9f, 2.5f, 4, 3.6f, "76745B", true, 1),
-            new CityBlock("Casa do tecelao", -8.8f, -14.4f, 3.4f, 4, "887B61", true, 1),
-            new CityBlock("Casa do padeiro", 4.8f, -16, 3.6f, 4, "80684F", true, 1),
-            new CityBlock("Barracao sul", -8.7f, -19, 3.6f, 3, "746B56", true, 1),
-            new CityBlock("Abrigo sul leste", 9.2f, -17.5f, 3.4f, 5, "85765D", true, 1),
-            new CityBlock("Casa dos oleiros", 8.8f, -10.5f, 3.4f, 4.8f, "796A56", true, 1),
-            new CityBlock("Oficina das lanternas", 4.9f, -4.8f, 3.6f, 3.2f, "8E7B5B", true, 1),
-            new CityBlock("Armazem de sucata", 9.4f, -3.5f, 3.4f, 6, "776850", true, 1),
-            new CityBlock("Casa do carpinteiro", -8.8f, -8, 3.2f, 4.4f, "7C6B54", true, 1),
-            new CityBlock("Oficina do remendao", -8.5f, -3, 3.6f, 3.2f, "877B5B", true, 1),
-            new CityBlock("Capela antiga", -4.4f, 1.5f, 4, 3.6f, "8A7A61", true, 1),
-            new CityBlock("Casa das flores", -9, 3.2f, 3.4f, 4.6f, "82745E", true, 1),
-            new CityBlock("Oficina do relojoeiro", -4.1f, 6.3f, 4.2f, 3, "746A57", true, 1),
-            new CityBlock("Armazem das especiarias", 8.9f, 3.6f, 3.4f, 4, "7D6F58", true, 1),
-            new CityBlock("Pavilhao dos jardins", 4.7f, 7, 4, 3.6f, "8D8168", true, 1),
-            new CityBlock("Torre em ruinas", -9.1f, 7.8f, 3, 3.2f, "6F6A59", true, 1),
+            new CityBlock("Hospedaria", -5.1f, -14, 4, 3.6f, "8C7B59", true, 1),
+            new CityBlock("Loja de equipamentos", 5.1f, -10, 4, 3.4f, "746553", true, 1),
+            new CityBlock("Loja de itens", -4.9f, -6, 4.5f, 3.8f, "8B7052", true, 1),
+            new CityBlock("Loja de materias", 5, 2.5f, 4, 3.6f, "76745B", true, 1),
+            new CityBlock("Casa do tecelao", -10, -14.4f, 3.4f, 4, "887B61", true, 1),
+            new CityBlock("Casa do padeiro", 10, -15, 3.2f, 2.8f, "80684F", true, 1),
+            new CityBlock("Barracao sul", -10, -19, 3.6f, 3, "746B56", true, 1),
+            new CityBlock("Abrigo sul leste", 10, -19, 3.2f, 4.4f, "85765D", true, 1),
+            new CityBlock("Casa dos oleiros", 10, -10.5f, 3.2f, 4.8f, "796A56", true, 1),
+            new CityBlock("Oficina das lanternas", 5.3f, -4.8f, 3.6f, 3.2f, "8E7B5B", true, 1),
+            new CityBlock("Armazem de sucata", 10, -3.5f, 3.4f, 6, "776850", true, 1),
+            new CityBlock("Casa do carpinteiro", -10, -8, 3.2f, 4.4f, "7C6B54", true, 1),
+            new CityBlock("Oficina do remendao", -10, -3, 3.6f, 3.2f, "877B5B", true, 1),
+            new CityBlock("Capela antiga", -5.2f, 1.5f, 4, 3.6f, "8A7A61", true, 1),
+            new CityBlock("Casa das flores", -10, 3.2f, 3.4f, 4.6f, "82745E", true, 1),
+            new CityBlock("Oficina do relojoeiro", -5.1f, 6.3f, 4.2f, 3, "746A57", true, 1),
+            new CityBlock("Armazem das especiarias", 10, 3.6f, 3.4f, 4, "7D6F58", true, 1),
+            new CityBlock("Pavilhao dos jardins", 5.3f, 7, 4, 3.6f, "8D8168", true, 1),
+            new CityBlock("Torre em ruinas", -10, 8.1f, 3, 3.2f, "6F6A59", true, 1),
             new CityBlock("Castelo do tirano", Castle.x, Castle.y, 9.5f, 4.5f, "89919B", true, 1),
             new CityBlock("Torre oeste do castelo", -6.15f, 18.2f, 3.4f, 3.6f, "89919B", true, 1),
             new CityBlock("Torre leste do castelo", 6.15f, 18.2f, 3.4f, 3.6f, "89919B", true, 1)
@@ -128,10 +128,10 @@ namespace DragonQuest.Prototype
         {
             var blocks = new List<CityBlock> {
                 new CityBlock("Chao escuro da periferia", 0, 0, Bounds.width, Bounds.height, "454831", false, -10),
-                new CityBlock("Patio da hospedaria", -2.8f, -16.5f, 5, 2.8f, "887955", false, -8),
-                new CityBlock("Patio de equipamentos", 2.4f, -12.5f, 5.4f, 2, "887955", false, -8),
-                new CityBlock("Patio da loja de itens", -2.2f, -8.8f, 4.8f, 2.2f, "887955", false, -8),
-                new CityBlock("Patio das materias", 2, -0.2f, 5, 2.5f, "887955", false, -8),
+                new CityBlock("Patio da hospedaria", -3.7f, -16.5f, 5, 2.8f, "887955", false, -8),
+                new CityBlock("Patio de equipamentos", 3.3f, -12.5f, 5.4f, 2, "887955", false, -8),
+                new CityBlock("Patio da loja de itens", -3.3f, -8.8f, 4.8f, 2.2f, "887955", false, -8),
+                new CityBlock("Patio das materias", 3.1f, -0.2f, 5, 2.5f, "887955", false, -8),
                 new CityBlock("Canteiro do bairro", 9, 7.5f, 4, 3, "424D2F", false, -9),
                 new CityBlock("Fosso seco - oeste", -7.75f, Bridge.y, 10.5f, 4.8f, "34392D", true, -6),
                 new CityBlock("Fosso seco - leste", 7.75f, Bridge.y, 10.5f, 4.8f, "34392D", true, -6),

@@ -181,10 +181,11 @@ internal static class ObliqueChecks
         }
         var streets=CityPeripheryArt.Streets(); Validate(streets.Body,"Detalhes das ruas"); Validate(streets.Glow,"Transparencia das ruas");
         var ground = CityGroundArt.Build();
-        Assert(ground.Vertices.Where(p=>p.z==0).All(p=>p.y<=10.1f||p.y>=14.9f||Math.Abs(p.x)>=13),"Piso da cidade nao pode cobrir o fosso seco sob a ponte.");
+        Assert(ground.Vertices.Where(p=>p.z==0).All(p=>p.y<=10.1f||p.y>=14.9f),"Piso da cidade nao pode cobrir o fosso seco, inclusive alem da area caminhavel.");
         var moat = CityPeripheryArt.Block(PrototypeCityLayout.Blocks.First(b=>b.Name.StartsWith("Fosso seco")));
         Assert(moat.Vertices.Any(p=>p.z>0.5f),"Fosso precisa ficar visualmente abaixo da rua, com bloqueio fisico definido no layout.");
         city.Append(streets.Body,Vector3.zero);cityGlow.Append(streets.Glow,Vector3.zero);
+        CheckEquipmentApproach();
         var sign=new ObliqueMeshData();CityPeripheryArt.Panel(sign,0,-2.1f,2,3,0.8f,1);
         Near(sign.UVs[0].x,0.01f,"Placa inicia na borda esquerda da celula.");Near(sign.UVs[2].x,0.99f,"Placa termina na borda direita da celula.");
         Assert(sign.Surfaces.All(s=>s.x==1&&s.y==1),"Letreiro nao pode receber material de grama ou escurecimento por face.");
@@ -247,7 +248,7 @@ internal static class ObliqueChecks
         NearPixel((1-coreMax.y)*PrototypeCityLayout.GroundTextureHeight,673,"Piso original deve comecar no pixel vertical nativo.");
         NearPixel((coreMax.x-coreMin.x)*PrototypeCityLayout.GroundTextureWidth,965,"Largura original nao pode ser ampliada no mapa unico.");
         NearPixel((coreMax.y-coreMin.y)*PrototypeCityLayout.GroundTextureHeight,1629,"Altura original nao pode ser ampliada no mapa unico.");
-        Assert(ground.Vertices.Count==48&&ground.Triangles.Count==48,"Todo o terreno deve usar uma pintura inteira, incluindo laterais e desniveis do fosso.");
+        Assert(ground.Vertices.Count==24&&ground.Triangles.Count==24,"Todo o terreno deve usar uma pintura inteira; o fosso nao pode ter tampas laterais na antiga borda.");
         Assert(ground.UVs.All(uv=>uv.x>=0&&uv.x<=1&&uv.y>=0&&uv.y<=1),"UV deve permanecer dentro da imagem, sem repeticao.");
         for(int i=0;i<ground.Vertices.Count;i++)
         {
@@ -265,13 +266,38 @@ internal static class ObliqueChecks
             "Piso da chegada deve permanecer na altura do chao.");
         Near(10-RayDistance(ObliqueProjection.Point(PrototypeCityLayout.Bridge,10),new Vector3(0,0,1),ground),0.058f,
             "Pintura da ponte deve ficar sobre o volume de pedra.");
-        foreach(float x in new[]{-7f,7f})
+        foreach(float x in new[]{bounds.xMin+1,-20f,-7f,7f,20f,bounds.xMax-1})
             Near(10-RayDistance(ObliqueProjection.Point(new Vector2(x,PrototypeCityLayout.Bridge.y),10),new Vector3(0,0,1),ground),-0.7f,
-                "Fosso deve conservar profundidade mesmo compartilhando a pintura.");
+                "Fosso deve conservar profundidade em toda a largura visivel.");
+        foreach(var block in PrototypeCityLayout.Blocks.Where(b=>b.Name.StartsWith("Fosso seco")))
+        {
+            var wall=CityPeripheryArt.Block(block);
+            float edge=block.Position.x<0 ? wall.Vertices.Min(p=>p.x)+block.Position.x : wall.Vertices.Max(p=>p.x)+block.Position.x;
+            Near(edge,block.Position.x<0 ? bounds.xMin : bounds.xMax,"Paredes do fosso devem continuar ate a borda da pintura.");
+        }
         foreach(var block in PrototypeCityLayout.Blocks.Where(b=>CityGroundArt.ReplacesBlock(b.Name)))
             Assert(CityPeripheryArt.Block(block).Vertices.Count==0,"Pisos antigos nao podem cobrir a textura unica com blocos repetidos.");
         Export(directory,"CityGround",ground,PrototypeCityLayout.Spawn,6,ObliqueProjection.HeroCenterHeight,
             atlas:"CityGroundMap",singleTexture:true);
+    }
+    private static void CheckEquipmentApproach()
+    {
+        var towardCamera=new Vector3(ObliqueProjection.YawSin*ObliqueProjection.HeightScale,
+            -ObliqueProjection.YawCos*ObliqueProjection.HeightScale,-ObliqueProjection.GroundScale);
+        var oldHouse=new ObliqueMeshData();
+        oldHouse.Append(CityPeripheryArt.Building("Casa do padeiro",new Vector2(3.6f,4),"80684F").Body,
+            ObliqueProjection.Point(new Vector2(4.8f,-16)));
+        Assert(float.IsFinite(RayDistance(ObliqueProjection.Point(new Vector2(4.2f,-13.225f),0.075f),towardCamera,oldHouse)),
+            "Regressao deve reproduzir a casa ocultando o acesso antigo da loja de armas.");
+        var others=new ObliqueMeshData();
+        foreach(var building in PrototypeCityLayout.Buildings.Where(b=>b.Name!="Loja de equipamentos"))
+            others.Append(CityPeripheryArt.Building(building.Name,building.Size,building.Color).Body,ObliqueProjection.Point(building.Position));
+        foreach(float x in new[]{-0.3f,0,0.3f}) foreach(float h in new[]{0.075f,0.7f,1.4f})
+            Assert(!float.IsFinite(RayDistance(ObliqueProjection.Point(PrototypeCityLayout.DoorReturn(PrototypeCityLayout.EquipmentDoor)+Vector2.right*x,h),towardCamera,others)),
+                "Casa vizinha nao pode esconder o personagem no patio de acesso da loja de armas.");
+        foreach(float x in new[]{-1f,0,1f})
+            Assert(!float.IsFinite(RayDistance(ObliqueProjection.Point(new Vector2(PrototypeCityLayout.EquipmentDoor.x+x,-12.445f),2.2f),towardCamera,others)),
+                "Casa vizinha nao pode esconder o letreiro ARMAS.");
     }
     private static void CheckCityViewportCoverage(string directory)
     {

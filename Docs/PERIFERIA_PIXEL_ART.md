@@ -14,9 +14,9 @@ A periferia foi redesenhada a partir da referência enviada pelo usuário: bairr
 
 ## Planta e passagens
 
-- Bairro de 26 × 44 unidades, alongado de sul para norte, com 22 construções. A antiga planta de 72 × 48 foi substituída por uma viela central sinuosa e acessos curtos às fachadas.
+- Bairro de 26 × 44 unidades, alongado de sul para norte, com 22 construções. As fileiras foram afastadas horizontalmente, abrindo a rua central e conservando os acessos às fachadas. A casa do padeiro fica na fileira externa leste, deixando livre o pátio da loja de armas.
 - Entrada da ilha ao sul. Hospedaria e equipamentos ficam primeiro; itens e matérias ficam mais adiante. Camponesa no lado oeste, exploradora no beco leste e jardineiro no pequeno jardim entre casas.
-- Lago, rio e três pontes de madeira foram retirados. Há uma única ponte de pedra ao norte, sobre um fosso seco, com parapeitos e passagem até o portão do castelo.
+- Lago, rio e três pontes de madeira foram retirados. Há uma única ponte de pedra ao norte, sobre um fosso seco, com parapeitos e passagem até o portão do castelo. O leito e suas paredes se prolongam por toda a largura do terreno visual; não terminam na borda da cidade caminhável.
 - Fortaleza de pedra com muralha central mais larga, duas torres robustas, torre de menagem recuada, ameias, seteiras, estandartes e grande portão em arco. Torres chegam a 8,02 unidades de altura; as construções comuns têm aproximadamente 3–4 unidades.
 - Chegar ao portão depois da ponte troca automaticamente para o interior do castelo. Lojas e hospedaria também mantêm entrada automática; retornos ficam fora das áreas de passagem.
 - Não há nomes flutuantes de lugares. ITENS, MATERIA, ARMAS e POUSADA aparecem em letreiros físicos presos às fachadas/toldos.
@@ -39,7 +39,9 @@ A periferia foi redesenhada a partir da referência enviada pelo usuário: bairr
 
 Os dois atlas da periferia têm 1448 × 1086; o atlas do castelo tem 1447 × 1087. Foram gerados pela ferramenta integrada image_gen e mantidos sem alteração. Importadores usam Point, nenhuma compressão, mipmap ou redimensionamento NPOT. Prompts completos em `PERIFERIA_ART_PROMPTS.md`; origem em `ASSETS.md`.
 
-O chão usa uma imagem própria de 965 × 1629 pixels. Foi pintada com image_gen sobre um guia exato dos caminhos, pátios e fundações, preservado em `ArtInputs/CityGroundLayout.png`. Os antigos planos de terra/grama repetida, pátios retangulares sobrepostos e grelhas em malha foram substituídos pela pintura. Cada posição XY da planta corresponde à mesma posição na imagem; bordas entre materiais são desenhadas, sem repetir um pequeno tile. O importador usa Point, Clamp, limite 4096 e nenhuma compressão, mipmap ou redução. O PNG gerado foi copiado integralmente.
+O chão usa um único PNG de 2305 × 2975 pixels, cobrindo aproximadamente 62,10 × 80,36 unidades. A fonte original de 965 × 1629, pintada com image_gen sobre o guia `ArtInputs/CityGroundLayout.png`, está preservada em `ArtInputs/CityGroundCore.png`. A versão atual foi recomposta em Python, com autorização do usuário, para acompanhar as casas afastadas, o pátio livre de armas e o fosso prolongado. Amostras conservam sua escala nativa, sem ampliar uma imagem pequena. `ArtInputs/CityGroundRebuilt.png` registra o núcleo recomposto; `Tools/Build-UnifiedCityGround.py` reconstrói a imagem e `ArtInputs/CityGroundBake.json` registra dimensões e hashes.
+
+Os antigos planos repetidos e pátios sobrepostos foram substituídos pela pintura. Cada posição XY corresponde à mesma posição na imagem. O importador usa Point, Clamp, limite 4096 e nenhuma compressão, mipmap ou redução. As muretas externas não têm malha visível; seus colisores continuam limitando o movimento.
 
 A imagem é aplicada a quatro superfícies simples num único renderer/material: chão ao sul, chão ao norte, leito rebaixado do fosso e pavimento sobre a ponte. O leito fica 0,7 unidade abaixo; a pintura do tabuleiro fica a 0,058, ligeiramente acima do volume de pedra. A ponte mantém parapeitos e volume 3D. A textura acompanha a planta existente; alterar a disposição dos caminhos exige atualizar a pintura.
 
@@ -49,7 +51,7 @@ Os personagens permanecem verticais no mundo, acompanhando apenas a direção ho
 
 A muralha central tem planta de 9,5 × 4,5, com duas torres de 3,4 × 3,6. O portão permanece alinhado ao fim da ponte e à passagem automática existente. O castelo tem terraços e ameias de pedra; as antigas coberturas industriais foram substituídas. Não houve mudança no zoom da câmera.
 
-O terreno visual é interrompido no fosso para mostrar a profundidade; colliders impedem andar fora da ponte. A ponte tem piso na altura do caminho e parapeitos sólidos. Tubulações cruzam a rua acima do personagem.
+O terreno visual é interrompido no fosso para mostrar a profundidade; colliders impedem andar fora da ponte. A ponte tem piso na altura do caminho e parapeitos sólidos. A tubulação suspensa permanece sobre o mercado; o trecho superior foi retirado porque se projetava como um risco no chão junto ao guarda e à ponte.
 
 ## Jornadas anteriores
 
@@ -76,4 +78,4 @@ A fortaleza teve prévias geral e junto ao portão inspecionadas. A vista geral 
 3. Siga a viela, entre nas três lojas e na hospedaria e retorne. Confira portas, letreiros, corpo do herói e ruas entre as casas, inclusive ao andar nas diagonais. As poses devem conservar o alinhamento do corpo e parar ao soltar as teclas ou ficar bloqueado. Encoste na frente e nas laterais do balcão: a cabeça deve permanecer inteira. Por trás de móveis e paredes, o corpo deve ser ocultado normalmente.
 4. Converse com os moradores, consulte o poema e abra o baú se ainda não tiver sido coletado. Verifique que progresso, ouro e estoque foram conservados.
 5. Siga ao norte, atravesse a ponte de pedra e caminhe até a porta central do castelo. O cenário deve mudar automaticamente. Saia do interior e confira o retorno ao lado norte da ponte, sem um ciclo de entrada/saída.
-6. Confira o chão pintado contínuo, com bordas naturais nas vielas, pátios integrados e grelhas desenhadas, sem quadrados repetidos. Caminhe até a ponte e observe pavimento, leito rebaixado do fosso e sombras. Confira também telhados e brilho das janelas/letreiros, sem postes nem círculos de luz no chão. A aparência do novo piso no renderer da Unity ainda precisa desta conferência.
+6. Confira o pátio livre diante de ARMAS e as fileiras afastadas, com a mesma definição do chão aprovado anteriormente. Caminhe até a ponte: não deve aparecer o risco de tubulação junto ao guarda. Siga pelas laterais do castelo: o fosso e as paredes devem continuar para fora da tela, sem um término retangular. A revisão atual foi conferida em prévias técnicas; a aparência no renderer da Unity ainda precisa deste Play.

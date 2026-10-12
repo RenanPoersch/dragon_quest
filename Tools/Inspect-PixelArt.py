@@ -31,11 +31,11 @@ for name in ("ArenWalk", "ArenDiagonalWalk", "LiaWalk", "BramWalk", "NpcRoster",
         if ground_map:
             check(width >= 2304 and height >= 2974, name + ": resolucao insuficiente para conservar o detalhe original")
             check((width, height) == (2305, 2975), name + ": dimensoes devem corresponder ao mapeamento nativo do chao")
-            with Image.open(root / 'Docs/ArtInputs/CityGroundCore.png') as original:
-                # Leitura apenas: confere cada pixel do piso original, sem ampliar nem reduzir.
+            with Image.open(root / 'Docs/ArtInputs/CityGroundRebuilt.png') as original:
+                # Leitura apenas: confere os pixels do nucleo regenerado na densidade nativa.
                 core = image.crop((670, 673, 670 + 965, 673 + 1629)).convert('RGB')
                 check(ImageChops.difference(core, original.convert('RGB')).getbbox() is None,
-                      name + ": piso original sofreu perda de detalhe ou mudanca de pixels")
+                      name + ": nucleo regenerado sofreu perda de detalhe ou mudanca de pixels")
             check(image.mode in ("RGB", "RGBA") and (image.mode == "RGB" or image.getchannel("A").getextrema() == (255, 255)), name + ": mapa deve ser opaco")
             for setting in ("wrapU: 1", "wrapV: 1", "maxTextureSize: 4096"):
                 check(setting in meta, name + ": mapa inteiro sem repeticao ou reducao " + setting)

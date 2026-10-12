@@ -26,8 +26,11 @@ namespace DragonQuest.Prototype
             {
                 var pit = new ObliqueMeshData();
                 pit.DefaultSurface = PixelSurface.Wall;
+                float left = block.Position.x < 0 ? CityGroundArt.TerrainBounds.xMin - block.Position.x : -block.Size.x / 2;
+                float right = block.Position.x > 0 ? CityGroundArt.TerrainBounds.xMax - block.Position.x : block.Size.x / 2;
+                // So a geometria visivel se prolonga; o collider continua na planta caminhavel.
                 foreach (float y in new[] {-block.Size.y / 2, block.Size.y / 2})
-                    pit.Box(0, y, block.Size.x, 0.25f, -0.7f, 0.12f, Iron);
+                    pit.Box((left + right) / 2, y, right - left, 0.25f, -0.7f, 0.12f, Iron);
                 return pit;
             }
             if (block.Name.StartsWith("Ponte de pedra"))
@@ -186,12 +189,12 @@ namespace DragonQuest.Prototype
         {
             var art = new PeripheryBuildingArt();
             // Viela, patios, musgo e grelhas agora fazem parte da pintura unica do chao.
-            // Tubulacoes altas cruzam a rua como na referencia, deixando o chao livre.
-            foreach (float y in new[] {-5.5f, 3.2f})
+            // A tubulacao fica no mercado; o acesso da ponte permanece sem linhas suspensas.
+            foreach (float y in new[] {-5.5f})
             {
-                Pipe(art.Body, new Vector3(-5.2f, y, 3.1f), new Vector3(-1.2f, y, 3.9f), 0.12f);
+                Pipe(art.Body, new Vector3(-6.1f, y, 3.1f), new Vector3(-1.2f, y, 3.9f), 0.12f);
                 Pipe(art.Body, new Vector3(-1.2f, y, 3.9f), new Vector3(1.6f, y, 3.9f), 0.12f);
-                Pipe(art.Body, new Vector3(1.6f, y, 3.9f), new Vector3(5.2f, y, 3.1f), 0.12f);
+                Pipe(art.Body, new Vector3(1.6f, y, 3.9f), new Vector3(6.1f, y, 3.1f), 0.12f);
             }
             return art;
         }
