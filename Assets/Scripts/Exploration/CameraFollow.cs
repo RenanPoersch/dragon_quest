@@ -2,15 +2,13 @@ using UnityEngine;
 
 namespace DragonQuest.Exploration
 {
+    [DefaultExecutionOrder(100)]
     [RequireComponent(typeof(Camera))]
     public sealed class CameraFollow : MonoBehaviour
     {
-        [SerializeField, Min(0.01f)] private float smoothTime = 0.08f;
-
         private Transform target;
         private Camera view;
         private Rect worldBounds;
-        private Vector3 velocity;
         private bool fixedFrame;
         private float requestedSize;
 
@@ -28,15 +26,15 @@ namespace DragonQuest.Exploration
             transform.rotation = Quaternion.AngleAxis(ObliqueProjection.YawDegrees, Vector3.forward)
                 * Quaternion.Euler(-ObliqueProjection.TiltDegrees, 0, 0);
             transform.position = GetFollowPosition();
-            velocity = Vector3.zero;
         }
 
         private void LateUpdate()
         {
             if (target == null || view == null) return;
             UpdateSize();
-            transform.position = Vector3.SmoothDamp(
-                transform.position, GetFollowPosition(), ref velocity, smoothTime);
+            // target.position ja recebe a interpolacao do Rigidbody2D para este quadro.
+            // Uma segunda suavizacao separava a camera da apresentacao do heroi.
+            transform.position = GetFollowPosition();
         }
 
         private void UpdateSize()
@@ -46,10 +44,8 @@ namespace DragonQuest.Exploration
 
         private Vector3 GetFollowPosition()
         {
-            Vector2 focus = ObliqueProjection.CameraFocus(target.position, worldBounds,
-                view.orthographicSize, view.aspect, fixedFrame);
-            return ObliqueProjection.Point(focus, fixedFrame ? 0 : ObliqueProjection.HeroCenterHeight)
-                - transform.forward * ObliqueProjection.Distance;
+            return ObliqueProjection.CameraPosition(target.position, worldBounds,
+                view.orthographicSize, view.aspect, fixedFrame, transform.forward);
         }
     }
 }

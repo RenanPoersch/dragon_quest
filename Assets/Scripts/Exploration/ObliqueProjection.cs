@@ -38,5 +38,12 @@ namespace DragonQuest.Exploration
             // deixa-o sair do centro da tela, especialmente com a camera rodada.
             return fixedFrame ? bounds.center : hero;
         }
+
+        public static Vector3 CameraPosition(Vector2 presentedHero, Rect bounds, float size, float aspect,
+            bool fixedFrame, Vector3 forward)
+        {
+            Vector2 focus = CameraFocus(presentedHero, bounds, size, aspect, fixedFrame);
+            return Point(focus, fixedFrame ? 0 : HeroCenterHeight) - forward * Distance;
+        }
     }
 }

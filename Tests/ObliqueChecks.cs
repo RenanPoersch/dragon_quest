@@ -57,6 +57,7 @@ internal static class ObliqueChecks
         string directory=args[0];
         PixelArtChecks.Run();
         CheckSpriteDepth(directory);
+        CheckCameraTracking();
         Near(ObliqueProjection.ScreenPlane(new Vector2(4,3)).x,4*ObliqueProjection.YawCos+3*ObliqueProjection.YawSin,"Eixos do chão devem acompanhar rotação da câmera.");
         Near(ObliqueProjection.ScreenPlane(new Vector2(4,3)).y,(-4*ObliqueProjection.YawSin+3*ObliqueProjection.YawCos)*ObliqueProjection.GroundScale,"Profundidade do chão precisa comprimir na tela.");
         Near(ObliqueProjection.ScreenPlane(Vector2.zero,2).y,2*ObliqueProjection.HeightScale,"Altura deve subir na tela.");
@@ -232,6 +233,42 @@ internal static class ObliqueChecks
         Validate(ObliqueScenery.BlockData("Balcao",new Vector2(4,0.6f),"614533",true,4),"Balcão");
         Validate(ObliqueScenery.BlockData("Estante",new Vector2(1.5f,3),"705033",true,3),"Estante");
         Console.WriteLine(checks+" verificacoes de perspectiva, camera e malhas passaram.");
+    }
+    private static void CheckCameraTracking()
+    {
+        var forward=new Vector3(-ObliqueProjection.YawSin*ObliqueProjection.HeightScale,
+            ObliqueProjection.YawCos*ObliqueProjection.HeightScale,ObliqueProjection.GroundScale);
+        var directions=new[]{Vector2.down,Vector2.left,Vector2.right,Vector2.up,
+            new Vector2(-1,-1),new Vector2(1,-1),new Vector2(-1,1),new Vector2(1,1)};
+        var frameTimes=new[]{new[]{1f/30},new[]{1f/60},new[]{1f/144},new[]{0.008f,0.027f,0.013f,0.022f}};
+        const float physicsStep=0.02f;
+        foreach(var direction in directions) foreach(var pattern in frameTimes)
+        {
+            var velocity=ObliqueProjection.GroundDirection(direction.normalized)*4;
+            float time=0.5f,maxFocusError=0,maxShiftError=0;
+            var presented=velocity*(time-physicsStep);
+            var previousCamera=ObliqueProjection.CameraPosition(presented,PrototypeWorldLayout.Bounds,6.85f,16f/9,false,forward);
+            for(int frame=0;frame<160;frame++)
+            {
+                float dt=pattern[frame%pattern.Length];time+=dt;
+                // Simula poses interpoladas entre passos de 50 Hz, com renderizacao regular ou variavel.
+                float tick=(float)Math.Floor(time/physicsStep)*physicsStep;
+                float alpha=(time-tick)/physicsStep;
+                presented=velocity*(tick-physicsStep)+velocity*physicsStep*alpha;
+                var camera=ObliqueProjection.CameraPosition(presented,PrototypeWorldLayout.Bounds,6.85f,16f/9,false,forward);
+                var focus=camera+forward*ObliqueProjection.Distance;
+                maxFocusError=Math.Max(maxFocusError,Math.Abs(focus.x-presented.x)+Math.Abs(focus.y-presented.y)
+                    +Math.Abs(focus.z+ObliqueProjection.HeroCenterHeight));
+                maxShiftError=Math.Max(maxShiftError,Math.Abs(camera.x-previousCamera.x-velocity.x*dt)
+                    +Math.Abs(camera.y-previousCamera.y-velocity.y*dt));
+                previousCamera=camera;
+            }
+            Assert(maxFocusError<0.0001f,"Camera deve manter o centro do corpo alinhado ao alvo apresentado nas oito direcoes.");
+            Assert(maxShiftError<0.0001f,"Pan deve acompanhar cada deslocamento interpolado sem atraso adicional, inclusive com tempos de quadro variaveis.");
+        }
+        var fixedCamera=ObliqueProjection.CameraPosition(PrototypeInnLayout.Spawn,PrototypeInnLayout.Bounds,6,16f/9,true,forward);
+        Assert(fixedCamera==ObliqueProjection.CameraPosition(Vector2.zero,PrototypeInnLayout.Bounds,6,16f/9,true,forward),
+            "Interiores com camera fixa nao podem acompanhar a caminhada.");
     }
     private static void CheckSpriteDepth(string directory)
     {

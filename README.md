@@ -197,7 +197,7 @@ O cenário usa formas coloridas geradas pelo código, sem imagens externas. Spri
 ### Onde está o código
 
 - `Assets/Scripts/Exploration/PlayerMovement.cs`: teclado, velocidade e movimento físico.
-- `Assets/Scripts/Exploration/CameraFollow.cs`: acompanhamento e limites da câmera.
+- `Assets/Scripts/Exploration/CameraFollow.cs`: acompanha a posição interpolada do herói ou mantém o enquadramento fixo do ambiente.
 - `Assets/Scripts/Prototype/PrototypeCity.cs`: mapa provisório, obstáculos e herói.
 - `Assets/Scripts/Prototype/PrototypeCityLayout.cs`: dimensões, bairros, construções, ruas, rio e pontes do mapa ampliado.
 - `Assets/Scripts/Prototype/PrototypeWorldLayout.cs`: ilha, costa, ícones globais, florestas e interior do castelo.
