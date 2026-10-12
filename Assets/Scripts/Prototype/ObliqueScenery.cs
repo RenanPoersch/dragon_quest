@@ -11,11 +11,20 @@ namespace DragonQuest.Prototype
     {
         private readonly List<Mesh> meshes = new List<Mesh>();
         private readonly Material material;
+        private readonly Material shadowMaterial;
+        public PixelSpriteLibrary PixelSprites { get; }
         public ObliqueScenery()
         {
             Shader shader = Resources.Load<Shader>("ObliqueWorld");
             if (shader == null) throw new InvalidOperationException("Shader Resources/ObliqueWorld ausente.");
             material = new Material(shader) { name = "Cenario 2.5D - cores por face" };
+            var atlas = Resources.Load<Texture2D>("PixelArt/TerrainAtlas");
+            if (atlas == null) throw new InvalidOperationException("Atlas de materiais ausente.");
+            material.SetTexture("_PixelAtlas", atlas);
+            PixelSprites = new PixelSpriteLibrary();
+            var shadowShader = Resources.Load<Shader>("PixelShadow");
+            if (shadowShader == null) throw new InvalidOperationException("Shader PixelShadow ausente.");
+            shadowMaterial = new Material(shadowShader) {name = "Sombra transparente no chao"};
         }
 
         public Transform Show(string name, ObliqueMeshData data, Transform parent)
@@ -23,12 +32,29 @@ namespace DragonQuest.Prototype
             GameObject model = new GameObject(name);
             model.transform.SetParent(parent, false);
             if (data.Vertices.Count == 0) return model.transform;
+            var solid = new List<int>(); var shadows = new List<int>();
+            for (int i = 0; i < data.Triangles.Count; i += 3)
+            {
+                var target = data.Colors[data.Triangles[i]].a < 1 ? shadows : solid;
+                target.Add(data.Triangles[i]); target.Add(data.Triangles[i + 1]); target.Add(data.Triangles[i + 2]);
+            }
+            if (solid.Count > 0) RenderMesh(name, data, solid, material, model);
+            if (shadows.Count > 0)
+            {
+                var shadow = new GameObject("Sombra transparente"); shadow.transform.SetParent(model.transform, false);
+                RenderMesh(name + " / sombra", data, shadows, shadowMaterial, shadow);
+            }
+            return model.transform;
+        }
+
+        private void RenderMesh(string name, ObliqueMeshData data, List<int> triangles, Material appearance, GameObject model)
+        {
             Mesh mesh = new Mesh { name = name };
-            mesh.SetVertices(data.Vertices); mesh.SetColors(data.Colors); mesh.SetTriangles(data.Triangles, 0);
+            mesh.SetVertices(data.Vertices); mesh.SetColors(data.Colors); mesh.SetTriangles(triangles, 0);
+            mesh.SetUVs(0, data.UVs); mesh.SetUVs(1, data.Surfaces);
             mesh.RecalculateBounds(); meshes.Add(mesh);
             model.AddComponent<MeshFilter>().sharedMesh = mesh;
-            model.AddComponent<MeshRenderer>().sharedMaterial = material;
-            return model.transform;
+            model.AddComponent<MeshRenderer>().sharedMaterial = appearance;
         }
 
         public void Block(string name, Vector2 size, string hex, bool solid, int order, Transform parent)
@@ -36,7 +62,7 @@ namespace DragonQuest.Prototype
 
         public static ObliqueMeshData BlockData(string name, Vector2 size, string hex, bool solid, int order)
         {
-            var mesh = new ObliqueMeshData();
+            var mesh = new ObliqueMeshData { DefaultSurface = PixelSurfaces.ForBlock(name, solid, order) };
             Color color = ObliqueMeshData.Hex(hex);
             float w=size.x, d=size.y;
             if(name.StartsWith("Lava"))
@@ -153,12 +179,14 @@ namespace DragonQuest.Prototype
 
         public static ObliqueMeshData BuildingData(Vector2 size,string hex,bool fortified=false)
         {
-            var mesh=new ObliqueMeshData(); float w=size.x,d=size.y;
+            var mesh=new ObliqueMeshData {DefaultSurface=PixelSurface.Wall}; float w=size.x,d=size.y;
             Color wall=ObliqueMeshData.Hex(fortified?"9BA1A0":"B8AF98"), roof=ObliqueMeshData.Hex(hex);
             float height=fortified?3.1f:2.2f;
             mesh.Shadow(0.35f,-0.2f,w*0.65f,d*0.6f);
             mesh.Box(0,0,w,d,0,height,wall);
+            mesh.DefaultSurface = fortified ? PixelSurface.Basalt : PixelSurface.Roof;
             mesh.Roof(0,0,w+0.22f,d+0.2f,height,height+1.1f,roof);
+            mesh.DefaultSurface = PixelSurface.Wall;
             float front=-d/2-0.008f;
             Window(mesh,0,front,0.85f,0.0f,1.5f,ObliqueMeshData.Hex("3B3D40"));
             foreach(float x in new[]{-w*0.3f,w*0.3f})
@@ -180,14 +208,17 @@ namespace DragonQuest.Prototype
 
         private static void Window(ObliqueMeshData mesh,float x,float y,float width,float bottom,float top,Color color)
             => mesh.Quad(ObliqueMeshData.V(x-width/2,y,bottom),ObliqueMeshData.V(x-width/2,y,top),
-                ObliqueMeshData.V(x+width/2,y,top),ObliqueMeshData.V(x+width/2,y,bottom),color,false);
+                ObliqueMeshData.V(x+width/2,y,top),ObliqueMeshData.V(x+width/2,y,bottom),color,false,PixelSurface.None);
 
         public static void Tree(ObliqueMeshData mesh,float x,float y,float radius,float height,Color color)
         {
             mesh.Shadow(x+0.2f,y-0.16f,radius*1.15f,radius*0.8f);
+            PixelSurface previous = mesh.DefaultSurface; mesh.DefaultSurface = PixelSurface.Wood;
             mesh.Cone(x,y,radius*0.16f,0,height*0.55f,ObliqueMeshData.Hex("7C6650"),6,radius*0.12f);
+            mesh.DefaultSurface = PixelSurface.Leaves;
             mesh.Cone(x,y,radius,height*0.25f,height*0.88f,color);
             mesh.Cone(x,y,radius*0.7f,height*0.53f,height,color);
+            mesh.DefaultSurface = previous;
         }
 
         private static void Mountain(ObliqueMeshData mesh,float x,float y,float width,float depth,float height,Color color)
@@ -201,25 +232,27 @@ namespace DragonQuest.Prototype
 
         public static ObliqueMeshData IslandData()
         {
-            var mesh=new ObliqueMeshData();
+            var mesh=new ObliqueMeshData {DefaultSurface=PixelSurface.Water};
             mesh.Plane(0,0,80,65,-0.95f,ObliqueMeshData.Hex("365E70"));
             var coast=PrototypeWorldLayout.Coast;
             var inner=new List<Vector2>();
             foreach(Vector2 p in coast) inner.Add(new Vector2(p.x*0.955f,p.y*0.955f));
+            mesh.DefaultSurface = PixelSurface.Grass;
             mesh.Polygon(inner,0,ObliqueMeshData.Hex("71806A"));
             for(int i=0;i<coast.Count;i++)
             {
                 Vector2 a=coast[i], b=coast[(i+1)%coast.Count], c=inner[(i+1)%coast.Count], d=inner[i];
-                mesh.Quad(ObliqueMeshData.V(a.x,a.y,-0.08f),ObliqueMeshData.V(d.x,d.y,0),ObliqueMeshData.V(c.x,c.y,0),ObliqueMeshData.V(b.x,b.y,-0.08f),ObliqueMeshData.Hex("C2B494"));
-                mesh.Quad(ObliqueMeshData.V(a.x,a.y,-0.8f),ObliqueMeshData.V(a.x,a.y,-0.08f),ObliqueMeshData.V(b.x,b.y,-0.08f),ObliqueMeshData.V(b.x,b.y,-0.8f),ObliqueMeshData.Hex("7D8073"));
+                mesh.Quad(ObliqueMeshData.V(a.x,a.y,-0.08f),ObliqueMeshData.V(d.x,d.y,0),ObliqueMeshData.V(c.x,c.y,0),ObliqueMeshData.V(b.x,b.y,-0.08f),ObliqueMeshData.Hex("C2B494"), true, PixelSurface.Sand);
+                mesh.Quad(ObliqueMeshData.V(a.x,a.y,-0.8f),ObliqueMeshData.V(a.x,a.y,-0.08f),ObliqueMeshData.V(b.x,b.y,-0.08f),ObliqueMeshData.V(b.x,b.y,-0.8f),ObliqueMeshData.Hex("7D8073"), true, PixelSurface.Basalt);
                 // Faixa de espuma junto a costa, sem textura quadriculada.
                 mesh.Quad(ObliqueMeshData.V(a.x*1.01f,a.y*1.01f,-0.94f),ObliqueMeshData.V(a.x*1.026f,a.y*1.026f,-0.94f),
-                    ObliqueMeshData.V(b.x*1.026f,b.y*1.026f,-0.94f),ObliqueMeshData.V(b.x*1.01f,b.y*1.01f,-0.94f),ObliqueMeshData.Hex("789997"),false);
+                    ObliqueMeshData.V(b.x*1.026f,b.y*1.026f,-0.94f),ObliqueMeshData.V(b.x*1.01f,b.y*1.01f,-0.94f),ObliqueMeshData.Hex("789997"),false,PixelSurface.None);
             }
             for(int i=0;i<35;i++)
             {
                 float x=-25+(i*17%51),y=-20+(i*7%40);
                 if(PrototypeWorldLayout.IsLand(new Vector2(x,y))) continue;
+                mesh.DefaultSurface = PixelSurface.None;
                 mesh.Plane(x,y,0.5f+(i%3)*0.25f,0.035f,-0.93f,ObliqueMeshData.Hex("537C89"));
             }
             return mesh;
@@ -312,12 +345,14 @@ namespace DragonQuest.Prototype
 
         public static ObliqueMeshData CastleIconData()
         {
-            var mesh=new ObliqueMeshData(); Color wall=ObliqueMeshData.Hex("B1AEA2"),roof=ObliqueMeshData.Hex("727681");
+            var mesh=new ObliqueMeshData {DefaultSurface=PixelSurface.Wall}; Color wall=ObliqueMeshData.Hex("B1AEA2"),roof=ObliqueMeshData.Hex("727681");
             mesh.Shadow(0.15f,-0.1f,1,0.6f);
             mesh.Box(0,0.1f,1.2f,0.8f,0,1.0f,wall);
+            mesh.DefaultSurface = PixelSurface.Basalt;
             mesh.Roof(0,0.1f,1.3f,0.9f,1,1.35f,roof);
             foreach(float x in new[]{-0.65f,0.65f})
-            { mesh.Box(x,0.4f,0.45f,0.5f,0,1.4f,wall); mesh.Cone(x,0.4f,0.32f,1.4f,1.95f,roof,4); }
+            { mesh.DefaultSurface=PixelSurface.Wall; mesh.Box(x,0.4f,0.45f,0.5f,0,1.4f,wall);
+                mesh.DefaultSurface=PixelSurface.Basalt; mesh.Cone(x,0.4f,0.32f,1.4f,1.95f,roof,4); }
             Window(mesh,0,-0.31f,0.28f,0,0.65f,ObliqueMeshData.Hex("3C3E43"));
             return mesh;
         }
@@ -344,7 +379,7 @@ namespace DragonQuest.Prototype
 
         public static ObliqueMeshData RuinsIconData()
         {
-            var mesh=new ObliqueMeshData();Color stone=ObliqueMeshData.Hex("A4A491");
+            var mesh=new ObliqueMeshData {DefaultSurface=PixelSurface.Wall};Color stone=ObliqueMeshData.Hex("A4A491");
             mesh.Shadow(0.1f,-0.1f,1.1f,0.6f);
             mesh.Box(0,0.1f,1.8f,0.8f,0,0.12f,ObliqueMeshData.Hex("818576"));
             mesh.Cone(-0.55f,0.2f,0.2f,0.12f,1.5f,stone,7,0.17f);
@@ -454,6 +489,14 @@ namespace DragonQuest.Prototype
         }
 
         public Transform King(Transform parent) => Show("Rei e coroa",KingData(),parent);
+        public Transform PixelPerson(Transform parent, string atlas, int frame = 0, bool animated = false)
+        {
+            float height = atlas == "NpcRoster" && frame == 11 ? 0.15f : 0.075f;
+            var shadow = new ObliqueMeshData(); shadow.Shadow(0, 0, 0.34f, 0.22f);
+            var shade = Show("Sombra no chao", shadow, parent); shade.localPosition = Vector3.back * (height - 0.035f);
+            var visual = PixelSprites.Create(parent, atlas, frame, animated); visual.localPosition = Vector3.back * height;
+            return visual;
+        }
         public Transform Spirit(Transform parent) => Show("Espirito maligno",SpiritData(),parent);
         private static ObliqueMeshData StandingPerson(string hex)
         {
@@ -522,6 +565,6 @@ namespace DragonQuest.Prototype
         }
 
         public void Dispose()
-        { foreach(Mesh mesh in meshes) if(mesh!=null) UnityEngine.Object.Destroy(mesh); UnityEngine.Object.Destroy(material); }
+        { foreach(Mesh mesh in meshes) if(mesh!=null) UnityEngine.Object.Destroy(mesh); UnityEngine.Object.Destroy(material); UnityEngine.Object.Destroy(shadowMaterial); PixelSprites.Dispose(); }
     }
 }

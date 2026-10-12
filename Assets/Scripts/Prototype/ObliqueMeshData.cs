@@ -10,6 +10,9 @@ namespace DragonQuest.Prototype
         public readonly List<Vector3> Vertices = new List<Vector3>();
         public readonly List<Color> Colors = new List<Color>();
         public readonly List<int> Triangles = new List<int>();
+        public readonly List<Vector2> UVs = new List<Vector2>();
+        public readonly List<Vector2> Surfaces = new List<Vector2>();
+        public PixelSurface DefaultSurface { get; set; } = PixelSurface.None;
 
         public static Vector3 V(float x, float y, float height) => new Vector3(x, y, -height);
         public static Color Hex(string hex)
@@ -23,28 +26,33 @@ namespace DragonQuest.Prototype
             int start=Vertices.Count;
             foreach(Vector3 p in data.Vertices) Vertices.Add(new Vector3(p.x+offset.x,p.y+offset.y,p.z+offset.z));
             Colors.AddRange(data.Colors);
+            UVs.AddRange(data.UVs); Surfaces.AddRange(data.Surfaces);
             foreach(int index in data.Triangles) Triangles.Add(start+index);
         }
 
-        public void Triangle(Vector3 a, Vector3 b, Vector3 c, Color color, bool shade = true)
+        public void Triangle(Vector3 a, Vector3 b, Vector3 c, Color color, bool shade = true, PixelSurface surface = PixelSurface.Auto)
         {
+            float ux = b.x - a.x, uy = b.y - a.y, uz = b.z - a.z;
+            float vx = c.x - a.x, vy = c.y - a.y, vz = c.z - a.z;
+            float nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx;
+            float length = (float)Math.Sqrt(nx * nx + ny * ny + nz * nz);
+            float light = !shade || length < 0.00001f ? 1 : 0.62f + 0.38f * Math.Max(0, (-nx * 0.45f - ny * 0.35f - nz * 0.82f) / length);
             if (shade)
             {
-                float ux = b.x - a.x, uy = b.y - a.y, uz = b.z - a.z;
-                float vx = c.x - a.x, vy = c.y - a.y, vz = c.z - a.z;
-                float nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx;
-                float length = (float)Math.Sqrt(nx * nx + ny * ny + nz * nz);
-                float light = length < 0.00001f ? 1 : 0.62f + 0.38f * Math.Max(0, (-nx * 0.45f - ny * 0.35f - nz * 0.82f) / length);
                 color = new Color(color.r * light, color.g * light, color.b * light, color.a);
             }
+            if (surface == PixelSurface.Auto) surface = DefaultSurface;
             int index = Vertices.Count;
             Vertices.Add(a); Vertices.Add(b); Vertices.Add(c);
             Colors.Add(color); Colors.Add(color); Colors.Add(color);
+            var normal = new Vector3(nx, ny, nz);
+            UVs.Add(PixelSurfaces.Project(a, normal)); UVs.Add(PixelSurfaces.Project(b, normal)); UVs.Add(PixelSurfaces.Project(c, normal));
+            for (int i = 0; i < 3; i++) Surfaces.Add(new Vector2((int)surface, light));
             Triangles.Add(index); Triangles.Add(index + 1); Triangles.Add(index + 2);
         }
 
-        public void Quad(Vector3 a, Vector3 b, Vector3 c, Vector3 d, Color color, bool shade = true)
-        { Triangle(a, b, c, color, shade); Triangle(a, c, d, color, shade); }
+        public void Quad(Vector3 a, Vector3 b, Vector3 c, Vector3 d, Color color, bool shade = true, PixelSurface surface = PixelSurface.Auto)
+        { Triangle(a, b, c, color, shade, surface); Triangle(a, c, d, color, shade, surface); }
 
         public void Box(float x, float y, float width, float depth, float bottom, float top, Color color)
         {
@@ -86,12 +94,12 @@ namespace DragonQuest.Prototype
 
         public void Shadow(float x, float y, float radiusX, float radiusY)
         {
-            Color color=Hex("354D46");
+            Color color=new Color(0, 0, 0, 0.24f);
             for(int i=0;i<12;i++)
             {
                 double a=i*Math.PI/6, b=(i+1)*Math.PI/6;
                 Triangle(V(x,y,0.035f), V(x+(float)Math.Cos(b)*radiusX,y+(float)Math.Sin(b)*radiusY,0.035f),
-                    V(x+(float)Math.Cos(a)*radiusX,y+(float)Math.Sin(a)*radiusY,0.035f),color,false);
+                    V(x+(float)Math.Cos(a)*radiusX,y+(float)Math.Sin(a)*radiusY,0.035f),color,false,PixelSurface.None);
             }
         }
 

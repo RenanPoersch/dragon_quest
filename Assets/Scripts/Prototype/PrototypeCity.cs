@@ -66,7 +66,7 @@ namespace DragonQuest.Prototype
             BoxCollider2D guardCollider = guard.AddComponent<BoxCollider2D>();
             guardCollider.size = new Vector2(0.65f, 0.7f);
             guardCollider.sharedMaterial = frictionless;
-            scenery.Person("9B7770", guard.transform, true);
+            scenery.PixelPerson(guard.transform, "NpcRoster", 10);
             interactables.Add(guard.AddComponent<BattleInteraction>());
 
             var mapRoots = new Dictionary<string, GameObject>
@@ -111,7 +111,7 @@ namespace DragonQuest.Prototype
             locations.Initialize(mapRoots, player.GetComponent<PlayerMovement>(), cameraFollow, navigation,
                 () => dialogue.IsOpen || battle.IsBusy);
             gameObject.AddComponent<PrototypeShopHud>().Initialize(shops);
-            gameObject.AddComponent<PrototypeBattleHud>().Initialize(battle);
+            gameObject.AddComponent<PrototypeBattleHud>().Initialize(battle, scenery.PixelSprites);
             gameObject.AddComponent<PrototypeMateriaHud>().Initialize(battle, secrets);
             PlayerInteraction interaction = player.AddComponent<PlayerInteraction>();
             interaction.Initialize(new InteractionContext(dialogue, progress, locations.TravelTo,
@@ -165,7 +165,7 @@ namespace DragonQuest.Prototype
             BoxCollider2D collider = npc.AddComponent<BoxCollider2D>();
             collider.size = new Vector2(0.55f, 0.6f);
             collider.sharedMaterial = frictionless;
-            scenery.Person(color, npc.transform);
+            scenery.PixelPerson(npc.transform, "NpcRoster", PixelSpriteLibrary.NpcFrame(npcName));
             return npc;
         }
 
@@ -274,7 +274,7 @@ namespace DragonQuest.Prototype
             CreatePassage("Saida do castelo", PrototypeTravel.Castle, castle, PrototypeTravel.City);
             GameObject king=Entity("Tirano",PrototypeWorldLayout.Throne,castle);
             BoxCollider2D collider=king.AddComponent<BoxCollider2D>();collider.size=new Vector2(0.55f,0.6f);collider.sharedMaterial=frictionless;
-            scenery.King(king.transform);
+            scenery.PixelPerson(king.transform, "NpcRoster", 11);
             GameObject spirit=Entity("Espirito junto ao trono",PrototypeWorldLayout.Throne+Vector2.right*1.8f,castle);
             scenery.Spirit(spirit.transform);spirit.SetActive(false);
             TyrantInteraction tyrant=king.AddComponent<TyrantInteraction>();
@@ -341,7 +341,7 @@ namespace DragonQuest.Prototype
                 for (int shelf = 0; shelf < 3; shelf++)
                     Block("Mercadoria provisoria", new Vector2(x, 0.7f + shelf * 0.8f), new Vector2(0.4f, 0.4f), displayColor, shop, false, 4);
             }
-            MerchantInteraction merchant = CreateNpcFigure("Lojista", new Vector2(0, 0.9f), displayColor, shop).AddComponent<MerchantInteraction>();
+            MerchantInteraction merchant = CreateNpcFigure(shopName, new Vector2(0, 0.9f), displayColor, shop).AddComponent<MerchantInteraction>();
             merchant.Initialize(shopId, shopName);
             interactions.Add(merchant);
             CreatePassage("Saida da loja", shopId, shop, PrototypeTravel.City);
@@ -368,7 +368,7 @@ namespace DragonQuest.Prototype
             player.AddComponent<PlayerMovement>();
 
             // O modelo tem altura em -Z; o objeto fisico permanece no chao XY, escala 1.
-            scenery.Person("B4A078", player.transform, true, true);
+            scenery.PixelPerson(player.transform, "ArenWalk", animated: true);
             return player;
         }
 

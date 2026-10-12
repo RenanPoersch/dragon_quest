@@ -15,6 +15,9 @@ internal static class ObliqueChecks
     private static void Validate(ObliqueMeshData data,string name)
     {
         Assert(data.Vertices.Count==data.Colors.Count && data.Triangles.Count%3==0,name+": buffers incompatíveis.");
+        Assert(data.UVs.Count == data.Vertices.Count && data.Surfaces.Count == data.Vertices.Count, name + ": buffers de textura incompletos.");
+        Assert(data.UVs.All(uv => float.IsFinite(uv.x) && float.IsFinite(uv.y))
+            && data.Surfaces.All(s => s.x >= -1 && s.x < 12 && s.y >= 0.62f && s.y <= 1), name + ": material ou UV invalido.");
         Assert(data.Vertices.All(p=>float.IsFinite(p.x)&&float.IsFinite(p.y)&&float.IsFinite(p.z)),name+": coordenada inválida.");
         Assert(data.Colors.All(c=>float.IsFinite(c.r)&&float.IsFinite(c.g)&&float.IsFinite(c.b)&&c.r>=0&&c.r<=1&&c.g>=0&&c.g<=1&&c.b>=0&&c.b<=1),name+": cor inválida.");
         Assert(data.Triangles.All(i=>i>=0&&i<data.Vertices.Count),name+": índice fora da malha.");
@@ -29,11 +32,12 @@ internal static class ObliqueChecks
         Assert(!degenerate,name+": triângulo sem área.");
     }
 
-    private static void Export(string directory,string name,ObliqueMeshData data,Vector2 focus,float size,float focusHeight=0)
+    private static void Export(string directory,string name,ObliqueMeshData data,Vector2 focus,float size,float focusHeight=0, object[] sprites=null)
     {
         File.WriteAllText(Path.Combine(directory,name+".json"),JsonSerializer.Serialize(new {
-            vertices=data.Vertices.Select(p=>new[]{p.x,p.y,p.z}),colors=data.Colors.Select(c=>new[]{c.r,c.g,c.b}),
+            vertices=data.Vertices.Select(p=>new[]{p.x,p.y,p.z}),colors=data.Colors.Select(c=>new[]{c.r,c.g,c.b,c.a}),
             triangles=data.Triangles,focus=new[]{focus.x,focus.y},size,focusHeight,
+            uv=data.UVs.Select(uv=>new[]{uv.x,uv.y}),surfaces=data.Surfaces.Select(s=>new[]{s.x,s.y}),sprites=sprites??Array.Empty<object>(),
             groundScale=ObliqueProjection.GroundScale,heightScale=ObliqueProjection.HeightScale,
             yawCos=ObliqueProjection.YawCos,yawSin=ObliqueProjection.YawSin
         }));
@@ -50,6 +54,7 @@ internal static class ObliqueChecks
     public static void Main(string[] args)
     {
         string directory=args[0];
+        PixelArtChecks.Run();
         Near(ObliqueProjection.ScreenPlane(new Vector2(4,3)).x,4*ObliqueProjection.YawCos+3*ObliqueProjection.YawSin,"Eixos do chão devem acompanhar rotação da câmera.");
         Near(ObliqueProjection.ScreenPlane(new Vector2(4,3)).y,(-4*ObliqueProjection.YawSin+3*ObliqueProjection.YawCos)*ObliqueProjection.GroundScale,"Profundidade do chão precisa comprimir na tela.");
         Near(ObliqueProjection.ScreenPlane(Vector2.zero,2).y,2*ObliqueProjection.HeightScale,"Altura deve subir na tela.");
@@ -133,11 +138,11 @@ internal static class ObliqueChecks
         world.Append(forest,ObliqueProjection.Point(PrototypeWorldLayout.EastForest));
         world.Append(volcano,ObliqueProjection.Point(PrototypeWorldLayout.Volcano));
         world.Append(ruinsIcon,ObliqueProjection.Point(PrototypeWorldLayout.Ruins));
-        Person(world,PrototypeWorldLayout.Spawn,"B4A078",true);
         MapDefinition worldMap=travel.Current;
         float worldSize=ObliqueProjection.FrameSize(worldMap.CameraSize,worldMap.Bounds,16f/9,worldMap.FixedCamera);
         Vector2 worldFocus=ObliqueProjection.CameraFocus(PrototypeWorldLayout.Spawn,worldMap.Bounds,worldSize,16f/9,worldMap.FixedCamera);
-        Export(directory,"WorldOblique",world,worldFocus,worldSize,ObliqueProjection.HeroCenterHeight);
+        Export(directory,"WorldOblique",world,worldFocus,worldSize,ObliqueProjection.HeroCenterHeight,
+            new[]{Sprite("ArenWalk",0,PrototypeWorldLayout.Spawn)});
 
         var city=new ObliqueMeshData();
         foreach(var block in PrototypeCityLayout.Blocks)
@@ -149,39 +154,37 @@ internal static class ObliqueChecks
         }
         Validate(ObliqueScenery.PersonBodyData("B4A078",true),"Herói");
         foreach(float x in new[]{-0.12f,0.12f})Validate(ObliqueScenery.LegData(x,ObliqueMeshData.Hex("B4A078")),"Perna");
-        Person(city,PrototypeCityLayout.Spawn,"B4A078",true);
-        Person(city,PrototypeCityLayout.Citizen,"8D9DB0",false);Person(city,PrototypeCityLayout.Guard,"9B7770",true);
-        Export(directory,"CityOblique",city,new Vector2(0,0),7.5f);
+        Export(directory,"CityOblique",city,new Vector2(0,0),7.5f,0,
+            new[]{Sprite("ArenWalk",0,PrototypeCityLayout.Spawn),Sprite("NpcRoster",0,PrototypeCityLayout.Citizen),Sprite("NpcRoster",10,PrototypeCityLayout.Guard)});
         var hall=new ObliqueMeshData();
         foreach(var block in PrototypeWorldLayout.CastleBlocks)
         {Validate(ObliqueScenery.BlockData(block.Name,block.Size,block.Color,block.Solid,block.Order),block.Name);AddBlock(hall,block);}
-        Person(hall,PrototypeWorldLayout.CastleSpawn,"B4A078",true);
         var king=ObliqueScenery.KingData();var spirit=ObliqueScenery.SpiritData();
         Validate(king,"Tirano e coroa");Validate(ObliqueScenery.KingData(false),"Rei liberto");Validate(spirit,"Espirito maligno");
         Assert(king.Vertices.All(p=>p.z<=0),"Botas do rei nao podem ficar abaixo do piso.");
-        hall.Append(king,ObliqueProjection.Point(PrototypeWorldLayout.Throne));
         hall.Append(spirit,ObliqueProjection.Point(PrototypeWorldLayout.Throne+Vector2.right*1.8f));
         Export(directory,"KingPortrait",king,Vector2.zero,1.1f,0.85f);
         Export(directory,"SpiritPortrait",spirit,Vector2.zero,1.4f,1.05f);
-        Export(directory,"CastleOblique",hall,Vector2.zero,9);
+        Export(directory,"CastleOblique",hall,Vector2.zero,9,0,
+            new[]{Sprite("ArenWalk",0,PrototypeWorldLayout.CastleSpawn),Sprite("NpcRoster",11,PrototypeWorldLayout.Throne)});
         var ruins=new ObliqueMeshData();
         foreach(var block in PrototypeRuinsLayout.Blocks)
         {Validate(ObliqueScenery.BlockData(block.Name,block.Size,block.Color,block.Solid,block.Order),block.Name);AddBlock(ruins,block);}
-        Person(ruins,PrototypeRuinsLayout.Spawn,"B4A078",true);
-        Export(directory,"RuinsOblique",ruins,Vector2.zero,ObliqueProjection.FrameSize(8,PrototypeRuinsLayout.Bounds,16f/9,true));
+        Export(directory,"RuinsOblique",ruins,Vector2.zero,ObliqueProjection.FrameSize(8,PrototypeRuinsLayout.Bounds,16f/9,true),0,
+            new[]{Sprite("ArenWalk",0,PrototypeRuinsLayout.Spawn)});
         var dragon=ObliqueScenery.DragonData();Validate(dragon,"Dragao e asas");
         Export(directory,"DragonPortrait",dragon,new Vector2(0,0.5f),2.6f,1);
         var cavern=new ObliqueMeshData();
         foreach(var block in PrototypeVolcanoLayout.Blocks)
         {Validate(ObliqueScenery.BlockData(block.Name,block.Size,block.Color,block.Solid,block.Order),block.Name);AddBlock(cavern,block);}
         cavern.Append(dragon,ObliqueProjection.Point(PrototypeVolcanoLayout.Dragon));
-        Person(cavern,new Vector2(0,5),"B4A078",true);
-        Export(directory,"VolcanoOblique",cavern,new Vector2(0,5),7.5f,ObliqueProjection.HeroCenterHeight);
+        Export(directory,"VolcanoOblique",cavern,new Vector2(0,5),7.5f,ObliqueProjection.HeroCenterHeight,
+            new[]{Sprite("ArenWalk",0,new Vector2(0,5))});
         var inn=new ObliqueMeshData();
         foreach(var block in PrototypeInnLayout.Blocks)
         {Validate(ObliqueScenery.BlockData(block.Name,block.Size,block.Color,block.Solid,block.Order),block.Name);AddBlock(inn,block);}
-        Person(inn,PrototypeInnLayout.Spawn,"B4A078",true);Person(inn,PrototypeInnLayout.Keeper,"B89673",false);
-        Export(directory,"InnOblique",inn,Vector2.zero,ObliqueProjection.FrameSize(6,PrototypeInnLayout.Bounds,16f/9,true));
+        Export(directory,"InnOblique",inn,Vector2.zero,ObliqueProjection.FrameSize(6,PrototypeInnLayout.Bounds,16f/9,true),0,
+            new[]{Sprite("ArenWalk",0,PrototypeInnLayout.Spawn),Sprite("NpcRoster",7,PrototypeInnLayout.Keeper)});
         foreach(var ending in new[]{DragonQuest.Progression.GameEnding.KingFreed,DragonQuest.Progression.GameEnding.CastleDestroyed,DragonQuest.Progression.GameEnding.HeroPossessed})
         {
             var data=ObliqueScenery.EndingSceneData(ending);Validate(data,"Cena final / "+ending);
@@ -194,4 +197,5 @@ internal static class ObliqueChecks
         Validate(ObliqueScenery.BlockData("Estante",new Vector2(1.5f,3),"705033",true,3),"Estante");
         Console.WriteLine(checks+" verificacoes de perspectiva, camera e malhas passaram.");
     }
+    private static object Sprite(string atlas,int frame,Vector2 position) => new {atlas,frame,position=new[]{position.x,position.y},footHeight=atlas=="NpcRoster"&&frame==11?0.15f:0.075f};
 }

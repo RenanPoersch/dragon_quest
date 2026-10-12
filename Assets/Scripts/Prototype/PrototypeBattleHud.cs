@@ -2,6 +2,7 @@ using UnityEngine;
 using DragonQuest.Combat;
 using DragonQuest.Inventory;
 using DragonQuest.Progression;
+using DragonQuest.Exploration;
 
 namespace DragonQuest.Prototype
 {
@@ -21,8 +22,10 @@ namespace DragonQuest.Prototype
         private ConsumableDefinition selectedItem;
         private Texture2D dragonPortrait;
         private Texture2D spiritPortrait,kingPortrait;
+        private PixelSpriteLibrary pixelSprites;
 
-        public void Initialize(PrototypeBattleController battleController) => controller = battleController;
+        public void Initialize(PrototypeBattleController battleController, PixelSpriteLibrary sprites = null)
+        { controller = battleController; pixelSprites = sprites; }
 
         private void OnGUI()
         {
@@ -250,6 +253,16 @@ namespace DragonQuest.Prototype
 
         private void DrawFighter(Rect rect, CombatantState participant)
         {
+            if (pixelSprites != null && participant.Team == CombatTeam.Party)
+            {
+                pixelSprites.Party(participant.Id).Draw(rect, (int)PixelDirection.Right,
+                    participant.IsAlive ? Color.white : new Color(0.4f, 0.4f, 0.4f)); return;
+            }
+            if (pixelSprites != null && participant.Team == CombatTeam.Enemy && participant.Id != DragonProgress.EnemyId && participant.Id != CastleBattleRules.SpiritId)
+            {
+                pixelSprites.Atlas("NpcRoster").Draw(rect, participant.Id == CastleBattleRules.TyrantId ? 11 : 10,
+                    participant.IsAlive ? Color.white : new Color(0.4f, 0.4f, 0.4f)); return;
+            }
             Texture2D portrait=participant.Id==DragonProgress.EnemyId?dragonPortrait:participant.Id==CastleBattleRules.SpiritId?spiritPortrait:participant.Id==CastleBattleRules.TyrantId?kingPortrait:null;
             if(portrait!=null)
             {

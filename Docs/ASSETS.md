@@ -40,3 +40,11 @@ Trilha de basalto, lava, arena, rochas, camas e dragão são modelos originais g
 Rei com coroa, espírito, castelo em ruínas e figuras dos três finais são malhas originais de `ObliqueScenery.KingData`, `SpiritData`, `RuinedCastleData` e `EndingSceneData`, adicionadas em 12 de outubro de 2026. Os textos de `EndingNarrative` foram escritos para a demo.
 
 `Assets/Resources/KingPortrait.png` e `SpiritPortrait.png` são retratos transparentes derivados dessas malhas, usando os JSONs exportados por `Test-Oblique.ps1` e `Render-MeshPortrait.py` com a opção `--crop`. O jogo usa os PNGs prontos e não requer Python. Não foram usados modelos, imagens ou sons de terceiros.
+
+## Pixel art — 12 de outubro de 2026
+
+Criados com a ferramenta integrada `image_gen`: `Assets/Resources/PixelArt/ArenWalk.png`, `LiaWalk.png`, `BramWalk.png`, `NpcRoster.png` e `TerrainAtlas.png`. Personagens e materiais foram gerados para este projeto, usando a linguagem visual de FF6 original como referência. Não são assets extraídos do jogo. Prompts completos e revisões em `PIXEL_ART_PROMPTS.md`; os PNGs finais conservam seus canais originais e recortes são feitos somente em memória.
+
+Bram e moradores receberam uma revisão de layout pela mesma ferramenta para manter cada corpo dentro de sua célula. Rascunhos e prévias técnicas ficam fora do Git. Os sprites atuais têm trajes fixos; bosses, invocações, efeitos e cenas finais ainda usam elementos anteriores.
+
+Importadores e shaders foram configurados no projeto para preservar pixels e alpha. `PixelSpriteLayout`, `PixelSpriteLibrary`, `PixelCharacter` e `PixelSurface` foram criados em C# para esta integração. `Inspect-PixelArt.py` apenas lê/valida imagens e exporta metadados para análise; nenhuma imagem de terceiros foi usada.

@@ -230,3 +230,12 @@ O usuário confirmou que as interações funcionaram em Play. Não houve valida�
 - Catálogo de IDs estáveis, formato JSON versionado, validação antes da instalação e link.xml para os tipos serializados. Arquivos em Application.persistentDataPath/Saves; substituição atômica e backup da revisão válida anterior. Corrupção recupera backup com aviso; versão incompatível bloqueia Continuar.
 - Passaram 107 verificações de save, 1.983 de combate, 159 de segredos, 58 de caminhos da periferia e 269 de viagens/interiores. Compilação passou com bibliotecas da Unity 6000.6.5f1. Os testes de arquivos usaram ../../work/SaveChecks porque o processo de teste teve escrita negada na pasta temporária do ambiente automático.
 - Em Play, conferir cliques/teclado do menu, objetos restaurados, caminho real em LocalLow e os três finais conforme PARTE_9.md. Saves reais da aplicação e GPU/UI não foram executados fora do Editor. Arte, áudio, acabamento, balanceamento e executável continuam pendentes.
+
+## Parte 10A — sprites e materiais em pixel art
+
+- Cinco atlas originais gerados pela ferramenta integrada image_gen: equipe, moradores e materiais, com referência artística ao FF6 original. Câmera inclinada, cenários em 3D e planta de colisões conservados. PNGs/importadores e prompts foram versionados.
+- Recorte por alpha e âncora nos pés; Aren usa quatro direções/caminhada. NPCs têm imagens distintas e equipe/guarda/rei são desenhados com sprites no HUD da batalha. A direção da imagem considera o yaw da câmera e teleportes não acumulam passos.
+- Materiais com UVs por face e separação de sombras transparentes; chão, paredes, telhados, folhagem, mar e lava usam atlas sem mipmap/compressão. Contraste da grama reduzido após inspeção da prévia.
+- Validação dos arquivos detectou corpos cruzando células no Bram e em parte dos moradores. A ferramenta de imagem reparou o espaçamento; passaram 186 verificações dos PNGs/importadores e 63 de sprites/materiais.
+- Scripts C# compilaram; passaram 2358 verificações de malhas/câmera, 107 de save, 58 da periferia e 269 de viagens. Prévias técnicas da ilha, cidade, hospedaria e salão foram inspecionadas. Não são capturas do Editor.
+- Compilação dos shaders pela Unity, importação efetiva, oclusão/sombras, movimento e interface aguardam Play segundo PARTE_10A.md. Dragão, espírito, invocações, efeitos, cenas finais e detalhes decorativos ainda têm arte provisória. Aparência do equipamento não muda o sprite nesta etapa.

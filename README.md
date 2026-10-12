@@ -2,6 +2,8 @@
 
 RPG com apresentação 2.5D, exploração de uma ilha de fantasia e batalhas por turnos. Projeto desenvolvido em pequenas entregas, com validação e commits por etapa.
 
+Direção visual atual: **sprites e texturas em pixel art inspirados no FF6 original, com cenários 3D e câmera inclinada**. A parte 10A adiciona equipe, moradores e um primeiro atlas de materiais; veja `Docs/PARTE_10A.md` para testar. Bosses, efeitos e cenas finais ainda incluem arte provisória.
+
 ## Ambiente
 
 - Unity Editor **6000.6.5f1** (Unity 6.6).
@@ -33,7 +35,7 @@ A demo começa no **mapa global de uma pequena ilha cercada pelo mar**. Castelo 
 
 Entradas e saídas, incluindo lojas, funcionam ao caminhar pela área de passagem, sem confirmar com E. Chegadas ficam fora dessas áreas para evitar retorno imediato; diálogos, inventário, lojas abertas e batalhas suspendem a viagem. E continua sendo usado para conversar, examinar objetos e desfazer os selos da trilha. Ouro, inventário, equipamentos, missão, estoques e Limit usam a mesma sessão entre cenários.
 
-A apresentação agora usa **câmera oblíqua e modelos com volume**, substituindo os retângulos vistos de cima. A ilha tem costa elevada, montanhas, mar e ícones pequenos de locais; casas têm paredes, telhados e janelas; personagens têm um modelo simples com passos animados. No mapa mundial, a câmera está aproximadamente duas vezes mais próxima no enquadramento e acompanha o herói perto do centro da tela. Na periferia, ela também acompanha o herói mantendo o ângulo. Florestas, ruínas, castelo e lojas usam enquadramentos fixos. WASD/setas acompanham as direções da tela.
+A apresentação usa **câmera oblíqua e modelos com volume**, com sprites em pixel art para herói/moradores desde a parte 10A. A ilha tem costa elevada, montanhas, mar e ícones pequenos de locais; casas têm paredes, telhados e janelas texturizados. No mapa mundial, a câmera está aproximadamente duas vezes mais próxima no enquadramento e acompanha o herói perto do centro da tela. Na periferia, ela também acompanha o herói mantendo o ângulo. Florestas, ruínas, castelo e lojas usam enquadramentos fixos. WASD/setas acompanham as direções da tela.
 
 Abra `Assets/Scenes/CidadePrototipo.unity` e siga `Docs/PARTE_7A.md` e `Docs/VISUAL_25D.md` para testar em Play. Os modelos ainda são provisórios, criados por código. A batalha e os menus conservam sua interface atual.
 
@@ -236,7 +238,9 @@ Veja `Docs/PARTE_1.md` para o roteiro de verificação.
 | 7C | Interior do vulcão, batalha do dragão e armadura especial |
 | 8 | Tirano, espírito, meteoro e três finais |
 | 9 | Menu inicial, três slots, salvamento manual e automático |
-| 10 | Arte, áudio, balanceamento e executável |
+| 10A | Equipe/moradores em pixel art e materiais nos cenários 3D |
+| 10B | Refinamento artístico, bosses, efeitos e interface |
+| 10C | Áudio, balanceamento, validação final e executável |
 
 Cada entrega deve ser validada antes do commit e do envio ao GitHub. Sprites e cenários serão criados por conjuntos; as primeiras mecânicas usarão elementos provisórios.
 

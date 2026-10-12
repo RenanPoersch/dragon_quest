@@ -20,6 +20,7 @@ $obliqueOut = Join-Path $WorkDirectory 'ObliqueChecks.dll'
 $obliqueArguments = @('-nologo','-target:exe','-nostdlib+',"-out:$obliqueOut","-reference:$obliqueCore","-reference:$(Join-Path $WorkDirectory 'DragonQuest.Scripts.dll')")
 $obliqueArguments += Get-ChildItem -LiteralPath $obliqueRefs.FullName -Filter '*.dll' | ForEach-Object { "-reference:$($_.FullName)" }
 $obliqueArguments += Join-Path $obliqueRoot 'Tests/ObliqueChecks.cs'
+$obliqueArguments += Join-Path $obliqueRoot 'Tests/PixelArtChecks.cs'
 & $obliqueDotnet $obliqueCsc.FullName @obliqueArguments
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 Copy-Item -LiteralPath $obliqueCore -Destination $WorkDirectory -Force
