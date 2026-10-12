@@ -18,6 +18,8 @@ namespace DragonQuest.Prototype
         private static readonly Color Amber = ObliqueMeshData.Hex("FFD169");
         private static readonly Color Teal = ObliqueMeshData.Hex("76E4CF");
 
+        public static bool IsRoyalCastle(string name) => name == "Castelo do tirano" || name.EndsWith("do castelo", StringComparison.Ordinal);
+
         public static ObliqueMeshData Block(CityBlock block)
         {
             if (block.Name == "Chao escuro da periferia")
@@ -61,6 +63,7 @@ namespace DragonQuest.Prototype
 
         public static PeripheryBuildingArt Building(string name, Vector2 size, string hex)
         {
+            if (IsRoyalCastle(name)) return CastleFortressArt.Building(name, size);
             var art = new PeripheryBuildingArt();
             float w = size.x, d = size.y, front = -d / 2 - 0.025f;
             bool fortified = name.Contains("Castelo") || name.Contains("Torre");

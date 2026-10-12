@@ -15,7 +15,7 @@ def check(condition, message):
     if not condition:
         raise ValueError(message)
 
-for name in ("ArenWalk", "ArenDiagonalWalk", "LiaWalk", "BramWalk", "NpcRoster", "TerrainAtlas", "CityMaterialsAtlas", "CityDetailsAtlas"):
+for name in ("ArenWalk", "ArenDiagonalWalk", "LiaWalk", "BramWalk", "NpcRoster", "TerrainAtlas", "CityMaterialsAtlas", "CityDetailsAtlas", "CastleMaterialsAtlas"):
     path = directory / (name + ".png")
     with Image.open(path) as image:
         width, height = image.size
@@ -25,7 +25,7 @@ for name in ("ArenWalk", "ArenDiagonalWalk", "LiaWalk", "BramWalk", "NpcRoster",
         for setting in ("filterMode: 0", "enableMipMap: 0", "nPOTScale: 0", "textureCompression: 0"):
             check(setting in meta, name + ": importacao incorreta " + setting)
         entry = {"width": width, "height": height, "frames": []}
-        if name not in ("TerrainAtlas", "CityMaterialsAtlas", "CityDetailsAtlas"):
+        if name not in ("TerrainAtlas", "CityMaterialsAtlas", "CityDetailsAtlas", "CastleMaterialsAtlas"):
             check(image.mode == "RGBA", name + ": canal alpha ausente")
             check("isReadable: 1" in meta, name + ": alpha precisa ser legivel em runtime")
             alpha = image.getchannel("A")

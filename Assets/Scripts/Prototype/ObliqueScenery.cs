@@ -12,7 +12,7 @@ namespace DragonQuest.Prototype
         private readonly List<Mesh> meshes = new List<Mesh>();
         private readonly Material material;
         private readonly Material shadowMaterial;
-        private readonly Material cityMaterial, cityDetailsMaterial, glowMaterial;
+        private readonly Material cityMaterial, cityDetailsMaterial, castleMaterial, glowMaterial;
         public PixelSpriteLibrary PixelSprites { get; }
         public ObliqueScenery()
         {
@@ -25,6 +25,8 @@ namespace DragonQuest.Prototype
             cityMaterial = AtlasMaterial(shader, "CityMaterialsAtlas", "Periferia / materiais gastos");
             cityMaterial.SetFloat("_Brightness", 0.8f);
             cityDetailsMaterial = AtlasMaterial(shader, "CityDetailsAtlas", "Periferia / fachadas e letreiros");
+            castleMaterial = AtlasMaterial(shader, "CastleMaterialsAtlas", "Castelo / alvenaria de pedra");
+            castleMaterial.SetFloat("_Brightness", 0.95f);
             var glowShader = Resources.Load<Shader>("PixelGlow");
             if (glowShader == null) throw new InvalidOperationException("Shader PixelGlow ausente.");
             glowMaterial = new Material(glowShader) {name = "Periferia / lampioes e vapor"};
@@ -65,7 +67,8 @@ namespace DragonQuest.Prototype
         }
 
         public void CityBlock(CityBlock block, Transform parent)
-            => ShowWithMaterial("Volume da periferia", CityPeripheryArt.Block(block), parent, cityMaterial);
+            => ShowWithMaterial("Volume da periferia", CityPeripheryArt.Block(block), parent,
+                block.Name.StartsWith("Ponte de pedra") || block.Name == "Patio da entrada do castelo" ? castleMaterial : cityMaterial);
 
         public void CityBuilding(string name, Vector2 size, string hex, Transform parent)
             => ShowCityArt(name, CityPeripheryArt.Building(name, size, hex), parent);
@@ -74,7 +77,7 @@ namespace DragonQuest.Prototype
 
         private void ShowCityArt(string name, PeripheryBuildingArt art, Transform parent)
         {
-            ShowWithMaterial(name + " / volumes", art.Body, parent, cityMaterial);
+            ShowWithMaterial(name + " / volumes", art.Body, parent, CityPeripheryArt.IsRoyalCastle(name) ? castleMaterial : cityMaterial);
             if (art.Details.Vertices.Count > 0) ShowWithMaterial(name + " / fachadas", art.Details, parent, cityDetailsMaterial);
             if (art.Glow.Vertices.Count > 0)
             {
@@ -372,26 +375,14 @@ namespace DragonQuest.Prototype
 
         public void CastleIcon(Transform parent)
         {
-            Show("Castelo em miniatura",CastleIconData(),parent);
+            ShowWithMaterial("Castelo em miniatura",CastleIconData(),parent,castleMaterial);
             // Mantem exatamente a area de colisao do icone declarada no layout.
             CityBlock footprint=PrototypeWorldLayout.CastleIcon[0];
             BoxCollider2D collider=parent.gameObject.AddComponent<BoxCollider2D>();
             collider.size=footprint.Size; collider.offset=footprint.Position;
         }
 
-        public static ObliqueMeshData CastleIconData()
-        {
-            var mesh=new ObliqueMeshData {DefaultSurface=PixelSurface.Wall}; Color wall=ObliqueMeshData.Hex("B1AEA2"),roof=ObliqueMeshData.Hex("727681");
-            mesh.Shadow(0.15f,-0.1f,1,0.6f);
-            mesh.Box(0,0.1f,1.2f,0.8f,0,1.0f,wall);
-            mesh.DefaultSurface = PixelSurface.Basalt;
-            mesh.Roof(0,0.1f,1.3f,0.9f,1,1.35f,roof);
-            foreach(float x in new[]{-0.65f,0.65f})
-            { mesh.DefaultSurface=PixelSurface.Wall; mesh.Box(x,0.4f,0.45f,0.5f,0,1.4f,wall);
-                mesh.DefaultSurface=PixelSurface.Basalt; mesh.Cone(x,0.4f,0.32f,1.4f,1.95f,roof,4); }
-            Window(mesh,0,-0.31f,0.28f,0,0.65f,ObliqueMeshData.Hex("3C3E43"));
-            return mesh;
-        }
+        public static ObliqueMeshData CastleIconData() => CastleFortressArt.Icon();
 
         public void ForestIcon(Transform parent)
             => Show("Bosque em miniatura",ForestIconData(),parent);
@@ -609,6 +600,7 @@ namespace DragonQuest.Prototype
             foreach(Mesh mesh in meshes) if(mesh!=null) UnityEngine.Object.Destroy(mesh);
             UnityEngine.Object.Destroy(material); UnityEngine.Object.Destroy(shadowMaterial);
             UnityEngine.Object.Destroy(cityMaterial); UnityEngine.Object.Destroy(cityDetailsMaterial); UnityEngine.Object.Destroy(glowMaterial);
+            UnityEngine.Object.Destroy(castleMaterial);
             PixelSprites.Dispose();
         }
     }

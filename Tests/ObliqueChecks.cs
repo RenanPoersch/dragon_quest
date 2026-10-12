@@ -134,7 +134,7 @@ internal static class ObliqueChecks
         var ruinsIcon=ObliqueScenery.RuinsIconData();Validate(ruinsIcon,"Ruinas globais");
         foreach(var icon in new[]{castle,forest})
             Assert(-icon.Vertices.Min(p=>p.z)>1.45f&&-icon.Vertices.Min(p=>p.z)<=2,"Ícones precisam ser ligeiramente mais altos que o herói.");
-        world.Append(castle,ObliqueProjection.Point(PrototypeWorldLayout.Castle));
+        var worldCastle = new ObliqueMeshData(); worldCastle.Append(castle,ObliqueProjection.Point(PrototypeWorldLayout.Castle));
         world.Append(forest,ObliqueProjection.Point(PrototypeWorldLayout.WestForest));
         world.Append(forest,ObliqueProjection.Point(PrototypeWorldLayout.EastForest));
         world.Append(volcano,ObliqueProjection.Point(PrototypeWorldLayout.Volcano));
@@ -144,12 +144,14 @@ internal static class ObliqueChecks
         Vector2 worldFocus=ObliqueProjection.CameraFocus(PrototypeWorldLayout.Spawn,worldMap.Bounds,worldSize,16f/9,worldMap.FixedCamera);
         Export(directory,"WorldOblique",world,worldFocus,worldSize,ObliqueProjection.HeroCenterHeight,
             new[]{Sprite("ArenWalk",0,PrototypeWorldLayout.Spawn)});
+        Export(directory,"WorldCastle",worldCastle,worldFocus,worldSize,ObliqueProjection.HeroCenterHeight,atlas:"CastleMaterialsAtlas");
 
-        var city=new ObliqueMeshData(); var cityDetails=new ObliqueMeshData(); var cityGlow=new ObliqueMeshData();
+        var city=new ObliqueMeshData(); var cityDetails=new ObliqueMeshData(); var cityGlow=new ObliqueMeshData(); var fortress=new ObliqueMeshData();
         foreach(var block in PrototypeCityLayout.Blocks)
         {
             var data=CityPeripheryArt.Block(block); Validate(data,block.Name);
-            city.Append(data,ObliqueProjection.Point(block.Position));
+            var target = block.Name.StartsWith("Ponte de pedra") || block.Name == "Patio da entrada do castelo" ? fortress : city;
+            target.Append(data,ObliqueProjection.Point(block.Position));
         }
         foreach(var building in PrototypeCityLayout.Buildings)
         {
@@ -158,7 +160,19 @@ internal static class ObliqueChecks
             Assert(art.Details.UVs.All(uv=>uv.x>0&&uv.x<1&&uv.y>0&&uv.y<1),"Painel deve usar uma celula inteira, sem repetir letras nem amostrar vizinhos.");
             Assert(art.Glow.Colors.All(c=>c.a>0&&c.a<1),"Vapor e luz usam transparencia propria.");
             var offset=ObliqueProjection.Point(building.Position);
-            city.Append(art.Body,offset);cityDetails.Append(art.Details,offset);cityGlow.Append(art.Glow,offset);
+            if (CityPeripheryArt.IsRoyalCastle(building.Name))
+            {
+                fortress.Append(art.Body,offset);
+                Assert(-art.Body.Vertices.Min(p=>p.z)>7.8f,"Castelo e torres devem ser muito mais altos que as casas do bairro.");
+                Assert(art.Body.Surfaces.All(s=>s.x==-1||s.x==(int)PixelSurface.Sand||s.x==(int)PixelSurface.Wall
+                    ||s.x==(int)PixelSurface.Basalt||s.x==(int)PixelSurface.Paving||s.x==(int)PixelSurface.Wood||s.x==(int)PixelSurface.Fabric),
+                    "Fortaleza deve usar pedras, porta de carvalho e estandartes, sem telhado industrial.");
+                var solidVertices = art.Body.Vertices.Where((p,i)=>art.Body.Colors[i].a==1).ToArray();
+                Assert(solidVertices.Min(p=>p.x)>=-building.Size.x/2-0.051f && solidVertices.Max(p=>p.x)<=building.Size.x/2+0.051f,
+                    "Volumes de pedra nao podem invadir os acessos laterais alem da cornija.");
+            }
+            else city.Append(art.Body,offset);
+            cityDetails.Append(art.Details,offset);cityGlow.Append(art.Glow,offset);
         }
         var streets=CityPeripheryArt.Streets(); Validate(streets.Body,"Detalhes das ruas"); Validate(streets.Glow,"Luzes das ruas");
         var ground = CityPeripheryArt.Block(PrototypeCityLayout.Blocks.First(b=>b.Name=="Chao escuro da periferia"));
@@ -176,6 +190,7 @@ internal static class ObliqueChecks
             new[]{Sprite("ArenWalk",0,PrototypeCityLayout.Spawn),Sprite("NpcRoster",0,PrototypeCityLayout.Citizen),Sprite("NpcRoster",10,PrototypeCityLayout.Guard)},"CityMaterialsAtlas");
         Export(directory,"CityDetails",cityDetails,PrototypeCityLayout.Spawn,6,ObliqueProjection.HeroCenterHeight,atlas:"CityDetailsAtlas");
         Export(directory,"CityGlow",cityGlow,PrototypeCityLayout.Spawn,6,ObliqueProjection.HeroCenterHeight,additive:true);
+        Export(directory,"CityFortress",fortress,PrototypeCityLayout.Spawn,6,ObliqueProjection.HeroCenterHeight,atlas:"CastleMaterialsAtlas");
         var hall=new ObliqueMeshData();
         foreach(var block in PrototypeWorldLayout.CastleBlocks)
         {Validate(ObliqueScenery.BlockData(block.Name,block.Size,block.Color,block.Solid,block.Order),block.Name);AddBlock(hall,block);}

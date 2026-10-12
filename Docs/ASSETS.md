@@ -58,3 +58,9 @@ Diagonais do Aren, em 12 de outubro de 2026: `Assets/Resources/PixelArt/ArenDiag
 `Assets/Resources/PixelArt/CityMaterialsAtlas.png` e `CityDetailsAtlas.png` são atlas originais gerados com a ferramenta integrada `image_gen`, usando a imagem enviada pelo usuário como referência de atmosfera e materiais. Os PNGs têm 1448 × 1086 pixels e foram importados sem edição posterior. Não há imagens recortadas da referência no jogo. Prompts em `PERIFERIA_ART_PROMPTS.md`.
 
 Casas, toldos, caldeira, tubos, lampiões, grelhas, vapor, ponte de pedra e fosso seco são malhas originais geradas por C# em `CityPeripheryArt`. Os letreiros, portas e janelas são painéis das fachadas com UVs locais. `PixelGlow.shader` foi criado para a transparência/aditivo da iluminação. A planta compacta foi definida em `PrototypeCityLayout`; as pontes de madeira e o lago da versão anterior foram removidos.
+
+## Fortaleza de pedra — 12 de outubro de 2026
+
+`Assets/Resources/PixelArt/CastleMaterialsAtlas.png` foi gerado com a ferramenta integrada `image_gen`, com materiais originais de pedra, madeira e tecido. O PNG de 1447 × 1087 foi mantido sem edição posterior. Prompt completo em `PERIFERIA_ART_PROMPTS.md`.
+
+`CastleFortressArt.cs` gera as muralhas, torres, ameias, seteiras, arco do portão, porta reforçada, estandartes e tochas. O castelo tem material próprio de alvenaria cinza; ponte/pátio de entrada e ícone global usam o mesmo atlas. O ícone mantém a escala pequena do mapa mundial. Modelos e materiais não foram extraídos de jogos ou bibliotecas externas.

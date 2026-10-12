@@ -110,9 +110,9 @@ namespace DragonQuest.Prototype
             new CityBlock("Armazem das especiarias", 8.9f, 3.6f, 3.4f, 4, "7D6F58", true, 1),
             new CityBlock("Pavilhao dos jardins", 4.7f, 7, 4, 3.6f, "8D8168", true, 1),
             new CityBlock("Torre em ruinas", -9.1f, 7.8f, 3, 3.2f, "6F6A59", true, 1),
-            new CityBlock("Castelo do tirano", Castle.x, Castle.y, 7.5f, 4.5f, "636B79", true, 1),
-            new CityBlock("Torre oeste do castelo", -5.6f, 18.2f, 2.4f, 3.6f, "586374", true, 1),
-            new CityBlock("Torre leste do castelo", 5.6f, 18.2f, 2.4f, 3.6f, "586374", true, 1)
+            new CityBlock("Castelo do tirano", Castle.x, Castle.y, 9.5f, 4.5f, "89919B", true, 1),
+            new CityBlock("Torre oeste do castelo", -6.15f, 18.2f, 3.4f, 3.6f, "89919B", true, 1),
+            new CityBlock("Torre leste do castelo", 6.15f, 18.2f, 3.4f, 3.6f, "89919B", true, 1)
         });
         public static IReadOnlyList<CityBlock> Blocks { get; } = CreateBlocks();
         private static IReadOnlyList<CityBlock> CreateBlocks()

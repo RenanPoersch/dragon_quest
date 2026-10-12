@@ -263,3 +263,10 @@ O usuário confirmou que as interações funcionaram em Play. Não houve valida�
 - Passaram 243 verificações de PNGs/importadores, 161 de sprites/materiais, 2107 de malhas/câmera, 73 de caminhos, 269 de viagens/interiores e 110 de salvamento. A amostragem de 0,125 unidade confirma toda área caminhável conectada, acesso a moradores/lojas e ponte, além de retornos sem reentrada imediata.
 - Scripts compilaram. ObliqueWorld e PixelGlow passaram nos dois estágios da compilação externa HLSL, sob as condições do registro da correção do shader magenta. Importação detectada no log do Editor não confirma a renderização em Play.
 - Prévias técnicas da entrada, mercado, capela e ponte foram inspecionadas. Correções visuais: placas na borda dos toldos e piso recortado para não ocultar o fosso. Conferência de GPU, profundidade, movimento e interações no Editor pendente conforme PERIFERIA_PIXEL_ART.md.
+
+## Fortaleza de pedra mais imponente
+
+- Castelo redesenhado com alvenaria cinza própria, muralha de 9,5 × 4,5, torres de 3,4 × 3,6 com altura de 8,02, torre de menagem, ameias, seteiras e estandartes. Grande portão em arco de pedra com madeira/ferro; tochas laterais.
+- Atlas original de 1447 × 1087 gerado com image_gen, importado sem redimensionamento/edição. Fortaleza, ponte/pátio e ícone global usam material próprio. Ícone com ameias mantém altura de 1,95 e mesma planta física no mapa mundial.
+- Compilação dos scripts passou. Passaram 249 verificações de PNGs/importadores, 161 de sprites/materiais, 2116 de malhas/câmera, 73 de caminhos, 269 de viagens/interiores e 110 de saves. Novas verificações conferem altura dominante, materiais de pedra, limites das cornijas e escala do ícone.
+- Prévias geral e junto ao portão foram inspecionadas fora da Unity. A geral usa enquadramento de apresentação; a próxima usa tamanho de câmera do jogo. A câmera do jogo mantém seu zoom. Entrada/retorno do castelo continuam automáticos; aparência real/GPU ainda precisa de Play.
