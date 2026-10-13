@@ -4,6 +4,7 @@ namespace DragonQuest.Combat
 {
     public enum AbilityEffect { PhysicalDamage, Heal, Defend, Cleanse, Revive, Taunt, Protect, MagicDamage, Prepare, Drain, Bind }
     public enum TargetRule { Enemy, Ally, Self, AllEnemies, AllAllies }
+    public enum AbilityMenuGroup { Direct, Magic, Summon }
 
     public sealed class AbilityDefinition
     {
@@ -18,10 +19,11 @@ namespace DragonQuest.Combat
         public bool UsesLimit { get; }
         public string SourceAbilityId { get; }
         public DamageElement Element { get; }
+        public AbilityMenuGroup MenuGroup { get; }
 
         public AbilityDefinition(string id, string name, string description, int mpCost, int power,
             AbilityEffect effect, TargetRule targets, int poisonTurns = 0, bool usesLimit = false, string sourceAbilityId = null,
-            DamageElement element = DamageElement.None)
+            DamageElement element = DamageElement.None, AbilityMenuGroup menuGroup = AbilityMenuGroup.Direct)
         {
             if (string.IsNullOrWhiteSpace(id)) throw new ArgumentException("Habilidade precisa de ID.", nameof(id));
             if (mpCost < 0 || power < 0) throw new ArgumentOutOfRangeException(nameof(mpCost));
@@ -64,6 +66,8 @@ namespace DragonQuest.Combat
             UsesLimit = usesLimit;
             SourceAbilityId = sourceAbilityId ?? id;
             Element = element;
+            if (!Enum.IsDefined(typeof(AbilityMenuGroup), menuGroup)) throw new ArgumentException("Grupo de menu desconhecido.");
+            MenuGroup = menuGroup;
         }
     }
 }

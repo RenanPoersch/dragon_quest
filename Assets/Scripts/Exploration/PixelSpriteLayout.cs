@@ -55,6 +55,9 @@ namespace DragonQuest.Exploration
         public static PixelFrame[] Read(int width, int height, byte[] alpha, bool stableWalkingAnchor = false)
             => ReadGrid(width, height, alpha, Columns, Rows, stableWalkingAnchor);
 
+        public static PixelFrame[] ReadSingle(int width, int height, byte[] alpha)
+            => ReadGrid(width, height, alpha, 1, 1, false);
+
         // Janelas em pixels do PNG original; o gerador preservou os desenhos fora da grade regular.
         // Recortamos apenas em memoria, mantendo a imagem inteira sem edicao ou redimensionamento.
         public static RectInt WorldIconRegion(int index)

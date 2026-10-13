@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using DragonQuest.Combat;
 using DragonQuest.Inventory;
 using DragonQuest.Progression;
@@ -9,259 +11,386 @@ namespace DragonQuest.Prototype
     public sealed class PrototypeBattleHud : MonoBehaviour
     {
         private PrototypeBattleController controller;
-        private Texture2D pixel;
-        private GUIStyle title;
-        private GUIStyle text;
-        private GUIStyle small;
-        private GUIStyle centered;
-        private GUIStyle button;
+        private PixelSpriteLibrary pixelSprites;
+        private PrototypeBattleSprites battleSprites;
+        private Texture2D pixel, hand, dragonPortrait, spiritPortrait, kingPortrait, background;
+        private GUIStyle title, text, small, centered, button, number;
+        private Rect handUv = new Rect(0, 0, 1, 1);
+        private float handAspect = 1;
+        private BattleSession observedBattle;
         private CombatantState observedActor;
         private AbilityDefinition selected;
-        private Vector2 actionsScroll;
-        private bool itemMode;
         private ConsumableDefinition selectedItem;
-        private Texture2D dragonPortrait;
-        private Texture2D spiritPortrait,kingPortrait;
-        private PixelSpriteLibrary pixelSprites;
+        private bool itemMode;
+        private AbilityMenuGroup menuGroup;
+        private List<BattleMenuCommand> rootCommands = new List<BattleMenuCommand>();
+        private List<AbilityDefinition> groupAbilities = new List<AbilityDefinition>();
+        private int rootIndex;
+        private int commandIndex, targetIndex;
+        private Vector2 actionsScroll, targetsScroll;
+        private readonly Dictionary<CombatantState, int> seenChanges = new Dictionary<CombatantState, int>();
+        private readonly List<FloatingNumber> numbers = new List<FloatingNumber>();
+        private sealed class FloatingNumber
+        {
+            public CombatantState Target;
+            public CombatVitalChange Change;
+            public float Started;
+            public int Lane;
+        }
 
         public void Initialize(PrototypeBattleController battleController, PixelSpriteLibrary sprites = null)
         { controller = battleController; pixelSprites = sprites; }
 
+        private void ObserveBattle()
+        {
+            BattleSession battle = controller.Session;
+            if (observedBattle != battle)
+            {
+                observedBattle = battle; observedActor = null; seenChanges.Clear(); numbers.Clear();
+                // Optional map-specific art; the menu and fighter anchors do not depend on the background.
+                background = Resources.Load<Texture2D>("BattleBackgrounds/" + controller.BattleLocationId);
+            }
+            if (observedActor != battle.CurrentActor)
+            {
+                observedActor = battle.CurrentActor; selected = null; selectedItem = null;
+                itemMode = false; menuGroup = AbilityMenuGroup.Direct; rootIndex = commandIndex = targetIndex = 0;
+                rootCommands = observedActor == null ? new List<BattleMenuCommand>() : BattleCommandMenu.Root(observedActor);
+                groupAbilities.Clear(); actionsScroll = targetsScroll = Vector2.zero;
+            }
+            foreach (CombatantState participant in battle.Combatants)
+            {
+                seenChanges.TryGetValue(participant, out int seen);
+                foreach (CombatVitalChange change in participant.VitalChanges)
+                {
+                    if (change.Sequence <= seen) continue;
+                    int lane = 0;
+                    foreach (FloatingNumber existing in numbers) if (existing.Target == participant) lane++;
+                    numbers.Add(new FloatingNumber { Target = participant, Change = change,
+                        Started = controller.IsPresentingAction ? controller.ActionImpactAt : Time.unscaledTime, Lane = lane % 3 });
+                    seenChanges[participant] = change.Sequence;
+                }
+            }
+            numbers.RemoveAll(n => Time.unscaledTime - n.Started > 1.4f);
+        }
+
+        private void Update()
+        {
+            if (controller == null || !controller.IsActive) { numbers.Clear(); return; }
+            ObserveBattle();
+            if (controller.IsPresentingAction) return;
+            Keyboard keys = Keyboard.current;
+            if (keys == null || !Application.isFocused) return;
+            if (observedBattle.Outcome != BattleOutcome.None)
+            {
+                if (keys.enterKey.wasPressedThisFrame) controller.ReturnToCity();
+                return;
+            }
+            if (observedActor == null || observedActor.Team != CombatTeam.Party) return;
+            if (keys.escapeKey.wasPressedThisFrame) { Cancel(); return; }
+            bool targeting = selected != null || selectedItem != null;
+            int count = targeting ? TargetRowCount() : CommandCount();
+            int delta = keys.downArrowKey.wasPressedThisFrame || keys.sKey.wasPressedThisFrame ? 1
+                : keys.upArrowKey.wasPressedThisFrame || keys.wKey.wasPressedThisFrame ? -1 : 0;
+            if (count > 0 && delta != 0)
+            {
+                if (targeting)
+                {
+                    targetIndex = (targetIndex + delta + count) % count;
+                    targetsScroll.y = BattleCommandMenu.KeepRowVisible(targetsScroll.y, targetIndex, count, 88);
+                }
+                else
+                {
+                    commandIndex = (commandIndex + delta + count) % count;
+                    actionsScroll.y = BattleCommandMenu.KeepRowVisible(actionsScroll.y, commandIndex, count, 120);
+                }
+            }
+            if (keys.enterKey.wasPressedThisFrame || keys.spaceKey.wasPressedThisFrame)
+            {
+                if (targeting && count > 0) ExecuteTarget(Targets()[targetIndex]);
+                else if (!targeting) ChooseCommand(commandIndex);
+            }
+        }
+
+        private bool InSubmenu => itemMode || menuGroup != AbilityMenuGroup.Direct;
+        private int CommandCount() => itemMode ? observedBattle.Inventory.Items.Count + 1
+            : InSubmenu ? groupAbilities.Count + 1 : rootCommands.Count;
+        private AbilityDefinition CommandAbility(int index) => InSubmenu
+            ? index < groupAbilities.Count ? groupAbilities[index] : null : rootCommands[index].Ability;
+        private string CommandLabel(int index)
+        {
+            if (InSubmenu && index == CommandCount() - 1) return "Voltar";
+            if (itemMode)
+            {
+                ItemStack stack = observedBattle.Inventory.Items[index];
+                return stack.Definition.Name + "  x" + stack.Quantity;
+            }
+            if (!InSubmenu) return rootCommands[index].Label;
+            AbilityDefinition ability = groupAbilities[index];
+            return ability.Name + (ability.MpCost > 0 ? "  " + ability.MpCost + " MP" : "");
+        }
+        private bool CommandEnabled(int index)
+        {
+            if (InSubmenu && index == CommandCount() - 1) return true;
+            if (itemMode) return observedBattle.Inventory.Items[index].Quantity > 0;
+            AbilityDefinition ability = CommandAbility(index);
+            return ability == null || observedActor.Mp >= ability.MpCost && (!ability.UsesLimit || observedActor.Limit.IsReady);
+        }
+        private string CommandDescription(int index)
+        {
+            if (InSubmenu && index == CommandCount() - 1) return "Voltar aos comandos.";
+            if (itemMode) return observedBattle.Inventory.Items[index].Definition.Description;
+            return InSubmenu ? groupAbilities[index].Description : rootCommands[index].Description;
+        }
+        private IReadOnlyList<CombatantState> Targets() => selectedItem != null ? observedBattle.GetValidItemTargets(selectedItem)
+            : observedBattle.GetValidTargets(selected);
+        private int TargetRowCount() => selected != null && (selected.Targets == TargetRule.AllEnemies || selected.Targets == TargetRule.AllAllies)
+            ? Mathf.Min(1, Targets().Count) : Targets().Count;
+        private void Cancel()
+        {
+            if (selected != null || selectedItem != null) { selected = null; selectedItem = null; targetIndex = 0; }
+            else
+            {
+                itemMode = false; menuGroup = AbilityMenuGroup.Direct; groupAbilities.Clear();
+                commandIndex = rootIndex;
+                actionsScroll = new Vector2(0, BattleCommandMenu.KeepRowVisible(0, commandIndex, CommandCount(), 120));
+            }
+        }
+        private void ChooseCommand(int index)
+        {
+            if (index < 0 || index >= CommandCount()) return;
+            commandIndex = index;
+            if (InSubmenu && index == CommandCount() - 1) { Cancel(); return; }
+            if (!CommandEnabled(index)) return;
+            if (!InSubmenu && rootCommands[index].Kind != BattleCommandKind.Ability)
+            {
+                BattleCommandKind kind = rootCommands[index].Kind;
+                rootIndex = index; itemMode = kind == BattleCommandKind.Items;
+                menuGroup = kind == BattleCommandKind.Magic ? AbilityMenuGroup.Magic
+                    : kind == BattleCommandKind.Summon ? AbilityMenuGroup.Summon : AbilityMenuGroup.Direct;
+                groupAbilities = itemMode ? new List<AbilityDefinition>() : BattleCommandMenu.Group(observedActor, menuGroup);
+                commandIndex = 0; actionsScroll = Vector2.zero; return;
+            }
+            if (itemMode)
+            {
+                ItemStack stack = observedBattle.Inventory.Items[index];
+                if (stack.Quantity > 0) selectedItem = stack.Definition;
+            }
+            else
+            {
+                AbilityDefinition ability = CommandAbility(index);
+                if (observedActor.Mp < ability.MpCost || ability.UsesLimit && !observedActor.Limit.IsReady) return;
+                if (ability.Targets == TargetRule.Self) controller.TryPlayerAction(ability, observedActor);
+                else selected = ability;
+            }
+            targetIndex = 0; targetsScroll = Vector2.zero;
+        }
+        private void ExecuteTarget(CombatantState target)
+        {
+            bool accepted = selectedItem != null ? controller.TryPlayerItem(selectedItem, target)
+                : controller.TryPlayerAction(selected, target);
+            if (accepted) { selected = null; selectedItem = null; }
+        }
+
         private void OnGUI()
         {
             if (controller == null || !controller.IsActive) return;
-            EnsureStyles();
-            RectBox(new Rect(0, 0, Screen.width, Screen.height), new Color(0.035f, 0.07f, 0.09f));
+            EnsureStyles(); ObserveBattle();
+            RectBox(new Rect(0, 0, Screen.width, Screen.height), new Color(.015f, .02f, .045f));
             float scale = Mathf.Min(Screen.width / 1280f, Screen.height / 720f);
             Matrix4x4 previous = GUI.matrix;
             GUI.matrix = Matrix4x4.TRS(new Vector3((Screen.width - 1280 * scale) / 2,
                 (Screen.height - 720 * scale) / 2, 0), Quaternion.identity, new Vector3(scale, scale, 1));
-
-            BattleSession battle = controller.Session;
-            CombatantState actor = battle.CurrentActor;
-            if (actor != observedActor)
-            { observedActor = actor; selected = null; selectedItem = null; itemMode = false; actionsScroll = Vector2.zero; }
-
-            Panel(new Rect(40, 20, 1200, 70));
-            GUI.Label(new Rect(58, 31, 650, 30), "BATALHA / " + controller.BattleTitle, title);
-            GUI.Label(new Rect(58, 62, 700, 23),controller.IsCastleEncounter&&controller.CastleRules.IsSpiritRevealed
-                ?"Derrote o espirito com o rei vivo. Golpes em area tambem atingem o rei."
-                :"Cada personagem age uma vez por rodada. Escolha uma acao e um alvo.", small);
-            GUI.Label(new Rect(880, 40, 340, 34), "RODADA " + battle.Round, centered);
-
-            int partyIndex = 0;
-            int enemyIndex = 0;
-            foreach (CombatantState participant in battle.Combatants)
+            DrawArena();
+            Panel(new Rect(20, 426, 1240, 60));
+            GUI.Label(new Rect(40, 438, 1200, 40), observedBattle.LastMessage, text);
+            // Equal halves: all commands/target choices stay on the left, party status stays on the right.
+            Panel(new Rect(20, 496, 620, 204)); Panel(new Rect(640, 496, 620, 204));
+            DrawPartyStatus();
+            if (controller.IsPresentingAction)
             {
-                if (participant.Team == CombatTeam.Enemy)
-                    DrawStatus(new Rect(880, 135 + enemyIndex++ * 155, 360, 120), participant, participant == actor);
-                else DrawStatus(new Rect(40, 105 + partyIndex++ * 124, 315, 120), participant, participant == actor);
+                GUI.Label(new Rect(40, 512, 570, 30), controller.PresentingActor.Definition.Name, title);
+                GUI.Label(new Rect(40, 556, 570, 55), controller.PresentingAbility.Name, text);
             }
-
-            RectBox(new Rect(385, 110, 455, 270), new Color(0.13f, 0.22f, 0.23f));
-            RectBox(new Rect(385, 315, 455, 65), new Color(0.27f, 0.34f, 0.29f));
-            int fighterIndex = 0;
-            int enemyFigureIndex = 0;
-            foreach (CombatantState participant in battle.Combatants)
+            else if (observedBattle.Outcome != BattleOutcome.None)
             {
-                Rect figure;
-                if (participant.Team == CombatTeam.Party)
-                {
-                    figure = new Rect(445 + (fighterIndex == 1 ? -20 : 0), 135 + fighterIndex * 68, 44, 67);
-                    fighterIndex++;
-                }
-                else if(controller.IsCastleEncounter) figure=participant.Id==CastleBattleRules.SpiritId?new Rect(715,138,110,112):new Rect(660,255,62,87);
-                else figure = controller.IsDragonEncounter ? new Rect(630,160,190,165) : new Rect(725, 145 + enemyFigureIndex++ * 115, 50, 77);
-                DrawFighter(figure, participant);
-                if (participant == actor)
-                    GUI.Label(new Rect(figure.x - 38, figure.y - 24, figure.width + 76, 24), "TURNO", centered);
+                GUI.Label(new Rect(40, 508, 575, 30), observedBattle.Outcome == BattleOutcome.Completed ? "DESFECHO"
+                    : observedBattle.Outcome == BattleOutcome.Victory ? "VITORIA!" : "DERROTA", title);
+                GUI.Label(new Rect(40, 546, 575, 75), controller.OutcomeDescription, text);
+                if (CommandButton(new Rect(40, 645, 565, 36), controller.ReturnLabel, true, true)) controller.ReturnToCity();
             }
-
-            foreach(CombatantState enemy in battle.Combatants)
-                if(enemy.Id==DragonProgress.EnemyId && enemy.IsAlive && enemy.IsCharging && battle.Outcome==BattleOutcome.None)
-                    GUI.Label(new Rect(392,350,440,32),"SOPRO NO PROXIMO TURNO DO DRAGAO! DEFENDA!",small);
-            if(controller.IsCastleEncounter&&battle.Outcome==BattleOutcome.None)
-                GUI.Label(new Rect(392,347,440,40),controller.CastleRules.Warning(battle),small);
-
-            Panel(new Rect(385, 394, 855, 66));
-            GUI.Label(new Rect(400, 402, 825, 51), battle.LastMessage, text);
-            Panel(new Rect(40, 480, 1200, 205));
-
-            if (battle.Outcome != BattleOutcome.None)
+            else if (observedActor != null && observedActor.Team == CombatTeam.Enemy)
             {
-                GUI.Label(new Rect(60, 495, 1155, 42), battle.Outcome==BattleOutcome.Completed?"DESFECHO"
-                    :battle.Outcome == BattleOutcome.Victory ? "VITORIA!" : "DERROTA", title);
-                GUI.Label(new Rect(60, 547, 1155, 45),controller.OutcomeDescription,text);
-                if (GUI.Button(new Rect(60, 615, 300, 48),controller.ReturnLabel,button)) controller.ReturnToCity();
+                GUI.Label(new Rect(40, 512, 570, 30), "Turno de " + observedActor.Definition.Name, title);
+                AbilityDefinition intention = EnemyAI.ChooseAbility(observedBattle);
+                GUI.Label(new Rect(40, 556, 570, 55), "Prepara " + (intention == null ? "sua acao" : intention.Name) + "...", text);
             }
-            else if (actor.Team == CombatTeam.Enemy)
-            {
-                GUI.Label(new Rect(60, 508, 1140, 35), "Turno do inimigo", title);
-                AbilityDefinition intention = EnemyAI.ChooseAbility(battle);
-                GUI.Label(new Rect(60, 560, 1140, 50), actor.Definition.Name + " prepara "
-                    + (intention == null ? "sua acao" : intention.Name) + "...", text);
-                if (!string.IsNullOrEmpty(controller.ErrorMessage))
-                    GUI.Label(new Rect(60, 620, 1140, 30), controller.ErrorMessage, small);
-            }
-            else DrawActions(actor, battle);
-
+            else if (observedActor != null) DrawActions();
+            GUI.Label(new Rect(30, 704, 900, 16), "↑ ↓ Selecionar    Enter Confirmar    Esc Voltar    /    Clique para escolher", small);
+            if (!string.IsNullOrEmpty(controller.ErrorMessage)) GUI.Label(new Rect(40, 668, 560, 25), controller.ErrorMessage, small);
             GUI.matrix = previous;
         }
 
-        private void DrawActions(CombatantState actor, BattleSession battle)
+        private void DrawArena()
         {
-            GUI.Label(new Rect(60, 490, 290, 30), "Turno de " + actor.Definition.Name, title);
-            if (GUI.Button(new Rect(680, 489, 230, 29), (!itemMode ? "> " : "") + "Habilidades", button))
-            { itemMode = false; selectedItem = null; actionsScroll = Vector2.zero; }
-            if (GUI.Button(new Rect(925, 489, 230, 29), (itemMode ? "> " : "") + "Itens", button))
-            { itemMode = true; selected = null; actionsScroll = Vector2.zero; }
-            if (itemMode) { DrawItemActions(battle); return; }
-            actionsScroll = GUI.BeginScrollView(new Rect(60, 525, 275, 145), actionsScroll,
-                new Rect(0, 0, 250, actor.Definition.Abilities.Count * 32));
-            for (int i = 0; i < actor.Definition.Abilities.Count; i++)
+            Rect arena = new Rect(20, 20, 1240, 396);
+            Color sky = new Color(.10f, .17f, .20f), ground = new Color(.18f, .23f, .18f);
+            switch (controller.BattleLocationId)
             {
-                AbilityDefinition ability = actor.Definition.Abilities[i];
-                string label = ability.Name + (ability.MpCost > 0 ? "  /  " + ability.MpCost + " MP" : string.Empty);
-                if (selected == ability) label = "> " + label;
-                bool previousEnabled = GUI.enabled;
-                GUI.enabled = actor.Mp >= ability.MpCost && (!ability.UsesLimit || actor.Limit.IsReady);
-                bool clicked = GUI.Button(new Rect(0, i * 32, 250, 28), label, button);
-                GUI.enabled = previousEnabled;
-                if (!clicked) continue;
-                if (ability.Targets == TargetRule.Self)
-                {
-                    if (controller.TryPlayerAction(ability, actor)) selected = null;
-                    GUI.EndScrollView();
-                    return;
-                }
-                selected = ability;
+                case PrototypeTravel.Volcano: sky = new Color(.20f, .08f, .06f); ground = new Color(.28f, .12f, .08f); break;
+                case PrototypeTravel.Castle: sky = new Color(.10f, .09f, .17f); ground = new Color(.20f, .19f, .25f); break;
+                case PrototypeTravel.EastForest: case PrototypeTravel.WestForest: sky = new Color(.06f, .15f, .12f); ground = new Color(.13f, .23f, .14f); break;
+                case PrototypeTravel.Ruins: sky = new Color(.17f, .16f, .13f); ground = new Color(.25f, .23f, .18f); break;
             }
-            GUI.EndScrollView();
-
-            GUI.Label(new Rect(350, 490, 295, 30), selected == null ? "Escolha uma acao" : "Escolha o alvo", title);
-            if (selected != null)
+            RectBox(arena, sky); RectBox(new Rect(20, 240, 1240, 176), ground);
+            if (background != null) GUI.DrawTexture(arena, background, ScaleMode.ScaleAndCrop);
+            GUI.Label(new Rect(40, 32, 950, 32), controller.BattleTitle, title);
+            GUI.Label(new Rect(1060, 32, 180, 32), "RODADA " + observedBattle.Round, centered);
+            IReadOnlyList<CombatantState> targets = Targets();
+            foreach (CombatantState participant in observedBattle.Combatants)
             {
-                var targets = battle.GetValidTargets(selected);
-                if ((selected.Targets == TargetRule.AllEnemies || selected.Targets == TargetRule.AllAllies) && targets.Count > 0)
-                {
-                    string group = selected.Targets == TargetRule.AllEnemies ? "Todos os inimigos" : "Todos os aliados validos";
-                    if (GUI.Button(new Rect(350, 530, 290, 38), group + " (" + targets.Count + ")", button))
-                    {
-                        if (controller.TryPlayerAction(selected, targets[0])) selected = null;
-                        return;
-                    }
-                }
-                else for (int i = 0; i < targets.Count; i++)
-                {
-                    CombatantState target = targets[i];
-                    if (GUI.Button(new Rect(350, 530 + i * 46, 290, 38), target.Definition.Name, button))
-                    {
-                        if (controller.TryPlayerAction(selected, target)) selected = null;
-                        return;
-                    }
-                }
-                if (targets.Count == 0)
-                    GUI.Label(new Rect(350, 533, 290, 105), NoTargetsMessage(selected), text);
-                GUI.Label(new Rect(680, 525, 520, 90), selected.Description, text);
-                if (GUI.Button(new Rect(680, 625, 180, 38), "Cancelar selecao", button)) selected = null;
-            }
-            else GUI.Label(new Rect(680, 533, 520, 95), "As materias equipadas concedem suas acoes. Ataque e Defender estao sempre disponiveis. Limit Break exige 100% e guarda a carga entre batalhas.", text);
-
-            if (!string.IsNullOrEmpty(controller.ErrorMessage))
-                GUI.Label(new Rect(680, 604, 520, 20), controller.ErrorMessage, small);
-        }
-
-        private void DrawItemActions(BattleSession battle)
-        {
-            actionsScroll = GUI.BeginScrollView(new Rect(60, 525, 275, 145), actionsScroll,
-                new Rect(0, 0, 250, battle.Inventory.Items.Count * 35));
-            for (int i = 0; i < battle.Inventory.Items.Count; i++)
-            {
-                ItemStack stack = battle.Inventory.Items[i];
-                bool enabled = GUI.enabled;
-                GUI.enabled = stack.Quantity > 0;
-                if (GUI.Button(new Rect(0, i * 35, 250, 31), (selectedItem == stack.Definition ? "> " : "")
-                    + stack.Definition.Name + " / x" + stack.Quantity, button)) selectedItem = stack.Definition;
-                GUI.enabled = enabled;
-            }
-            GUI.EndScrollView();
-            GUI.Label(new Rect(350, 490, 295, 30), selectedItem == null ? "Escolha um item" : "Escolha o alvo", title);
-            if (selectedItem != null)
-            {
-                var targets = battle.GetValidItemTargets(selectedItem);
+                Rect figure = FigureRect(participant);
+                RectBox(new Rect(figure.x - 8, figure.yMax - 8, figure.width + 16, 10), new Color(0, 0, 0, .25f));
+                DrawFighter(figure, participant);
+                if (participant == (controller.IsPresentingAction ? controller.PresentingActor : observedActor))
+                    DrawTurnArrow(figure.center.x, figure.y - 30 + Mathf.Sin(Time.unscaledTime * 5) * 3);
+                bool group = selected != null && (selected.Targets == TargetRule.AllEnemies || selected.Targets == TargetRule.AllAllies);
                 for (int i = 0; i < targets.Count; i++)
-                    if (GUI.Button(new Rect(350, 530 + i * 46, 290, 38), targets[i].Definition.Name, button))
-                    {
-                        if (controller.TryPlayerItem(selectedItem, targets[i])) selectedItem = null;
-                        return;
-                    }
-                if (targets.Count == 0) GUI.Label(new Rect(350, 533, 290, 105), NoItemTargetsMessage(selectedItem), text);
-                GUI.Label(new Rect(680, 525, 520, 90), selectedItem.Description, text);
-                if (GUI.Button(new Rect(680, 625, 180, 38), "Cancelar selecao", button)) selectedItem = null;
+                {
+                    if (targets[i] != participant) continue;
+                    if (group || i == targetIndex) DrawHand(new Rect(figure.x - 60, figure.center.y - 18, 56, 36));
+                    if (GUI.Button(figure, GUIContent.none, GUIStyle.none)) { targetIndex = i; ExecuteTarget(participant); }
+                }
+                GUI.Label(new Rect(figure.center.x - 130, figure.yMax + 6, 260, 26), participant.Definition.Name, centered);
+                if (participant.IsCharging) GUI.Label(new Rect(figure.center.x - 140, figure.y - 53, 280, 24), "PREPARANDO ATAQUE!", centered);
             }
-            else GUI.Label(new Rect(680, 533, 520, 95), "Escolha um item e depois um aliado valido. Cada uso gasta uma unidade e seu turno; nao gasta MP ou Limit.", text);
-            if (!string.IsNullOrEmpty(controller.ErrorMessage)) GUI.Label(new Rect(680, 604, 520, 20), controller.ErrorMessage, small);
+            foreach (FloatingNumber floating in numbers)
+            {
+                Rect figure = FigureRect(floating.Target);
+                float elapsed = Time.unscaledTime - floating.Started;
+                if (elapsed < 0) continue;
+                Color color = floating.Change.Amount > 0 ? new Color(.30f, 1f, .40f)
+                    : floating.Change.IsCritical ? new Color(1f, .88f, .10f) : Color.white;
+                color.a = Mathf.Clamp01((1.4f - elapsed) / .35f);
+                string label = (floating.Change.Amount > 0 ? "+" : "") + System.Math.Abs(floating.Change.Amount)
+                    + (floating.Change.IsMp ? " MP" : "");
+                Rect rect = new Rect(figure.center.x - 90 + floating.Lane * 16, figure.y - 10 - elapsed * 40 - floating.Lane * 22, 180, 45);
+                number.normal.textColor = new Color(0, 0, 0, color.a);
+                GUI.Label(new Rect(rect.x + 2, rect.y + 2, rect.width, rect.height), label, number);
+                number.normal.textColor = color; GUI.Label(rect, label, number);
+            }
+            if (controller.IsCastleEncounter && observedBattle.Outcome == BattleOutcome.None)
+                GUI.Label(new Rect(40, 379, 1180, 30), controller.CastleRules.Warning(observedBattle), small);
         }
 
-        private static string NoItemTargetsMessage(ConsumableDefinition item)
+        private Rect FigureRect(CombatantState participant)
         {
-            if (item.Effect == ItemEffect.RestoreHp) return "Nenhum aliado vivo e ferido para receber pocao.";
-            if (item.Effect == ItemEffect.RestoreMp) return "Nenhum aliado vivo com MP abaixo do maximo.";
-            if (item.Effect == ItemEffect.CleansePoison) return "Nenhum aliado vivo envenenado.";
-            return "Nenhum aliado derrotado para reviver.";
+            int index = 0;
+            foreach (CombatantState other in observedBattle.Combatants)
+            { if (other == participant) break; if (other.Team == participant.Team) index++; }
+            if (participant.Team == CombatTeam.Party) return new Rect(925 + (index % 2) * 60, 103 + index * 83, 64, 90);
+            if (participant.Id == DragonProgress.EnemyId) return new Rect(160, 110, 350, 250);
+            if (participant.Id == CastleBattleRules.SpiritId) return new Rect(365, 104, 170, 175);
+            return new Rect(260 + index * 145, 155 + index * 72, 80, 110);
         }
 
-        private static string NoTargetsMessage(AbilityDefinition ability)
+        private void DrawActions()
         {
-            if (ability.Effect == AbilityEffect.Heal) return "Nenhum aliado vivo e ferido para curar.";
-            if (ability.Effect == AbilityEffect.Cleanse) return "Nenhum aliado vivo com veneno para purificar.";
-            if (ability.Effect == AbilityEffect.Revive) return "Nenhum aliado derrotado para reviver.";
-            return "Nenhum alvo disponivel para esta habilidade.";
+            bool targeting = selected != null || selectedItem != null;
+            GUI.Label(new Rect(40, 506, 555, 30), observedActor.Definition.Name + " / " +
+                (itemMode ? "Itens" : menuGroup == AbilityMenuGroup.Magic ? "Magic" : menuGroup == AbilityMenuGroup.Summon ? "Summon" : "Comandos"), title);
+            actionsScroll = GUI.BeginScrollView(new Rect(38, 542, 280, 120), actionsScroll, new Rect(0, 0, 253, CommandCount() * 36));
+            for (int i = 0; i < CommandCount(); i++)
+            {
+                if (CommandButton(new Rect(0, i * 36, 253, 34), CommandLabel(i), !targeting && i == commandIndex,
+                    CommandEnabled(i) && !targeting)) { ChooseCommand(i); break; }
+            }
+            GUI.EndScrollView();
+            if (!targeting)
+            {
+                string description = CommandDescription(commandIndex);
+                GUI.Label(new Rect(337, 546, 278, 114), description, text);
+                return;
+            }
+            IReadOnlyList<CombatantState> targets = Targets();
+            targetIndex = Mathf.Clamp(targetIndex, 0, Mathf.Max(0, targets.Count - 1));
+            GUI.Label(new Rect(337, 510, 278, 30), "Escolha o alvo", text);
+            bool group = selected != null && (selected.Targets == TargetRule.AllEnemies || selected.Targets == TargetRule.AllAllies);
+            targetsScroll = GUI.BeginScrollView(new Rect(333, 542, 280, 88), targetsScroll, new Rect(0, 0, 253, (group ? 1 : targets.Count) * 36));
+            for (int i = 0; i < (group ? Mathf.Min(1, targets.Count) : targets.Count); i++)
+                if (CommandButton(new Rect(0, i * 36, 253, 34), group ? "Todos os alvos (" + targets.Count + ")" : targets[i].Definition.Name,
+                    group || targetIndex == i, true)) { targetIndex = i; ExecuteTarget(targets[i]); break; }
+            GUI.EndScrollView();
+            if (targets.Count == 0) GUI.Label(new Rect(337, 546, 270, 78), "Nenhum alvo valido para esta acao.", small);
+            if (CommandButton(new Rect(337, 632, 260, 32), "Voltar", false, true)) Cancel();
         }
 
-        private void DrawStatus(Rect rect, CombatantState participant, bool active)
+        private void DrawPartyStatus()
         {
-            Panel(rect);
-            if (active) RectBox(new Rect(rect.x, rect.y, 4, rect.height), new Color(0.95f, 0.8f, 0.4f));
-            DrawFighter(new Rect(rect.x + 14, rect.y + 26, 42, 66), participant);
-            GUI.Label(new Rect(rect.x + 70, rect.y + 8, rect.width - 80, 25), participant.Definition.Name, text);
-            GUI.Label(new Rect(rect.x + 70, rect.y + 33, rect.width - 80, 20), participant.Definition.Role
-                + (!participant.IsAlive ? " / DERROTADO" : string.Empty), small);
-            DrawBar(new Rect(rect.x + 70, rect.y + 49, rect.width - 86, 16), participant.Hp,
-                participant.Definition.MaxHp, new Color(0.26f, 0.66f, 0.44f), "HP");
-            DrawBar(new Rect(rect.x + 70, rect.y + 68, rect.width - 86, 15), participant.Mp,
-                participant.Definition.MaxMp, new Color(0.26f, 0.48f, 0.78f), "MP");
-            if (participant.Team == CombatTeam.Party)
-                DrawBar(new Rect(rect.x + 70, rect.y + 85, rect.width - 86, 15), participant.Limit.Charge,
-                    100, new Color(0.81f, 0.38f, 0.76f), "LIMIT");
-            else GUI.Label(new Rect(rect.x + 70, rect.y + 84, rect.width - 80, 20), participant.Definition.Affinities.Description, small);
-            string conditions = participant.IsCharging ? (participant.Id==CastleBattleRules.TyrantId?"METEORO! ":"PREPARANDO SOPRO! ") : participant.IsDefending ? "DEFESA " : string.Empty;
-            if(participant.BoundActions>0) conditions+="CORRENTES ";
-            if (participant.PoisonTurns > 0) conditions += "VENENO " + participant.PoisonTurns + " ";
-            if (participant.TauntTurns > 0) conditions += "PROVOCADO " + participant.TauntTurns + " ";
-            if (participant.ProtectedBy != null) conditions += "PROTEGIDO";
-            GUI.Label(new Rect(rect.x + 70, rect.y + 103, rect.width - 80, 15), conditions, small);
+            GUI.Label(new Rect(665, 508, 190, 28), "PERSONAGEM", small);
+            GUI.Label(new Rect(850, 508, 170, 28), "HP", centered);
+            GUI.Label(new Rect(1030, 508, 120, 28), "MP", centered);
+            GUI.Label(new Rect(1155, 508, 80, 28), "LIMIT", centered);
+            int i = 0;
+            foreach (CombatantState participant in observedBattle.Combatants)
+            {
+                if (participant.Team != CombatTeam.Party) continue;
+                float y = 544 + i++ * 48;
+                if (participant == observedActor) RectBox(new Rect(650, y - 2, 600, 45), new Color(.16f, .29f, .65f));
+                GUI.Label(new Rect(665, y, 180, 25), participant.Definition.Name, text);
+                string condition = !participant.IsAlive ? "DERROTADO" : participant.IsDefending ? "DEFESA" : participant.PoisonTurns > 0 ? "VENENO" : participant.BoundActions > 0 ? "CORRENTES" : participant.ProtectedBy != null ? "PROTEGIDO" : "";
+                GUI.Label(new Rect(665, y + 23, 180, 18), condition, small);
+                DrawBar(new Rect(850, y + 4, 170, 25), participant.Hp, participant.Definition.MaxHp, new Color(.18f, .60f, .47f));
+                DrawBar(new Rect(1030, y + 4, 120, 25), participant.Mp, participant.Definition.MaxMp, new Color(.20f, .45f, .82f));
+                DrawBar(new Rect(1160, y + 4, 75, 25), participant.Limit.Charge, 100, new Color(.62f, .28f, .75f));
+            }
         }
 
-        private void DrawBar(Rect rect, int value, int maximum, Color color, string label)
+        private void DrawBar(Rect rect, int value, int maximum, Color color)
         {
-            RectBox(rect, new Color(0.06f, 0.10f, 0.12f));
-            float fraction = maximum == 0 ? 0 : Mathf.Clamp01((float)value / maximum);
-            RectBox(new Rect(rect.x, rect.y, rect.width * fraction, rect.height), color);
-            GUI.Label(rect, label + " " + value + "/" + maximum, centered);
+            RectBox(rect, new Color(.015f, .035f, .14f));
+            RectBox(new Rect(rect.x, rect.y, rect.width * (maximum == 0 ? 0 : Mathf.Clamp01((float)value / maximum)), rect.height), color);
+            GUI.Label(rect, value + "/" + maximum, centered);
         }
-
+        private bool CommandButton(Rect rect, string label, bool focused, bool enabled)
+        {
+            bool previous = GUI.enabled; GUI.enabled = previous && enabled;
+            bool clicked = GUI.Button(rect, label, button); GUI.enabled = previous;
+            if (focused) DrawHand(new Rect(rect.x + 2, rect.center.y - 15, 44, 30));
+            return clicked;
+        }
+        private void DrawTurnArrow(float x, float y)
+        {
+            RectBox(new Rect(x - 7, y, 14, 12), Color.white);
+            for (int row = 0; row < 7; row++) RectBox(new Rect(x - 13 + row * 2, y + 12 + row * 2, 26 - row * 4, 2), Color.white);
+        }
         private void DrawFighter(Rect rect, CombatantState participant)
         {
+            if (participant.Team == CombatTeam.Party && battleSprites != null)
+            {
+                bool attacking = controller.IsPresentingAction && controller.PresentingActor == participant;
+                int pose = attacking ? controller.AttackPose : 0;
+                if (battleSprites.Draw(rect, participant.Id, pose, participant.IsAlive ? Color.white : new Color(.4f, .4f, .4f),
+                    attacking ? controller.PresentingAbility : null)) return;
+            }
+            if (pixelSprites != null && participant.Id == DragonProgress.EnemyId)
+            {
+                pixelSprites.Atlas("Dragon").Draw(rect, 0,
+                    participant.IsAlive ? Color.white : new Color(.4f, .4f, .4f)); return;
+            }
             if (pixelSprites != null && participant.Team == CombatTeam.Party)
             {
-                pixelSprites.Party(participant.Id).Draw(rect, (int)PixelDirection.Right,
+                pixelSprites.Party(participant.Id).Draw(rect, (int)PixelDirection.Left,
                     participant.IsAlive ? Color.white : new Color(0.4f, 0.4f, 0.4f)); return;
             }
             if (pixelSprites != null && participant.Team == CombatTeam.Enemy && participant.Id != DragonProgress.EnemyId && participant.Id != CastleBattleRules.SpiritId)
             {
                 pixelSprites.Atlas("NpcRoster").Draw(rect, participant.Id == CastleBattleRules.TyrantId ? 11 : 10,
                     participant.IsAlive ? Color.white : new Color(0.4f, 0.4f, 0.4f)); return;
+            }
+            if (pixelSprites != null && participant.Id == DragonProgress.EnemyId)
+            {
+                pixelSprites.Atlas("Dragon").Draw(rect, 0,
+                    participant.IsAlive ? Color.white : new Color(0.4f, 0.4f, 0.4f), true); return;
             }
             Texture2D portrait=participant.Id==DragonProgress.EnemyId?dragonPortrait:participant.Id==CastleBattleRules.SpiritId?spiritPortrait:participant.Id==CastleBattleRules.TyrantId?kingPortrait:null;
             if(portrait!=null)
@@ -280,38 +409,65 @@ namespace DragonQuest.Prototype
             RectBox(new Rect(rect.x + rect.width * 0.58f, rect.y + rect.height * 0.78f, rect.width * 0.3f, rect.height * 0.22f), clothes);
         }
 
-        private void Panel(Rect rect) => RectBox(rect, new Color(0.085f, 0.14f, 0.18f));
 
+        private void Panel(Rect rect)
+        {
+            RectBox(rect, new Color(.06f, .07f, .18f));
+            RectBox(new Rect(rect.x + 2, rect.y + 2, rect.width - 4, rect.height - 4), new Color(.82f, .86f, .97f));
+            Rect inner = new Rect(rect.x + 5, rect.y + 5, rect.width - 10, rect.height - 10);
+            for (int row = 0; row < 24; row++) RectBox(new Rect(inner.x, inner.y + inner.height * row / 24, inner.width, inner.height / 24 + 1),
+                Color.Lerp(new Color(.09f, .20f, .58f), new Color(.015f, .04f, .23f), row / 23f));
+        }
         private void RectBox(Rect rect, Color color)
         {
-            Color previous = GUI.color;
-            GUI.color = color;
-            GUI.DrawTexture(rect, pixel);
-            GUI.color = previous;
+            Color previous = GUI.color; GUI.color = color; GUI.DrawTexture(rect, pixel); GUI.color = previous;
         }
-
         private void EnsureStyles()
         {
             if (pixel != null) return;
-            pixel = new Texture2D(1, 1);
-            pixel.SetPixel(0, 0, Color.white);
-            pixel.Apply();
-            dragonPortrait=Resources.Load<Texture2D>("DragonPortrait");
-            spiritPortrait=Resources.Load<Texture2D>("SpiritPortrait");kingPortrait=Resources.Load<Texture2D>("KingPortrait");
+            pixel = new Texture2D(1, 1); pixel.SetPixel(0, 0, Color.white); pixel.Apply();
+            battleSprites = new PrototypeBattleSprites();
+            dragonPortrait = Resources.Load<Texture2D>("DragonPortrait");
+            spiritPortrait = Resources.Load<Texture2D>("SpiritPortrait"); kingPortrait = Resources.Load<Texture2D>("KingPortrait");
             title = new GUIStyle(GUI.skin.label) { fontSize = 21, fontStyle = FontStyle.Bold };
-            text = new GUIStyle(GUI.skin.label) { fontSize = 17, wordWrap = true };
+            text = new GUIStyle(GUI.skin.label) { fontSize = 18, wordWrap = true };
             small = new GUIStyle(GUI.skin.label) { fontSize = 13, wordWrap = true };
-            centered = new GUIStyle(GUI.skin.label) { fontSize = 13, alignment = TextAnchor.MiddleCenter };
-            button = new GUIStyle(GUI.skin.button) { fontSize = 14 };
-            title.normal.textColor = new Color(0.96f, 0.81f, 0.48f);
-            text.normal.textColor = Color.white;
-            small.normal.textColor = new Color(0.78f, 0.84f, 0.84f);
-            centered.normal.textColor = Color.white;
+            centered = new GUIStyle(GUI.skin.label) { fontSize = 17, alignment = TextAnchor.MiddleCenter };
+            number = new GUIStyle(centered) { fontSize = 30, fontStyle = FontStyle.Bold };
+            button = new GUIStyle(GUI.skin.label) { fontSize = 17, alignment = TextAnchor.MiddleLeft, padding = new RectOffset(50, 4, 2, 2) };
+            foreach (GUIStyle style in new[] { title, text, small, centered, button })
+            { style.normal.textColor = Color.white; style.hover.textColor = Color.white; style.active.textColor = Color.white; }
+            LoadHandSprite();
+        }
+        private void LoadHandSprite()
+        {
+            hand = Resources.Load<Texture2D>("PixelArt/BattleGloveCursor");
+            if (hand == null) return;
+            // Keep the original PNG intact; trim transparent margins only through drawing UVs.
+            Color32[] pixels = hand.GetPixels32();
+            int left = hand.width, right = -1, bottom = hand.height, top = -1;
+            for (int y = 0; y < hand.height; y++) for (int x = 0; x < hand.width; x++)
+            {
+                if (pixels[y * hand.width + x].a <= 16) continue;
+                left = Mathf.Min(left, x); right = Mathf.Max(right, x);
+                bottom = Mathf.Min(bottom, y); top = Mathf.Max(top, y);
+            }
+            if (right < left || top < bottom) return;
+            int width = right - left + 1, height = top - bottom + 1;
+            handUv = new Rect((float)left / hand.width, (float)bottom / hand.height,
+                (float)width / hand.width, (float)height / hand.height);
+            handAspect = (float)width / height;
+        }
+
+        private void DrawHand(Rect area)
+        {
+            if (hand == null) return;
+            float width = Mathf.Min(area.width, area.height * handAspect);
+            float height = width / handAspect;
+            GUI.DrawTextureWithTexCoords(new Rect(area.x, area.center.y - height / 2, width, height), hand, handUv, true);
         }
 
         private void OnDestroy()
-        {
-            if (pixel != null) Destroy(pixel);
-        }
+        { if (pixel != null) Destroy(pixel); }
     }
 }

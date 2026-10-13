@@ -17,12 +17,14 @@ namespace DragonQuest.Exploration
             bool walkingSheet = resource == "ArenWalk" || resource == "ArenDiagonalWalk";
             bool chest = resource == "ChestStates";
             bool worldPoi = resource == "WorldPoiSprites";
-            var frames = worldPoi ? PixelSpriteLayout.ReadWorldIcons(Texture.width, Texture.height, alpha)
+            bool dragon = resource == "Dragon";
+            var frames = dragon ? PixelSpriteLayout.ReadSingle(Texture.width, Texture.height, alpha)
+                : worldPoi ? PixelSpriteLayout.ReadWorldIcons(Texture.width, Texture.height, alpha)
                 : chest ? PixelSpriteLayout.ReadPropPair(Texture.width, Texture.height, alpha)
                 : PixelSpriteLayout.Read(Texture.width, Texture.height, alpha, walkingSheet);
             int maxHeight = 1; foreach (var frame in frames) maxHeight = Math.Max(maxHeight, frame.Height);
             // Mesma escala nos dois estados; abrir a tampa nao redimensiona a caixa.
-            float pixelsPerUnit = chest ? frames[0].Width / 1.1f : maxHeight / ((worldPoi ? 1.95f : 1.45f) * ObliqueProjection.HeightScale);
+            float pixelsPerUnit = chest ? frames[0].Width / 1.1f : maxHeight / ((dragon ? 3.8f : worldPoi ? 1.95f : 1.45f) * ObliqueProjection.HeightScale);
             Sprites = new Sprite[frames.Length];
             for (int i = 0; i < frames.Length; i++)
             {
@@ -31,12 +33,13 @@ namespace DragonQuest.Exploration
                 Sprites[i].name = resource + " / " + i;
             }
         }
-        public void Draw(Rect area, int frame, Color tint)
+        public void Draw(Rect area, int frame, Color tint, bool flipHorizontal = false)
         {
             Rect source = Sprites[frame].rect;
             float scale = Math.Min(area.width / source.width, area.height / source.height);
             var destination = new Rect(area.center.x - source.width * scale / 2, area.yMax - source.height * scale, source.width * scale, source.height * scale);
             var uv = new Rect(source.x / Texture.width, source.y / Texture.height, source.width / Texture.width, source.height / Texture.height);
+            if (flipHorizontal) uv = new Rect(uv.xMax, uv.y, -uv.width, uv.height);
             Color previous = GUI.color; GUI.color = tint; GUI.DrawTextureWithTexCoords(destination, Texture, uv, true); GUI.color = previous;
         }
         public void Dispose() { foreach (var sprite in Sprites) UnityEngine.Object.Destroy(sprite); }

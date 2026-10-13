@@ -115,6 +115,7 @@ namespace DragonQuest.Prototype
             locations.Initialize(mapRoots, player.GetComponent<PlayerMovement>(), cameraFollow, navigation,
                 () => dialogue.IsOpen || battle.IsBusy);
             gameObject.AddComponent<PrototypeShopHud>().Initialize(shops);
+            battle.SetLocationProvider(() => locations.LocationId);
             gameObject.AddComponent<PrototypeBattleHud>().Initialize(battle, scenery.PixelSprites);
             gameObject.AddComponent<PrototypeMateriaHud>().Initialize(battle, secrets);
             PlayerInteraction interaction = player.AddComponent<PlayerInteraction>();

@@ -35,6 +35,9 @@ namespace DragonQuest.Prototype
             : IsDragonEncounter||IsCastleEncounter ? "Sua equipe foi vencida. Acordara na hospedaria; Limit e progresso serao mantidos."
             : "Sua equipe foi vencida. Reorganize-se para tentar novamente.";
 
+        private System.Func<string> currentLocation = () => PrototypeTravel.World;
+        public string BattleLocationId { get; private set; } = PrototypeTravel.World;
+        public void SetLocationProvider(System.Func<string> provider) => currentLocation = provider ?? (() => PrototypeTravel.World);
         public bool IsActive { get; private set; }
         public bool IsMenuOpen { get; private set; }
         public bool IsBusy => HasEnded || IsActive || IsMenuOpen || otherMenuOpen();
@@ -43,6 +46,13 @@ namespace DragonQuest.Prototype
         public string ErrorMessage { get; private set; }
         public BattleRewards Rewards { get; private set; }
         public string RewardMessage { get; private set; }
+        public CombatantState PresentingActor { get; private set; }
+        public AbilityDefinition PresentingAbility { get; private set; }
+        public float ActionStartedAt { get; private set; }
+        public bool IsPresentingAction => IsActive && PresentingActor != null && Time.unscaledTime < ActionStartedAt + 0.72f;
+        public float ActionImpactAt => ActionStartedAt + 0.18f;
+        public int AttackPose => Time.unscaledTime < ActionImpactAt ? 1
+            : Time.unscaledTime < ActionStartedAt + 0.44f ? 2 : 3;
 
         public void Initialize(PlayerMovement hero, DialogueController dialogueController, ExplorationProgress progress,
             System.Func<bool> externalMenuOpen = null, DragonProgress dragonProgress = null,
@@ -84,6 +94,8 @@ namespace DragonQuest.Prototype
         private void StartEncounter(BattleSession encounter, bool dragonEncounter)
         {
             Session = encounter; IsDragonEncounter = dragonEncounter;
+            PresentingActor = null; PresentingAbility = null;
+            BattleLocationId = currentLocation();
             notifiedCompletion = false;
             IsActive = true;
             pendingEnemy = null;
@@ -100,16 +112,22 @@ namespace DragonQuest.Prototype
 
         public bool TryPlayerAction(AbilityDefinition ability, CombatantState target)
         {
-            if (!IsActive || Session.CurrentActor == null || Session.CurrentActor.Team != CombatTeam.Party) return false;
-            bool accepted = Session.TryAct(Session.CurrentActor, ability, target, out string message);
+            if (!IsActive || IsPresentingAction || Session.CurrentActor == null || Session.CurrentActor.Team != CombatTeam.Party) return false;
+            CombatantState actor = Session.CurrentActor;
+            bool accepted = Session.TryAct(actor, ability, target, out string message);
             ErrorMessage = accepted ? string.Empty : message;
-            if (accepted) AwardIfComplete();
+            if (accepted)
+            {
+                if (PrototypeBattleSprites.HasAnimation(actor.Id, ability))
+                { PresentingActor = actor; PresentingAbility = ability; ActionStartedAt = Time.unscaledTime; }
+                AwardIfComplete();
+            }
             return accepted;
         }
 
         public bool TryPlayerItem(ConsumableDefinition item, CombatantState target)
         {
-            if (!IsActive || Session.CurrentActor == null || Session.CurrentActor.Team != CombatTeam.Party) return false;
+            if (!IsActive || IsPresentingAction || Session.CurrentActor == null || Session.CurrentActor.Team != CombatTeam.Party) return false;
             bool accepted = Session.TryUseItem(Session.CurrentActor, item, target, out string message);
             ErrorMessage = accepted ? string.Empty : message;
             if (accepted) AwardIfComplete();
@@ -134,6 +152,7 @@ namespace DragonQuest.Prototype
 
         private void Update()
         {
+            if (IsPresentingAction) return;
             Keyboard keyboard = Keyboard.current;
             if (!HasEnded && !IsActive && !otherMenuOpen() && !dialogue.IsOpen && keyboard != null && Application.isFocused)
             {
@@ -160,7 +179,7 @@ namespace DragonQuest.Prototype
 
         public void ReturnToCity()
         {
-            if (!IsActive || Session.Outcome == BattleOutcome.None) return;
+            if (!IsActive || IsPresentingAction || Session.Outcome == BattleOutcome.None) return;
             if(IsCastleEncounter&&Session.Outcome==BattleOutcome.Completed)
             {
                 IsActive=false;HasEnded=true;pendingEnemy=null;movement.SetMovementEnabled(false);

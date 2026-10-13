@@ -1,5 +1,6 @@
 using System;
 using DragonQuest.Combat;
+using DragonQuest.Equipment;
 using DragonQuest.Prototype;
 
 internal static class BattleChecks
@@ -163,10 +164,107 @@ internal static class BattleChecks
         Assert(Find(fresh, "aren").Hp == 100 && Find(fresh, "aren").Mp == 20, "Nova batalha deve iniciar com estado independente.");
     }
 
+    private static void CheckVitalFeedback()
+    {
+        BattleSession battle = CreateBasicEncounter();
+        CombatantState guard = Find(battle, "guard");
+        Act(battle, Attack, guard);
+        Assert(guard.VitalChanges.Count == 1 && guard.VitalChanges[0].Amount == -14,
+            "Feedback deve registrar dano real no alvo atingido.");
+        Assert(!guard.VitalChanges[0].IsCritical, "Dano comum nao pode ser apresentado como critico.");
+        guard.TakeDamage(5, critical: true);
+        Assert(guard.VitalChanges[1].IsCritical && guard.VitalChanges[1].Amount == -5,
+            "Golpe marcado como critico deve preservar sua identificacao.");
+        guard.RecoverHp(999);
+        Assert(guard.VitalChanges[2].Amount == 19, "Cura flutuante deve respeitar o limite real de HP.");
+        guard.RecoverHp(10);
+        Assert(guard.VitalChanges.Count == 3, "Cura sem efeito nao deve produzir numeros.");
+        CombatantState lia = Find(battle, "lia");
+        lia.SpendMp(6); lia.RecoverMp(99);
+        Assert(lia.VitalChanges.Count == 1 && lia.VitalChanges[0].IsMp && lia.VitalChanges[0].Amount == 6,
+            "Restauracao de MP deve indicar o recurso e o valor real.");
+        for (int i = 0; i < 100; i++) { guard.TakeDamage(1); guard.RecoverHp(1); }
+        Assert(guard.VitalChanges.Count == 64 && guard.VitalChanges[63].Sequence == 203,
+            "Historico visual deve ser limitado sem repetir a sequencia de efeitos.");
+    }
+
+    private static void CheckCommandMenu()
+    {
+        var bare = new CombatantState("hero", new CombatantDefinition("Heroi", "", 100, 20, 20, 5, 5, 10,
+            MateriaResolver.Attack, MateriaResolver.Defend, MateriaResolver.LimitBreak), CombatTeam.Party);
+        var root = BattleCommandMenu.Root(bare);
+        Assert(root.Count == 3 && root[0].Ability == MateriaResolver.Attack,
+            "Sem materias, menu deve mostrar Ataque, Defender e Itens, sem categorias vazias ou Limit.");
+        bare.Limit.Restore(99);
+        Assert(BattleCommandMenu.Root(bare)[0].Ability == MateriaResolver.Attack, "Limit incompleto deve manter Ataque.");
+        bare.Limit.Restore(100);
+        root = BattleCommandMenu.Root(bare);
+        Assert(root.Count == 3 && root[0].Label == "Limit" && root[0].Ability == MateriaResolver.LimitBreak,
+            "Limit pronto deve substituir Ataque, sem acrescentar outra linha.");
+        foreach (var command in root) Assert(command.Ability != MateriaResolver.Attack, "Ataque nao pode aparecer junto de Limit pronto.");
+        bare.Limit.Spend();
+        Assert(BattleCommandMenu.Root(bare)[0].Ability == MateriaResolver.Attack, "Gastar Limit deve devolver Ataque ao menu.");
+
+        var party = PrototypePartyFactory.CreateTestParty();
+        var lia = party.Members[1].CreateCombatant();
+        root = BattleCommandMenu.Root(lia);
+        int magic = 0, summon = 0;
+        foreach (var command in root)
+        {
+            if (command.Kind == BattleCommandKind.Magic) magic++;
+            if (command.Kind == BattleCommandKind.Summon) summon++;
+            Assert(command.Ability == null || command.Ability.MenuGroup == AbilityMenuGroup.Direct,
+                "Magias e invocacoes devem sair da lista principal de acoes.");
+        }
+        Assert(magic == 1 && summon == 1, "Magic e Summon devem aparecer uma vez para quem possui ambos.");
+        Assert(BattleCommandMenu.Group(lia, AbilityMenuGroup.Magic).Count == 3,
+            "Magic deve agrupar Curar, Purificar e Reviver.");
+        Assert(BattleCommandMenu.Group(lia, AbilityMenuGroup.Summon).Count == 1,
+            "Summon deve conter somente a invocacao equipada.");
+        lia.SpendMp(lia.Mp);
+        Assert(BattleCommandMenu.Root(lia).Count == root.Count, "Falta de MP nao deve esconder categorias de habilidades existentes.");
+
+        MateriaInstance infuse = null;
+        foreach (var materia in party.Materias) if (materia.Definition == PrototypePartyFactory.InfuseMateria) infuse = materia;
+        var aren = party.Members[0];
+        Assert(party.TryEquip(aren, aren.Armor, 3, infuse, out _), "Fixture deve equipar Infusao ligada a Thunder.");
+        var spells = BattleCommandMenu.Group(aren.CreateCombatant(), AbilityMenuGroup.Magic);
+        Assert(spells.Count == 1 && spells[0].Effect == AbilityEffect.PhysicalDamage,
+            "Infusao deve preservar Thunder no menu Magic apesar da conversao em golpe fisico.");
+    }
+
+    private static void CheckMenuScrolling()
+    {
+        foreach (float height in new[] { 120f, 88f })
+        {
+            float scroll = 0;
+            for (int step = 0; step < 12; step++)
+            {
+                int index = step % 6;
+                scroll = BattleCommandMenu.KeepRowVisible(scroll, index, 6, height);
+                Assert(index * 36 >= scroll && index * 36 + 34 <= scroll + height,
+                    "Navegar para baixo e voltar ao inicio deve manter toda a linha e o cursor visiveis.");
+            }
+            for (int index = 5; index >= 0; index--)
+            {
+                scroll = BattleCommandMenu.KeepRowVisible(scroll, index, 6, height);
+                Assert(index * 36 >= scroll && index * 36 + 34 <= scroll + height,
+                    "Navegar para cima deve manter toda a linha selecionada visivel.");
+            }
+        }
+        Assert(BattleCommandMenu.KeepRowVisible(0, 3, 5, 120) == 22,
+            "Quarta linha deve rolar antes que o cursor seja cortado na borda inferior.");
+        Assert(BattleCommandMenu.KeepRowVisible(50, 0, 1, 88) == 0,
+            "Alvo de grupo em uma unica linha nao deve rolar para uma selecao invisivel.");
+    }
+
     public static int Main()
     {
         try
         {
+            CheckMenuScrolling();
+            CheckCommandMenu();
+            CheckVitalFeedback();
             CheckBasicRound();
             CheckResourcesAndTargets();
             CheckHealingAndDefense();
