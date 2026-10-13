@@ -11,7 +11,7 @@ namespace DragonQuest.Prototype
     {
         private readonly List<Mesh> meshes = new List<Mesh>();
         private readonly Material material;
-        private readonly Material shadowMaterial, surfMaterial;
+        private readonly Material shadowMaterial;
         private readonly Material cityMaterial, cityDetailsMaterial, castleMaterial, glowMaterial, cityGroundMaterial, worldGroundMaterial;
         public PixelSpriteLibrary PixelSprites { get; }
         public ObliqueScenery()
@@ -40,9 +40,6 @@ namespace DragonQuest.Prototype
             if (glowShader == null) throw new InvalidOperationException("Shader PixelGlow ausente.");
             glowMaterial = new Material(glowShader) {name = "Periferia / vapor"};
             PixelSprites = new PixelSpriteLibrary();
-            var surfShader = Resources.Load<Shader>("WorldSurf");
-            if (surfShader == null) throw new InvalidOperationException("Shader WorldSurf ausente.");
-            surfMaterial = new Material(surfShader) { name = "Ondas pixeladas da costa" };
             var shadowShader = Resources.Load<Shader>("PixelShadow");
             if (shadowShader == null) throw new InvalidOperationException("Shader PixelShadow ausente.");
             shadowMaterial = new Material(shadowShader) {name = "Sombra transparente no chao"};
@@ -288,75 +285,34 @@ namespace DragonQuest.Prototype
 
         public static ObliqueMeshData IslandData(bool includeGround = true)
         {
-            var mesh = new ObliqueMeshData { DefaultSurface = PixelSurface.Water };
-            mesh.Plane(0, 0, 80, 65, -0.34f, ObliqueMeshData.Hex("387F96"));
-            var coast = PrototypeWorldLayout.Coast;
+            var mesh=new ObliqueMeshData {DefaultSurface=PixelSurface.Water};
+            mesh.Plane(0,0,80,65,-0.95f,ObliqueMeshData.Hex("365E70"));
+            var coast=PrototypeWorldLayout.Coast;
+            var inner=new List<Vector2>();
+            foreach(Vector2 p in coast) inner.Add(new Vector2(p.x*0.955f,p.y*0.955f));
             if (includeGround) mesh.Append(WorldIslandArt.Ground(), Vector3.zero);
-            for (int i = 0; i < coast.Count; i++)
+            for(int i=0;i<coast.Count;i++)
             {
-                Vector2 a = coast[i], b = coast[(i + 1) % coast.Count];
-                // Rochas baixas e praia inclinada: nenhuma face vertical continua.
-                float rockA = 0.982f + 0.009f * (float)Math.Sin(i * 1.7);
-                float rockB = 0.982f + 0.009f * (float)Math.Sin((i + 1) * 1.7);
-                CoastBand(mesh, a, b, 0.955f, 0.955f, rockA, rockB, 0, -0.12f,
-                    i % 3 == 0 ? "8D9386" : "A3A895", PixelSurface.Basalt);
-                CoastBand(mesh, a, b, rockA, rockB, 1.045f, 1.045f, -0.12f, -0.23f,
-                    "DDCEA3", PixelSurface.Sand);
-                CoastBand(mesh, a, b, 1.045f, 1.045f, 1.065f, 1.065f, -0.23f, -0.32f,
-                    "B3BBA5", PixelSurface.Sand);
-                CoastBand(mesh, a, b, 1.065f, 1.065f, 1.13f, 1.13f, -0.32f, -0.33f,
-                    "62ABAE", PixelSurface.None);
-                if (i % 3 == 0)
-                {
-                    Vector2 p = (a + b) * 0.489f;
-                    Mountain(mesh, p.x, p.y, 0.33f + (i % 4) * 0.08f, 0.28f, 0.12f,
-                        ObliqueMeshData.Hex("969D91"));
-                }
+                Vector2 a=coast[i], b=coast[(i+1)%coast.Count], c=inner[(i+1)%coast.Count], d=inner[i];
+                mesh.Quad(ObliqueMeshData.V(a.x,a.y,-0.08f),ObliqueMeshData.V(d.x,d.y,0),ObliqueMeshData.V(c.x,c.y,0),ObliqueMeshData.V(b.x,b.y,-0.08f),ObliqueMeshData.Hex("C2B494"), true, PixelSurface.Sand);
+                mesh.Quad(ObliqueMeshData.V(a.x,a.y,-0.8f),ObliqueMeshData.V(a.x,a.y,-0.08f),ObliqueMeshData.V(b.x,b.y,-0.08f),ObliqueMeshData.V(b.x,b.y,-0.8f),ObliqueMeshData.Hex("7D8073"), true, PixelSurface.Basalt);
+                // Faixa de espuma junto a costa, sem textura quadriculada.
+                mesh.Quad(ObliqueMeshData.V(a.x*1.01f,a.y*1.01f,-0.94f),ObliqueMeshData.V(a.x*1.026f,a.y*1.026f,-0.94f),
+                    ObliqueMeshData.V(b.x*1.026f,b.y*1.026f,-0.94f),ObliqueMeshData.V(b.x*1.01f,b.y*1.01f,-0.94f),ObliqueMeshData.Hex("789997"),false,PixelSurface.None);
             }
-            for (int i = 0; i < 70; i++)
+            for(int i=0;i<35;i++)
             {
-                float x = -28 + (i * 17 % 57), y = -23 + (i * 7 % 47);
-                if (PrototypeWorldLayout.IsLand(new Vector2(x / 1.16f, y / 1.16f))) continue;
+                float x=-25+(i*17%51),y=-20+(i*7%40);
+                if(PrototypeWorldLayout.IsLand(new Vector2(x,y))) continue;
                 mesh.DefaultSurface = PixelSurface.None;
-                mesh.Plane(x, y, 0.45f + (i % 3) * 0.2f, 0.045f, -0.325f, ObliqueMeshData.Hex("65A6B5"));
+                mesh.Plane(x,y,0.5f+(i%3)*0.25f,0.035f,-0.93f,ObliqueMeshData.Hex("537C89"));
             }
             return mesh;
         }
 
-        private static void CoastBand(ObliqueMeshData mesh, Vector2 a, Vector2 b,
-            float innerA, float innerB, float outerA, float outerB,
-            float top, float bottom, string color, PixelSurface surface)
-        {
-            mesh.Quad(ObliqueMeshData.V(a.x * innerA, a.y * innerA, top),
-                ObliqueMeshData.V(b.x * innerB, b.y * innerB, top),
-                ObliqueMeshData.V(b.x * outerB, b.y * outerB, bottom),
-                ObliqueMeshData.V(a.x * outerA, a.y * outerA, bottom),
-                ObliqueMeshData.Hex(color), false, surface);
-        }
-
-        public static ObliqueMeshData WorldSurfData()
-        {
-            var mesh = new ObliqueMeshData();
-            var coast = PrototypeWorldLayout.Coast;
-            for (int wave = 0; wave < 3; wave++)
-                for (int i = 0; i < coast.Count; i++)
-                {
-                    if ((i + wave * 3) % 7 == 0) continue;
-                    Vector2 a = coast[i], b = coast[(i + 1) % coast.Count];
-                    float inner = 1.067f + wave * 0.028f;
-                    float outer = inner + 0.006f + (i % 3) * 0.002f;
-                    mesh.Quad(ObliqueMeshData.V(a.x * inner, a.y * inner, -0.315f),
-                        ObliqueMeshData.V(b.x * inner, b.y * inner, -0.315f),
-                        ObliqueMeshData.V(b.x * outer, b.y * outer, -0.315f),
-                        ObliqueMeshData.V(a.x * outer, a.y * outer, -0.315f),
-                        new Color(0.83f, 0.94f, 0.87f, 0.3f + wave * 0.23f), false, PixelSurface.None);
-                }
-            return mesh;
-        }
         public GameObject World(Transform parent)
         {
-            Show("Rochas, praia e mar",IslandData(false),parent);
-            ShowWithMaterial("Ondas da praia",WorldSurfData(),parent,surfMaterial);
+            Show("Costa arredondada e mar",IslandData(false),parent);
             ShowWithMaterial("Chao continuo da ilha",WorldIslandArt.Ground(),parent,worldGroundMaterial);
             var seal = new GameObject(PrototypeSecretLayout.SealedRocks);
             seal.transform.SetParent(parent, false); seal.transform.localPosition = PrototypeWorldLayout.Volcano;
@@ -440,11 +396,6 @@ namespace DragonQuest.Prototype
 
         private void WorldPoi(Transform parent, int frame)
         {
-            var shadow = new ObliqueMeshData();
-            float radius = frame == 4 ? 1.05f : frame == 2 ? 0.92f : 0.8f;
-            shadow.Shadow(0.1f, -0.08f, radius, radius * 0.65f);
-            shadow.Shadow(0.1f, -0.08f, radius * 0.7f, radius * 0.44f);
-            Show("Sombra do POI", shadow, parent);
             Transform visual = PixelSprites.Create(parent, "WorldPoiSprites", frame);
             visual.localPosition = new Vector3(ObliqueProjection.YawSin * 0.3f, -ObliqueProjection.YawCos * 0.3f, -0.015f);
         }
@@ -663,7 +614,7 @@ namespace DragonQuest.Prototype
         public void Dispose()
         {
             foreach(Mesh mesh in meshes) if(mesh!=null) UnityEngine.Object.Destroy(mesh);
-            UnityEngine.Object.Destroy(material); UnityEngine.Object.Destroy(shadowMaterial); UnityEngine.Object.Destroy(surfMaterial);
+            UnityEngine.Object.Destroy(material); UnityEngine.Object.Destroy(shadowMaterial);
             UnityEngine.Object.Destroy(cityMaterial); UnityEngine.Object.Destroy(cityDetailsMaterial); UnityEngine.Object.Destroy(glowMaterial);
             UnityEngine.Object.Destroy(castleMaterial);
             UnityEngine.Object.Destroy(cityGroundMaterial);
