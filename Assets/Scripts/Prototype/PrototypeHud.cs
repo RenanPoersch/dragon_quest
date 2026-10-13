@@ -1,54 +1,34 @@
 using UnityEngine;
-using DragonQuest.Exploration;
 using DragonQuest.Interactions;
-using DragonQuest.Progression;
 
 namespace DragonQuest.Prototype
 {
     public sealed class PrototypeHud : MonoBehaviour
     {
-        private Camera view;
         private PlayerInteraction interaction;
         private DialogueController dialogue;
-        private ExplorationProgress progress;
-        private PrototypeLocations locations;
         private PrototypeBattleController battle;
-        private PrototypeShopController shops;
-        private AncientSecrets secrets;
         private GUIStyle titleStyle;
         private GUIStyle bodyStyle;
         private Texture2D panelTexture;
 
-        public void Initialize(Camera worldCamera, PlayerInteraction playerInteraction,
-            DialogueController dialogueController, ExplorationProgress explorationProgress, PrototypeLocations locationController,
-            PrototypeBattleController battleController, PrototypeShopController shopController, AncientSecrets ancientSecrets)
+        public void Initialize(PlayerInteraction playerInteraction, DialogueController dialogueController,
+            PrototypeBattleController battleController)
         {
-            view = worldCamera;
             interaction = playerInteraction;
             dialogue = dialogueController;
-            progress = explorationProgress;
-            locations = locationController;
             battle = battleController;
-            shops = shopController;
-            secrets = ancientSecrets;
         }
 
         private void OnGUI()
         {
-            if (view == null || battle.IsBusy) return;
+            if (interaction == null || dialogue == null || battle == null || battle.IsBusy) return;
             EnsureStyles();
             float scale = Mathf.Clamp(Screen.height / 720f, 0.65f, 2f);
             Matrix4x4 previousMatrix = GUI.matrix;
             GUI.matrix = Matrix4x4.Scale(new Vector3(scale, scale, 1));
             float width = Screen.width / scale;
             float height = Screen.height / scale;
-
-            GUI.DrawTexture(new Rect(16, 16, Mathf.Min(590, width - 32), secrets.IsDiscovered ? 172 : 126), panelTexture);
-            GUI.Label(new Rect(30, 25, width - 60, 27), "DRAGON QUEST  /  " + locations.LocationName, titleStyle);
-            GUI.Label(new Rect(30, 54, width - 60, 24), "WASD/setas: andar  |  E: interagir", bodyStyle);
-            GUI.Label(new Rect(30, 78, width - 60, 24), "I: inventario" + (secrets.KnowsPoem ? "  |  P: poema" : "") + "  |  Ouro: " + progress.Gold, bodyStyle);
-            GUI.Label(new Rect(30, 104, Mathf.Min(442, width - 60), 34), shops.Quest.Summary, bodyStyle);
-            if(secrets.IsDiscovered) GUI.Label(new Rect(30,144,Mathf.Min(548,width-60),34),secrets.Summary,bodyStyle);
 
             if (dialogue.IsOpen)
             {
@@ -70,18 +50,14 @@ namespace DragonQuest.Prototype
             }
             else
             {
-                GUI.DrawTexture(new Rect(16, height - 64, width - 32, 48), panelTexture);
                 string prompt = interaction.CurrentPrompt;
-                if (string.IsNullOrEmpty(prompt))
-                    prompt = locations.IsInShop ? "Use E no lojista para comprar/vender; a saida fica ao sul."
-                        : locations.LocationId == PrototypeTravel.World ? "Caminhe ate a entrada do castelo, florestas ou ruinas para entrar automaticamente."
-                        : locations.IsInCity ? "Lojas ao redor da praca. Castelo ao norte; saida para a ilha ao sul. Caminhe pelas entradas."
-                        : locations.LocationId == PrototypeTravel.Castle ? "O trono fica ao norte; caminhe ate a saida ao sul para voltar a periferia."
-                        : locations.LocationId == PrototypeTravel.Ruins ? "Explore as ruinas. O altar fica ao norte; a saida para a ilha fica ao sul."
-                        : locations.LocationId == PrototypeTravel.Volcano ? "Siga a trilha entre a lava ate a arena. A saida fica ao sul."
-                        : locations.LocationId == PrototypeTravel.Inn ? "F5: salvar jornada / E na hospedeira: salvar ou conversar / I: inventario. Saida ao sul."
-                        : "Converse com o morador usando E. A saida para a ilha fica ao sul.";
-                GUI.Label(new Rect(28, height - 57, width - 56, 38), prompt, bodyStyle);
+                if (!string.IsNullOrEmpty(prompt))
+                {
+                    float promptWidth = Mathf.Min(380, width - 32);
+                    float left = (width - promptWidth) / 2;
+                    GUI.DrawTexture(new Rect(left, height - 64, promptWidth, 48), panelTexture);
+                    GUI.Label(new Rect(left + 12, height - 57, promptWidth - 24, 38), prompt, bodyStyle);
+                }
             }
             GUI.matrix = previousMatrix;
         }

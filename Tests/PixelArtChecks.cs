@@ -140,15 +140,17 @@ internal static class PixelArtChecks
     private static void CheckChestFrames()
     {
         var alpha=new byte[60*36];
-        for(int i=0;i<2;i++) for(int y=4;y<=17;y++) for(int x=6+i*30;x<=23+i*30;x++) alpha[y*60+x]=255;
+        for(int i=0;i<2;i++) for(int y=4+i*2;y<=17+i*2;y++) for(int x=6+i*30;x<=23+i*30;x++) alpha[y*60+x]=255;
         for(int y=18;y<=23;y++) for(int x=6;x<=23;x++) alpha[y*60+x]=255;
-        for(int y=20;y<=30;y++) for(int x=39;x<=56;x++) alpha[y*60+x]=255;
+        for(int y=22;y<=32;y++) for(int x=39;x<=56;x++) alpha[y*60+x]=255;
         var frames=PixelSpriteLayout.ReadPropPair(60,36,alpha);
         Assert(frames.Length==2&&frames[1].Height>frames[0].Height,"Bau precisa de estados fechado e aberto, com tampa inteira.");
         Assert(Math.Abs(frames[0].X+frames[0].Width*frames[0].FootX-15)<0.001f
             &&Math.Abs(frames[1].X+frames[1].Width*frames[1].FootX-45)<0.001f,
             "A tampa aberta mais larga nao pode deslocar o centro da caixa.");
-        Assert(frames[0].Y==frames[1].Y,"Trocar o estado deve conservar a base vertical.");
+        Assert(frames[0].Y!=frames[1].Y&&Math.Abs(frames[0].Pivot.y*frames[0].Height-1)<0.001f
+            &&Math.Abs(frames[1].Pivot.y*frames[1].Height-1)<0.001f,
+            "Recortes com baselines diferentes na folha devem apoiar a base na mesma ancora do mundo.");
         bool refused=false;try{PixelSpriteLayout.ReadPropPair(60,36,new byte[60*36]);}catch(ArgumentException){refused=true;}
         Assert(refused,"Folha de bau vazia precisa ser recusada.");
     }

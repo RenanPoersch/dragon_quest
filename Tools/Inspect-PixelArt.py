@@ -77,7 +77,10 @@ for name in ("ArenWalk", "ArenDiagonalWalk", "LiaWalk", "BramWalk", "NpcRoster",
             if prop_pair:
                 entry['pixelsPerUnit'] = entry['frames'][0]['width'] / 1.1
                 check(abs(base_widths[0] - base_widths[1]) < base_widths[0] * .04, name + ": caixa muda de largura ao abrir")
-                check(abs(base_bottoms[0] - base_bottoms[1]) <= 2, name + ": base vertical desalinhada")
+                # Cada recorte ancora a propria base a um pixel da borda inferior. A posicao
+                # bruta na folha pode variar sem deslocar o bau ao trocar os sprites.
+                check(all(frame['y'] + frame['height'] - bottom == 1
+                          for frame, bottom in zip(entry['frames'], base_bottoms)), name + ": margem inferior da ancora incorreta")
         result[name] = entry
 
 if len(sys.argv) > 1:

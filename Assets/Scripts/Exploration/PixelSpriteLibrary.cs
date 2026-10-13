@@ -25,7 +25,7 @@ namespace DragonQuest.Exploration
             for (int i = 0; i < frames.Length; i++)
             {
                 var f = frames[i];
-                Sprites[i] = Sprite.Create(Texture, f.Rect, new Vector2(f.FootX, 1f / f.Height), pixelsPerUnit, 0, SpriteMeshType.FullRect);
+                Sprites[i] = Sprite.Create(Texture, f.Rect, f.Pivot, pixelsPerUnit, 0, SpriteMeshType.FullRect);
                 Sprites[i].name = resource + " / " + i;
             }
         }

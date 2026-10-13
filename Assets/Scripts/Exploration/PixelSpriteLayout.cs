@@ -12,6 +12,7 @@ namespace DragonQuest.Exploration
         public PixelFrame(int x, int y, int width, int height, float footX)
         { X = x; Y = y; Width = width; Height = height; FootX = footX; }
         public Rect Rect => new Rect(X, Y, Width, Height);
+        public Vector2 Pivot => new Vector2(FootX, 1f / Height);
     }
 
     // Pequenos intervalos sem deslocamento entre amostras da fisica nao reiniciam o passo.

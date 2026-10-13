@@ -186,6 +186,7 @@ internal static class ObliqueChecks
         Assert(moat.Vertices.Any(p=>p.z>0.5f),"Fosso precisa ficar visualmente abaixo da rua, com bloqueio fisico definido no layout.");
         city.Append(streets.Body,Vector3.zero);cityGlow.Append(streets.Glow,Vector3.zero);
         CheckEquipmentApproach();
+        CheckExplorerVisibility();
         var sign=new ObliqueMeshData();CityPeripheryArt.Panel(sign,0,-2.1f,2,3,0.8f,1);
         Near(sign.UVs[0].x,0.01f,"Placa inicia na borda esquerda da celula.");Near(sign.UVs[2].x,0.99f,"Placa termina na borda direita da celula.");
         Assert(sign.Surfaces.All(s=>s.x==1&&s.y==1),"Letreiro nao pode receber material de grama ou escurecimento por face.");
@@ -298,6 +299,20 @@ internal static class ObliqueChecks
         foreach(float x in new[]{-1f,0,1f})
             Assert(!float.IsFinite(RayDistance(ObliqueProjection.Point(new Vector2(PrototypeCityLayout.EquipmentDoor.x+x,-12.445f),2.2f),towardCamera,others)),
                 "Casa vizinha nao pode esconder o letreiro ARMAS.");
+    }
+    private static void CheckExplorerVisibility()
+    {
+        var buildings=new ObliqueMeshData();
+        foreach(var building in PrototypeCityLayout.Buildings)
+            buildings.Append(CityPeripheryArt.Building(building.Name,building.Size,building.Color).Body,ObliqueProjection.Point(building.Position));
+        buildings.Append(CityPeripheryArt.Streets().Body,Vector3.zero);
+        var towardCamera=new Vector3(ObliqueProjection.YawSin*ObliqueProjection.HeightScale,
+            -ObliqueProjection.YawCos*ObliqueProjection.HeightScale,-ObliqueProjection.GroundScale);
+        Assert(float.IsFinite(RayDistance(ObliqueProjection.Point(new Vector2(7.7f,-0.2f),0.5f),towardCamera,buildings)),
+            "Posicao anterior da exploradora deve reproduzir a oclusao por uma casa.");
+        foreach(float x in new[]{-0.2f,0,0.2f}) foreach(float height in new[]{0.075f,0.5f,1f,1.4f})
+            Assert(!float.IsFinite(RayDistance(ObliqueProjection.Point(PrototypeCityLayout.Explorer+Vector2.right*x,height),towardCamera,buildings)),
+                "Exploradora deve aparecer inteira na rua central.");
     }
     private static void CheckCityViewportCoverage(string directory)
     {

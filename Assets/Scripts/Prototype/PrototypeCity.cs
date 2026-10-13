@@ -121,7 +121,7 @@ namespace DragonQuest.Prototype
             interaction.Initialize(new InteractionContext(dialogue, progress, locations.TravelTo,
                 battle.StartBattle, () => battle.IsBusy, shops.Open, secrets), interactables.ToArray());
             PrototypeHud hud = gameObject.AddComponent<PrototypeHud>();
-            hud.Initialize(camera, interaction, dialogue, progress, locations, battle, shops, secrets);
+            hud.Initialize(interaction, dialogue, battle);
             saves.Initialize(player.GetComponent<PlayerMovement>(), battle, shops, locations, dialogue, progress, secrets, dragon, journey =>
             {
                 progress = journey.Progress;
@@ -133,7 +133,7 @@ namespace DragonQuest.Prototype
                 shops.Initialize(player.GetComponent<PlayerMovement>(), dialogue, battle, progress, journey.Shops, journey.Quest);
                 interaction.Initialize(new InteractionContext(dialogue, progress, locations.TravelTo,
                     battle.StartBattle, () => battle.IsBusy, shops.Open, secrets), interactables.ToArray());
-                hud.Initialize(camera, interaction, dialogue, progress, locations, battle, shops, secrets);
+                hud.Initialize(interaction, dialogue, battle);
                 locations.Restore(journey.Data.Map, new Vector2(journey.Data.X, journey.Data.Y));
             });
         }

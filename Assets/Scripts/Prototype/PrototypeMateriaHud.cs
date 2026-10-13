@@ -186,6 +186,7 @@ namespace DragonQuest.Prototype
             GUI.Label(new Rect(690, 310, 530, 135), selectedInventoryItem?.Description
                 ?? "Pocao recupera HP, eter recupera MP, antidoto remove veneno e Pluma da Fenix revive.", text);
             GUI.Label(new Rect(690, 483, 530, 130), "Itens nao recebem bonus de classe ou combos de materia. O estoque nao e restaurado a cada batalha. Compre suprimentos na loja de itens.", text);
+            if(secrets.IsDiscovered) GUI.Label(new Rect(690,635,530,45),secrets.Summary,small);
         }
 
         private void ResetSocketSelection() { selectedEquipment = null; selectedSlot = -1; socketsScroll = Vector2.zero; }
