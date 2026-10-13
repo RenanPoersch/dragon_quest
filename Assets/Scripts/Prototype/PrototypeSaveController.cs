@@ -90,7 +90,7 @@ namespace DragonQuest.Prototype
                 && Keyboard.current?.f5Key.wasPressedThisFrame == true) SaveManual();
         }
         private void ShowMessage(string text, string compact = null)
-        { message = text; compactMessage = compact; messageUntil = Time.unscaledTime + 8; }
+        { message = text; compactMessage = compact; messageUntil = Time.unscaledTime + (compact != null ? 2f : 8f); }
         private void OnGUI()
         {
             if (store == null) return;
@@ -130,7 +130,8 @@ namespace DragonQuest.Prototype
             if (!string.IsNullOrEmpty(message) && Time.unscaledTime < messageUntil)
             {
                 Rect rect = IsMenuVisible ? new Rect(110, 650, 1060, 50) : compactMessage != null
-                    ? new Rect(750, 28, 235, 35) : new Rect(710, 190, 540, 130);
+                    ? new Rect((Screen.width / scale + 1280f) / 2f - 263f, (720f - Screen.height / scale) / 2f + 28f, 235, 35)
+                    : new Rect(710, 190, 540, 130);
                 Panel(rect); GUI.Label(new Rect(rect.x + 12, rect.y + 6, rect.width - 24, rect.height - 10),
                     IsMenuVisible ? message : compactMessage ?? message, smallStyle);
             }
