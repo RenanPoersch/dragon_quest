@@ -367,3 +367,8 @@ O usuário confirmou que as interações funcionaram em Play. Não houve valida�
 - Novo jogo também não grava. O primeiro save manual cria o slot; numa jornada nova em slot ocupado, o arquivo anterior permanece até essa gravação. O menu explica o comportamento e conserva a confirmação para usar um slot ocupado. Saves existentes e backups mantêm formato e compatibilidade.
 - Scripts compilaram com as bibliotecas da Unity 6000.6.5f1. Passaram 113 verificações de salvamento. Os novos casos usam arquivos numa pasta de testes, conferem que mudanças em uma jornada carregada não alteram o save/backup anterior e que a gravação explícita registra os valores acumulados. Permanecem os casos de três slots, recuperação de corrupção, falhas de escrita e finais antigos.
 - Atualizados README e PARTE_9.md, incluindo roteiro para novo jogo sem save, preservação do slot anterior e gravação pela hospedaria. Teclado, diálogo da hospedeira e ausência de avisos durante a execução nativa precisam de conferência em Play; não foi aberta outra instância do Editor.
+
+## Recompensa do baú — 1.000 moedas
+
+- Configurada a recompensa da primeira abertura em 1.000 moedas, mantendo o ID praca-primeiro-bau, posição, sprite e regra de coleta única. Saves com o baú já aberto não recebem outro pagamento. Não há alteração retroativa do saldo de jornadas antigas.
+- Scripts compilaram com as bibliotecas da Unity 6000.6.5f1. Passaram as 15 verificações existentes de progresso, cobrindo coleta única, baús independentes, entradas inválidas e overflow. README e roteiro da periferia foram atualizados; confirmar o valor no diálogo ao abrir um baú ainda fechado em Play.

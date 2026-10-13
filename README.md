@@ -79,11 +79,11 @@ Os saves ficam em `Application.persistentDataPath/Saves`, fora do Git, com backu
 
 ## Parte 6C — recompensas e missão de entrega
 
-O ouro da vitória é a soma das recompensas dos inimigos derrotados: **Guarda do tirano: 25 moedas; Soldado: 10 moedas**. A patrulha atual rende 35, e outras formações terão totais conforme seus inimigos. O resultado mostra a composição, com pagamento único por batalha; derrota não paga. O baú conserva sua recompensa única de 25 moedas.
+O ouro da vitória é a soma das recompensas dos inimigos derrotados: **Guarda do tirano: 25 moedas; Soldado: 10 moedas**. A patrulha atual rende 35, e outras formações terão totais conforme seus inimigos. O resultado mostra a composição, com pagamento único por batalha; derrota não paga. O baú concede **1.000 moedas** uma única vez por jornada. Um save que já registra esse baú aberto não recebe outra recompensa.
 
 Na loja de itens, clique em **Aceitar entrega**. Leve o pacote ao vendedor de matérias, clique em **Entregar pacote** e volte à primeira loja para **Receber 30 moedas**. A conclusão repõe somente os consumíveis do vendedor, uma vez; equipamentos e matérias conservam os estoques restantes. O HUD mostra o objetivo atual.
 
-As 50 moedas iniciais, a missão, o baú e uma vitória somam 140: permitem comprar Fogo (50) e All (90) sem repetir encontros. Monte o combo no inventário com I, em um par ligado.
+As 50 moedas iniciais, a missão, o baú e uma vitória somam 1.115: permitem comprar Fogo (50) e All (90), além de outros suprimentos, sem repetir encontros. Monte o combo no inventário com I, em um par ligado.
 
 Veja `Docs/PARTE_6C.md` para o roteiro de economia. As três entregas da parte 6 estão implementadas; os testes automáticos passaram, e os cliques/aparência aguardam confirmação no Editor. O roteiro do mapa atual está em `Docs/PARTE_7A.md`.
 
@@ -174,7 +174,7 @@ Veja `Docs/PARTE_3.md` para regras e teste em Play. As regras independentes da U
 ## Parte 2 — interações
 
 - Aldeão a sudoeste da fonte com diálogo em páginas.
-- Baú a sudeste: 25 moedas uma única vez por sessão.
+- Baú parcialmente atrás da oficina das lanternas: 1.000 moedas uma única vez por jornada.
 - Porta da loja de itens a noroeste: E entra no interior.
 - Conversa com lojista e saída ao sul, usando E.
 - Ouro e baú aberto preservados ao entrar/sair da loja.
