@@ -21,7 +21,21 @@ namespace DragonQuest.Equipment
         public int Attack => AttackWith(Weapon, Armor);
         public int Defense => DefenseWith(Weapon, Armor);
         public int Magic => MagicWith(Weapon, Armor);
-        public ElementalAffinities Affinities => ElementalAffinities.Combine(BaseStats.Affinities, Weapon?.Definition.Affinities, Armor?.Definition.Affinities);
+        public int MaxHp => StatWithMaterias(BaseStats.MaxHp, MateriaModifier.HpUp, Weapon, Armor);
+        public int MaxMp => StatWithMaterias(BaseStats.MaxMp, MateriaModifier.MpUp, Weapon, Armor);
+        public ElementalAffinities Affinities => ElementalAffinities.Combine(BaseStats.Affinities,
+            Weapon?.Definition.Affinities, Armor?.Definition.Affinities,
+            new ElementalAffinities(resistances: new List<DamageElement>(new HashSet<DamageElement>(MateriaResolver.InfusedElements(Armor))).ToArray()));
+
+        private static int StatWithMaterias(int value, MateriaModifier modifier, EquipmentLoadout weapon, EquipmentLoadout armor)
+        {
+            long percent = 100;
+            foreach (var equipment in new[] { weapon, armor })
+                if (equipment != null)
+                    foreach (var materia in equipment.Sockets)
+                        if (materia != null && materia.Definition.Modifier == modifier) percent += 20;
+            return (int)Math.Min(int.MaxValue, (long)value * percent / 100);
+        }
 
         public PartyMember(string id, string name, CharacterClass characterClass, CombatantDefinition stats,
             EquipmentDefinition weapon, EquipmentDefinition armor)
@@ -36,10 +50,10 @@ namespace DragonQuest.Equipment
         }
 
         private int Bonus(int value, CharacterClass affinity, int percent) => Class == affinity ? (int)((long)value * (100 + percent) / 100) : value;
-        public int AttackWith(EquipmentLoadout weapon, EquipmentLoadout armor) => BaseStats.Attack
-            + Bonus(weapon?.Definition.AttackBonus ?? 0, CharacterClass.Attacker, 20) + (armor?.Definition.AttackBonus ?? 0);
-        public int DefenseWith(EquipmentLoadout weapon, EquipmentLoadout armor) => BaseStats.Defense
-            + (weapon?.Definition.DefenseBonus ?? 0) + Bonus(armor?.Definition.DefenseBonus ?? 0, CharacterClass.Tank, 25);
+        public int AttackWith(EquipmentLoadout weapon, EquipmentLoadout armor) => StatWithMaterias(BaseStats.Attack
+            + Bonus(weapon?.Definition.AttackBonus ?? 0, CharacterClass.Attacker, 20) + (armor?.Definition.AttackBonus ?? 0), MateriaModifier.AttackUp, weapon, armor);
+        public int DefenseWith(EquipmentLoadout weapon, EquipmentLoadout armor) => StatWithMaterias(BaseStats.Defense
+            + (weapon?.Definition.DefenseBonus ?? 0) + Bonus(armor?.Definition.DefenseBonus ?? 0, CharacterClass.Tank, 25), MateriaModifier.DefenseUp, weapon, armor);
         public int MagicWith(EquipmentLoadout weapon, EquipmentLoadout armor) => BaseStats.Magic
             + (weapon?.Definition.MagicBonus ?? 0) + (armor?.Definition.MagicBonus ?? 0);
         internal void SetEquipment(EquipmentSlot slot, EquipmentLoadout item)
@@ -52,7 +66,7 @@ namespace DragonQuest.Equipment
             var abilities = MateriaResolver.Resolve(this);
             var commands = new AbilityDefinition[abilities.Count];
             abilities.CopyTo(commands);
-            var stats = new CombatantDefinition(Name, BaseStats.Role, BaseStats.MaxHp, BaseStats.MaxMp,
+            var stats = new CombatantDefinition(Name, BaseStats.Role, MaxHp, MaxMp,
                 Attack, Defense, Magic, BaseStats.Speed, Affinities, BaseStats.GoldReward, commands);
             return new CombatantState(Id, stats, CombatTeam.Party, Limit);
         }

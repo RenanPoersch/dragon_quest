@@ -37,11 +37,22 @@ namespace DragonQuest.Prototype
         public static readonly MateriaDefinition ReviveMateria = new MateriaDefinition("revive", "Vida", "Verde: concede Reviver.", MateriaType.Magic, abilities: new[] { PrototypeBattleFactory.Revive });
         public static readonly MateriaDefinition SummonMateria = new MateriaDefinition("phoenix", "Fenix", "Vermelha: concede Invocar Fenix. A arte da invocacao ainda e provisoria.", MateriaType.Summon, abilities: new[] { Summon });
         public static readonly MateriaDefinition AllMateria = new MateriaDefinition("all", "All", "Azul: ligada a verde/vermelha, aplica o comando a todos os alvos validos; MP x1,5. Sozinha nao concede comando.", MateriaType.Support, MateriaModifier.All);
-        public static readonly MateriaDefinition InfuseMateria = new MateriaDefinition("infuse", "Infusao", "Roxa: ligada a magia/invocacao de dano, converte em golpe fisico. Usa ataque; nao modifica cura. Sozinha nao concede comando.", MateriaType.PhysicalEnhance, MateriaModifier.Infuse);
-        public static readonly MateriaDefinition HeavyMateria = new MateriaDefinition("heavy", "Forca", "Roxa: concede Golpe forte a qualquer personagem.", MateriaType.PhysicalEnhance, abilities: new[] { PrototypeBattleFactory.HeavyStrike });
+        public static readonly MateriaDefinition InfuseMateria = new MateriaDefinition("infuse", "Infusao", "Roxa: ligada a magia elemental, infunde o ataque basico na arma (0 MP) ou concede resistencia de 50% na armadura. Primeiro par valido define o elemento da arma.", MateriaType.PhysicalEnhance, MateriaModifier.Infuse);
+        public static readonly MateriaDefinition HeavyMateria = new MateriaDefinition("heavy", "Forca", "Roxa: aumenta ataque em 20%. Nao concede comando.", MateriaType.PhysicalEnhance, MateriaModifier.AttackUp);
         public static readonly MateriaDefinition CleaveMateria = new MateriaDefinition("cleave", "Corte", "Roxa: concede Corte amplo a qualquer personagem.", MateriaType.PhysicalEnhance, abilities: new[] { PrototypeBattleFactory.Cleave });
         public static readonly MateriaDefinition GuardianMateria = new MateriaDefinition("guardian", "Guardiao", "Roxa: concede Provocar e Proteger a qualquer personagem.", MateriaType.PhysicalEnhance, abilities: new[] { PrototypeBattleFactory.Taunt, PrototypeBattleFactory.Protect });
 
+        public static readonly AbilityDefinition Earth = new AbilityDefinition("earth", "Terra", "Magia de Terra, poder 22, 6 MP.", 6, 22, AbilityEffect.MagicDamage, TargetRule.Enemy, element: DamageElement.Earth);
+        public static readonly AbilityDefinition Chaos = new AbilityDefinition("chaos", "Caos", "Magia de Caos, poder 28, 8 MP.", 8, 28, AbilityEffect.MagicDamage, TargetRule.Enemy, element: DamageElement.Chaos);
+        public static readonly AbilityDefinition Bahamut = new AbilityDefinition("bahamut", "Invocar Bahamut", "Dano sem elemento em todos os inimigos, poder 50, 20 MP. Arte provisoria.", 20, 50, AbilityEffect.MagicDamage, TargetRule.AllEnemies);
+        public static readonly AbilityDefinition Titan = new AbilityDefinition("titan", "Invocar Titan", "Dano de Terra em todos os inimigos, poder 40, 16 MP. Arte provisoria.", 16, 40, AbilityEffect.MagicDamage, TargetRule.AllEnemies, element: DamageElement.Earth);
+        public static readonly MateriaDefinition EarthMateria = new MateriaDefinition("earth", "Terra", "Verde: concede Terra.", MateriaType.Magic, abilities: new[] { Earth });
+        public static readonly MateriaDefinition ChaosMateria = new MateriaDefinition("chaos", "Caos", "Verde: concede Caos.", MateriaType.Magic, abilities: new[] { Chaos });
+        public static readonly MateriaDefinition BahamutMateria = new MateriaDefinition("bahamut", "Bahamut", "Vermelha: invoca Bahamut, 20 MP, todos os inimigos, sem elemento. Arte provisoria.", MateriaType.Summon, abilities: new[] { Bahamut });
+        public static readonly MateriaDefinition TitanMateria = new MateriaDefinition("titan", "Titan", "Vermelha: invoca Titan, 16 MP, todos os inimigos, Terra. Arte provisoria.", MateriaType.Summon, abilities: new[] { Titan });
+        public static readonly MateriaDefinition DefenseMateria = new MateriaDefinition("defense", "Defesa", "Roxa: aumenta defesa em 20%.", MateriaType.PhysicalEnhance, MateriaModifier.DefenseUp);
+        public static readonly MateriaDefinition HpMateria = new MateriaDefinition("hp", "HP", "Roxa: aumenta HP maximo em 20%.", MateriaType.PhysicalEnhance, MateriaModifier.HpUp);
+        public static readonly MateriaDefinition MpMateria = new MateriaDefinition("mp", "MP", "Roxa: aumenta MP maximo em 20%.", MateriaType.PhysicalEnhance, MateriaModifier.MpUp);
         public static PartyProgress Create()
         {
             var aren = new PartyMember("aren", "Aren", CharacterClass.Attacker,
@@ -76,7 +87,7 @@ namespace DragonQuest.Prototype
             var inventory = new List<MateriaInstance>();
             foreach (MateriaDefinition definition in new[] { HeavyMateria, CleaveMateria, ThunderMateria, AllMateria,
                 CureMateria, CleanseMateria, ReviveMateria, SummonMateria, GuardianMateria, InfuseMateria, AllMateria, ThunderMateria,
-                FireMateria, IceMateria })
+                FireMateria, IceMateria, EarthMateria, ChaosMateria, BahamutMateria, TitanMateria, DefenseMateria, HpMateria, MpMateria })
                 inventory.Add(new MateriaInstance("materia-" + inventory.Count, definition));
             var spareEquipment = new[]
             {

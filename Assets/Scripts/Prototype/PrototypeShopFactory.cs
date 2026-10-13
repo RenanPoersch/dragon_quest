@@ -33,7 +33,14 @@ namespace DragonQuest.Prototype
                 new ShopProduct("heavy", PrototypePartyFactory.HeavyMateria, 40, 2),
                 new ShopProduct("cleave", PrototypePartyFactory.CleaveMateria, 70, 1),
                 new ShopProduct("guardian", PrototypePartyFactory.GuardianMateria, 60, 1),
-                new ShopProduct("infuse", PrototypePartyFactory.InfuseMateria, 80, 1));
+                new ShopProduct("infuse", PrototypePartyFactory.InfuseMateria, 80, 1),
+                new ShopProduct("earth", PrototypePartyFactory.EarthMateria, 50, 2),
+                new ShopProduct("chaos", PrototypePartyFactory.ChaosMateria, 80, 2),
+                new ShopProduct("bahamut", PrototypePartyFactory.BahamutMateria, 250, 1),
+                new ShopProduct("titan", PrototypePartyFactory.TitanMateria, 180, 1),
+                new ShopProduct("defense", PrototypePartyFactory.DefenseMateria, 40, 2),
+                new ShopProduct("hp", PrototypePartyFactory.HpMateria, 60, 2),
+                new ShopProduct("mp", PrototypePartyFactory.MpMateria, 60, 2));
             return new ShopService(party, progress, items, equipment, materia);
         }
     }

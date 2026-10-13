@@ -10,9 +10,35 @@ namespace DragonQuest.Equipment
         public static readonly AbilityDefinition Defend = new AbilityDefinition("defend", "Defender", "Reduz o dano recebido ate o proximo turno.", 0, 0, AbilityEffect.Defend, TargetRule.Self);
         public static readonly AbilityDefinition LimitBreak = new AbilityDefinition("limit-break", "Limit Break", "Usa toda a barra de Limit para atingir todos os inimigos. Nao gasta MP.", 0, 35, AbilityEffect.PhysicalDamage, TargetRule.AllEnemies, usesLimit: true);
 
+        // A weapon has one basic-attack element; the first valid linked pair wins.
+        public static DamageElement InfusedElement(EquipmentLoadout equipment)
+        {
+            foreach (DamageElement element in InfusedElements(equipment)) return element;
+            return DamageElement.None;
+        }
+
+        public static IEnumerable<DamageElement> InfusedElements(EquipmentLoadout equipment)
+        {
+            if (equipment == null) yield break;
+            for (int i = 0; i < equipment.Sockets.Count; i++)
+            {
+                var source = equipment.Sockets[i];
+                var linked = equipment.Sockets[equipment.LinkedSocket(i)];
+                if (source == null || linked == null || linked.Definition.Modifier != MateriaModifier.Infuse) continue;
+                if (source.Definition.Type != MateriaType.Magic && source.Definition.Type != MateriaType.Summon) continue;
+                foreach (var ability in source.Definition.Abilities)
+                    if (ability.Effect == AbilityEffect.MagicDamage && ability.Element != DamageElement.None)
+                        yield return ability.Element;
+            }
+        }
+
         public static List<AbilityDefinition> Resolve(PartyMember member)
         {
-            var commands = new List<AbilityDefinition> { Attack, Defend, LimitBreak };
+                        DamageElement element = InfusedElement(member.Weapon);
+            var basicAttack = element == DamageElement.None ? Attack : new AbilityDefinition("attack", "Ataque",
+                "Ataque basico com Infusao de " + ElementalAffinities.NameOf(element) + ". Sem custo de MP.",
+                0, 0, AbilityEffect.PhysicalDamage, TargetRule.Enemy, element: element);
+            var commands = new List<AbilityDefinition> { basicAttack, Defend, LimitBreak };
             foreach (EquipmentLoadout equipment in new[] { member.Weapon, member.Armor })
             {
                 if (equipment == null) continue;
@@ -41,12 +67,7 @@ namespace DragonQuest.Equipment
                                 details += " Combo: todos os alvos validos, custo de MP x1,5.";
                             }
                         }
-                        else if (comboSource && linked != null && linked.Definition.Modifier == MateriaModifier.Infuse && effect == AbilityEffect.MagicDamage)
-                        {
-                            effect = AbilityEffect.PhysicalDamage;
-                            name += " + Infusao";
-                            details += " Combo: golpe fisico que mantem o elemento; usa ataque e pode ser interceptado.";
-                        }
+
                         if (member.Class == CharacterClass.Healer && (effect == AbilityEffect.MagicDamage || effect == AbilityEffect.Heal))
                         {
                             power = (int)Math.Min(int.MaxValue, (long)power * 125 / 100);

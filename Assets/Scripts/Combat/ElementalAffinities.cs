@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace DragonQuest.Combat
 {
-    public enum DamageElement { None, Fire, Ice, Lightning }
+    public enum DamageElement { None, Fire, Ice, Lightning, Earth, Chaos }
 
     // Perfil imutavel: pode ser compartilhado entre encontros sem carregar estado da batalha.
     public sealed class ElementalAffinities
@@ -65,6 +65,8 @@ namespace DragonQuest.Combat
                 case DamageElement.Fire: return "Fogo";
                 case DamageElement.Ice: return "Gelo";
                 case DamageElement.Lightning: return "Raio";
+                case DamageElement.Earth: return "Terra";
+                case DamageElement.Chaos: return "Caos";
                 default: throw new ArgumentException("Elemento desconhecido.");
             }
         }

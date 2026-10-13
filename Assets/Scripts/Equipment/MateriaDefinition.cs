@@ -5,7 +5,7 @@ using DragonQuest.Combat;
 namespace DragonQuest.Equipment
 {
     public enum MateriaType { Magic, Support, Summon, PhysicalEnhance }
-    public enum MateriaModifier { None, All, Infuse }
+    public enum MateriaModifier { None, All, Infuse, AttackUp, DefenseUp, HpUp, MpUp }
 
     public sealed class MateriaDefinition
     {

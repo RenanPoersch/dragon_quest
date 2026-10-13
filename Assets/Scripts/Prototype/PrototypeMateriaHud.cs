@@ -54,7 +54,7 @@ namespace DragonQuest.Prototype
             Panel(new Rect(30, 168, 1220, 65));
             GUI.Label(new Rect(48, 176, 1140, 25), member.Name + " / " + member.BaseStats.Role + "  |  " + member.AffinityDescription, text);
             GUI.Label(new Rect(48, 204, 1140, 24), "Ataque " + member.Attack + "  |  Defesa " + member.Defense
-                + "  |  Magia " + member.Magic + "  |  Limit " + member.Limit.Charge + "%", small);
+                + "  |  HP " + member.MaxHp + "  |  MP " + member.MaxMp + "  |  Magia " + member.Magic + "  |  Limit " + member.Limit.Charge + "%", small);
 
             if (page == 0) DrawMaterias(member, party);
             else if (page == 1) DrawGear(member, party);

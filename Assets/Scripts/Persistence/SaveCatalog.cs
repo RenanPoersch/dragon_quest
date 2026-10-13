@@ -19,7 +19,7 @@ namespace DragonQuest.Persistence
         static SaveCatalog()
         {
             foreach (var definition in new[] {P.ThunderMateria, P.FireMateria, P.IceMateria, P.CureMateria, P.CleanseMateria,
-                P.ReviveMateria, P.SummonMateria, P.AllMateria, P.InfuseMateria, P.HeavyMateria, P.CleaveMateria, P.GuardianMateria})
+                P.ReviveMateria, P.SummonMateria, P.AllMateria, P.InfuseMateria, P.HeavyMateria, P.CleaveMateria, P.GuardianMateria, P.EarthMateria, P.ChaosMateria, P.BahamutMateria, P.TitanMateria, P.DefenseMateria, P.HpMateria, P.MpMateria})
                 materia.Add(definition.Id, definition);
             foreach (var definition in new[] {P.Potion, P.Ether, P.Antidote, P.PhoenixFeather}) items.Add(definition.Id, definition);
         }
