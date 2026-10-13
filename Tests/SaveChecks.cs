@@ -153,14 +153,8 @@ internal static class SaveChecks
         foreach (int slot in new[] {0, 4, -1})
         { try { store.SlotPath(slot); throw new Exception("Slot invalido aceito."); } catch (ArgumentOutOfRangeException) { Assert(true, "Limites de slot."); } }
     }
-    private static void CheckPolicy()
+    private static void CheckInventoryEvents()
     {
-        var policy = new AutosavePolicy(); policy.Changed(true); Assert(!policy.Pending, "Gastar item no meio da batalha nao salva.");
-        policy.BattleCompleted(BattleOutcome.Defeat); Assert(!policy.Pending, "Derrota nao dispara autosave.");
-        policy.BattleCompleted(BattleOutcome.Victory); Assert(policy.Pending, "Vitoria dispara autosave.");
-        policy.Acknowledge(); Assert(!policy.Pending, "Uma transacao gera uma escrita.");
-        policy.Changed(false); Assert(policy.Pending, "Inventario/segredo fora de combate salva.");
-        policy.BattleCompleted(BattleOutcome.Completed); Assert(policy.Pending, "Desfecho final e registrado.");
         var party = PrototypePartyFactory.Create(); int changes = 0; party.Changed += () => changes++;
         party.TryRemoveEquipment(party.Members[0], EquipmentSlot.Armor, out _);
         Assert(changes == 1, "Desequipar dispara evento.");
@@ -170,11 +164,42 @@ internal static class SaveChecks
         Assert(changes == 3, "Encaixar materia dispara evento.");
         party.TryUnequip(party.Members[0], party.Members[0].Armor, 0, out _); Assert(changes == 4, "Remover materia dispara evento.");
     }
+    private static void CheckManualPersistence(string directory)
+    {
+        var store = new SaveStore(directory);
+        var initial = Initial();
+        Assert(!Directory.Exists(directory) && !store.Exists(1), "Preparar slots nao cria arquivos de save.");
+        Assert(store.TryWrite(1, initial, out _), "Primeiro salvamento explicito.");
+        byte[] previous = File.ReadAllBytes(store.SlotPath(1));
+        Assert(store.TryRead(1, out var session, out _), "Carregar jornada para alterar na sessao.");
+        session.Progress.TryOpenChest("praca-primeiro-bau", 25);
+        session.Secrets.LearnPoem();
+        session.Party.TryRemoveEquipment(session.Party.Members[0], EquipmentSlot.Armor, out _);
+        session.Party.Members[0].Limit.Restore(42);
+        session.Shops.TryBuy(session.Shops.FindShop("item-shop"), session.Shops.FindShop("item-shop").Products[0], 1, out _);
+        session.Quest.TryInteract(session.Shops.FindShop("item-shop"), out _);
+        var changed = JourneySnapshot.Capture(session.Party, session.Progress, session.Secrets, session.Dragon,
+            session.Shops, session.Quest, PrototypeTravel.Inn, PrototypeInnLayout.Spawn.x, PrototypeInnLayout.Spawn.y);
+        Assert(previous.SequenceEqual(File.ReadAllBytes(store.SlotPath(1))) && !File.Exists(store.SlotPath(1) + ".bak"),
+            "Eventos de bau, inventario, loja, entrega e segredo nao gravam nem criam backup.");
+        Assert(store.TryRead(1, out var saved, out _) && saved.Progress.Gold == 50 && saved.Party.Members[0].Armor != null
+            && saved.Party.Members[0].Limit.Charge == 0 && !saved.Secrets.KnowsPoem,
+            "Recarregar antes de salvar recupera a jornada anterior.");
+        Assert(store.TryWrite(1, changed, out _), "Salvamento explicito registra as alteracoes acumuladas.");
+        Assert(store.TryRead(1, out saved, out _) && saved.Progress.Gold == session.Progress.Gold
+            && saved.Party.Members[0].Armor == null && saved.Party.Members[0].Limit.Charge == 42 && saved.Secrets.KnowsPoem
+            && saved.Data.Map == PrototypeTravel.Inn,
+            "Salvar e carregar preservam o progresso acumulado e a posicao na hospedaria.");
+        Assert(previous.SequenceEqual(File.ReadAllBytes(store.SlotPath(1) + ".bak")), "Salvamento manual conserva o backup anterior.");
+        Assert(!store.Exists(2) && !store.Exists(3), "Salvar um slot nao cria as outras jornadas.");
+    }
     public static int Main(string[] args)
     {
         try
         {
-            CheckDomain(); CheckPolicy(); CheckFiles(Path.Combine(args[0], "saves-" + Guid.NewGuid().ToString("N")));
+            CheckDomain(); CheckInventoryEvents();
+            CheckManualPersistence(Path.Combine(args[0], "manual-" + Guid.NewGuid().ToString("N")));
+            CheckFiles(Path.Combine(args[0], "saves-" + Guid.NewGuid().ToString("N")));
             Console.WriteLine("Salvamento: " + checks + " verificacoes passaram."); return 0;
         }
         catch (Exception ex) { Console.Error.WriteLine(ex.ToString()); return 1; }

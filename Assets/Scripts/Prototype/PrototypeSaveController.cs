@@ -1,7 +1,6 @@
 using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using DragonQuest.Combat;
 using DragonQuest.Exploration;
 using DragonQuest.Interactions;
 using DragonQuest.Persistence;
@@ -21,8 +20,6 @@ namespace DragonQuest.Prototype
         private AncientSecrets secrets;
         private DragonProgress dragon;
         private Action<RestoredJourney> install;
-        private Action unsubscribe;
-        private readonly AutosavePolicy autosave = new AutosavePolicy();
         private readonly RestoredJourney[] previews = new RestoredJourney[SaveStore.SlotCount];
         private readonly string[] slotMessages = new string[SaveStore.SlotCount];
         private readonly bool[] occupied = new bool[SaveStore.SlotCount];
@@ -52,19 +49,6 @@ namespace DragonQuest.Prototype
                 store.TryRead(slot, out previews[slot - 1], out slotMessages[slot - 1]);
             }
         }
-        private void BindChanges()
-        {
-            var party = battle.Party; var items = party.Consumables; var quest = shops.Quest;
-            party.Changed += MarkChanged; items.Changed += MarkChanged; progress.Changed += MarkChanged;
-            secrets.Changed += MarkChanged; quest.Changed += MarkChanged; battle.EncounterCompleted += EncounterCompleted;
-            unsubscribe = () =>
-            {
-                party.Changed -= MarkChanged; items.Changed -= MarkChanged; progress.Changed -= MarkChanged;
-                secrets.Changed -= MarkChanged; quest.Changed -= MarkChanged; battle.EncounterCompleted -= EncounterCompleted;
-            };
-        }
-        private void MarkChanged() => autosave.Changed(battle.IsActive);
-        private void EncounterCompleted(BattleOutcome outcome) => autosave.BattleCompleted(outcome);
         private JourneyData Capture()
         {
             Vector3 position = player.transform.position;
@@ -83,14 +67,14 @@ namespace DragonQuest.Prototype
         private void NewGame(int slot)
         {
             ActiveSlot = slot;
-            if (!Write("Nova jornada salva")) return;
-            overwriteSlot = 0; IsMenuVisible = false; BindChanges(); player.SetMovementEnabled(true);
+            overwriteSlot = 0; IsMenuVisible = false; player.SetMovementEnabled(true);
+            ShowMessage("Nova jornada iniciada. Salve na hospedaria para registrar seu progresso.");
         }
         private void Continue(int slot)
         {
             if (!store.TryRead(slot, out var journey, out string warning)) { ShowMessage(warning); RefreshSlots(); return; }
             install(journey); progress = journey.Progress; ActiveSlot = slot; IsMenuVisible = false;
-            BindChanges(); player.SetMovementEnabled(true);
+            player.SetMovementEnabled(true);
             ShowMessage(warning ?? "Jornada carregada / slot " + slot, warning == null ? "Carregado / slot " + slot : null);
             battle.RestoreEnding((GameEnding)journey.Data.Ending);
         }
@@ -98,18 +82,12 @@ namespace DragonQuest.Prototype
         {
             if (IsMenuVisible || battle.IsActive || battle.HasEnded || locations.LocationId != PrototypeTravel.Inn)
             { ShowMessage("O salvamento manual fica disponivel na hospedaria, fora de combate."); return; }
-            autosave.Acknowledge(); Write("Jornada salva na hospedaria");
+            Write("Jornada salva na hospedaria");
         }
         private void Update()
         {
             if (!IsMenuVisible && !dialogue.IsOpen && !battle.IsBusy && Application.isFocused
                 && Keyboard.current?.f5Key.wasPressedThisFrame == true) SaveManual();
-        }
-        private void LateUpdate()
-        {
-            if (IsMenuVisible || !autosave.Pending || battle.IsActive && battle.Session.Outcome == BattleOutcome.None) return;
-            // Uma compra pode alterar inventario, ouro e estoque. Grava apenas a transacao concluida no frame.
-            autosave.Acknowledge(); Write("Progresso salvo automaticamente");
         }
         private void ShowMessage(string text, string compact = null)
         { message = text; compactMessage = compact; messageUntil = Time.unscaledTime + 8; }
@@ -140,12 +118,12 @@ namespace DragonQuest.Prototype
                     GUI.enabled = previousEnabled && overwriteSlot == 0;
                 }
                 GUI.enabled = previousEnabled;
-                GUI.Label(new Rect(110, 598, 1060, 48), "Autosave: vitorias, segredos, bau, entrega e inventario. Salvar manualmente: hospedeira ou F5 na hospedaria.", smallStyle);
+                GUI.Label(new Rect(110, 598, 1060, 48), "Salve pela hospedeira ou com F5 na hospedaria. O progresso so e gravado ao salvar manualmente.", smallStyle);
                 if (overwriteSlot != 0)
                 {
                     Panel(new Rect(280, 245, 720, 205));
-                    GUI.Label(new Rect(310, 265, 660, 74), "Comecar uma nova jornada no slot " + overwriteSlot + " substituira seu progresso atual.", textStyle);
-                    if (GUI.Button(new Rect(310, 365, 320, 48), "Substituir e comecar", buttonStyle)) NewGame(overwriteSlot);
+                    GUI.Label(new Rect(310, 265, 660, 74), "Ao salvar esta nova jornada no slot " + overwriteSlot + ", o progresso anterior sera substituido.", textStyle);
+                    if (GUI.Button(new Rect(310, 365, 320, 48), "Comecar nova jornada", buttonStyle)) NewGame(overwriteSlot);
                     if (GUI.Button(new Rect(650, 365, 320, 48), "Cancelar", buttonStyle)) overwriteSlot = 0;
                 }
             }
@@ -179,6 +157,6 @@ namespace DragonQuest.Prototype
             textStyle = new GUIStyle(GUI.skin.label) {fontSize = 20, wordWrap = true}; textStyle.normal.textColor = Color.white;
             smallStyle = new GUIStyle(textStyle) {fontSize = 16}; buttonStyle = new GUIStyle(GUI.skin.button) {fontSize = 18};
         }
-        private void OnDestroy() { unsubscribe?.Invoke(); if (pixel != null) Destroy(pixel); }
+        private void OnDestroy() { if (pixel != null) Destroy(pixel); }
     }
 }

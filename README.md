@@ -73,7 +73,7 @@ Os finais têm cenas e três páginas de texto, com opção de voltar ao menu in
 
 ### Salvamento — parte 9
 
-O menu inicial oferece Novo jogo e Continuar em três slots. Autosave após vitórias, segredos, baú, entrega e mudanças de inventário; salvamento manual com a hospedeira ou F5 na hospedaria. Carregar recupera mapa, posição livre do último save, equipamentos, encaixes, Limit, estoques e progresso. Se uma posição da periferia antiga estiver fora ou bloqueada na planta compacta, a equipe reaparece na rua central. Andar e trocar de mapa não salvam por si só; combates em andamento não são gravados.
+O menu inicial oferece Novo jogo e Continuar em três slots. O salvamento é somente manual: fale com a hospedeira ou use F5 na hospedaria. Novo jogo começa sem gravar; num slot ocupado, a jornada anterior só é substituída ao salvar manualmente a nova. Vitórias, segredos, baús, inventário e finais não salvam. Carregar recupera mapa, posição livre do último save, equipamentos, encaixes, Limit, estoques e progresso. Se uma posição da periferia antiga estiver fora ou bloqueada na planta compacta, a equipe reaparece na rua central. Combates em andamento não são gravados.
 
 Os saves ficam em `Application.persistentDataPath/Saves`, fora do Git, com backup da revisão anterior válida. Jornadas concluídas reabrem seu final. Veja `Docs/PARTE_9.md` para os detalhes e a conferência em Play.
 
@@ -239,7 +239,7 @@ Veja `Docs/PARTE_1.md` para o roteiro de verificação.
 | 7B | Poema em latim, três segredos e abertura da trilha do vulcão |
 | 7C | Interior do vulcão, batalha do dragão e armadura especial |
 | 8 | Tirano, espírito, meteoro e três finais |
-| 9 | Menu inicial, três slots, salvamento manual e automático |
+| 9 | Menu inicial, três slots e salvamento manual na hospedaria |
 | 10A | Equipe/moradores em pixel art e materiais nos cenários 3D |
 | 10B | Refinamento artístico, bosses, efeitos e interface |
 | 10C | Áudio, balanceamento, validação final e executável |
