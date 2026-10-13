@@ -17,8 +17,10 @@ namespace DragonQuest.Exploration
             bool walkingSheet = resource == "ArenWalk" || resource == "ArenDiagonalWalk";
             bool chest = resource == "ChestStates";
             bool worldPoi = resource == "WorldPoiSprites";
-            bool dragon = resource == "Dragon";
-            var frames = dragon ? PixelSpriteLayout.ReadSingle(Texture.width, Texture.height, alpha)
+            bool dragonAttack = resource == "DragonClaw" || resource == "DragonBreath";
+            bool dragon = resource == "Dragon" || dragonAttack;
+            var frames = dragonAttack ? PixelSpriteLayout.ReadAttack(Texture.width, Texture.height, alpha)
+                : dragon ? PixelSpriteLayout.ReadSingle(Texture.width, Texture.height, alpha)
                 : worldPoi ? PixelSpriteLayout.ReadWorldIcons(Texture.width, Texture.height, alpha)
                 : chest ? PixelSpriteLayout.ReadPropPair(Texture.width, Texture.height, alpha)
                 : PixelSpriteLayout.Read(Texture.width, Texture.height, alpha, walkingSheet);

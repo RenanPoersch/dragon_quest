@@ -374,7 +374,11 @@ namespace DragonQuest.Prototype
             }
             if (pixelSprites != null && participant.Id == DragonProgress.EnemyId)
             {
-                pixelSprites.Atlas("Dragon").Draw(rect, 0,
+                bool attacking = controller.IsPresentingAction && controller.IsPresentingDragonAttack;
+                string abilityId = controller.PresentingAbility?.Id;
+                string resource = attacking ? DragonAttackAnimation.Resource(abilityId) : "Dragon";
+                int frame = attacking ? DragonAttackAnimation.Frame(abilityId, Time.unscaledTime - controller.ActionStartedAt) : 0;
+                pixelSprites.Atlas(resource).Draw(rect, frame,
                     participant.IsAlive ? Color.white : new Color(.4f, .4f, .4f)); return;
             }
             if (pixelSprites != null && participant.Team == CombatTeam.Party)
@@ -386,11 +390,6 @@ namespace DragonQuest.Prototype
             {
                 pixelSprites.Atlas("NpcRoster").Draw(rect, participant.Id == CastleBattleRules.TyrantId ? 11 : 10,
                     participant.IsAlive ? Color.white : new Color(0.4f, 0.4f, 0.4f)); return;
-            }
-            if (pixelSprites != null && participant.Id == DragonProgress.EnemyId)
-            {
-                pixelSprites.Atlas("Dragon").Draw(rect, 0,
-                    participant.IsAlive ? Color.white : new Color(0.4f, 0.4f, 0.4f), true); return;
             }
             Texture2D portrait=participant.Id==DragonProgress.EnemyId?dragonPortrait:participant.Id==CastleBattleRules.SpiritId?spiritPortrait:participant.Id==CastleBattleRules.TyrantId?kingPortrait:null;
             if(portrait!=null)

@@ -49,8 +49,12 @@ namespace DragonQuest.Prototype
         public CombatantState PresentingActor { get; private set; }
         public AbilityDefinition PresentingAbility { get; private set; }
         public float ActionStartedAt { get; private set; }
-        public bool IsPresentingAction => IsActive && PresentingActor != null && Time.unscaledTime < ActionStartedAt + 0.72f;
-        public float ActionImpactAt => ActionStartedAt + 0.18f;
+        public bool IsPresentingDragonAttack => PresentingActor?.Id == DragonProgress.EnemyId
+            && DragonAttackAnimation.Resource(PresentingAbility?.Id) != null;
+        public bool IsPresentingAction => IsActive && PresentingActor != null && Time.unscaledTime < ActionStartedAt
+            + (IsPresentingDragonAttack ? DragonAttackAnimation.Duration(PresentingAbility.Id) : 0.72f);
+        public float ActionImpactAt => ActionStartedAt
+            + (IsPresentingDragonAttack ? DragonAttackAnimation.ImpactDelay(PresentingAbility.Id) : 0.18f);
         public int AttackPose => Time.unscaledTime < ActionImpactAt ? 1
             : Time.unscaledTime < ActionStartedAt + 0.44f ? 2 : 3;
 
@@ -171,9 +175,16 @@ namespace DragonQuest.Prototype
                 enemyActionTime = Time.unscaledTime + 0.9f;
             }
             if (Time.unscaledTime < enemyActionTime) return;
+            CombatantState actor = Session.CurrentActor;
+            AbilityDefinition ability = EnemyAI.ChooseAbility(Session);
             bool accepted = EnemyAI.TryTakeTurn(Session, out string message);
             ErrorMessage = accepted ? string.Empty : message;
-            if (accepted) AwardIfComplete();
+            if (accepted)
+            {
+                if (actor.Id == DragonProgress.EnemyId && DragonAttackAnimation.Resource(ability?.Id) != null)
+                { PresentingActor = actor; PresentingAbility = ability; ActionStartedAt = Time.unscaledTime; }
+                AwardIfComplete();
+            }
             pendingEnemy = null;
         }
 

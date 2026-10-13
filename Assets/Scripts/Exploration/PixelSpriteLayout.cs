@@ -111,6 +111,30 @@ namespace DragonQuest.Exploration
             return frames;
         }
 
+        // Os seis frames compartilham recorte e ancora: efeitos nao redimensionam o corpo.
+        public static PixelFrame[] ReadAttack(int width, int height, byte[] alpha)
+        {
+            var cropped = ReadGrid(width, height, alpha, 3, 2, false);
+            int cellWidth = width / 3, cellHeight = height / 2;
+            if (width % 3 != 0 || height % 2 != 0)
+                throw new ArgumentException("Folha de ataque precisa de seis celulas iguais.");
+            int left = cellWidth, right = 0, bottom = cellHeight, top = 0;
+            for (int i = 0; i < cropped.Length; i++)
+            {
+                var f = cropped[i];
+                int x = i % 3 * cellWidth, y = (1 - i / 3) * cellHeight;
+                left = Math.Min(left, f.X - x); right = Math.Max(right, f.X + f.Width - x);
+                bottom = Math.Min(bottom, f.Y - y); top = Math.Max(top, f.Y + f.Height - y);
+            }
+            var first = cropped[0];
+            float footX = first.X + first.FootX * first.Width;
+            var frames = new PixelFrame[6];
+            for (int i = 0; i < frames.Length; i++)
+                frames[i] = new PixelFrame(i % 3 * cellWidth + left,
+                    (1 - i / 3) * cellHeight + bottom, right - left, top - bottom,
+                    (footX - left) / (right - left));
+            return frames;
+        }
         private static PixelFrame[] ReadGrid(int width, int height, byte[] alpha, int columns, int rows, bool stableWalkingAnchor)
         {
             if (width < columns * 4 || height < rows * 4

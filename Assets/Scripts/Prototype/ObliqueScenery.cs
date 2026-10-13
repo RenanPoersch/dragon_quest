@@ -433,7 +433,7 @@ namespace DragonQuest.Prototype
         public void VolcanoIcon(Transform parent)
             => WorldPoi(parent, 4);
 
-        public Transform Dragon(Transform parent) => Show("Dragao - corpo e asas",DragonData(),parent);
+        public Transform Dragon(Transform parent) => PixelSprites.Create(parent, "Dragon");
         public Transform DragonEssence(Transform parent)
         {
             var mesh=new ObliqueMeshData();
