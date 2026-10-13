@@ -43,7 +43,7 @@ namespace DragonQuest.Combat
             }
             if (!party || !enemy) throw new ArgumentException("Batalha precisa de aliados e inimigos.");
             Combatants = combatants.AsReadOnly();
-            LastMessage = "Prepare sua equipe para a batalha.";
+            LastMessage = string.Empty;
             BeginRound();
         }
 

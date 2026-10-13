@@ -135,12 +135,6 @@ namespace DragonQuest.Prototype
             AbilityDefinition ability = CommandAbility(index);
             return ability == null || observedActor.Mp >= ability.MpCost && (!ability.UsesLimit || observedActor.Limit.IsReady);
         }
-        private string CommandDescription(int index)
-        {
-            if (InSubmenu && index == CommandCount() - 1) return "Voltar aos comandos.";
-            if (itemMode) return observedBattle.Inventory.Items[index].Definition.Description;
-            return InSubmenu ? groupAbilities[index].Description : rootCommands[index].Description;
-        }
         private IReadOnlyList<CombatantState> Targets() => selectedItem != null ? observedBattle.GetValidItemTargets(selectedItem)
             : observedBattle.GetValidTargets(selected);
         private int TargetRowCount() => selected != null && (selected.Targets == TargetRule.AllEnemies || selected.Targets == TargetRule.AllAllies)
@@ -225,7 +219,6 @@ namespace DragonQuest.Prototype
                 GUI.Label(new Rect(40, 556, 570, 55), "Prepara " + (intention == null ? "sua acao" : intention.Name) + "...", text);
             }
             else if (observedActor != null) DrawActions();
-            GUI.Label(new Rect(30, 704, 900, 16), "↑ ↓ Selecionar    Enter Confirmar    Esc Voltar    /    Clique para escolher", small);
             if (!string.IsNullOrEmpty(controller.ErrorMessage)) GUI.Label(new Rect(40, 668, 560, 25), controller.ErrorMessage, small);
             GUI.matrix = previous;
         }
@@ -243,8 +236,6 @@ namespace DragonQuest.Prototype
             }
             RectBox(arena, sky); RectBox(new Rect(20, 240, 1240, 176), ground);
             if (background != null) GUI.DrawTexture(arena, background, ScaleMode.ScaleAndCrop);
-            GUI.Label(new Rect(40, 32, 950, 32), controller.BattleTitle, title);
-            GUI.Label(new Rect(1060, 32, 180, 32), "RODADA " + observedBattle.Round, centered);
             IReadOnlyList<CombatantState> targets = Targets();
             foreach (CombatantState participant in observedBattle.Combatants)
             {
@@ -260,7 +251,6 @@ namespace DragonQuest.Prototype
                     if (group || i == targetIndex) DrawHand(new Rect(figure.x - 60, figure.center.y - 18, 56, 36));
                     if (GUI.Button(figure, GUIContent.none, GUIStyle.none)) { targetIndex = i; ExecuteTarget(participant); }
                 }
-                GUI.Label(new Rect(figure.center.x - 130, figure.yMax + 6, 260, 26), participant.Definition.Name, centered);
                 if (participant.IsCharging) GUI.Label(new Rect(figure.center.x - 140, figure.y - 53, 280, 24), "PREPARANDO ATAQUE!", centered);
             }
             foreach (FloatingNumber floating in numbers)
@@ -305,12 +295,7 @@ namespace DragonQuest.Prototype
                     CommandEnabled(i) && !targeting)) { ChooseCommand(i); break; }
             }
             GUI.EndScrollView();
-            if (!targeting)
-            {
-                string description = CommandDescription(commandIndex);
-                GUI.Label(new Rect(337, 546, 278, 114), description, text);
-                return;
-            }
+            if (!targeting) return;
             IReadOnlyList<CombatantState> targets = Targets();
             targetIndex = Mathf.Clamp(targetIndex, 0, Mathf.Max(0, targets.Count - 1));
             GUI.Label(new Rect(337, 510, 278, 30), "Escolha o alvo", text);
