@@ -13,6 +13,7 @@ namespace DragonQuest.Prototype
         private PrototypeBattleController controller;
         private PixelSpriteLibrary pixelSprites;
         private PrototypeBattleSprites battleSprites;
+        private readonly SpellAnimation spellAnimation = new SpellAnimation();
         private Texture2D pixel, hand, dragonPortrait, spiritPortrait, kingPortrait, background;
         private GUIStyle title, text, small, centered, button, number;
         private Rect handUv = new Rect(0, 0, 1, 1);
@@ -253,6 +254,10 @@ namespace DragonQuest.Prototype
                 }
                 if (participant.IsCharging) GUI.Label(new Rect(figure.center.x - 140, figure.y - 53, 280, 24), "PREPARANDO ATAQUE!", centered);
             }
+            if (controller.IsPresentingAction && controller.IsPresentingSpell)
+                foreach (CombatantState target in controller.PresentingTargets)
+                    spellAnimation.Draw(FigureRect(target), controller.PresentingAbility,
+                        Time.unscaledTime - controller.ActionStartedAt);
             foreach (FloatingNumber floating in numbers)
             {
                 Rect figure = FigureRect(floating.Target);

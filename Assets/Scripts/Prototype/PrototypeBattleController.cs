@@ -48,13 +48,15 @@ namespace DragonQuest.Prototype
         public string RewardMessage { get; private set; }
         public CombatantState PresentingActor { get; private set; }
         public AbilityDefinition PresentingAbility { get; private set; }
+        public System.Collections.Generic.IReadOnlyList<CombatantState> PresentingTargets { get; private set; } = new CombatantState[0];
+        public bool IsPresentingSpell => SpellAnimation.Resource(PresentingAbility) != null;
         public float ActionStartedAt { get; private set; }
         public bool IsPresentingDragonAttack => PresentingActor?.Id == DragonProgress.EnemyId
             && DragonAttackAnimation.Resource(PresentingAbility?.Id) != null;
         public bool IsPresentingAction => IsActive && PresentingActor != null && Time.unscaledTime < ActionStartedAt
-            + (IsPresentingDragonAttack ? DragonAttackAnimation.Duration(PresentingAbility.Id) : 0.72f);
+            + (IsPresentingDragonAttack ? DragonAttackAnimation.Duration(PresentingAbility.Id) : IsPresentingSpell ? SpellAnimation.Duration : 0.72f);
         public float ActionImpactAt => ActionStartedAt
-            + (IsPresentingDragonAttack ? DragonAttackAnimation.ImpactDelay(PresentingAbility.Id) : 0.18f);
+            + (IsPresentingDragonAttack ? DragonAttackAnimation.ImpactDelay(PresentingAbility.Id) : IsPresentingSpell ? SpellAnimation.ImpactDelay : 0.18f);
         public int AttackPose => Time.unscaledTime < ActionImpactAt ? 1
             : Time.unscaledTime < ActionStartedAt + 0.44f ? 2 : 3;
 
@@ -98,7 +100,7 @@ namespace DragonQuest.Prototype
         private void StartEncounter(BattleSession encounter, bool dragonEncounter)
         {
             Session = encounter; IsDragonEncounter = dragonEncounter;
-            PresentingActor = null; PresentingAbility = null;
+            PresentingActor = null; PresentingAbility = null; PresentingTargets = new CombatantState[0];
             BattleLocationId = currentLocation();
             notifiedCompletion = false;
             IsActive = true;
@@ -118,12 +120,18 @@ namespace DragonQuest.Prototype
         {
             if (!IsActive || IsPresentingAction || Session.CurrentActor == null || Session.CurrentActor.Team != CombatTeam.Party) return false;
             CombatantState actor = Session.CurrentActor;
+            var effectTargets = new System.Collections.Generic.List<CombatantState>();
+            if (ability != null && (ability.Targets == TargetRule.AllEnemies || ability.Targets == TargetRule.AllAllies))
+                effectTargets.AddRange(Session.GetValidTargets(ability));
+            else if (target != null)
+                effectTargets.Add(ability != null && ability.Effect == AbilityEffect.PhysicalDamage
+                    && target.ProtectedBy != null && target.ProtectedBy.IsAlive ? target.ProtectedBy : target);
             bool accepted = Session.TryAct(actor, ability, target, out string message);
             ErrorMessage = accepted ? string.Empty : message;
             if (accepted)
             {
-                if (PrototypeBattleSprites.HasAnimation(actor.Id, ability))
-                { PresentingActor = actor; PresentingAbility = ability; ActionStartedAt = Time.unscaledTime; }
+                if (PrototypeBattleSprites.HasAnimation(actor.Id, ability) || SpellAnimation.Resource(ability) != null)
+                { PresentingActor = actor; PresentingAbility = ability; PresentingTargets = effectTargets; ActionStartedAt = Time.unscaledTime; }
                 AwardIfComplete();
             }
             return accepted;
@@ -182,7 +190,7 @@ namespace DragonQuest.Prototype
             if (accepted)
             {
                 if (actor.Id == DragonProgress.EnemyId && DragonAttackAnimation.Resource(ability?.Id) != null)
-                { PresentingActor = actor; PresentingAbility = ability; ActionStartedAt = Time.unscaledTime; }
+                { PresentingActor = actor; PresentingAbility = ability; PresentingTargets = new CombatantState[0]; ActionStartedAt = Time.unscaledTime; }
                 AwardIfComplete();
             }
             pendingEnemy = null;
