@@ -51,8 +51,9 @@ internal static class AbilityChecks
         Act(battle, Defend, one);
         Assert(battle.Round == 2 && battle.CurrentActor == hero, "Inimigo derrotado em area deve perder seu turno.");
         Assert(battle.GetValidTargets(cleave).Count == 1, "Area deve excluir derrotados.");
-        Assert(!battle.TryAct(hero, cleave, two, out _) && hero.Mp == 53, "Alvo morto nao pode confirmar area.");
-        Act(battle, cleave, one);
+        int corpseChanges = two.VitalChanges.Count;
+        Act(battle, cleave, two);
+        Assert(two.Hp == 0 && two.VitalChanges.Count == corpseChanges, "Area com selecao antiga deve atingir sobreviventes, sem hitar o derrotado.");
         Assert(battle.Outcome == BattleOutcome.Victory && hero.Mp == 46, "Area deve encerrar a batalha se vencer todos.");
 
         hero = Fighter("poor", CombatTeam.Party, 30, mp: 6, abilities: new[] { cleave });

@@ -112,6 +112,33 @@ namespace DragonQuest.Combat
             return targets;
         }
 
+        public CombatantState NextLivingEnemyAfter(CombatantState previous)
+        {
+            int start = combatants.IndexOf(previous);
+            if (start < 0) return null;
+            for (int offset = 1; offset <= combatants.Count; offset++)
+            {
+                CombatantState next = combatants[(start + offset) % combatants.Count];
+                if (next.Team == CombatTeam.Enemy && next.IsAlive) return next;
+            }
+            return null;
+        }
+
+        // A stale enemy selection advances in formation order; damage never reaches a corpse.
+        public CombatantState ResolveLivingEnemyTarget(AbilityDefinition ability, CombatantState target)
+        {
+            if (ability == null || CurrentActor == null || target == null || target.IsAlive
+                || target.Team == CurrentActor.Team || !combatants.Contains(target)
+                || (ability.Targets != TargetRule.Enemy && ability.Targets != TargetRule.AllEnemies)) return target;
+            int start = combatants.IndexOf(target);
+            for (int offset = 1; offset < combatants.Count; offset++)
+            {
+                CombatantState next = combatants[(start + offset) % combatants.Count];
+                if (next.Team != CurrentActor.Team && next.IsAlive && IsValidTarget(CurrentActor, ability, next)) return next;
+            }
+            return null;
+        }
+
         private static bool IsValidTarget(CombatantState actor, AbilityDefinition ability, CombatantState target)
         {
             if (ability.Effect == AbilityEffect.Revive) return target.Team == actor.Team && !target.IsAlive;
@@ -138,6 +165,7 @@ namespace DragonQuest.Combat
             if(Rules!=null&&!Rules.ValidateAction(actor,ability,out message)) return false;
             if (actor.Mp < ability.MpCost) { message = "MP insuficiente."; return false; }
             if (ability.UsesLimit && !actor.Limit.IsReady) { message = "Limit Break exige a barra em 100%."; return false; }
+            target = ResolveLivingEnemyTarget(ability, target);
             if (target == null || !combatants.Contains(target) || !IsValidTarget(actor, ability, target))
             { message = "Escolha um alvo valido para esta habilidade."; return false; }
 

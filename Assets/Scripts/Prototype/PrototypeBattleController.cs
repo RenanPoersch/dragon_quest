@@ -61,8 +61,8 @@ namespace DragonQuest.Prototype
         public float ActionStartedAt { get; private set; }
         public bool IsPresentingDragonAttack => PresentingActor?.Id == DragonProgress.EnemyId
             && DragonAttackAnimation.Resource(PresentingAbility?.Id) != null;
-        public bool IsPresentingAction => IsActive && PresentingActor != null && Time.unscaledTime < ActionStartedAt
-            + ActionDuration;
+        public float ActionEndsAt => DefeatedEnemyPresentation.EndOfAction(ActionStartedAt + ActionDuration, ActionImpactAt, PresentingTargets);
+        public bool IsPresentingAction => IsActive && PresentingActor != null && Time.unscaledTime < ActionEndsAt;
         public float ActionImpactAt => ActionStartedAt
             + (IsPresentingDragonAttack ? DragonAttackAnimation.ImpactDelay(PresentingAbility.Id) : IsPresentingSummon ? SummonAnimation.ImpactDelay
             : IsPresentingSpell ? SpellAnimation.ImpactDelay : BattleAnimationCatalog.ImpactDelay(PresentingActor?.Id, PresentingAbility));
@@ -153,6 +153,7 @@ namespace DragonQuest.Prototype
         {
             if (!IsActive || IsPresentingAction || Session.CurrentActor == null || Session.CurrentActor.Team != CombatTeam.Party) return false;
             CombatantState actor = Session.CurrentActor;
+            target = Session.ResolveLivingEnemyTarget(ability, target);
             var effectTargets = new System.Collections.Generic.List<CombatantState>();
             if (ability != null && (ability.Targets == TargetRule.AllEnemies || ability.Targets == TargetRule.AllAllies))
                 effectTargets.AddRange(Session.GetValidTargets(ability));

@@ -23,6 +23,7 @@ namespace DragonQuest.Prototype
         private float handAspect = 1;
         private BattleSession observedBattle;
         private CombatantState observedActor;
+        private CombatantState preferredEnemyTarget;
         private AbilityDefinition selected;
         private ConsumableDefinition selectedItem;
         private bool itemMode;
@@ -34,6 +35,7 @@ namespace DragonQuest.Prototype
         private Vector2 actionsScroll, targetsScroll;
         private readonly Dictionary<CombatantState, int> seenChanges = new Dictionary<CombatantState, int>();
         private readonly List<FloatingNumber> numbers = new List<FloatingNumber>();
+        private readonly DefeatedEnemyPresentation defeatedEnemies = new DefeatedEnemyPresentation();
         private sealed class FloatingNumber
         {
             public CombatantState Target;
@@ -51,6 +53,8 @@ namespace DragonQuest.Prototype
             if (observedBattle != battle)
             {
                 observedBattle = battle; observedActor = null; seenChanges.Clear(); numbers.Clear();
+                defeatedEnemies.Reset();
+                preferredEnemyTarget = null;
                 // Optional map-specific art; the menu and fighter anchors do not depend on the background.
                 background = Resources.Load<Texture2D>("BattleBackgrounds/" + controller.BattleLocationId);
             }
@@ -63,6 +67,11 @@ namespace DragonQuest.Prototype
             }
             foreach (CombatantState participant in battle.Combatants)
             {
+                float deathTime = Time.unscaledTime;
+                if (controller.IsPresentingAction)
+                    foreach (CombatantState target in controller.PresentingTargets)
+                        if (target == participant) { deathTime = controller.ActionImpactAt; break; }
+                defeatedEnemies.Observe(participant, deathTime);
                 seenChanges.TryGetValue(participant, out int seen);
                 foreach (CombatVitalChange change in participant.VitalChanges)
                 {
@@ -93,6 +102,7 @@ namespace DragonQuest.Prototype
             if (keys.escapeKey.wasPressedThisFrame) { Cancel(); return; }
             bool targeting = selected != null || selectedItem != null;
             int count = targeting ? TargetRowCount() : CommandCount();
+            if (targeting) targetIndex = Mathf.Clamp(targetIndex, 0, Mathf.Max(0, count - 1));
             int delta = keys.downArrowKey.wasPressedThisFrame || keys.sKey.wasPressedThisFrame ? 1
                 : keys.upArrowKey.wasPressedThisFrame || keys.wKey.wasPressedThisFrame ? -1 : 0;
             if (count > 0 && delta != 0)
@@ -181,12 +191,25 @@ namespace DragonQuest.Prototype
                 else selected = ability;
             }
             targetIndex = 0; targetsScroll = Vector2.zero;
+            if (selected != null && selected.Targets == TargetRule.Enemy && preferredEnemyTarget != null)
+            {
+                IReadOnlyList<CombatantState> valid = Targets();
+                for (int i = 0; i < valid.Count; i++)
+                    if (valid[i] == preferredEnemyTarget) { targetIndex = i; break; }
+                targetsScroll.y = BattleCommandMenu.KeepRowVisible(0, targetIndex, valid.Count, 88);
+            }
         }
         private void ExecuteTarget(CombatantState target)
         {
+            CombatantState actualTarget = selected != null ? observedBattle.ResolveLivingEnemyTarget(selected, target) : target;
             bool accepted = selectedItem != null ? controller.TryPlayerItem(selectedItem, target)
                 : controller.TryPlayerAction(selected, target);
-            if (accepted) { selected = null; selectedItem = null; }
+            if (accepted)
+            {
+                if (actualTarget != null && actualTarget.Team == CombatTeam.Enemy)
+                    preferredEnemyTarget = actualTarget.IsAlive ? actualTarget : observedBattle.NextLivingEnemyAfter(actualTarget);
+                selected = null; selectedItem = null;
+            }
         }
 
         private void OnGUI()
@@ -244,13 +267,15 @@ namespace DragonQuest.Prototype
             IReadOnlyList<CombatantState> targets = Targets();
             foreach (CombatantState participant in observedBattle.Combatants)
             {
+                if (!defeatedEnemies.IsVisible(participant, Time.unscaledTime)) continue;
                 Rect figure = FigureRect(participant);
                 float castStep = controller.IsPresentingAction && controller.PresentingActor == participant
                     && HeroCastAnimation.IsCasting(controller.PresentingAbility)
                     ? HeroCastAnimation.Step(Time.unscaledTime - controller.ActionStartedAt, controller.ActionDuration) : 0;
-                RectBox(new Rect(figure.x + castStep - 8, figure.yMax - 8, figure.width + 16, 10), new Color(0, 0, 0, .25f));
+                RectBox(new Rect(figure.x + castStep - 8, figure.yMax - 8, figure.width + 16, 10),
+                    new Color(0, 0, 0, .25f * defeatedEnemies.Alpha(participant, Time.unscaledTime)));
                 DrawFighter(figure, participant);
-                if (participant == (controller.IsPresentingAction ? controller.PresentingActor : observedActor))
+                if (participant.IsAlive && participant == (controller.IsPresentingAction ? controller.PresentingActor : observedActor))
                     DrawTurnArrow(figure.center.x + castStep, figure.y - 30 + Mathf.Sin(Time.unscaledTime * 5) * 3);
                 bool group = selected != null && (selected.Targets == TargetRule.AllEnemies || selected.Targets == TargetRule.AllAllies);
                 for (int i = 0; i < targets.Count; i++)
@@ -375,6 +400,7 @@ namespace DragonQuest.Prototype
         }
         private void DrawFighter(Rect rect, CombatantState participant)
         {
+            Color tint = FighterTint(participant);
             bool acting = controller.IsPresentingAction && controller.PresentingActor == participant;
             if (controller.IsPresentingAction)
             {
@@ -395,17 +421,17 @@ namespace DragonQuest.Prototype
             }
             if (participant.Team == CombatTeam.Enemy && battleSprites != null
                 && battleSprites.Draw(rect, participant.Id, acting ? controller.AttackPose : 0,
-                    participant.IsAlive ? Color.white : new Color(.4f, .4f, .4f), acting ? controller.PresentingAbility : null)) return;
+                    tint, acting ? controller.PresentingAbility : null)) return;
             if (participant.Team == CombatTeam.Party && battleSprites != null)
             {
                 bool attacking = controller.IsPresentingAction && controller.PresentingActor == participant;
                 if (attacking && HeroCastAnimation.IsCasting(controller.PresentingAbility)
                     && heroCastAnimation.Draw(rect, participant.Id, controller.PresentingAbility,
                         Time.unscaledTime - controller.ActionStartedAt, controller.ActionDuration,
-                        participant.IsAlive ? Color.white : new Color(.4f, .4f, .4f))) return;
+                        tint)) return;
                 bool casting = attacking && HeroCastAnimation.IsCasting(controller.PresentingAbility);
                 int pose = attacking && !casting ? controller.AttackPose : 0;
-                if (battleSprites.Draw(rect, participant.Id, pose, participant.IsAlive ? Color.white : new Color(.4f, .4f, .4f),
+                if (battleSprites.Draw(rect, participant.Id, pose, tint,
                     attacking && !casting ? controller.PresentingAbility : null)) return;
             }
             if (pixelSprites != null && participant.Id == DragonProgress.EnemyId)
@@ -415,33 +441,41 @@ namespace DragonQuest.Prototype
                 string resource = attacking ? DragonAttackAnimation.Resource(abilityId) : "Dragon";
                 int frame = attacking ? DragonAttackAnimation.Frame(abilityId, Time.unscaledTime - controller.ActionStartedAt) : 0;
                 if (dragonSprites.Draw(rect, resource, frame,
-                    participant.IsAlive ? Color.white : new Color(.4f, .4f, .4f))) return;
+                    tint)) return;
             }
             if (pixelSprites != null && participant.Team == CombatTeam.Party)
             {
                 pixelSprites.Party(participant.Id).Draw(rect, (int)PixelDirection.Left,
-                    participant.IsAlive ? Color.white : new Color(0.4f, 0.4f, 0.4f)); return;
+                    tint); return;
             }
             if (pixelSprites != null && participant.Team == CombatTeam.Enemy && participant.Id != DragonProgress.EnemyId && participant.Id != CastleBattleRules.SpiritId)
             {
                 pixelSprites.Atlas("NpcRoster").Draw(rect, participant.Id == CastleBattleRules.TyrantId ? 11 : 10,
-                    participant.IsAlive ? Color.white : new Color(0.4f, 0.4f, 0.4f)); return;
+                    tint); return;
             }
             Texture2D portrait=participant.Id==DragonProgress.EnemyId?dragonPortrait:participant.Id==CastleBattleRules.SpiritId?spiritPortrait:participant.Id==CastleBattleRules.TyrantId?kingPortrait:null;
             if(portrait!=null)
             {
-                Color previous=GUI.color;GUI.color=participant.IsAlive?Color.white:new Color(0.4f,0.4f,0.4f);
+                Color previous=GUI.color;GUI.color=tint;
                 GUI.DrawTexture(rect,portrait,ScaleMode.ScaleToFit);GUI.color=previous;return;
             }
             Color clothes = participant.Team == CombatTeam.Enemy ? new Color(0.69f, 0.29f, 0.27f)
                 : participant.Id == "lia" ? new Color(0.8f, 0.86f, 0.74f)
                 : participant.Id == "bram" ? new Color(0.37f, 0.58f, 0.7f) : new Color(0.85f, 0.68f, 0.28f);
-            if (!participant.IsAlive) clothes = new Color(0.3f, 0.32f, 0.34f);
+            clothes *= tint;
             RectBox(new Rect(rect.x, rect.y + rect.height * 0.30f, rect.width, rect.height * 0.45f), clothes);
             RectBox(new Rect(rect.x + rect.width * 0.25f, rect.y, rect.width * 0.5f, rect.height * 0.28f),
-                participant.IsAlive ? new Color(0.9f, 0.77f, 0.59f) : new Color(0.39f, 0.4f, 0.41f));
+                new Color(0.9f, 0.77f, 0.59f) * tint);
             RectBox(new Rect(rect.x + rect.width * 0.12f, rect.y + rect.height * 0.78f, rect.width * 0.3f, rect.height * 0.22f), clothes);
             RectBox(new Rect(rect.x + rect.width * 0.58f, rect.y + rect.height * 0.78f, rect.width * 0.3f, rect.height * 0.22f), clothes);
+        }
+
+        private Color FighterTint(CombatantState participant)
+        {
+            if (participant.Team == CombatTeam.Party) return participant.IsAlive ? Color.white : new Color(.4f, .4f, .4f);
+            Color tint = defeatedEnemies.IsRed(participant, Time.unscaledTime) ? new Color(1, .12f, .12f) : Color.white;
+            tint.a = defeatedEnemies.Alpha(participant, Time.unscaledTime);
+            return tint;
         }
 
 
