@@ -307,9 +307,8 @@ namespace DragonQuest.Prototype
         private Transform CreateRuins(List<Interactable> interactions)
         {
             Transform ruins=Group("Ruinas antigas - altar da lenda");
-            DrawBlocks(PrototypeRuinsLayout.Blocks,ruins);
-            Transform altar=ruins.Find("Altar antigo");
-            interactions.Add(AddSecret(altar.gameObject,SecretObject.Altar,MonolithSymbol.Sun,scenery.AltarFlame(altar)));
+            Transform altar=ruins.gameObject.AddComponent<RuinsSideScenery>().Build(out GameObject flame);
+            interactions.Add(AddSecret(altar.gameObject,SecretObject.Altar,MonolithSymbol.Sun,flame));
             CreatePassage("Saida das ruinas", PrototypeTravel.Ruins, ruins, PrototypeTravel.World);
             return ruins;
         }

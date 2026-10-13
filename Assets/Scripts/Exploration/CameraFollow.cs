@@ -12,6 +12,8 @@ namespace DragonQuest.Exploration
         private Rect? coveredGroundBounds;
         private bool fixedFrame;
         private float requestedSize;
+        private bool sideView;
+        private float sideHeight;
         private bool artworkFrame;
 
         public void SetArtworkFrame(bool enabled)
@@ -29,6 +31,9 @@ namespace DragonQuest.Exploration
         public static float ArtworkFrameSize(float halfHeight, float displayAspect)
             => (float)System.Math.Min(halfHeight, halfHeight*(16f/9f)/System.Math.Max(.1f,displayAspect));
 
+        public void SetSideView(bool enabled, float height = 0)
+        { sideView = enabled; sideHeight = height; }
+
         public void Initialize(Transform followTarget, Rect bounds, float orthographicSize = 6f, bool fixedCamera = false, Rect? groundCoverage = null)
         {
             target = followTarget;
@@ -41,7 +46,7 @@ namespace DragonQuest.Exploration
             UpdateSize();
             view.nearClipPlane = 0.1f;
             view.farClipPlane = 150f;
-            transform.rotation = Quaternion.AngleAxis(ObliqueProjection.YawDegrees, Vector3.forward)
+            transform.rotation = sideView ? Quaternion.identity : Quaternion.AngleAxis(ObliqueProjection.YawDegrees, Vector3.forward)
                 * Quaternion.Euler(-ObliqueProjection.TiltDegrees, 0, 0);
             transform.position = GetFollowPosition();
         }
@@ -67,11 +72,19 @@ namespace DragonQuest.Exploration
                 view.orthographicSize=ArtworkFrameSize(requestedSize,aspect);
                 return;
             }
-            view.orthographicSize = ObliqueProjection.FrameSize(requestedSize, worldBounds, view.aspect, fixedFrame, coveredGroundBounds);
+            view.orthographicSize = sideView ? requestedSize
+                : ObliqueProjection.FrameSize(requestedSize, worldBounds, view.aspect, fixedFrame, coveredGroundBounds);
         }
 
         private Vector3 GetFollowPosition()
         {
+            if (sideView)
+            {
+                float halfWidth = view.orthographicSize * view.aspect;
+                float x = worldBounds.width <= halfWidth * 2 ? worldBounds.center.x
+                    : Mathf.Clamp(target.position.x, worldBounds.xMin + halfWidth, worldBounds.xMax - halfWidth);
+                return new Vector3(x, sideHeight, -30);
+            }
             Vector3 position = ObliqueProjection.CameraPosition(target.position, worldBounds,
                 view.orthographicSize, view.aspect, fixedFrame, transform.forward, coveredGroundBounds);
             // Anchor the proportional crop to the bottom so the forest exit stays on screen.

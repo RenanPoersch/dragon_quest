@@ -55,6 +55,7 @@ namespace DragonQuest.Prototype
             mapRoots[PrototypeTravel.World].GetComponentInChildren<BlockedPassageInteraction>(true)?.RestoreBarrierState();
             if (map == PrototypeTravel.EastForest) position = EastForestLayout.SafeSavedPosition(position);
             if (map == PrototypeTravel.City) position = PrototypeCityLayout.SafeSavedPosition(position);
+            if (map == PrototypeTravel.Ruins) position = PrototypeRuinsLayout.SafeSavedPosition(position);
             if (map == PrototypeTravel.World) position = PrototypeWorldLayout.SafeSavedPosition(position,
                 navigation.CanEnterVolcano);
             ApplyMap(position);
@@ -63,14 +64,20 @@ namespace DragonQuest.Prototype
         private void ApplyMap(Vector2 arrival)
         {
             foreach (var root in mapRoots) root.Value.SetActive(root.Key == LocationId);
+            bool lateral = LocationId == PrototypeTravel.Ruins;
             bool forest=LocationId==PrototypeTravel.EastForest;
             player.SetMovementConstraint(forest ? EastForestLayout.ConstrainMove : (System.Func<Vector2,Vector2,Vector2>)null);
             if(forest) arrival=EastForestLayout.SafeSavedPosition(arrival);
+            player.SetLateralPath(lateral ? PrototypeRuinsLayout.FloorAt : (System.Func<float, float>)null,
+                PrototypeRuinsLayout.MinX, PrototypeRuinsLayout.MaxX, PrototypeRuinsLayout.WalkingSpeedMultiplier);
+            Transform heroShadow = player.transform.Find("Sombra no chao");
+            if (heroShadow != null) heroShadow.gameObject.SetActive(!lateral);
+            cameraFollow.SetSideView(lateral, PrototypeRuinsLayout.CameraHeight);
             cameraFollow.SetArtworkFrame(forest);
             player.Teleport(arrival);
             cameraFollow.Initialize(player.transform, forest ? PrototypeWorldLayout.ForestBounds : navigation.Current.Bounds, navigation.Current.CameraSize,
                 navigation.Current.FixedCamera, navigation.Current.CoveredGroundBounds);
-            cameraFollow.GetComponent<Camera>().backgroundColor = LocationId == PrototypeTravel.World
+            cameraFollow.GetComponent<Camera>().backgroundColor = lateral ? new Color(.22f, .24f, .25f) : LocationId == PrototypeTravel.World
                 ? new Color(0.19f, 0.37f, 0.49f) : new Color(0.15f, 0.24f, 0.21f);
             Physics2D.SyncTransforms();
         }

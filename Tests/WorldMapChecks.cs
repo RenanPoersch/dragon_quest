@@ -220,7 +220,7 @@ internal static class WorldMapChecks
         var west = new Paths(PrototypeWorldLayout.ForestBounds, PrototypeWorldLayout.CreateForestBlocks(false), PrototypeWorldLayout.ForestSpawn, npc: new Vector2(1.5f, 1));
         var east = new Paths(PrototypeWorldLayout.ForestBounds, PrototypeWorldLayout.CreateForestBlocks(true), PrototypeWorldLayout.ForestSpawn, npc: new Vector2(1.5f, 1));
         var castle = new Paths(PrototypeWorldLayout.CastleBounds, PrototypeWorldLayout.CastleBlocks, PrototypeWorldLayout.CastleSpawn, npc: PrototypeWorldLayout.Throne);
-        var ruins = new Paths(PrototypeRuinsLayout.Bounds,PrototypeRuinsLayout.Blocks,PrototypeRuinsLayout.Spawn);
+        var ruins = new Paths(PrototypeRuinsLayout.Bounds,Array.Empty<CityBlock>(),PrototypeRuinsLayout.Spawn);
         var volcano=new Paths(PrototypeVolcanoLayout.Bounds,PrototypeVolcanoLayout.Blocks.Concat(new[]{new CityBlock("Dragao",0,8,1.8f,1.8f,"",true,0)}),PrototypeVolcanoLayout.Spawn);
         var inn=new Paths(PrototypeInnLayout.Bounds,PrototypeInnLayout.Blocks,PrototypeInnLayout.Spawn,npc:PrototypeInnLayout.Keeper);
         var openWorld = new Paths(PrototypeWorldLayout.Bounds, WorldBlocks().Where(block=>block.Name!=PrototypeSecretLayout.SealedRocks),PrototypeWorldLayout.Spawn,true);
@@ -265,8 +265,9 @@ internal static class WorldMapChecks
         Assert(west.Accessible(PrototypeSecretLayout.Inscription+Vector2.down), "Inscricao deve poder ser lida.");
         Assert(east.Accessible(PrototypeSecretLayout.ClawStone+Vector2.down), "Pedra com marcas precisa ser acessivel.");
         Assert(east.Accessible(PrototypeSecretLayout.HollowTree+Vector2.left*1.5f), "Arvore oca precisa de acesso dentro do alcance de E.");
-        Assert(ruins.Accessible(PrototypeSecretLayout.Altar+Vector2.down),"Altar precisa de caminho desde entrada das ruinas.");
-        Assert(!ruins.Walkable(PrototypeSecretLayout.Altar),"Altar das ruinas deve ter colisao propria.");
+        Assert(ruins.Accessible(PrototypeRuinsLayout.Altar),"Corredor lateral deve chegar ao altar.");
+        Assert(Math.Abs(PrototypeRuinsLayout.FloorAt(PrototypeRuinsLayout.Altar.x)-PrototypeRuinsLayout.Altar.y)<.001f,
+            "O caminho deve subir ate a plataforma do altar.");
         Assert(ruins.Accessible(PrototypeRuinsLayout.Exit),"Ruinas precisam permitir retornar a ilha.");
         foreach (Vector2 water in new[] { new Vector2(-18, 0), new Vector2(18, 0), new Vector2(0, -12), new Vector2(0, 12), new Vector2(-14, -8) })
             Assert(!world.Walkable(water), "Mar e baia nao podem permitir caminhar fora da ilha.");

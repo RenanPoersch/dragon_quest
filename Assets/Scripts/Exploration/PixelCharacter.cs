@@ -30,7 +30,9 @@ namespace DragonQuest.Exploration
             bool teleported = teleportRevision != movement.TeleportRevision;
             teleportRevision = movement.TeleportRevision;
             walk.Advance(distance, Time.deltaTime, movement.HasMovementInput, teleported);
-            var facing = PixelSpriteLayout.Facing(movement.FacingDirection, diagonalAtlas != null);
+            var facing = movement.IsSideView
+                ? movement.FacingDirection.x < 0 ? PixelDirection.Left : PixelDirection.Right
+                : PixelSpriteLayout.Facing(movement.FacingDirection, diagonalAtlas != null);
             var source = PixelSpriteLayout.IsDiagonal(facing) ? diagonalAtlas : atlas;
             int pose = PixelSpriteLayout.WalkFrame(facing, walk.Distance, walk.Walking);
             var next = source.Sprites[pose];
@@ -41,6 +43,12 @@ namespace DragonQuest.Exploration
             if (view == null) view = Camera.main;
             if (view != null)
             {
+                if (movement != null && movement.IsSideView)
+                {
+                    transform.rotation = Quaternion.identity;
+                    transform.localScale = Vector3.one;
+                    return;
+                }
                 // O sprite permanece vertical: inclina-lo com a camera empurra a cabeca para dentro dos objetos.
                 transform.rotation = Quaternion.LookRotation(PixelSpriteLayout.HorizontalCameraForward(view.transform.forward), PixelSpriteLayout.UprightUp);
                 // Conserva tamanho e proporcoes vistos na tela, compensando a projecao obliqua.

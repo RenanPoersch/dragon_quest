@@ -16,6 +16,19 @@ namespace DragonQuest.Exploration
         private System.Func<Vector2,Vector2,Vector2> movementConstraint;
         public void SetMovementConstraint(System.Func<Vector2,Vector2,Vector2> constraint)
         { movementConstraint=constraint; }
+        private System.Func<float, float> lateralFloor;
+        private float lateralMin, lateralMax;
+        private float lateralSpeedMultiplier = 1, lateralVelocity;
+        public bool IsSideView => lateralFloor != null;
+
+        public void SetLateralPath(System.Func<float, float> floor, float minX = 0, float maxX = 0, float speedMultiplier = 1)
+        {
+            lateralFloor = floor; lateralMin = minX; lateralMax = maxX;
+            lateralSpeedMultiplier = speedMultiplier; lateralVelocity = 0;
+            movement = Vector2.zero;
+            body.linearVelocity = Vector2.zero;
+            if (IsSideView) FacingDirection = Vector2.left;
+        }
 
         public Vector2 FacingDirection { get; private set; } = Vector2.down;
         public bool HasMovementInput => movement.sqrMagnitude > 0;
@@ -47,12 +60,24 @@ namespace DragonQuest.Exploration
             if (keyboard.wKey.isPressed || keyboard.upArrowKey.isPressed) vertical += 1f;
 
             // Clamp evita que a diagonal seja mais rápida que os eixos.
-            movement = ObliqueProjection.GroundDirection(Vector2.ClampMagnitude(new Vector2(horizontal, vertical), 1f));
+            movement = IsSideView ? new Vector2(horizontal, 0)
+                : ObliqueProjection.GroundDirection(Vector2.ClampMagnitude(new Vector2(horizontal, vertical), 1f));
             if (movement.sqrMagnitude > 0f) FacingDirection = movement.normalized;
         }
 
         private void FixedUpdate()
         {
+            if (IsSideView)
+            {
+                Vector2 velocity = movementEnabled && Application.isFocused
+                    ? MovementDynamics.StepVelocity(new Vector2(lateralVelocity, 0), movement * speed * lateralSpeedMultiplier,
+                        Time.fixedDeltaTime, acceleration, deceleration) : Vector2.zero;
+                float x = Mathf.Clamp(body.position.x + velocity.x * Time.fixedDeltaTime, lateralMin, lateralMax);
+                lateralVelocity = x == lateralMin || x == lateralMax ? 0 : velocity.x;
+                body.linearVelocity = Vector2.zero;
+                body.MovePosition(new Vector2(x, lateralFloor(x)));
+                return;
+            }
             // Evita trocar instantaneamente a velocidade e provocar um solavanco na camera.
             // Parte da velocidade resolvida pela fisica, conservando colisao e deslizamento nas paredes.
             body.linearVelocity = movementEnabled && Application.isFocused
@@ -70,6 +95,7 @@ namespace DragonQuest.Exploration
             movementEnabled = enabled;
             if (!enabled)
             {
+                lateralVelocity = 0;
                 movement = Vector2.zero;
                 if (body != null) body.linearVelocity = Vector2.zero;
             }
@@ -77,6 +103,7 @@ namespace DragonQuest.Exploration
 
         public void Teleport(Vector2 position)
         {
+            lateralVelocity = 0;
             unchecked { TeleportRevision++; }
             movement = Vector2.zero;
             body.linearVelocity = Vector2.zero;
@@ -86,6 +113,7 @@ namespace DragonQuest.Exploration
 
         private void OnDisable()
         {
+            lateralVelocity = 0;
             movement = Vector2.zero;
             if (body != null) body.linearVelocity = Vector2.zero;
         }
@@ -94,6 +122,7 @@ namespace DragonQuest.Exploration
         {
             if (!focused)
             {
+                lateralVelocity = 0;
                 movement = Vector2.zero;
                 if (body != null) body.linearVelocity = Vector2.zero;
             }
