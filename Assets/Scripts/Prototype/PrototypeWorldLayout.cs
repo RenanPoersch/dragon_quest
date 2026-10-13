@@ -123,6 +123,15 @@ namespace DragonQuest.Prototype
 
         public static IReadOnlyList<CityBlock> CreateForestBlocks(bool eastern)
         {
+            if (eastern)
+            {
+                var painted = new List<CityBlock>();
+                // The painted clearing is bounded by EastForestLayout's floor contour.
+                Vector2 stone = PrototypeSecretLayout.ClawStone, tree = PrototypeSecretLayout.HollowTree;
+                painted.Add(new CityBlock("Pedra com escamas", stone.x, stone.y, 1.4f, 1, "8B927F", true, 2));
+                painted.Add(new CityBlock("Raizes da arvore oca", tree.x, tree.y, 1.6f, 1, "385539", true, 2));
+                return painted.AsReadOnly();
+            }
             var blocks = new List<CityBlock>
             {
                 new CityBlock("Chao da floresta", 0, 0, 18, 14, eastern ? "4D6945" : "3C6044", false, -10),

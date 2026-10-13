@@ -242,9 +242,22 @@ namespace DragonQuest.Prototype
         private Transform CreateForest(List<Interactable> interactions, bool eastern)
         {
             Transform forest = Group(eastern ? "Floresta leste - interior" : "Floresta oeste - interior");
-            DrawBlocks(PrototypeWorldLayout.CreateForestBlocks(eastern), forest);
+            if (eastern)
+            {
+                forest.gameObject.AddComponent<ForestPixelScenery>().Build(secrets);
+                // The painting replaces the old block scenery; only matching physical landmarks remain.
+                foreach (CityBlock block in PrototypeWorldLayout.CreateForestBlocks(true))
+                {
+                    if (!block.Solid || !(block.Name.StartsWith("Limite") || block.Name == "Pedra com escamas")) continue;
+                    Vector2 position = block.Name == "Pedra com escamas" ? PrototypeSecretLayout.ClawStone : block.Position;
+                    GameObject obstacle = Entity(block.Name, position, forest);
+                    BoxCollider2D collider = obstacle.AddComponent<BoxCollider2D>();
+                    collider.size = block.Size; collider.sharedMaterial = frictionless;
+                }
+            }
+            else DrawBlocks(PrototypeWorldLayout.CreateForestBlocks(false), forest);
             CreatePassage("Saida da floresta", eastern ? PrototypeTravel.EastForest : PrototypeTravel.WestForest, forest, PrototypeTravel.World);
-            NpcInteraction inhabitant = CreateNpc(eastern ? "Viajante" : "Lenhador", new Vector2(1.5f, 1), eastern ? "C19862" : "879C6B", forest);
+            NpcInteraction inhabitant = CreateNpc(eastern ? "Viajante" : "Lenhador", eastern ? EastForestLayout.Traveler : new Vector2(1.5f, 1), eastern ? "C19862" : "879C6B", forest);
             inhabitant.Initialize(eastern ? "Viajante" : "Lenhador", eastern
                 ? "Encontrei marcas incomuns numa pedra ao norte. Nao parecem ter sido feitas por nenhum animal que eu conheca."
                 : "Os tres monolitos sao mais antigos que estas arvores. Uma inscricao sobrevive na pedra perto deles.", eastern
@@ -265,10 +278,11 @@ namespace DragonQuest.Prototype
             else
             {
                 GameObject stone=Entity("Marcas na pedra",PrototypeSecretLayout.ClawStone,forest);
-                scenery.ClawMarks(stone.transform);
+                // Claw marks and the root hollow are painted at their projected interaction positions.
                 interactions.Add(AddSecret(stone,SecretObject.ClawStone));
                 GameObject tree=Entity("Raizes da arvore oca",PrototypeSecretLayout.HollowTree,forest);
-                scenery.Hollow(tree.transform);
+                BoxCollider2D roots=tree.AddComponent<BoxCollider2D>();
+                roots.size=new Vector2(1.6f,1f); roots.sharedMaterial=frictionless;
                 interactions.Add(AddSecret(tree,SecretObject.HollowTree));
             }
             return forest;

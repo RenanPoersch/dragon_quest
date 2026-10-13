@@ -9,8 +9,8 @@ namespace DragonQuest.Prototype
     {
         public static readonly Vector2 Altar = new Vector2(0, 4);
         public static readonly Vector2 Inscription = new Vector2(-2, 3);
-        public static readonly Vector2 ClawStone = new Vector2(2, 3);
-        public static readonly Vector2 HollowTree = new Vector2(4.5f, 5);
+        public static readonly Vector2 ClawStone = new Vector2(3.35f, 0.70f);
+        public static readonly Vector2 HollowTree = new Vector2(7.18f, 3.27f);
         public const string SealedRocks = "Barreira magica do vulcao";
         public static IReadOnlyList<CityBlock> WestMonoliths { get; } = Array.AsReadOnly(new[]
         {

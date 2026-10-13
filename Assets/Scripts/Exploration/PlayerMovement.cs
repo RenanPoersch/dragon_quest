@@ -13,6 +13,9 @@ namespace DragonQuest.Exploration
         private Rigidbody2D body;
         private Vector2 movement;
         private bool movementEnabled = true;
+        private System.Func<Vector2,Vector2,Vector2> movementConstraint;
+        public void SetMovementConstraint(System.Func<Vector2,Vector2,Vector2> constraint)
+        { movementConstraint=constraint; }
 
         public Vector2 FacingDirection { get; private set; } = Vector2.down;
         public bool HasMovementInput => movement.sqrMagnitude > 0;
@@ -55,6 +58,11 @@ namespace DragonQuest.Exploration
             body.linearVelocity = movementEnabled && Application.isFocused
                 ? MovementDynamics.StepVelocity(body.linearVelocity, movement * speed, Time.fixedDeltaTime, acceleration, deceleration)
                 : Vector2.zero;
+            if (movementConstraint != null)
+            {
+                Vector2 next=movementConstraint(body.position,body.linearVelocity*Time.fixedDeltaTime);
+                body.linearVelocity=(next-body.position)/Time.fixedDeltaTime;
+            }
         }
 
         public void SetMovementEnabled(bool enabled)

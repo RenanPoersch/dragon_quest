@@ -54,7 +54,7 @@ namespace DragonQuest.Prototype
                     coveredGroundBounds: PrototypeCityLayout.TerrainBounds),
                 new MapDefinition(Castle, "INTERIOR DO CASTELO", PrototypeWorldLayout.CastleBounds, PrototypeWorldLayout.CastleSpawn, 9, false, true),
                 new MapDefinition(WestForest, "PEDREIRA DOS MONOLITOS", PrototypeWorldLayout.ForestBounds, PrototypeWorldLayout.ForestSpawn, 8, false, true),
-                new MapDefinition(EastForest, "FLORESTA LESTE", PrototypeWorldLayout.ForestBounds, PrototypeWorldLayout.ForestSpawn, 8, false, true),
+                new MapDefinition(EastForest, "FLORESTA LESTE", EastForestLayout.Bounds, EastForestLayout.Spawn, 8, false, true),
                 new MapDefinition(Ruins,"RUINAS ANTIGAS",PrototypeRuinsLayout.Bounds,PrototypeRuinsLayout.Spawn,8,false,true),
                 new MapDefinition(Volcano,"VULCAO / CAMINHO ANCESTRAL",PrototypeVolcanoLayout.Bounds,PrototypeVolcanoLayout.Spawn,7.5f),
                 new MapDefinition(Inn,"HOSPEDARIA",PrototypeInnLayout.Bounds,PrototypeInnLayout.Spawn,6,false,true),
@@ -71,7 +71,7 @@ namespace DragonQuest.Prototype
             Connect(connections, World, WestForest, PrototypeWorldLayout.WestForest,
                 PrototypeWorldLayout.LocalExit, PrototypeWorldLayout.WestForest + Vector2.down * 2.5f);
             Connect(connections, World, EastForest, PrototypeWorldLayout.EastForest,
-                PrototypeWorldLayout.LocalExit, PrototypeWorldLayout.EastForest + Vector2.down * 2.5f);
+                EastForestLayout.Exit, PrototypeWorldLayout.EastForest + Vector2.down * 2.5f, exitSize: new Vector2(1.5f,.65f));
             Connect(connections, World, Ruins, PrototypeWorldLayout.Ruins,
                 PrototypeRuinsLayout.Exit, PrototypeWorldLayout.RuinsReturn);
             Connect(connections, City, Castle, PrototypeWorldLayout.CastleDoor, PrototypeWorldLayout.CastleExit, PrototypeCityLayout.CastleReturn);

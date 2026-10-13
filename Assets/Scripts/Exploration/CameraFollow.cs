@@ -12,6 +12,22 @@ namespace DragonQuest.Exploration
         private Rect? coveredGroundBounds;
         private bool fixedFrame;
         private float requestedSize;
+        private bool artworkFrame;
+
+        public void SetArtworkFrame(bool enabled)
+        {
+            if (artworkFrame == enabled) return;
+            artworkFrame = enabled;
+            if (view == null) view = GetComponent<Camera>();
+            view.rect = new Rect(0,0,1,1);
+            view.ResetAspect();
+        }
+
+        public static Rect ArtworkViewport(float displayAspect)
+            => new Rect(0,0,1,1);
+
+        public static float ArtworkFrameSize(float halfHeight, float displayAspect)
+            => (float)System.Math.Min(halfHeight, halfHeight*(16f/9f)/System.Math.Max(.1f,displayAspect));
 
         public void Initialize(Transform followTarget, Rect bounds, float orthographicSize = 6f, bool fixedCamera = false, Rect? groundCoverage = null)
         {
@@ -41,13 +57,25 @@ namespace DragonQuest.Exploration
 
         private void UpdateSize()
         {
+            if (artworkFrame)
+            {
+                float width=view.targetTexture != null ? view.targetTexture.width : Screen.width;
+                float height=view.targetTexture != null ? view.targetTexture.height : Screen.height;
+                float aspect=width/Mathf.Max(1,height);
+                view.rect=ArtworkViewport(aspect);
+                view.aspect=aspect;
+                view.orthographicSize=ArtworkFrameSize(requestedSize,aspect);
+                return;
+            }
             view.orthographicSize = ObliqueProjection.FrameSize(requestedSize, worldBounds, view.aspect, fixedFrame, coveredGroundBounds);
         }
 
         private Vector3 GetFollowPosition()
         {
-            return ObliqueProjection.CameraPosition(target.position, worldBounds,
+            Vector3 position = ObliqueProjection.CameraPosition(target.position, worldBounds,
                 view.orthographicSize, view.aspect, fixedFrame, transform.forward, coveredGroundBounds);
+            // Anchor the proportional crop to the bottom so the forest exit stays on screen.
+            return artworkFrame ? position + transform.up*(view.orthographicSize-requestedSize) : position;
         }
     }
 }
