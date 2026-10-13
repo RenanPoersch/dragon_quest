@@ -44,6 +44,9 @@ public static class SummonCastChecks
         Check(SummonAnimation.Frame(SummonAnimation.Duration) == 7 && SummonAnimation.Duration > SummonAnimation.ImpactDelay,
             "Summon completes attack and recovery.");
         Check(PrototypePartyFactory.Bahamut.Element == DamageElement.None, "Visual impact must not change Bahamut damage element.");
+        Check(SummonAnimation.AttackFrameResource(PrototypePartyFactory.Bahamut) == "BahamutAttack"
+            && SummonAnimation.AttackFrameResource(PrototypePartyFactory.Summon) == "PhoenixAttack", "Complete attack images replace the clipped impact frames.");
+        Check(SummonAnimation.AttackFrameResource(PrototypePartyFactory.Titan) == null, "Titan retains its original attack sheet.");
         Console.WriteLine("Summon, All, hero cast, Infusion and timing checks passed.");
     }
 }
