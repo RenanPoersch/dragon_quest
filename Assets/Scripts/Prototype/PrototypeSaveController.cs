@@ -68,7 +68,7 @@ namespace DragonQuest.Prototype
         {
             ActiveSlot = slot;
             overwriteSlot = 0; IsMenuVisible = false; player.SetMovementEnabled(true);
-            ShowMessage("Nova jornada iniciada. Salve na hospedaria para registrar seu progresso.");
+            ShowMessage("Nova jornada iniciada. Salve com F5 no mapa global ou na hospedaria para registrar seu progresso.");
         }
         private void Continue(int slot)
         {
@@ -80,9 +80,9 @@ namespace DragonQuest.Prototype
         }
         public void SaveManual()
         {
-            if (IsMenuVisible || battle.IsActive || battle.HasEnded || locations.LocationId != PrototypeTravel.Inn)
-            { ShowMessage("O salvamento manual fica disponivel na hospedaria, fora de combate."); return; }
-            Write("Jornada salva na hospedaria");
+            if (IsMenuVisible || battle.IsActive || battle.HasEnded || (locations.LocationId != PrototypeTravel.Inn && locations.LocationId != PrototypeTravel.World))
+            { ShowMessage("O salvamento manual fica disponivel no mapa global ou na hospedaria, fora de combate."); return; }
+            Write("Jornada salva");
         }
         private void Update()
         {
@@ -118,7 +118,7 @@ namespace DragonQuest.Prototype
                     GUI.enabled = previousEnabled && overwriteSlot == 0;
                 }
                 GUI.enabled = previousEnabled;
-                GUI.Label(new Rect(110, 598, 1060, 48), "Salve pela hospedeira ou com F5 na hospedaria. O progresso so e gravado ao salvar manualmente.", smallStyle);
+                GUI.Label(new Rect(110, 598, 1060, 48), "Salve pela hospedeira ou com F5 no mapa global ou na hospedaria. O progresso so e gravado ao salvar manualmente.", smallStyle);
                 if (overwriteSlot != 0)
                 {
                     Panel(new Rect(280, 245, 720, 205));

@@ -22,7 +22,7 @@ Use essa versão do Editor para evitar migrações involuntárias.
 3. Abra com o Editor **6000.6.5f1** e aguarde a importação dos pacotes e assets.
 4. Abra `Assets/Scenes/CidadePrototipo.unity`.
 5. Clique em **Play** e escolha **Novo jogo** ou **Continuar** em um dos três slots do menu.
-6. Clique dentro da janela **Game** e use **WASD ou as setas** para andar; **E** interage com objetos próximos, **I** abre o inventário e **F5** salva na hospedaria.
+6. Clique dentro da janela **Game** e use **WASD ou as setas** para andar; **E** interage com objetos próximos, **I** abre o inventário e **F5** salva no mapa global ou na hospedaria.
 
 ## Parte 7A — ilha e cenários locais
 
@@ -73,7 +73,7 @@ Os finais têm cenas e três páginas de texto, com opção de voltar ao menu in
 
 ### Salvamento — parte 9
 
-O menu inicial oferece Novo jogo e Continuar em três slots. O salvamento é somente manual: fale com a hospedeira ou use F5 na hospedaria. Novo jogo começa sem gravar; num slot ocupado, a jornada anterior só é substituída ao salvar manualmente a nova. Vitórias, segredos, baús, inventário e finais não salvam. Carregar recupera mapa, posição livre do último save, equipamentos, encaixes, Limit, estoques e progresso. Se uma posição da periferia antiga estiver fora ou bloqueada na planta compacta, a equipe reaparece na rua central. Combates em andamento não são gravados.
+O menu inicial oferece Novo jogo e Continuar em três slots. O salvamento é somente manual: fale com a hospedeira ou use F5 no mapa global ou na hospedaria. Novo jogo começa sem gravar; num slot ocupado, a jornada anterior só é substituída ao salvar manualmente a nova. Vitórias, segredos, baús, inventário e finais não salvam. Carregar recupera mapa, posição livre do último save, equipamentos, encaixes, Limit, estoques e progresso. Se uma posição da periferia antiga estiver fora ou bloqueada na planta compacta, a equipe reaparece na rua central. Combates em andamento não são gravados.
 
 Os saves ficam em `Application.persistentDataPath/Saves`, fora do Git, com backup da revisão anterior válida. Jornadas concluídas reabrem seu final. Veja `Docs/PARTE_9.md` para os detalhes e a conferência em Play.
 
