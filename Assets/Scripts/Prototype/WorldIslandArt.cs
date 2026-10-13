@@ -9,7 +9,7 @@ namespace DragonQuest.Prototype
         public static ObliqueMeshData Ground()
         {
             var mesh = new ObliqueMeshData();
-            mesh.Polygon(PrototypeWorldLayout.Coast.Select(p => p * 0.955f).ToArray(), 0, Color.white);
+            mesh.Plane(0, 0, 80, 65, 0, Color.white);
             Rect bounds = PrototypeWorldLayout.GroundPaintingBounds;
             for (int i = 0; i < mesh.Vertices.Count; i++)
             {

@@ -26,7 +26,7 @@ namespace DragonQuest.Exploration
                 : PixelSpriteLayout.Read(Texture.width, Texture.height, alpha, walkingSheet);
             int maxHeight = 1; foreach (var frame in frames) maxHeight = Math.Max(maxHeight, frame.Height);
             // Mesma escala nos dois estados; abrir a tampa nao redimensiona a caixa.
-            float pixelsPerUnit = chest ? frames[0].Width / 1.1f : maxHeight / ((dragon ? 3.8f : worldPoi ? 1.95f : 1.45f) * ObliqueProjection.HeightScale);
+            float pixelsPerUnit = chest ? frames[0].Width / 1.1f : maxHeight / ((dragon ? 3.8f : worldPoi ? 1.95f * 1.10f * 1.15f * 1.25f : 1.45f) * ObliqueProjection.HeightScale);
             Sprites = new Sprite[frames.Length];
             for (int i = 0; i < frames.Length; i++)
             {

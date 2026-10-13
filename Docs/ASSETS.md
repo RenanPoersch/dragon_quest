@@ -84,3 +84,6 @@ A pintura cobre terra, musgo, vielas, pátios, grelhas, leito do fosso e pavimen
 `Tools/Build-UnifiedCityGround.py` permite reconstruir o PNG com semente fixa; `Docs/ArtInputs/CityGroundBake.json` registra dimensões e hashes. O cenário usa um material e uma textura de chão, com importação Point/Clamp sem redução/compressão. A imagem separada `CityGroundSurroundings.png` foi removida. As muretas externas deixam de ter malha visível; as colisões continuam limitando a área jogável. Modelos da fortaleza e ponte permanecem.
 
 `Docs/ArtInputs/CityGroundCore.png` conserva a fonte original; `CityGroundRebuilt.png` conserva o núcleo da revisão atual para verificar seus pixels no PNG final. Reconstrução: `python Tools/Build-UnifiedCityGround.py --output Assets/Resources/PixelArt/CityGroundMap.png --core-output Docs/ArtInputs/CityGroundRebuilt.png`; copiar o JSON gerado ao lado do PNG para `Docs/ArtInputs/CityGroundBake.json`. Pillow e NumPy são dependências de desenvolvimento; o jogo consome apenas o PNG pronto.
+
+## Mapa mundial continuo — 13 de outubro de 2026
+WorldGroundMap.png foi recriado inteiro em uma geracao com image_gen: terreno, montanhas, costa, praia, espuma e oceano no mesmo PNG original de 1536 x 1024. Uma superficie, uma textura, mar estatico pintado. Guia original em ArtInputs/UnifiedWorldGuide.png. Prompt e verificacoes em WORLD_UNIFIED_MAP.md.

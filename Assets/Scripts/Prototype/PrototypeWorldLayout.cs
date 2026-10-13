@@ -15,7 +15,7 @@ namespace DragonQuest.Prototype
         public static readonly Vector2 Volcano = -Ruins;
         public static readonly Vector2 Trail = Volcano + Vector2.down * 3.5f;
         public static readonly Vector2 RuinsReturn = Ruins + new Vector2(1.5f, -1.9f);
-        public static readonly Rect GroundPaintingBounds = new Rect(-18, -12, 36, 24);
+        public static readonly Rect GroundPaintingBounds = new Rect(-20, -14, 40, 28);
         public const float WardRadius = 2.45f;
         public static readonly Rect ForestBounds = new Rect(-9, -7, 18, 14);
         public static readonly Rect CastleBounds = new Rect(-10, -8, 20, 16);
@@ -28,18 +28,18 @@ namespace DragonQuest.Prototype
         public static readonly Vector2 CityExit = PrototypeCityLayout.Exit;
         public static readonly Vector2 CastleDoor = PrototypeCityLayout.CastleDoor;
 
-        public static IReadOnlyList<Vector2> Coast { get; } = RoundedCoast();
+        public static IReadOnlyList<Vector2> Coast { get; } = PeninsulaCoast();
 
-        // Uma oval irregular, com enseadas suaves; a mesma costa serve ao renderer e ao mar fisico.
-        private static IReadOnlyList<Vector2> RoundedCoast()
+        // Peninsulas e enseadas assimetricas; renderer e mar fisico compartilham o contorno.
+        private static IReadOnlyList<Vector2> PeninsulaCoast()
         {
             var points = new List<Vector2>();
-            for (int i = 0; i < 64; i++)
+            for (int i = 0; i < 96; i++)
             {
-                double angle = i * System.Math.PI * 2 / 64;
-                double variation = 1 + 0.055 * System.Math.Sin(angle * 3 + 0.4) + 0.025 * System.Math.Cos(angle * 5);
-                points.Add(new Vector2((float)(15.3 * System.Math.Cos(angle) * variation),
-                    (float)(10.8 * System.Math.Sin(angle) * variation)));
+                double angle = i * System.Math.PI * 2 / 96;
+                double variation = 1 + 0.12 * System.Math.Sin(angle * 3 + 0.6) + 0.055 * System.Math.Cos(angle * 5 - 0.4) + 0.026 * System.Math.Sin(angle * 9);
+                points.Add(new Vector2((float)((14.5 * System.Math.Cos(angle) + 0.7 * System.Math.Sin(angle)) * variation),
+                    (float)((9.8 * System.Math.Sin(angle) - 0.5 * System.Math.Cos(angle)) * variation)));
             }
             return points.AsReadOnly();
         }

@@ -17,6 +17,9 @@ $scriptArguments += Get-ChildItem -LiteralPath (Join-Path $scriptUnityData 'NetS
 $scriptArguments += Get-ChildItem -LiteralPath (Join-Path $scriptUnityData 'Managed/UnityEngine') -Filter '*.dll' | ForEach-Object { "-reference:$($_.FullName)" }
 $scriptArguments += "-reference:$scriptInputAssembly"
 $scriptArguments += Get-ChildItem -LiteralPath (Join-Path $scriptProjectRoot 'Assets/Scripts') -Filter '*.cs' -Recurse | ForEach-Object { $_.FullName }
-& $scriptDotnet $scriptCsc.FullName @scriptArguments
+# O projeto cresceu: arquivo de resposta evita o limite de 32767 caracteres do Windows.
+$scriptResponse = Join-Path $WorkDirectory 'UnityScripts.rsp'
+$scriptArguments | ForEach-Object { '"' + $_ + '"' } | Set-Content -LiteralPath $scriptResponse -Encoding utf8
+& $scriptDotnet $scriptCsc.FullName "@$scriptResponse"
 if ($LASTEXITCODE -eq 0) { Write-Output 'Scripts do jogo compilaram com as bibliotecas da Unity.' }
 exit $LASTEXITCODE

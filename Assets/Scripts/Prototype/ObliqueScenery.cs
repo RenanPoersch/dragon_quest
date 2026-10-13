@@ -33,9 +33,10 @@ namespace DragonQuest.Prototype
             if (groundShader == null || groundPainting == null) throw new InvalidOperationException("Pintura ou shader do chao da periferia ausente.");
             cityGroundMaterial = new Material(groundShader) {name = "Periferia / chao pintado uma vez"};
             cityGroundMaterial.SetTexture("_MainTex", groundPainting);
+            var worldShader = Resources.Load<Shader>("WorldGround");
             var worldPainting = Resources.Load<Texture2D>("PixelArt/WorldGroundMap");
-            if (worldPainting == null) throw new InvalidOperationException("Pintura do chao da ilha ausente.");
-            worldGroundMaterial = new Material(groundShader) {name = "Ilha / chao continuo em pixel art"};
+            if (worldShader == null || worldPainting == null) throw new InvalidOperationException("Mapa continuo da ilha ausente.");
+            worldGroundMaterial = new Material(worldShader) { name = "Ilha / uma pintura continua de terreno, costa e mar" };
             worldGroundMaterial.SetTexture("_MainTex", worldPainting);
             var glowShader = Resources.Load<Shader>("PixelGlow");
             if (glowShader == null) throw new InvalidOperationException("Shader PixelGlow ausente.");
@@ -292,37 +293,10 @@ namespace DragonQuest.Prototype
             mesh.Triangle(c,d,peak,color); mesh.Triangle(d,a,peak,color);
         }
 
-        public static ObliqueMeshData IslandData(bool includeGround = true)
-        {
-            var mesh=new ObliqueMeshData {DefaultSurface=PixelSurface.Water};
-            mesh.Plane(0,0,80,65,-0.95f,ObliqueMeshData.Hex("365E70"));
-            var coast=PrototypeWorldLayout.Coast;
-            var inner=new List<Vector2>();
-            foreach(Vector2 p in coast) inner.Add(new Vector2(p.x*0.955f,p.y*0.955f));
-            if (includeGround) mesh.Append(WorldIslandArt.Ground(), Vector3.zero);
-            for(int i=0;i<coast.Count;i++)
-            {
-                Vector2 a=coast[i], b=coast[(i+1)%coast.Count], c=inner[(i+1)%coast.Count], d=inner[i];
-                mesh.Quad(ObliqueMeshData.V(a.x,a.y,-0.08f),ObliqueMeshData.V(d.x,d.y,0),ObliqueMeshData.V(c.x,c.y,0),ObliqueMeshData.V(b.x,b.y,-0.08f),ObliqueMeshData.Hex("C2B494"), true, PixelSurface.Sand);
-                mesh.Quad(ObliqueMeshData.V(a.x,a.y,-0.8f),ObliqueMeshData.V(a.x,a.y,-0.08f),ObliqueMeshData.V(b.x,b.y,-0.08f),ObliqueMeshData.V(b.x,b.y,-0.8f),ObliqueMeshData.Hex("7D8073"), true, PixelSurface.Basalt);
-                // Faixa de espuma junto a costa, sem textura quadriculada.
-                mesh.Quad(ObliqueMeshData.V(a.x*1.01f,a.y*1.01f,-0.94f),ObliqueMeshData.V(a.x*1.026f,a.y*1.026f,-0.94f),
-                    ObliqueMeshData.V(b.x*1.026f,b.y*1.026f,-0.94f),ObliqueMeshData.V(b.x*1.01f,b.y*1.01f,-0.94f),ObliqueMeshData.Hex("789997"),false,PixelSurface.None);
-            }
-            for(int i=0;i<35;i++)
-            {
-                float x=-25+(i*17%51),y=-20+(i*7%40);
-                if(PrototypeWorldLayout.IsLand(new Vector2(x,y))) continue;
-                mesh.DefaultSurface = PixelSurface.None;
-                mesh.Plane(x,y,0.5f+(i%3)*0.25f,0.035f,-0.93f,ObliqueMeshData.Hex("537C89"));
-            }
-            return mesh;
-        }
-
+        public static ObliqueMeshData IslandData(bool includeGround = true) => WorldIslandArt.Ground();
         public GameObject World(Transform parent)
         {
-            Show("Costa arredondada e mar",IslandData(false),parent);
-            ShowWithMaterial("Chao continuo da ilha",WorldIslandArt.Ground(),parent,worldGroundMaterial);
+            ShowWithMaterial("Mapa completo em pixel art / terreno, costa e mar",WorldIslandArt.Ground(),parent,worldGroundMaterial);
             var seal = new GameObject(PrototypeSecretLayout.SealedRocks);
             seal.transform.SetParent(parent, false); seal.transform.localPosition = PrototypeWorldLayout.Volcano;
             var data = WorldIslandArt.Ward();
@@ -405,10 +379,31 @@ namespace DragonQuest.Prototype
 
         private void WorldPoi(Transform parent, int frame)
         {
+            Show("Sombra projetada atras do POI", WorldPoiShadowData(frame), parent);
             Transform visual = PixelSprites.Create(parent, "WorldPoiSprites", frame);
             visual.localPosition = new Vector3(ObliqueProjection.YawSin * 0.3f, -ObliqueProjection.YawCos * 0.3f, -0.015f);
         }
 
+        public static ObliqueMeshData WorldPoiShadowData(int frame)
+        {
+            var mesh = new ObliqueMeshData();
+            Vector2 rear = ObliqueProjection.GroundDirection(new Vector2(0.22f, 0.9f)).normalized;
+            Vector2 side = new Vector2(rear.y, -rear.x);
+            Vector2 foot = new Vector2(ObliqueProjection.YawSin * 0.3f, -ObliqueProjection.YawCos * 0.3f);
+            const float scale = 1.10f * 1.15f * 1.25f;
+            float halfWidth = (frame == 4 ? 0.85f : frame == 2 ? 0.8f : 0.7f) * scale;
+            // Caixa projetada atras e ligeiramente a direita, sem elipse sob os pes.
+            for (int i = 0; i < 4; i++)
+            {
+                float near = 0.16f + i * 0.22f * scale, far = near + 0.22f * scale;
+                Vector2 a = foot + rear * near - side * halfWidth, b = foot + rear * near + side * halfWidth;
+                Vector2 c = foot + rear * far + side * halfWidth, d = foot + rear * far - side * halfWidth;
+                mesh.Quad(ObliqueMeshData.V(a.x,a.y,0.035f), ObliqueMeshData.V(b.x,b.y,0.035f),
+                    ObliqueMeshData.V(c.x,c.y,0.035f), ObliqueMeshData.V(d.x,d.y,0.035f),
+                    new Color(0,0,0,0.32f-i*0.04f), false, PixelSurface.None);
+            }
+            return mesh;
+        }
         public static ObliqueMeshData ForestIconData()
         {
             var mesh=new ObliqueMeshData();
