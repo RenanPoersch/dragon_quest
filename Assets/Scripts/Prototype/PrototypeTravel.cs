@@ -71,7 +71,7 @@ namespace DragonQuest.Prototype
             Connect(connections, World, WestForest, PrototypeWorldLayout.WestForest,
                 PrototypeWorldLayout.LocalExit, PrototypeWorldLayout.WestForest + Vector2.down * 2.5f);
             Connect(connections, World, EastForest, PrototypeWorldLayout.EastForest,
-                EastForestLayout.Exit, PrototypeWorldLayout.EastForest + Vector2.down * 2.5f, exitSize: new Vector2(1.5f,.65f));
+                EastForestLayout.Exit, PrototypeWorldLayout.EastForest + Vector2.down * 2.5f, exitSize: EastForestLayout.ExitSize);
             Connect(connections, World, Ruins, PrototypeWorldLayout.Ruins,
                 PrototypeRuinsLayout.Exit, PrototypeWorldLayout.RuinsReturn);
             Connect(connections, City, Castle, PrototypeWorldLayout.CastleDoor, PrototypeWorldLayout.CastleExit, PrototypeCityLayout.CastleReturn);
@@ -131,7 +131,8 @@ namespace DragonQuest.Prototype
             arrival = Current.Spawn;
             if (blocked) return false;
             foreach (MapRoute route in Routes)
-                if (route.From == Current.Id && route.Entrance.Contains(position))
+                if (route.From == Current.Id && (route.From == EastForest && route.To == World
+                    ? EastForestLayout.IsExit(position) : route.Entrance.Contains(position)))
                     return TryTravel(route.To, out arrival);
             return false;
         }

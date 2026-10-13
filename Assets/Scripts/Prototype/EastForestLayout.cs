@@ -8,7 +8,11 @@ namespace DragonQuest.Prototype
     {
         public static readonly Rect Bounds = new Rect(-18, -18, 36, 30);
         public static readonly Vector2 Spawn = Ground(.47f, .83f);
-        public static readonly Vector2 Exit = Ground(.48f, .975f);
+        // A screen-aligned band spans the entire bottom path; a narrow XY box misses its sides.
+        private static readonly Rect ExitImageBounds = new Rect(.39f,.955f,.20f,.08f);
+        private static readonly Rect ExitGroundBounds = GroundBounds(ExitImageBounds);
+        public static readonly Vector2 Exit = ExitGroundBounds.center;
+        public static readonly Vector2 ExitSize = ExitGroundBounds.size;
         public static readonly Vector2 Traveler = Ground(.47f, .64f);
         // Coordinates follow the visible clearing, excluding trunks, distant forest and foreground roots.
         // U runs left-to-right and V top-to-bottom in the continuous 16:9 painting.
@@ -30,6 +34,17 @@ namespace DragonQuest.Prototype
             Vector2 screen = ObliqueProjection.ScreenPlane(ground);
             return new Vector2(.5f + screen.x*9f/256f, .5f-screen.y/16f);
         }
+
+        private static Rect GroundBounds(Rect image)
+        {
+            Vector2 a=Ground(image.xMin,image.yMin),b=Ground(image.xMax,image.yMin);
+            Vector2 c=Ground(image.xMax,image.yMax),d=Ground(image.xMin,image.yMax);
+            Vector2 min=Vector2.Min(Vector2.Min(a,b),Vector2.Min(c,d));
+            Vector2 max=Vector2.Max(Vector2.Max(a,b),Vector2.Max(c,d));
+            return Rect.MinMaxRect(min.x,min.y,max.x,max.y);
+        }
+
+        public static bool IsExit(Vector2 ground) => ExitImageBounds.Contains(ImagePoint(ground)) && IsWalkable(ground);
 
         private static bool Inside(Vector2 point)
         {

@@ -23,7 +23,7 @@ $forestRefs=Get-ChildItem -LiteralPath (Join-Path $forestPack.FullName 'ref') -D
 $forestRuntime=Get-ChildItem -LiteralPath (Join-Path $forestData 'NetCoreRuntime/shared/Microsoft.NETCore.App') -Directory | Sort-Object Name -Descending | Select-Object -First 1
 $forestCore=Join-Path $forestData 'Managed/UnityEngine/UnityEngine.CoreModule.dll'
 Copy-Item -LiteralPath $forestCore -Destination $WorkDirectory -Force
-foreach($forestTest in @('ForestCoverChecks','ForestNavigationChecks'))
+foreach($forestTest in @('ForestCoverChecks','ForestNavigationChecks','ForestExitChecks'))
 {
     $forestOut=Join-Path $WorkDirectory ($forestTest+'.dll')
     $forestArgs=@('-nologo','-target:exe','-nostdlib+',('-out:"'+$forestOut+'"'),('-reference:"'+$forestDll+'"'),('-reference:"'+$forestCore+'"'))
