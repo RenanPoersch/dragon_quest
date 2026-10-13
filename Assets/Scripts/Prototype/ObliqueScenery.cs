@@ -10,10 +10,11 @@ namespace DragonQuest.Prototype
     public sealed class ObliqueScenery : IDisposable
     {
         private readonly List<Mesh> meshes = new List<Mesh>();
-        private readonly Material material;
+        private readonly Material material, materiaShopMaterial;
         private readonly Material shadowMaterial;
         private readonly Material cityMaterial, cityDetailsMaterial, castleMaterial, glowMaterial, cityGroundMaterial, worldGroundMaterial;
         public PixelSpriteLibrary PixelSprites { get; }
+        private readonly ShopPixelArt shopPixels;
         public ObliqueScenery()
         {
             Shader shader = Resources.Load<Shader>("ObliqueWorld");
@@ -39,7 +40,9 @@ namespace DragonQuest.Prototype
             var glowShader = Resources.Load<Shader>("PixelGlow");
             if (glowShader == null) throw new InvalidOperationException("Shader PixelGlow ausente.");
             glowMaterial = new Material(glowShader) {name = "Periferia / vapor"};
+            materiaShopMaterial = AtlasMaterial(Resources.Load<Shader>("MateriaShop"), "MateriaShopAtlas", "Lojas / madeira e tecido pixel art");
             PixelSprites = new PixelSpriteLibrary();
+            shopPixels = new ShopPixelArt(PixelSprites.Material);
             var shadowShader = Resources.Load<Shader>("PixelShadow");
             if (shadowShader == null) throw new InvalidOperationException("Shader PixelShadow ausente.");
             shadowMaterial = new Material(shadowShader) {name = "Sombra transparente no chao"};
@@ -74,6 +77,12 @@ namespace DragonQuest.Prototype
             }
             return model.transform;
         }
+
+        public void MateriaShop(Transform parent) { ShowWithMaterial("Loja de materias / estrutura pixel art", ShopPixelArt.Shell("materia-shop"), parent, materiaShopMaterial); shopPixels.Populate(parent,"materia-shop"); }
+
+        public void WeaponShop(Transform parent) { ShowWithMaterial("Loja de armas / estrutura pixel art", ShopPixelArt.Shell("equipment-shop"), parent, materiaShopMaterial); shopPixels.Populate(parent,"equipment-shop"); }
+
+        public void ItemShop(Transform parent) { ShowWithMaterial("Loja de itens / estrutura pixel art", ShopPixelArt.Shell("item-shop"), parent, materiaShopMaterial); shopPixels.Populate(parent,"item-shop"); }
 
         public void CityBlock(CityBlock block, Transform parent)
             => ShowWithMaterial("Volume da periferia", CityPeripheryArt.Block(block), parent,
@@ -619,6 +628,8 @@ namespace DragonQuest.Prototype
             UnityEngine.Object.Destroy(castleMaterial);
             UnityEngine.Object.Destroy(cityGroundMaterial);
             UnityEngine.Object.Destroy(worldGroundMaterial);
+            shopPixels.Dispose();
+            UnityEngine.Object.Destroy(materiaShopMaterial);
             PixelSprites.Dispose();
         }
     }

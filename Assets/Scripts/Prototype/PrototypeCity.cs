@@ -333,22 +333,57 @@ namespace DragonQuest.Prototype
 
         private void CreateShop(Transform shop, List<Interactable> interactions, string shopId, string shopName, string displayColor)
         {
-            Block("Piso de madeira", Vector2.zero, new Vector2(14, 10), "A78255", shop, false, -10);
+            Transform interior = Entity("Interior compacto", Vector2.zero, shop).transform;
+            if (shopId == "item-shop")
+            {
+                scenery.ItemShop(interior);
+                // Colisoes seguem a planta original; decoracao fica nas areas inacessiveis.
+                foreach (var bounds in new[] { new Vector4(0,4.7f,14,.6f), new Vector4(0,-4.7f,14,.6f), new Vector4(-6.7f,0,.6f,10), new Vector4(6.7f,0,.6f,10), new Vector4(0,.15f,4,.6f), new Vector4(-4.8f,1.5f,1.5f,3), new Vector4(4.8f,1.5f,1.5f,3), new Vector4(5.35f,-2.65f,1.1f,.8f) })
+                {
+                    var fixture = Entity("Limite da loja de itens", new Vector2(bounds.x, bounds.y), interior);
+                    var collider = fixture.AddComponent<BoxCollider2D>(); collider.size = new Vector2(bounds.z, bounds.w); collider.sharedMaterial = frictionless;
+                }
+            }
+            else if (shopId == "materia-shop")
+            {
+                scenery.MateriaShop(interior);
+                foreach (var bounds in ArcaneMateriaShopArt.Fixtures)
+                {
+                    var fixture = Entity("Mobilia da loja de materias", new Vector2(bounds.x, bounds.y), interior);
+                    var collider = fixture.AddComponent<BoxCollider2D>();
+                    collider.size = new Vector2(bounds.z, bounds.w); collider.sharedMaterial = frictionless;
+                }
+            }
+            else if (shopId == "equipment-shop")
+            {
+                scenery.WeaponShop(interior);
+                foreach (var bounds in WeaponShopArt.Fixtures)
+                {
+                    var fixture = Entity("Mobilia da loja de armas", new Vector2(bounds.x, bounds.y), interior);
+                    var collider = fixture.AddComponent<BoxCollider2D>();
+                    collider.size = new Vector2(bounds.z, bounds.w); collider.sharedMaterial = frictionless;
+                }
+            }
+            else
+            {
+            Block("Piso de madeira", Vector2.zero, new Vector2(14, 10), "A78255", interior, false, -10);
             for (int y = -4; y <= 4; y++)
-                Block("Junta do piso", new Vector2(0, y), new Vector2(14, 0.04f), "80613F", shop, false, -9);
-            Block("Tapete", new Vector2(0, -2), new Vector2(3, 4), "8F5557", shop, false, -8);
-            Block("Parede norte", new Vector2(0, 4.7f), new Vector2(14, 0.6f), "5A4635", shop, true, 5);
-            Block("Parede sul", new Vector2(0, -4.7f), new Vector2(14, 0.6f), "5A4635", shop, true, 5);
-            Block("Parede oeste", new Vector2(-6.7f, 0), new Vector2(0.6f, 10), "5A4635", shop, true, 5);
-            Block("Parede leste", new Vector2(6.7f, 0), new Vector2(0.6f, 10), "5A4635", shop, true, 5);
-            Block("Balcao", new Vector2(0, 0.15f), new Vector2(4, 0.6f), "614533", shop, true, 4);
+                Block("Junta do piso", new Vector2(0, y), new Vector2(14, 0.04f), "80613F", interior, false, -9);
+            Block("Tapete", new Vector2(0, -2), new Vector2(3, 4), "8F5557", interior, false, -8);
+            Block("Parede norte", new Vector2(0, 4.7f), new Vector2(14, 0.6f), "5A4635", interior, true, 5);
+            Block("Parede sul", new Vector2(0, -4.7f), new Vector2(14, 0.6f), "5A4635", interior, true, 5);
+            Block("Parede oeste", new Vector2(-6.7f, 0), new Vector2(0.6f, 10), "5A4635", interior, true, 5);
+            Block("Parede leste", new Vector2(6.7f, 0), new Vector2(0.6f, 10), "5A4635", interior, true, 5);
+            Block("Balcao", new Vector2(0, 0.15f), new Vector2(4, 0.6f), "614533", interior, true, 4);
             foreach (float x in new[] { -4.8f, 4.8f })
             {
-                Block("Estante", new Vector2(x, 1.5f), new Vector2(1.5f, 3), "705033", shop, true, 3);
+                Block("Estante", new Vector2(x, 1.5f), new Vector2(1.5f, 3), "705033", interior, true, 3);
                 for (int shelf = 0; shelf < 3; shelf++)
-                    Block("Mercadoria provisoria", new Vector2(x, 0.7f + shelf * 0.8f), new Vector2(0.4f, 0.4f), displayColor, shop, false, 4);
+                    Block("Mercadoria provisoria", new Vector2(x, 0.7f + shelf * 0.8f), new Vector2(0.4f, 0.4f), displayColor, interior, false, 4);
             }
-            MerchantInteraction merchant = CreateNpcFigure(shopName, new Vector2(0, 0.9f), displayColor, shop).AddComponent<MerchantInteraction>();
+            }
+            interior.localScale = PrototypeShopLayout.InteriorScale;
+            MerchantInteraction merchant = CreateNpcFigure(shopName, new Vector2(0, 0.9f * PrototypeShopLayout.DepthScale), displayColor, shop).AddComponent<MerchantInteraction>();
             merchant.Initialize(shopId, shopName);
             interactions.Add(merchant);
             CreatePassage("Saida da loja", shopId, shop, PrototypeTravel.City);

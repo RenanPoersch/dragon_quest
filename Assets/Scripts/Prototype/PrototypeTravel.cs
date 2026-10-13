@@ -58,9 +58,9 @@ namespace DragonQuest.Prototype
                 new MapDefinition(Ruins,"RUINAS ANTIGAS",PrototypeRuinsLayout.Bounds,PrototypeRuinsLayout.Spawn,8,false,true),
                 new MapDefinition(Volcano,"VULCAO / CAMINHO ANCESTRAL",PrototypeVolcanoLayout.Bounds,PrototypeVolcanoLayout.Spawn,7.5f),
                 new MapDefinition(Inn,"HOSPEDARIA",PrototypeInnLayout.Bounds,PrototypeInnLayout.Spawn,6,false,true),
-                new MapDefinition("item-shop", "LOJA DE ITENS", new Rect(-7, -5, 14, 10), new Vector2(0, -2.7f), 6, true, true),
-                new MapDefinition("equipment-shop", "LOJA DE EQUIPAMENTOS", new Rect(-7, -5, 14, 10), new Vector2(0, -2.7f), 6, true, true),
-                new MapDefinition("materia-shop", "LOJA DE MATERIAS", new Rect(-7, -5, 14, 10), new Vector2(0, -2.7f), 6, true, true)
+                new MapDefinition("item-shop", "LOJA DE ITENS", PrototypeShopLayout.Bounds, PrototypeShopLayout.Spawn, PrototypeShopLayout.CameraSize, true, true),
+                new MapDefinition("equipment-shop", "LOJA DE EQUIPAMENTOS", PrototypeShopLayout.Bounds, PrototypeShopLayout.Spawn, PrototypeShopLayout.CameraSize, true, true),
+                new MapDefinition("materia-shop", "LOJA DE MATERIAS", PrototypeShopLayout.Bounds, PrototypeShopLayout.Spawn, PrototypeShopLayout.CameraSize, true, true)
             };
             foreach (MapDefinition map in definitions) maps.Add(map.Id, map);
             Maps = Array.AsReadOnly(definitions);
@@ -75,9 +75,9 @@ namespace DragonQuest.Prototype
             Connect(connections, World, Ruins, PrototypeWorldLayout.Ruins,
                 PrototypeRuinsLayout.Exit, PrototypeWorldLayout.RuinsReturn);
             Connect(connections, City, Castle, PrototypeWorldLayout.CastleDoor, PrototypeWorldLayout.CastleExit, PrototypeCityLayout.CastleReturn);
-            Connect(connections, City, "item-shop", PrototypeCityLayout.ItemDoor, new Vector2(0, -3.8f), PrototypeCityLayout.DoorReturn(PrototypeCityLayout.ItemDoor), entranceSize: PrototypeCityLayout.DoorSize);
-            Connect(connections, City, "materia-shop", PrototypeCityLayout.MateriaDoor, new Vector2(0, -3.8f), PrototypeCityLayout.DoorReturn(PrototypeCityLayout.MateriaDoor), entranceSize: PrototypeCityLayout.DoorSize);
-            Connect(connections, City, "equipment-shop", PrototypeCityLayout.EquipmentDoor, new Vector2(0, -3.8f), PrototypeCityLayout.DoorReturn(PrototypeCityLayout.EquipmentDoor), entranceSize: PrototypeCityLayout.DoorSize);
+            Connect(connections, City, "item-shop", PrototypeCityLayout.ItemDoor, PrototypeShopLayout.Exit, PrototypeCityLayout.DoorReturn(PrototypeCityLayout.ItemDoor), entranceSize: PrototypeCityLayout.DoorSize);
+            Connect(connections, City, "materia-shop", PrototypeCityLayout.MateriaDoor, PrototypeShopLayout.Exit, PrototypeCityLayout.DoorReturn(PrototypeCityLayout.MateriaDoor), entranceSize: PrototypeCityLayout.DoorSize);
+            Connect(connections, City, "equipment-shop", PrototypeCityLayout.EquipmentDoor, PrototypeShopLayout.Exit, PrototypeCityLayout.DoorReturn(PrototypeCityLayout.EquipmentDoor), entranceSize: PrototypeCityLayout.DoorSize);
             Connect(connections, City, Inn, PrototypeCityLayout.InnDoor, PrototypeInnLayout.Exit, PrototypeCityLayout.DoorReturn(PrototypeCityLayout.InnDoor), entranceSize: PrototypeCityLayout.DoorSize);
             Connect(connections, World, Volcano, PrototypeWorldLayout.Volcano,
                 PrototypeVolcanoLayout.Exit, PrototypeWorldLayout.Volcano+Vector2.down*1.8f);
@@ -113,6 +113,7 @@ namespace DragonQuest.Prototype
             if (mapId == null || !maps.TryGetValue(mapId, out var map) || float.IsNaN(position.x) || float.IsNaN(position.y)
                 || float.IsInfinity(position.x) || float.IsInfinity(position.y)
                 || !map.Bounds.Contains(position) && (mapId != City || !PrototypeCityLayout.LegacyBounds.Contains(position))
+                && (!map.IsShop || !PrototypeShopLayout.LegacyBounds.Contains(position))
                 || mapId == Volcano && !CanEnterVolcano) return false;
             Current = map; return true;
         }
