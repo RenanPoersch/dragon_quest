@@ -26,7 +26,6 @@ namespace DragonQuest.Prototype
         private Texture2D pixel;
         private GUIStyle titleStyle, textStyle, smallStyle, buttonStyle;
         private string message;
-        private string compactMessage;
         private float messageUntil;
         private int overwriteSlot;
         public bool IsMenuVisible { get; private set; } = true;
@@ -60,7 +59,7 @@ namespace DragonQuest.Prototype
             try
             {
                 bool saved = store.TryWrite(ActiveSlot, Capture(), out string error);
-                ShowMessage(saved ? success + " / slot " + ActiveSlot : error, saved ? "Salvo / slot " + ActiveSlot : null); return saved;
+                ShowMessage(saved ? success + " / slot " + ActiveSlot : error); return saved;
             }
             catch (Exception ex) { ShowMessage("Nao foi possivel salvar: " + ex.Message); return false; }
         }
@@ -68,14 +67,13 @@ namespace DragonQuest.Prototype
         {
             ActiveSlot = slot;
             overwriteSlot = 0; IsMenuVisible = false; player.SetMovementEnabled(true);
-            ShowMessage("Nova jornada iniciada. Salve com F5 no mapa global ou na hospedaria para registrar seu progresso.");
         }
         private void Continue(int slot)
         {
             if (!store.TryRead(slot, out var journey, out string warning)) { ShowMessage(warning); RefreshSlots(); return; }
             install(journey); progress = journey.Progress; ActiveSlot = slot; IsMenuVisible = false;
             player.SetMovementEnabled(true);
-            ShowMessage(warning ?? "Jornada carregada / slot " + slot, warning == null ? "Carregado / slot " + slot : null);
+            ShowMessage(warning ?? "Jornada carregada / slot " + slot);
             battle.RestoreEnding((GameEnding)journey.Data.Ending);
         }
         public void SaveManual()
@@ -89,11 +87,12 @@ namespace DragonQuest.Prototype
             if (!IsMenuVisible && !dialogue.IsOpen && !battle.IsBusy && Application.isFocused
                 && Keyboard.current?.f5Key.wasPressedThisFrame == true) SaveManual();
         }
-        private void ShowMessage(string text, string compact = null)
-        { message = text; compactMessage = compact; messageUntil = Time.unscaledTime + (compact != null ? 2f : 8f); }
+        private void ShowMessage(string text)
+        { message = text; messageUntil = Time.unscaledTime + 8f; }
         private void OnGUI()
         {
-            if (store == null) return;
+            // Save notices belong to the journey selection menu, never to the game maps.
+            if (store == null || !IsMenuVisible) return;
             EnsureStyles();
             Matrix4x4 previousMatrix = GUI.matrix; int previousDepth = GUI.depth;
             float scale = Mathf.Min(Screen.width / 1280f, Screen.height / 720f);
@@ -127,13 +126,11 @@ namespace DragonQuest.Prototype
                     if (GUI.Button(new Rect(650, 365, 320, 48), "Cancelar", buttonStyle)) overwriteSlot = 0;
                 }
             }
-            if (!string.IsNullOrEmpty(message) && Time.unscaledTime < messageUntil)
+            if (IsMenuVisible && !string.IsNullOrEmpty(message) && Time.unscaledTime < messageUntil)
             {
-                Rect rect = IsMenuVisible ? new Rect(110, 650, 1060, 50) : compactMessage != null
-                    ? new Rect((Screen.width / scale + 1280f) / 2f - 263f, (720f - Screen.height / scale) / 2f + 28f, 235, 35)
-                    : new Rect(710, 190, 540, 130);
+                Rect rect = new Rect(110, 650, 1060, 50);
                 Panel(rect); GUI.Label(new Rect(rect.x + 12, rect.y + 6, rect.width - 24, rect.height - 10),
-                    IsMenuVisible ? message : compactMessage ?? message, smallStyle);
+                    message, smallStyle);
             }
             GUI.matrix = previousMatrix; GUI.depth = previousDepth;
         }
