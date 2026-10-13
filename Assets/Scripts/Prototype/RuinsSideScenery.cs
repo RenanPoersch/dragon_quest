@@ -98,10 +98,8 @@ namespace DragonQuest.Prototype
             book.Commit("Livro aberto / paginas e runas entalhadas");
             flame = new GameObject("Chama do altar resolvido");
             flame.transform.SetParent(altar.transform, false);
-            var fire = new Painter(flame.transform, 1.3f, material, pixelAssets);
-            fire.Polygon(new[] {new Vector2(-.24f,1.96f),new Vector2(-.32f,2.29f),new Vector2(-.05f,2.79f),new Vector2(.05f,2.44f),new Vector2(.22f,2.61f),new Vector2(.3f,2.12f),new Vector2(.13f,1.96f)},"EBA252");
-            fire.Polygon(new[] {new Vector2(-.1f,1.99f),new Vector2(-.15f,2.22f),new Vector2(.02f,2.49f),new Vector2(.14f,2.09f)},"FFE0A0");
-            fire.Commit("Fogo dourado");
+            flame.transform.localPosition=new Vector3(0,2.02f,.85f);
+            flame.AddComponent<RuinsFlameAnimation>().Initialize(material);
             flame.SetActive(false);
 
             var front = Plane("Pilares em primeiro plano", -2, -.18f);

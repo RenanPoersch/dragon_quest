@@ -19,6 +19,8 @@ public static class RuinsSideValidation
         UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(root, scene);
         var scenery = root.AddComponent<RuinsSideScenery>();
         var altar = scenery.Build(out GameObject flame);
+        var flameAnimation=flame.GetComponent<RuinsFlameAnimation>();
+        Assert(flameAnimation!=null && !flame.activeSelf,"animated flame remains unlit until altar is solved");
         Assert(HasChild(altar,"Livro de pedra / inscricoes antigas"), "carved stone book on altar");
         Assert(HasChild(root.transform,"Panorama desenhado / mar e montanhas"), "painted pixel art panorama");
         Assert(Mathf.Abs(altar.localScale.x-.65f)<.001f,"smaller altar");
@@ -72,14 +74,25 @@ public static class RuinsSideValidation
         camera.Render(); Save(target,Path.Combine(output,"ruins-occlusion.png"));
         flame.SetActive(true);hero.transform.position=new Vector3(-30,1.05f,0);
         camera.transform.position=new Vector3(-30,PrototypeRuinsLayout.CameraHeight,-30);scenery.UpdateParallax(-30);
+        flameAnimation.ShowAt(.01f);var firstFlame=flame.GetComponent<SpriteRenderer>().sprite;
+        flameAnimation.ShowAt(.31f);
+        Assert(flameAnimation.CurrentFrame==3 && flame.GetComponent<SpriteRenderer>().sprite!=firstFlame,"flame advances drawn sprites");
+        flameAnimation.ShowAt(.8f);
+        Assert(flameAnimation.CurrentFrame==0,"flame loops back to first sprite");
         camera.Render();Save(target,Path.Combine(output,"ruins-altar-lit.png"));
+        for(int frame=0;frame<RuinsFlameAnimation.FrameCount;frame++)
+        {
+            flameAnimation.ShowAt((frame+.1f)/RuinsFlameAnimation.FramesPerSecond);
+            Assert(flameAnimation.CurrentFrame==frame,"all eight flame frames render");
+            camera.Render();Save(target,Path.Combine(output,"ruins-flame-"+frame+".png"));
+        }
         flame.SetActive(false);camera.orthographicSize=2.2f;
         camera.transform.position=new Vector3(-31,3.05f,-30);scenery.UpdateParallax(-31);
         camera.Render();Save(target,Path.Combine(output,"ruins-stone-book.png"));
         camera.targetTexture=null;target.Release();UnityEngine.Object.DestroyImmediate(target);
         library.Dispose();UnityEngine.Object.DestroyImmediate(library.Material);
         EditorSceneManager.ClosePreviewScene(scene);
-        Debug.Log("RUINS_SIDE_VALIDATION_OK: path, stairs, legacy saves, travel, sea, mountains, stone book, parallax, screenshots.");
+        Debug.Log("RUINS_SIDE_VALIDATION_OK: path, stairs, legacy saves, travel, sea, mountains, stone book, looping flame, parallax, screenshots.");
     }
     private static void Assert(bool condition,string message) { if(!condition) throw new Exception("Ruins: "+message); }
     private static bool HasChild(Transform parent,string name)

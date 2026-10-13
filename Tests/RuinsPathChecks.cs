@@ -6,6 +6,8 @@ internal static class RuinsPathChecks
     static void Assert(bool value,string message) { if(!value) throw new Exception(message); }
     public static void Main()
     {
+        Assert(RuinsFlameAnimation.FrameAt(0)==0 && RuinsFlameAnimation.FrameAt(.11f)==1,"Chama precisa avancar os quadros.");
+        Assert(RuinsFlameAnimation.FrameAt(.79f)==7 && RuinsFlameAnimation.FrameAt(.8f)==0,"Chama precisa repetir o ciclo continuamente.");
         Assert(PrototypeRuinsLayout.Spawn.x > PrototypeRuinsLayout.Altar.x,"Avanco deve seguir para a esquerda.");
         Assert(PrototypeRuinsLayout.WalkingSpeedMultiplier == 1.15f,"Velocidade deve ficar apenas 15% acima do ritmo normal.");
         Assert(PrototypeRuinsLayout.FloorAt(-25)==0,"Aproximacao plana.");
@@ -23,6 +25,6 @@ internal static class RuinsPathChecks
         Assert(!travel.RouteFrom(PrototypeTravel.Ruins,PrototypeTravel.World).Entrance.Contains(PrototypeRuinsLayout.Spawn),"Entrada nao deve provocar retorno imediato.");
         Assert(travel.RouteFrom(PrototypeTravel.Ruins,PrototypeTravel.World).Entrance.Contains(PrototypeRuinsLayout.Exit),"Saida deve ser alcancavel voltando a direita.");
         Assert(travel.TryTravel(PrototypeTravel.World,out Vector2 arrival),"Retorno a ilha deve funcionar.");
-        Console.WriteLine("PASS: direcao, velocidade, tres degraus, subida continua, save antigo, camera e retorno.");
+        Console.WriteLine("PASS: ciclo da chama, direcao, velocidade, tres degraus, subida continua, save antigo, camera e retorno.");
     }
 }
