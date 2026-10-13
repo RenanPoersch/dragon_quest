@@ -54,6 +54,7 @@ namespace DragonQuest.Prototype
             if (!navigation.TryRestore(map, position)) throw new System.ArgumentException("Posicao de save invalida.");
             mapRoots[PrototypeTravel.World].GetComponentInChildren<BlockedPassageInteraction>(true)?.RestoreBarrierState();
             if (map == PrototypeTravel.EastForest) position = EastForestLayout.SafeSavedPosition(position);
+            if (map == PrototypeTravel.WestForest) position = QuarryLayout.SafeSavedPosition(position);
             if (map == PrototypeTravel.City) position = PrototypeCityLayout.SafeSavedPosition(position);
             if (map == PrototypeTravel.Ruins) position = PrototypeRuinsLayout.SafeSavedPosition(position);
             if (map == PrototypeTravel.World) position = PrototypeWorldLayout.SafeSavedPosition(position,
@@ -66,16 +67,18 @@ namespace DragonQuest.Prototype
             foreach (var root in mapRoots) root.Value.SetActive(root.Key == LocationId);
             bool lateral = LocationId == PrototypeTravel.Ruins;
             bool forest=LocationId==PrototypeTravel.EastForest;
-            player.SetMovementConstraint(forest ? EastForestLayout.ConstrainMove : (System.Func<Vector2,Vector2,Vector2>)null);
+            bool quarry = LocationId == PrototypeTravel.WestForest;
+            player.SetMovementConstraint(forest ? EastForestLayout.ConstrainMove : quarry ? QuarryLayout.ConstrainMove : (System.Func<Vector2,Vector2,Vector2>)null);
+            if (quarry) arrival = QuarryLayout.SafeSavedPosition(arrival);
             if(forest) arrival=EastForestLayout.SafeSavedPosition(arrival);
             player.SetLateralPath(lateral ? PrototypeRuinsLayout.FloorAt : (System.Func<float, float>)null,
                 PrototypeRuinsLayout.MinX, PrototypeRuinsLayout.MaxX, PrototypeRuinsLayout.WalkingSpeedMultiplier);
             Transform heroShadow = player.transform.Find("Sombra no chao");
             if (heroShadow != null) heroShadow.gameObject.SetActive(!lateral);
             cameraFollow.SetSideView(lateral, PrototypeRuinsLayout.CameraHeight);
-            cameraFollow.SetArtworkFrame(forest);
+            cameraFollow.SetArtworkFrame(forest || quarry);
             player.Teleport(arrival);
-            cameraFollow.Initialize(player.transform, forest ? PrototypeWorldLayout.ForestBounds : navigation.Current.Bounds, navigation.Current.CameraSize,
+            cameraFollow.Initialize(player.transform, (forest || quarry) ? PrototypeWorldLayout.ForestBounds : navigation.Current.Bounds, navigation.Current.CameraSize,
                 navigation.Current.FixedCamera, navigation.Current.CoveredGroundBounds);
             cameraFollow.GetComponent<Camera>().backgroundColor = lateral ? new Color(.22f, .24f, .25f) : LocationId == PrototypeTravel.World
                 ? new Color(0.19f, 0.37f, 0.49f) : new Color(0.15f, 0.24f, 0.21f);

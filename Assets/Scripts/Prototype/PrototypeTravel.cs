@@ -53,7 +53,7 @@ namespace DragonQuest.Prototype
                 new MapDefinition(City, "PERIFERIA DO CASTELO", PrototypeCityLayout.Bounds, PrototypeWorldLayout.CityEntry, 6,
                     coveredGroundBounds: PrototypeCityLayout.TerrainBounds),
                 new MapDefinition(Castle, "INTERIOR DO CASTELO", PrototypeWorldLayout.CastleBounds, PrototypeWorldLayout.CastleSpawn, 9, false, true),
-                new MapDefinition(WestForest, "PEDREIRA DOS MONOLITOS", PrototypeWorldLayout.ForestBounds, PrototypeWorldLayout.ForestSpawn, 8, false, true),
+                new MapDefinition(WestForest, "PEDREIRA DOS MONOLITOS", QuarryLayout.Bounds, QuarryLayout.Spawn, 8, false, true),
                 new MapDefinition(EastForest, "FLORESTA LESTE", EastForestLayout.Bounds, EastForestLayout.Spawn, 8, false, true),
                 new MapDefinition(Ruins,"RUINAS ANTIGAS",PrototypeRuinsLayout.Bounds,PrototypeRuinsLayout.Spawn,PrototypeRuinsLayout.CameraSize),
                 new MapDefinition(Volcano,"VULCAO / CAMINHO ANCESTRAL",PrototypeVolcanoLayout.Bounds,PrototypeVolcanoLayout.Spawn,7.5f),
@@ -69,7 +69,7 @@ namespace DragonQuest.Prototype
                 PrototypeWorldLayout.CityExit, PrototypeWorldLayout.Castle + Vector2.down * 2.5f,
                 exitSize: PrototypeCityLayout.ExitSize);
             Connect(connections, World, WestForest, PrototypeWorldLayout.WestForest,
-                PrototypeWorldLayout.LocalExit, PrototypeWorldLayout.WestForest + Vector2.down * 2.5f);
+                QuarryLayout.Exit, PrototypeWorldLayout.WestForest + Vector2.down * 2.5f, exitSize: QuarryLayout.ExitSize);
             Connect(connections, World, EastForest, PrototypeWorldLayout.EastForest,
                 EastForestLayout.Exit, PrototypeWorldLayout.EastForest + Vector2.down * 2.5f, exitSize: EastForestLayout.ExitSize);
             Connect(connections, World, Ruins, PrototypeWorldLayout.Ruins,
@@ -133,7 +133,8 @@ namespace DragonQuest.Prototype
             if (blocked) return false;
             foreach (MapRoute route in Routes)
                 if (route.From == Current.Id && (route.From == EastForest && route.To == World
-                    ? EastForestLayout.IsExit(position) : route.Entrance.Contains(position)))
+                    ? EastForestLayout.IsExit(position) : route.From == WestForest && route.To == World
+                    ? QuarryLayout.IsExit(position) : route.Entrance.Contains(position)))
                     return TryTravel(route.To, out arrival);
             return false;
         }

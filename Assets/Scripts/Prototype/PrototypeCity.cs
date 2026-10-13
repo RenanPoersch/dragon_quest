@@ -78,8 +78,8 @@ namespace DragonQuest.Prototype
                 { PrototypeTravel.World, CreateWorld(interactables).gameObject },
                 { PrototypeTravel.City, city.gameObject },
                 { PrototypeTravel.Castle, CreateCastle(interactables).gameObject },
-                { PrototypeTravel.WestForest, CreateForest(interactables, false).gameObject },
-                { PrototypeTravel.EastForest, CreateForest(interactables, true).gameObject },
+                { PrototypeTravel.WestForest, CreateQuarry(interactables).gameObject },
+                { PrototypeTravel.EastForest, CreateForest(interactables).gameObject },
                 { PrototypeTravel.Ruins, CreateRuins(interactables).gameObject },
                 { PrototypeTravel.Volcano,CreateVolcano(interactables).gameObject },
                 { PrototypeTravel.Inn,CreateInn(interactables).gameObject }
@@ -239,52 +239,43 @@ namespace DragonQuest.Prototype
             scenery.ForestIcon(forest);
         }
 
-        private Transform CreateForest(List<Interactable> interactions, bool eastern)
+        private Transform CreateQuarry(List<Interactable> interactions)
         {
-            Transform forest = Group(eastern ? "Floresta leste - interior" : "Floresta oeste - interior");
-            if (eastern)
+            Transform quarry = Group("Pedreira dos monolitos - interior pixel art");
+            quarry.gameObject.AddComponent<QuarryPixelScenery>().Build(secrets, interactions, frictionless);
+            CreatePassage("Saida da pedreira", PrototypeTravel.WestForest, quarry, PrototypeTravel.World);
+            NpcInteraction worker = CreateNpc("Lenhador", QuarryLayout.Worker, "879C6B", quarry);
+            worker.Initialize("Guardiao da pedreira",
+                "A floresta retomou esta pedreira, mas os tres totens de rocha continuam de pe. Toque seus simbolos para despertar o ciclo antigo.",
+                "A pedra perto da entrada guarda uma pista. As luzes acompanham o ciclo; uma ordem errada apaga os simbolos. Voce pode tentar novamente sem perder nada.");
+            interactions.Add(worker);
+            return quarry;
+        }
+
+        private Transform CreateForest(List<Interactable> interactions)
+        {
+            Transform forest = Group("Floresta leste - interior");
+            forest.gameObject.AddComponent<ForestPixelScenery>().Build(secrets);
+            foreach (CityBlock block in PrototypeWorldLayout.CreateForestBlocks(true))
             {
-                forest.gameObject.AddComponent<ForestPixelScenery>().Build(secrets);
-                // The painting replaces the old block scenery; only matching physical landmarks remain.
-                foreach (CityBlock block in PrototypeWorldLayout.CreateForestBlocks(true))
-                {
-                    if (!block.Solid || !(block.Name.StartsWith("Limite") || block.Name == "Pedra com escamas")) continue;
-                    Vector2 position = block.Name == "Pedra com escamas" ? PrototypeSecretLayout.ClawStone : block.Position;
-                    GameObject obstacle = Entity(block.Name, position, forest);
-                    BoxCollider2D collider = obstacle.AddComponent<BoxCollider2D>();
-                    collider.size = block.Size; collider.sharedMaterial = frictionless;
-                }
+                if (!block.Solid || !(block.Name.StartsWith("Limite") || block.Name == "Pedra com escamas")) continue;
+                Vector2 position = block.Name == "Pedra com escamas" ? PrototypeSecretLayout.ClawStone : block.Position;
+                GameObject obstacle = Entity(block.Name, position, forest);
+                BoxCollider2D collider = obstacle.AddComponent<BoxCollider2D>();
+                collider.size = block.Size; collider.sharedMaterial = frictionless;
             }
-            else DrawBlocks(PrototypeWorldLayout.CreateForestBlocks(false), forest);
-            CreatePassage("Saida da floresta", eastern ? PrototypeTravel.EastForest : PrototypeTravel.WestForest, forest, PrototypeTravel.World);
-            NpcInteraction inhabitant = CreateNpc(eastern ? "Viajante" : "Lenhador", eastern ? EastForestLayout.Traveler : new Vector2(1.5f, 1), eastern ? "C19862" : "879C6B", forest);
-            inhabitant.Initialize(eastern ? "Viajante" : "Lenhador", eastern
-                ? "Encontrei marcas incomuns numa pedra ao norte. Nao parecem ter sido feitas por nenhum animal que eu conheca."
-                : "Os tres monolitos sao mais antigos que estas arvores. Uma inscricao sobrevive na pedra perto deles.", eastern
-                ? "Minha familia dizia que a floresta guarda aquilo que os homens esquecem. Nunca entendi muito bem."
-                : "Uma camponesa da periferia ainda canta as palavras dos antigos. Talvez voce tambem as conheca.");
+            CreatePassage("Saida da floresta", PrototypeTravel.EastForest, forest, PrototypeTravel.World);
+            NpcInteraction inhabitant = CreateNpc("Viajante", EastForestLayout.Traveler, "C19862", forest);
+            inhabitant.Initialize("Viajante",
+                "Encontrei marcas incomuns numa pedra ao norte. Nao parecem ter sido feitas por nenhum animal que eu conheca.",
+                "Minha familia dizia que a floresta guarda aquilo que os homens esquecem. Nunca entendi muito bem.");
             interactions.Add(inhabitant);
-            if (!eastern)
-            {
-                for (int i=0; i<PrototypeSecretLayout.WestMonoliths.Count; i++)
-                {
-                    CityBlock block=PrototypeSecretLayout.WestMonoliths[i];
-                    Transform monolith=forest.Find(block.Name);
-                    MonolithSymbol symbol=PrototypeSecretLayout.SymbolAt(i);
-                    interactions.Add(AddSecret(monolith.gameObject,SecretObject.Monolith,symbol,scenery.MonolithRune(symbol,monolith)));
-                }
-                interactions.Add(AddSecret(Entity("Inscricao da floresta",PrototypeSecretLayout.Inscription,forest),SecretObject.Inscription));
-            }
-            else
-            {
-                GameObject stone=Entity("Marcas na pedra",PrototypeSecretLayout.ClawStone,forest);
-                // Claw marks and the root hollow are painted at their projected interaction positions.
-                interactions.Add(AddSecret(stone,SecretObject.ClawStone));
-                GameObject tree=Entity("Raizes da arvore oca",PrototypeSecretLayout.HollowTree,forest);
-                BoxCollider2D roots=tree.AddComponent<BoxCollider2D>();
-                roots.size=new Vector2(1.6f,1f); roots.sharedMaterial=frictionless;
-                interactions.Add(AddSecret(tree,SecretObject.HollowTree));
-            }
+            GameObject stone = Entity("Marcas na pedra", PrototypeSecretLayout.ClawStone, forest);
+            interactions.Add(AddSecret(stone, SecretObject.ClawStone));
+            GameObject tree = Entity("Raizes da arvore oca", PrototypeSecretLayout.HollowTree, forest);
+            BoxCollider2D roots = tree.AddComponent<BoxCollider2D>();
+            roots.size = new Vector2(1.6f,1f); roots.sharedMaterial = frictionless;
+            interactions.Add(AddSecret(tree, SecretObject.HollowTree));
             return forest;
         }
 
