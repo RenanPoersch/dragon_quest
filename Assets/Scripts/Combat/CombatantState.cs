@@ -33,6 +33,8 @@ namespace DragonQuest.Combat
         public bool IsCharging { get; internal set; }
         public int BoundActions { get; internal set; }
         public int PoisonTurns { get; internal set; }
+        public int ShieldTurns { get; private set; }
+        private bool skipShieldTick;
         public int TauntTurns { get; internal set; }
         public CombatantState TauntedBy { get; internal set; }
         public CombatantState ProtectedBy { get; internal set; }
@@ -53,6 +55,7 @@ namespace DragonQuest.Combat
         internal void SpendMp(int cost) => Mp -= cost;
         internal void TakeDamage(int amount, bool critical = false)
         {
+            if (ShieldTurns > 0 && amount > 0) amount = (int)(((long)amount + 1) / 2);
             int previousHp = Hp;
             Hp = Math.Max(0, Hp - amount);
             RecordVitalChange(Hp - previousHp, critical);
@@ -78,9 +81,23 @@ namespace DragonQuest.Combat
             IsCharging = false;
             BoundActions = 0;
             PoisonTurns = 0;
+            ShieldTurns = 0; skipShieldTick = false;
             TauntTurns = 0;
             TauntedBy = null;
             ProtectedBy = null;
+        }
+
+        internal void GrantDamageShield(int turns, bool castingAction)
+        {
+            if (!IsAlive) return;
+            ShieldTurns = Math.Max(ShieldTurns, turns);
+            skipShieldTick = castingAction;
+        }
+
+        internal void AdvanceShieldDuration()
+        {
+            if (skipShieldTick) skipShieldTick = false;
+            else if (ShieldTurns > 0) ShieldTurns--;
         }
     }
 }

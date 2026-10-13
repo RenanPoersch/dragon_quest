@@ -5,6 +5,7 @@ namespace DragonQuest.Combat
     public enum AbilityEffect { PhysicalDamage, Heal, Defend, Cleanse, Revive, Taunt, Protect, MagicDamage, Prepare, Drain, Bind }
     public enum TargetRule { Enemy, Ally, Self, AllEnemies, AllAllies }
     public enum AbilityMenuGroup { Direct, Magic, Summon }
+    public enum PartyEffect { None, RestoreAndRevive, DamageShield }
 
     public sealed class AbilityDefinition
     {
@@ -20,10 +21,14 @@ namespace DragonQuest.Combat
         public string SourceAbilityId { get; }
         public DamageElement Element { get; }
         public AbilityMenuGroup MenuGroup { get; }
+        public PartyEffect PartyEffect { get; }
+        public int RecoveryPercent { get; }
+        public int ShieldDuration { get; }
 
         public AbilityDefinition(string id, string name, string description, int mpCost, int power,
             AbilityEffect effect, TargetRule targets, int poisonTurns = 0, bool usesLimit = false, string sourceAbilityId = null,
-            DamageElement element = DamageElement.None, AbilityMenuGroup menuGroup = AbilityMenuGroup.Direct)
+            DamageElement element = DamageElement.None, AbilityMenuGroup menuGroup = AbilityMenuGroup.Direct,
+            PartyEffect partyEffect = PartyEffect.None, int recoveryPercent = 0, int shieldDuration = 0)
         {
             if (string.IsNullOrWhiteSpace(id)) throw new ArgumentException("Habilidade precisa de ID.", nameof(id));
             if (mpCost < 0 || power < 0) throw new ArgumentOutOfRangeException(nameof(mpCost));
@@ -68,6 +73,13 @@ namespace DragonQuest.Combat
             Element = element;
             if (!Enum.IsDefined(typeof(AbilityMenuGroup), menuGroup)) throw new ArgumentException("Grupo de menu desconhecido.");
             MenuGroup = menuGroup;
+            if (!Enum.IsDefined(typeof(PartyEffect), partyEffect)
+                || (partyEffect != PartyEffect.None && effect != AbilityEffect.MagicDamage)
+                || (partyEffect == PartyEffect.None && (recoveryPercent != 0 || shieldDuration != 0))
+                || (partyEffect == PartyEffect.RestoreAndRevive && (recoveryPercent < 1 || recoveryPercent > 100 || shieldDuration != 0))
+                || (partyEffect == PartyEffect.DamageShield && (shieldDuration < 1 || shieldDuration > 99 || recoveryPercent != 0)))
+                throw new ArgumentException("Efeito de equipe invalido.");
+            PartyEffect = partyEffect; RecoveryPercent = recoveryPercent; ShieldDuration = shieldDuration;
         }
     }
 }

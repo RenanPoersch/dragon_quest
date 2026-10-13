@@ -53,6 +53,7 @@ namespace DragonQuest.Prototype
         public CombatantState PresentingActor { get; private set; }
         public AbilityDefinition PresentingAbility { get; private set; }
         public System.Collections.Generic.IReadOnlyList<CombatantState> PresentingTargets { get; private set; } = new CombatantState[0];
+        public System.Collections.Generic.IReadOnlyList<CombatantState> PresentingPartyTargets { get; private set; } = new CombatantState[0];
         public bool IsPresentingSummon => SummonAnimation.Resource(PresentingAbility) != null;
         public float ActionDuration => IsPresentingDragonAttack ? DragonAttackAnimation.Duration(PresentingAbility.Id)
             : IsPresentingSummon ? SummonAnimation.Duration : IsPresentingSpell ? SpellAnimation.Duration
@@ -134,6 +135,7 @@ namespace DragonQuest.Prototype
             Session = encounter; IsDragonEncounter = dragonEncounter;
             RandomEncounter = RandomEncounterType.None;
             PresentingActor = null; PresentingAbility = null; PresentingTargets = new CombatantState[0];
+            PresentingPartyTargets = new CombatantState[0];
             BattleLocationId = currentLocation();
             notifiedCompletion = false;
             IsActive = true;
@@ -164,6 +166,11 @@ namespace DragonQuest.Prototype
             ErrorMessage = accepted ? string.Empty : message;
             if (accepted)
             {
+                var partyTargets = new System.Collections.Generic.List<CombatantState>();
+                if (ability.PartyEffect != PartyEffect.None)
+                    foreach (CombatantState ally in Session.Combatants)
+                        if (ally.Team == actor.Team) partyTargets.Add(ally);
+                PresentingPartyTargets = partyTargets;
                 PresentAction(actor, ability, effectTargets);
                 AwardIfComplete();
             }

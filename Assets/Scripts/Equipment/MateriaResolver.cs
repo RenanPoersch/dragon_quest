@@ -76,7 +76,8 @@ namespace DragonQuest.Equipment
                         commands.Add(new AbilityDefinition(source.Id + "/" + original.Id, name, details, cost, power,
                             effect, targets, original.PoisonTurns, original.UsesLimit, original.SourceAbilityId, original.Element,
                             source.Definition.Type == MateriaType.Magic ? AbilityMenuGroup.Magic
-                                : source.Definition.Type == MateriaType.Summon ? AbilityMenuGroup.Summon : AbilityMenuGroup.Direct));
+                                : source.Definition.Type == MateriaType.Summon ? AbilityMenuGroup.Summon : AbilityMenuGroup.Direct,
+                            original.PartyEffect, original.RecoveryPercent, original.ShieldDuration));
                     }
                 }
             }

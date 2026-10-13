@@ -228,8 +228,35 @@ namespace DragonQuest.Combat
                 message = actor.Definition.Name + " protegera " + target.Definition.Name + " do proximo golpe individual, ate seu proximo turno.";
             }
 
+            if (ability.PartyEffect != PartyEffect.None)
+                message += ApplyPartyEffect(actor, ability);
             CompleteAction(actor, ref message);
             return true;
+        }
+
+        private string ApplyPartyEffect(CombatantState actor, AbilityDefinition ability)
+        {
+            var report = new StringBuilder();
+            foreach (CombatantState ally in combatants)
+            {
+                if (ally.Team != actor.Team) continue;
+                if (ability.PartyEffect == PartyEffect.RestoreAndRevive)
+                {
+                    bool defeated = !ally.IsAlive;
+                    if (defeated) ally.ClearConditions();
+                    int before = ally.Hp;
+                    ally.RecoverHp((int)(((long)ally.Definition.MaxHp * ability.RecoveryPercent + 99) / 100));
+                    report.Append(ally.Definition.Name).Append(defeated ? " reviveu: +" : " +")
+                        .Append(ally.Hp-before).Append(" HP. ");
+                }
+                else if (ally.IsAlive)
+                {
+                    ally.GrantDamageShield(ability.ShieldDuration, ally == actor);
+                    report.Append(ally.Definition.Name).Append(" recebeu Shield: -50% de dano por ")
+                        .Append(ability.ShieldDuration).Append(" turnos proprios. ");
+                }
+            }
+            return report.ToString();
         }
 
         private void CompleteAction(CombatantState actor, ref string message)
@@ -252,6 +279,7 @@ namespace DragonQuest.Combat
                 CheckOutcome();
             }
             LastMessage = message;
+            actor.AdvanceShieldDuration();
             if (Outcome == BattleOutcome.None) NextTurn();
         }
 

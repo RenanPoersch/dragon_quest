@@ -17,6 +17,7 @@ namespace DragonQuest.Prototype
         private readonly SpellAnimation spellAnimation = new SpellAnimation();
         private readonly HeroCastAnimation heroCastAnimation = new HeroCastAnimation();
         private readonly SummonAnimation summonAnimation = new SummonAnimation();
+        private readonly BattleStatusIcons statusIcons = new BattleStatusIcons();
         private Texture2D pixel, hand, dragonPortrait, spiritPortrait, kingPortrait, background;
         private GUIStyle title, text, small, centered, button, number;
         private Rect handUv = new Rect(0, 0, 1, 1);
@@ -247,6 +248,7 @@ namespace DragonQuest.Prototype
             }
             else if (observedActor != null) DrawActions();
             if (!string.IsNullOrEmpty(controller.ErrorMessage)) GUI.Label(new Rect(40, 668, 560, 25), controller.ErrorMessage, small);
+            if (!string.IsNullOrEmpty(GUI.tooltip)) GUI.Label(new Rect(660, 683, 585, 18), GUI.tooltip, small);
             GUI.matrix = previous;
         }
 
@@ -294,6 +296,11 @@ namespace DragonQuest.Prototype
                 if (elapsed >= SummonAnimation.ImpactDelay - .15f)
                     foreach (CombatantState target in controller.PresentingTargets)
                         spellAnimation.Draw(FigureRect(target), impact,
+                            elapsed - SummonAnimation.ImpactDelay + SpellAnimation.ImpactDelay);
+                if (controller.PresentingAbility.PartyEffect == PartyEffect.RestoreAndRevive
+                    && elapsed >= SummonAnimation.ImpactDelay - .15f)
+                    foreach (CombatantState ally in controller.PresentingPartyTargets)
+                        spellAnimation.Draw(FigureRect(ally), PrototypeBattleFactory.Heal,
                             elapsed - SummonAnimation.ImpactDelay + SpellAnimation.ImpactDelay);
             }
             if (controller.IsPresentingAction && controller.IsPresentingSpell)
@@ -371,9 +378,8 @@ namespace DragonQuest.Prototype
                 if (participant.Team != CombatTeam.Party) continue;
                 float y = 544 + i++ * 48;
                 if (participant == observedActor) RectBox(new Rect(650, y - 2, 600, 45), new Color(.16f, .29f, .65f));
-                GUI.Label(new Rect(665, y, 180, 25), participant.Definition.Name, text);
-                string condition = !participant.IsAlive ? "DERROTADO" : participant.IsDefending ? "DEFESA" : participant.PoisonTurns > 0 ? "VENENO" : participant.BoundActions > 0 ? "CORRENTES" : participant.ProtectedBy != null ? "PROTEGIDO" : "";
-                GUI.Label(new Rect(665, y + 23, 180, 18), condition, small);
+                GUI.Label(new Rect(665, y, 95, 25), participant.Definition.Name, text);
+                statusIcons.Draw(770, y + 2, participant);
                 DrawBar(new Rect(850, y + 4, 170, 25), participant.Hp, participant.Definition.MaxHp, new Color(.18f, .60f, .47f));
                 DrawBar(new Rect(1030, y + 4, 120, 25), participant.Mp, participant.Definition.MaxMp, new Color(.20f, .45f, .82f));
                 DrawBar(new Rect(1160, y + 4, 75, 25), participant.Limit.Charge, 100, new Color(.62f, .28f, .75f));

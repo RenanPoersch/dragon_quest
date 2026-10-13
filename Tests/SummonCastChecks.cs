@@ -43,7 +43,7 @@ public static class SummonCastChecks
             "Summon emerges after cast and impact matches attack frame.");
         Check(SummonAnimation.Frame(SummonAnimation.Duration) == 7 && SummonAnimation.Duration > SummonAnimation.ImpactDelay,
             "Summon completes attack and recovery.");
-        Check(PrototypePartyFactory.Bahamut.Element == DamageElement.None, "Visual impact must not change Bahamut damage element.");
+        Check(PrototypePartyFactory.Bahamut.Element == DamageElement.Chaos, "Bahamut causes Chaos damage.");
         Check(SummonAnimation.AttackFrameResource(PrototypePartyFactory.Bahamut) == "BahamutAttack"
             && SummonAnimation.AttackFrameResource(PrototypePartyFactory.Summon) == "PhoenixAttack", "Complete attack images replace the clipped impact frames.");
         Check(SummonAnimation.AttackFrameResource(PrototypePartyFactory.Titan) == null, "Titan retains its original attack sheet.");

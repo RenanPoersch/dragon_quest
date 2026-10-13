@@ -27,15 +27,15 @@ namespace DragonQuest.Prototype
             "Magia de Gelo contra um inimigo, poder 22. Custa 6 MP.", 6, 22, AbilityEffect.MagicDamage, TargetRule.Enemy,
             element: DamageElement.Ice);
         public static readonly AbilityDefinition Summon = new AbilityDefinition("summon", "Invocar Fenix",
-            "Invoca a Fenix com dano de Fogo, poder 35. Custa 12 MP.", 12, 35, AbilityEffect.MagicDamage, TargetRule.Enemy,
-            element: DamageElement.Fire);
+            "Revive e recupera 80% do HP maximo de cada aliado; dano baixo de Fogo em todos os inimigos. Custa 12 MP.", 12, 10, AbilityEffect.MagicDamage, TargetRule.AllEnemies,
+            element: DamageElement.Fire, partyEffect: PartyEffect.RestoreAndRevive, recoveryPercent: 80);
         public static readonly MateriaDefinition ThunderMateria = new MateriaDefinition("thunder", "Raio", "Verde: concede Thunder.", MateriaType.Magic, abilities: new[] { Thunder });
         public static readonly MateriaDefinition FireMateria = new MateriaDefinition("fire", "Fogo", "Verde: magia de Fogo, poder 22, 6 MP. Fraqueza x1,5; resistencia x0,5.", MateriaType.Magic, abilities: new[] { Fire });
         public static readonly MateriaDefinition IceMateria = new MateriaDefinition("ice", "Gelo", "Verde: magia de Gelo, poder 22, 6 MP. Fraqueza x1,5; resistencia x0,5.", MateriaType.Magic, abilities: new[] { Ice });
         public static readonly MateriaDefinition CureMateria = new MateriaDefinition("cure", "Cura", "Verde: concede Curar.", MateriaType.Magic, abilities: new[] { PrototypeBattleFactory.Heal });
         public static readonly MateriaDefinition CleanseMateria = new MateriaDefinition("cleanse", "Purificacao", "Verde: remove veneno.", MateriaType.Magic, abilities: new[] { PrototypeBattleFactory.Cleanse });
         public static readonly MateriaDefinition ReviveMateria = new MateriaDefinition("revive", "Vida", "Verde: concede Reviver.", MateriaType.Magic, abilities: new[] { PrototypeBattleFactory.Revive });
-        public static readonly MateriaDefinition SummonMateria = new MateriaDefinition("phoenix", "Fenix", "Vermelha: concede Invocar Fenix. Animacao de ataque propria da Fenix.", MateriaType.Summon, abilities: new[] { Summon });
+        public static readonly MateriaDefinition SummonMateria = new MateriaDefinition("phoenix", "Fenix", "Vermelha: revive e cura 80% do HP maximo de toda a equipe; dano baixo de Fogo em todos os inimigos. 12 MP.", MateriaType.Summon, abilities: new[] { Summon });
         public static readonly MateriaDefinition AllMateria = new MateriaDefinition("all", "All", "Azul: ligada a verde/vermelha, aplica o comando a todos os alvos validos; MP x1,5. Sozinha nao concede comando.", MateriaType.Support, MateriaModifier.All);
         public static readonly MateriaDefinition InfuseMateria = new MateriaDefinition("infuse", "Infusao", "Roxa: ligada a magia elemental, infunde o ataque basico na arma (0 MP) ou concede resistencia de 50% na armadura. Primeiro par valido define o elemento da arma.", MateriaType.PhysicalEnhance, MateriaModifier.Infuse);
         public static readonly MateriaDefinition HeavyMateria = new MateriaDefinition("heavy", "Forca", "Roxa: aumenta ataque em 20%. Nao concede comando.", MateriaType.PhysicalEnhance, MateriaModifier.AttackUp);
@@ -44,12 +44,12 @@ namespace DragonQuest.Prototype
 
         public static readonly AbilityDefinition Earth = new AbilityDefinition("earth", "Terra", "Magia de Terra, poder 22, 6 MP.", 6, 22, AbilityEffect.MagicDamage, TargetRule.Enemy, element: DamageElement.Earth);
         public static readonly AbilityDefinition Chaos = new AbilityDefinition("chaos", "Caos", "Magia de Caos, poder 28, 8 MP.", 8, 28, AbilityEffect.MagicDamage, TargetRule.Enemy, element: DamageElement.Chaos);
-        public static readonly AbilityDefinition Bahamut = new AbilityDefinition("bahamut", "Invocar Bahamut", "Dano sem elemento em todos os inimigos, poder 50, 20 MP. Animacao de ataque propria.", 20, 50, AbilityEffect.MagicDamage, TargetRule.AllEnemies);
-        public static readonly AbilityDefinition Titan = new AbilityDefinition("titan", "Invocar Titan", "Dano de Terra em todos os inimigos, poder 40, 16 MP. Animacao de ataque propria.", 16, 40, AbilityEffect.MagicDamage, TargetRule.AllEnemies, element: DamageElement.Earth);
+        public static readonly AbilityDefinition Bahamut = new AbilityDefinition("bahamut", "Invocar Bahamut", "Dano alto de Caos em todos os inimigos, poder 70, 20 MP.", 20, 70, AbilityEffect.MagicDamage, TargetRule.AllEnemies, element: DamageElement.Chaos);
+        public static readonly AbilityDefinition Titan = new AbilityDefinition("titan", "Invocar Titan", "Dano baixo de Terra e Shield: reduz todo dano recebido pela equipe em 50% por 3 turnos de cada aliado. 16 MP.", 16, 10, AbilityEffect.MagicDamage, TargetRule.AllEnemies, element: DamageElement.Earth, partyEffect: PartyEffect.DamageShield, shieldDuration: 3);
         public static readonly MateriaDefinition EarthMateria = new MateriaDefinition("earth", "Terra", "Verde: concede Terra.", MateriaType.Magic, abilities: new[] { Earth });
         public static readonly MateriaDefinition ChaosMateria = new MateriaDefinition("chaos", "Caos", "Verde: concede Caos.", MateriaType.Magic, abilities: new[] { Chaos });
-        public static readonly MateriaDefinition BahamutMateria = new MateriaDefinition("bahamut", "Bahamut", "Vermelha: invoca Bahamut, 20 MP, todos os inimigos, sem elemento. Animacao de ataque propria.", MateriaType.Summon, abilities: new[] { Bahamut });
-        public static readonly MateriaDefinition TitanMateria = new MateriaDefinition("titan", "Titan", "Vermelha: invoca Titan, 16 MP, todos os inimigos, Terra. Animacao de ataque propria.", MateriaType.Summon, abilities: new[] { Titan });
+        public static readonly MateriaDefinition BahamutMateria = new MateriaDefinition("bahamut", "Bahamut", "Vermelha: dano alto de Caos em todos os inimigos. 20 MP.", MateriaType.Summon, abilities: new[] { Bahamut });
+        public static readonly MateriaDefinition TitanMateria = new MateriaDefinition("titan", "Titan", "Vermelha: dano baixo de Terra; Shield de 50% por 3 turnos de cada aliado. 16 MP.", MateriaType.Summon, abilities: new[] { Titan });
         public static readonly MateriaDefinition DefenseMateria = new MateriaDefinition("defense", "Defesa", "Roxa: aumenta defesa em 20%.", MateriaType.PhysicalEnhance, MateriaModifier.DefenseUp);
         public static readonly MateriaDefinition HpMateria = new MateriaDefinition("hp", "HP", "Roxa: aumenta HP maximo em 20%.", MateriaType.PhysicalEnhance, MateriaModifier.HpUp);
         public static readonly MateriaDefinition MpMateria = new MateriaDefinition("mp", "MP", "Roxa: aumenta MP maximo em 20%.", MateriaType.PhysicalEnhance, MateriaModifier.MpUp);

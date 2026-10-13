@@ -9,7 +9,7 @@ Gerados com image_gen integrado, com referências dos sprites existentes dos her
 
 Os três heróis avançam 28 unidades de tela para a esquerda e retornam ao ponto inicial. As mãos ficam levantadas até o fim da magia/invocação. Magias de ataque, cura, Purificar e Reviver usam cast. Ataques básicos com Infusão usam a animação de arma.
 
-Invocações duram 3,05 segundos, surgem aos 0,35 segundos e atingem o alvo aos 1,55 segundos. Os efeitos de impacto são visuais; Bahamut continua causando dano sem elemento. All mantém uma única criatura invocada e exibe o impacto em cada alvo válido. Os alvos são capturados antes de aplicar dano ou cura, incluindo o golpe final.
+Invocações duram 3,05 segundos, surgem aos 0,35 segundos e atingem o alvo aos 1,55 segundos. Os efeitos de impacto são visuais; Bahamut causa dano de Caos (ver SUMMON_EFFECTS.md). All mantém uma única criatura invocada e exibe o impacto em cada alvo válido. Os alvos são capturados antes de aplicar dano ou cura, incluindo o golpe final.
 
 Os PNGs mantêm o alpha original. Imports usam filtro Point, sem mipmaps e sem compressão. O leitor ajusta os espaçamentos irregulares das folhas, ancora os pés e preserva a escala entre poses.
 
