@@ -55,6 +55,41 @@ namespace DragonQuest.Exploration
         public static PixelFrame[] Read(int width, int height, byte[] alpha, bool stableWalkingAnchor = false)
             => ReadGrid(width, height, alpha, Columns, Rows, stableWalkingAnchor);
 
+        // Janelas em pixels do PNG original; o gerador preservou os desenhos fora da grade regular.
+        // Recortamos apenas em memoria, mantendo a imagem inteira sem edicao ou redimensionamento.
+        public static RectInt WorldIconRegion(int index)
+        {
+            switch (index)
+            {
+                case 0: return new RectInt(0, 0, 550, 540);
+                case 1: return new RectInt(550, 0, 490, 540);
+                case 2: return new RectInt(1040, 0, 496, 540);
+                case 3: return new RectInt(0, 540, 550, 484);
+                case 4: return new RectInt(550, 520, 590, 504);
+                default: throw new ArgumentOutOfRangeException(nameof(index));
+            }
+        }
+
+        public static PixelFrame[] ReadWorldIcons(int width, int height, byte[] alpha)
+        {
+            if (width != 1536 || height != 1024 || alpha == null || alpha.Length != width * height)
+                throw new ArgumentException("Dimensoes da folha de POIs invalidas.");
+            var frames = new PixelFrame[5];
+            for (int index = 0; index < frames.Length; index++)
+            {
+                RectInt region = WorldIconRegion(index);
+                int bottom = height - region.yMax, top = height - region.yMin;
+                int minX = region.xMax, maxX = region.xMin - 1, minY = top, maxY = bottom - 1;
+                for (int y = bottom; y < top; y++) for (int x = region.xMin; x < region.xMax; x++)
+                    if (alpha[y * width + x] >= 128)
+                    { minX = Math.Min(minX, x); maxX = Math.Max(maxX, x); minY = Math.Min(minY, y); maxY = Math.Max(maxY, y); }
+                if (maxX < minX || minX <= region.xMin || maxX >= region.xMax - 1 || minY <= bottom || maxY >= top - 1)
+                    throw new ArgumentException("POI vazio ou cortado: " + index);
+                frames[index] = new PixelFrame(minX - 1, minY - 1, maxX - minX + 3, maxY - minY + 3, 0.5f);
+            }
+            return frames;
+        }
+
         public static PixelFrame[] ReadPropPair(int width, int height, byte[] alpha)
         {
             var frames = ReadGrid(width, height, alpha, 2, 1, false);

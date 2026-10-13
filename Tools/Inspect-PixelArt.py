@@ -15,16 +15,18 @@ def check(condition, message):
     if not condition:
         raise ValueError(message)
 
-for name in ("ArenWalk", "ArenDiagonalWalk", "LiaWalk", "BramWalk", "NpcRoster", "ChestStates", "TerrainAtlas", "CityMaterialsAtlas", "CityDetailsAtlas", "CastleMaterialsAtlas", "CityGroundMap"):
+for name in ("ArenWalk", "ArenDiagonalWalk", "LiaWalk", "BramWalk", "NpcRoster", "ChestStates", "TerrainAtlas", "CityMaterialsAtlas", "CityDetailsAtlas", "CastleMaterialsAtlas", "CityGroundMap", "WorldGroundMap", "WorldPoiSprites"):
     path = directory / (name + ".png")
     with Image.open(path) as image:
         width, height = image.size
         ground_map = name == "CityGroundMap"
         prop_pair = name == "ChestStates"
+        world_map = name == "WorldGroundMap"
+        world_poi = name == "WorldPoiSprites"
         map_width, map_height = (62, 80)
         check(width >= 16 and height >= 12 and (abs(width * map_height - height * map_width) / (height * map_width) < .02 if ground_map
-              else abs(width - height * 2) <= 8 if prop_pair else abs(width * 3 - height * 4) <= 8), name + ": proporcao irregular")
-        check(width <= (4096 if ground_map else 2048) and height <= (4096 if ground_map else 2048), name + ": tamanho acima do importador")
+              else width * 2 == height * 3 if world_map or world_poi else abs(width - height * 2) <= 8 if prop_pair else abs(width * 3 - height * 4) <= 8), name + ": proporcao irregular")
+        check(width <= (4096 if ground_map or world_map else 2048) and height <= (4096 if ground_map or world_map else 2048), name + ": tamanho acima do importador")
         meta = path.with_suffix(".png.meta").read_text(encoding="utf-8-sig")
         for setting in ("filterMode: 0", "enableMipMap: 0", "nPOTScale: 0", "textureCompression: 0"):
             check(setting in meta, name + ": importacao incorreta " + setting)
@@ -40,17 +42,22 @@ for name in ("ArenWalk", "ArenDiagonalWalk", "LiaWalk", "BramWalk", "NpcRoster",
             check(image.mode in ("RGB", "RGBA") and (image.mode == "RGB" or image.getchannel("A").getextrema() == (255, 255)), name + ": mapa deve ser opaco")
             for setting in ("wrapU: 1", "wrapV: 1", "maxTextureSize: 4096"):
                 check(setting in meta, name + ": mapa inteiro sem repeticao ou reducao " + setting)
+        elif world_map:
+            check((width, height) == (1536, 1024), name + ": tamanho nativo da pintura mudou")
+            check(image.mode in ("RGB", "RGBA") and (image.mode == "RGB" or image.getchannel("A").getextrema() == (255, 255)), name + ": mapa deve ser opaco")
+            for setting in ("wrapU: 1", "wrapV: 1", "maxTextureSize: 4096"):
+                check(setting in meta, name + ": pintura unica sem reducao " + setting)
         elif name not in ("TerrainAtlas", "CityMaterialsAtlas", "CityDetailsAtlas", "CastleMaterialsAtlas"):
             check(image.mode == "RGBA", name + ": canal alpha ausente")
             check("isReadable: 1" in meta, name + ": alpha precisa ser legivel em runtime")
             alpha = image.getchannel("A")
-            check(alpha.getextrema() == (0, 255), name + ": transparencia incorreta")
+            check(alpha.getextrema()[0] == 0 and alpha.getextrema()[1] >= 250 if world_poi else alpha.getextrema() == (0, 255), name + ": transparencia incorreta")
             columns, rows_count = (2, 1) if prop_pair else (4, 3)
             base_widths, base_bottoms = [], []
-            for index in range(columns * rows_count):
-                column, row = index % columns, index // columns
-                left, top = column * width // columns, row * height // rows_count
-                right, bottom = (column + 1) * width // columns, (row + 1) * height // rows_count
+            regions = [(0, 0, 550, 540), (550, 0, 1040, 540), (1040, 0, 1536, 540), (0, 540, 550, 1024), (550, 520, 1140, 1024)] if world_poi else [
+                (index % columns * width // columns, index // columns * height // rows_count,
+                 (index % columns + 1) * width // columns, (index // columns + 1) * height // rows_count) for index in range(columns * rows_count)]
+            for index, (left, top, right, bottom) in enumerate(regions):
                 # Apenas leitura da regiao para analise, sem criar assets derivados.
                 region = alpha.crop((left, top, right, bottom))
                 mask = region.point(lambda value: 255 if value >= 128 else 0)
@@ -71,9 +78,22 @@ for name in ("ArenWalk", "ArenDiagonalWalk", "LiaWalk", "BramWalk", "NpcRoster",
                     frame['footX'] = ((min(body_xs) + max(body_xs) + 1) / 2 - x0 + 1) / frame['width']
                     base_widths.append(max(body_xs) - min(body_xs) + 1)
                     base_bottoms.append(y1)
+                if world_poi:
+                    frame['footX'] = .5
                 check(0 < frame["footX"] < 1, name + ": ancora fora do sprite")
                 entry["frames"].append(frame)
             entry["maxHeight"] = max(frame["height"] for frame in entry["frames"])
+            if world_poi:
+                check((width, height) == (1536, 1024), name + ": janelas requerem a folha nativa")
+                # Nenhum pixel de corpo pode ser perdido ou pertencer a duas janelas.
+                coverage = Image.new('L', (width, height), 0)
+                for left, top, right, bottom in regions:
+                    rectangle = Image.new('L', (right-left, bottom-top), 1)
+                    coverage.paste(ImageChops.add(coverage.crop((left, top, right, bottom)), rectangle), (left, top))
+                opaque = alpha.point(lambda value: 255 if value >= 128 else 0)
+                unique = coverage.point(lambda value: 255 if value == 1 else 0)
+                check(ImageChops.subtract(opaque, unique).getbbox() is None, name + ": corpo perdido ou compartilhado entre icones")
+                entry['pixelsPerUnit'] = entry['maxHeight'] / (1.95 * .8191520443)
             if prop_pair:
                 entry['pixelsPerUnit'] = entry['frames'][0]['width'] / 1.1
                 check(abs(base_widths[0] - base_widths[1]) < base_widths[0] * .04, name + ": caixa muda de largura ao abrir")

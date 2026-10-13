@@ -196,8 +196,8 @@ namespace DragonQuest.Prototype
         private Transform CreateWorld(List<Interactable> interactions)
         {
             Transform world = Group("Ilha - mapa global");
-            GameObject rocks = scenery.World(world);
-            foreach (BoxCollider2D collider in world.GetComponentsInChildren<BoxCollider2D>()) collider.sharedMaterial = frictionless;
+            GameObject barrier = scenery.World(world);
+            foreach (Collider2D collider in world.GetComponentsInChildren<Collider2D>()) collider.sharedMaterial = frictionless;
             GameObject coast = Entity("Costa - limite do mar", Vector2.zero, world);
             EdgeCollider2D shoreline = coast.AddComponent<EdgeCollider2D>();
             var perimeter = new Vector2[PrototypeWorldLayout.Coast.Count + 1];
@@ -211,9 +211,11 @@ namespace DragonQuest.Prototype
             scenery.CastleIcon(castle);
             castle.GetComponent<BoxCollider2D>().sharedMaterial = frictionless;
             CreatePassage("Castelo e arredores", PrototypeTravel.World, world, PrototypeTravel.City);
-            CreateForestIcon(world, PrototypeWorldLayout.WestForest);
+            Transform quarry = Entity("Pedreira - icone global", PrototypeWorldLayout.WestForest, world).transform;
+            scenery.QuarryIcon(quarry);
+            quarry.GetComponent<BoxCollider2D>().sharedMaterial = frictionless;
             CreateForestIcon(world, PrototypeWorldLayout.EastForest);
-            CreatePassage("Floresta oeste", PrototypeTravel.World, world, PrototypeTravel.WestForest);
+            CreatePassage("Pedreira dos monolitos", PrototypeTravel.World, world, PrototypeTravel.WestForest);
             CreatePassage("Floresta leste", PrototypeTravel.World, world, PrototypeTravel.EastForest);
 
             Transform ruins = Entity("Ruinas - icone global",PrototypeWorldLayout.Ruins,world).transform;
@@ -226,7 +228,7 @@ namespace DragonQuest.Prototype
             CreatePassage("Entrada do vulcao",PrototypeTravel.World,world,PrototypeTravel.Volcano);
             GameObject passage = Entity("Passagem oculta", PrototypeWorldLayout.Trail, world);
             BlockedPassageInteraction gate = passage.AddComponent<BlockedPassageInteraction>();
-            gate.Initialize(rocks, secrets); interactions.Add(gate);
+            gate.Initialize(barrier, secrets); interactions.Add(gate);
             return world;
         }
 

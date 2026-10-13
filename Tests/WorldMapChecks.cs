@@ -16,7 +16,7 @@ internal static class WorldMapChecks
             block.Size.x, block.Size.y, block.Color, block.Solid, block.Order));
     private static IEnumerable<CityBlock> WorldBlocks()
         => PrototypeWorldLayout.Blocks.Concat(At(PrototypeWorldLayout.CastleIcon, PrototypeWorldLayout.Castle))
-            .Concat(At(PrototypeWorldLayout.ForestIcon, PrototypeWorldLayout.WestForest))
+            .Concat(At(PrototypeWorldLayout.QuarryIcon, PrototypeWorldLayout.WestForest))
             .Concat(At(PrototypeWorldLayout.ForestIcon, PrototypeWorldLayout.EastForest))
             .Concat(At(PrototypeRuinsLayout.Icon,PrototypeWorldLayout.Ruins))
             .Concat(At(PrototypeWorldLayout.VolcanoIcon, PrototypeWorldLayout.Volcano));
@@ -27,6 +27,7 @@ internal static class WorldMapChecks
         private readonly Rect bounds;
         private readonly List<Rect> solids;
         private readonly bool island;
+        private readonly bool sealedWard;
         private readonly HashSet<(int, int)> reachable = new HashSet<(int, int)>();
         private (int, int) Cell(Vector2 point) => ((int)Math.Round((point.x - bounds.xMin) / Step), (int)Math.Round((point.y - bounds.yMin) / Step));
         private Vector2 Point((int, int) cell) => new Vector2(bounds.xMin + cell.Item1 * Step, bounds.yMin + cell.Item2 * Step);
@@ -38,6 +39,7 @@ internal static class WorldMapChecks
                 foreach (Vector2 corner in new[] { new Vector2(-HalfWidth, -HalfHeight), new Vector2(-HalfWidth, HalfHeight),
                     new Vector2(HalfWidth, -HalfHeight), new Vector2(HalfWidth, HalfHeight) })
                     if (!PrototypeWorldLayout.IsLand(point + corner)) return false;
+            if (sealedWard && PrototypeWorldLayout.WardOverlaps(new Rect(point.x - HalfWidth, point.y - HalfHeight, HalfWidth * 2, HalfHeight * 2))) return false;
             foreach (Rect solid in solids)
                 if (point.x + HalfWidth >= solid.xMin && point.x - HalfWidth <= solid.xMax
                     && point.y + HalfHeight >= solid.yMin && point.y - HalfHeight <= solid.yMax) return false;
@@ -52,7 +54,8 @@ internal static class WorldMapChecks
         public Paths(Rect limits, IEnumerable<CityBlock> blocks, Vector2 spawn, bool isIsland = false, Vector2? npc = null)
         {
             bounds = limits; island = isIsland;
-            solids = blocks.Where(block => block.Solid).Select(block => block.Bounds).ToList();
+            sealedWard = blocks.Any(block => block.Name == PrototypeSecretLayout.SealedRocks);
+            solids = blocks.Where(block => block.Solid && block.Name != PrototypeSecretLayout.SealedRocks).Select(block => block.Bounds).ToList();
             if (npc.HasValue) solids.Add(new Rect(npc.Value.x - 0.275f, npc.Value.y - 0.3f, 0.55f, 0.6f));
             Assert(Walkable(spawn), "Entrada de mapa deve estar fora de colisores e do mar.");
             var pending = new Queue<(int, int)>();
@@ -151,7 +154,7 @@ internal static class WorldMapChecks
         Assert(ruinsEntry==PrototypeRuinsLayout.Spawn,"Entrada das ruinas deve usar ponto livre do cenario local.");
         Assert(!travel.TryTravel(PrototypeTravel.City,out _)&&!travel.TryTravel("item-shop",out _),"Ruinas exigem voltar a ilha para viajar a outros locais.");
         travel.TryTravel(PrototypeTravel.World,out Vector2 ruinsReturn);
-        Assert(ruinsReturn==PrototypeWorldLayout.Ruins+Vector2.down*2.5f,"Saida das ruinas deve devolver ao seu icone global.");
+        Assert(ruinsReturn==PrototypeWorldLayout.RuinsReturn,"Saida das ruinas deve devolver ao seu icone global, fora do mar.");
         var secrets=new DragonQuest.Progression.AncientSecrets();secrets.LearnPoem();
         Assert(travel.TryTravel(PrototypeTravel.Ruins,out _)&&secrets.TrySolveAltar(DragonQuest.Progression.LegendPoem.Flame),"Poema aprendido deve permitir resolver altar durante a visita.");
         travel.TryTravel(PrototypeTravel.World,out _);travel.TryTravel(PrototypeTravel.Ruins,out _);
@@ -237,9 +240,24 @@ internal static class WorldMapChecks
             Assert(world.Accessible(icon + Vector2.down * 0.85f), "Entrada global deve ser acessivel pela ilha.");
         Assert(world.Accessible(PrototypeWorldLayout.Trail), "Passagem oculta deve poder ser examinada.");
         Assert(!world.Accessible(PrototypeWorldLayout.Volcano), "Vulcao nao pode ser alcancado enquanto a trilha estiver bloqueada.");
-        Assert(!world.Walkable(new Vector2(3, 6.5f)), "Rochas precisam impedir atravesar a trilha.");
+        Assert(!world.Walkable(PrototypeWorldLayout.Volcano + Vector2.down * (PrototypeWorldLayout.WardRadius - 0.1f)), "Barreira precisa impedir atravessar a trilha.");
         Assert(openWorld.Accessible(PrototypeWorldLayout.Volcano), "Remover o colisor dos selos deve abrir um caminho real ate o vulcao.");
         Assert(openWorld.Accessible(PrototypeWorldLayout.Trail), "Trilha aberta deve permitir retornar ao sul da ilha.");
+        Assert(PrototypeWorldLayout.Ruins.x < 0 && PrototypeWorldLayout.Ruins.y < 0
+            && PrototypeWorldLayout.Volcano == -PrototypeWorldLayout.Ruins
+            && PrototypeWorldLayout.WestForest.x < 0 && PrototypeWorldLayout.WestForest.y > 0,
+            "Ruinas no sudoeste, vulcao exatamente oposto e pedreira no noroeste.");
+        for (int i = 0; i < 32; i++)
+        {
+            double angle = i * Math.PI * 2 / 32;
+            Vector2 edge = PrototypeWorldLayout.Volcano + new Vector2((float)Math.Cos(angle), (float)Math.Sin(angle)) * (PrototypeWorldLayout.WardRadius - 0.05f);
+            Assert(!world.Walkable(edge), "Barreira circular deve bloquear por todos os lados, incluindo diagonais.");
+        }
+        Assert(PrototypeWorldLayout.SafeSavedPosition(new Vector2(-15, 5), true) == PrototypeWorldLayout.Spawn,
+            "Save antigo fora da nova costa deve recuperar uma posicao livre, conservando a jornada.");
+        Assert(PrototypeWorldLayout.SafeSavedPosition(PrototypeWorldLayout.Volcano, false) == PrototypeWorldLayout.Trail
+            && openWorld.Accessible(PrototypeWorldLayout.SafeSavedPosition(PrototypeWorldLayout.Volcano, true)),
+            "Save dentro da barreira fechada deve retornar ao acesso; aberta conserva a posicao.");
         Assert(volcano.Accessible(PrototypeVolcanoLayout.Dragon+Vector2.down*1.5f),"Trilha de basalto deve levar a um ponto de interacao do dragao.");
         Assert(!volcano.Walkable(new Vector2(5,-5)),"A lava deve impedir caminhar fora da trilha.");
         foreach(var block in PrototypeSecretLayout.WestMonoliths)

@@ -16,11 +16,13 @@ namespace DragonQuest.Exploration
             for (int i = 0; i < pixels.Length; i++) alpha[i] = pixels[i].a;
             bool walkingSheet = resource == "ArenWalk" || resource == "ArenDiagonalWalk";
             bool chest = resource == "ChestStates";
-            var frames = chest ? PixelSpriteLayout.ReadPropPair(Texture.width, Texture.height, alpha)
+            bool worldPoi = resource == "WorldPoiSprites";
+            var frames = worldPoi ? PixelSpriteLayout.ReadWorldIcons(Texture.width, Texture.height, alpha)
+                : chest ? PixelSpriteLayout.ReadPropPair(Texture.width, Texture.height, alpha)
                 : PixelSpriteLayout.Read(Texture.width, Texture.height, alpha, walkingSheet);
             int maxHeight = 1; foreach (var frame in frames) maxHeight = Math.Max(maxHeight, frame.Height);
             // Mesma escala nos dois estados; abrir a tampa nao redimensiona a caixa.
-            float pixelsPerUnit = chest ? frames[0].Width / 1.1f : maxHeight / (1.45f * ObliqueProjection.HeightScale);
+            float pixelsPerUnit = chest ? frames[0].Width / 1.1f : maxHeight / ((worldPoi ? 1.95f : 1.45f) * ObliqueProjection.HeightScale);
             Sprites = new Sprite[frames.Length];
             for (int i = 0; i < frames.Length; i++)
             {

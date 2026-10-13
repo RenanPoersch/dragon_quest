@@ -119,7 +119,7 @@ internal static class ObliqueChecks
             Assert(Math.Abs(flame.x)<size*aspect&&Math.Abs(flame.y)<size,"Câmera fixa das ruinas deve mostrar chama do altar.");
         }
 
-        var world=ObliqueScenery.IslandData(); Validate(world,"Ilha e mar");
+        var world=ObliqueScenery.IslandData(false); Validate(world,"Costa e mar");
         // Area triangulada da superficie precisa corresponder ao contorno concavo.
         var inner=PrototypeWorldLayout.Coast.Select(p=>new Vector2(p.x*0.955f,p.y*0.955f)).ToArray();
         var surface=new ObliqueMeshData();surface.Polygon(inner,0,ObliqueMeshData.Hex("71806A"));
@@ -128,28 +128,29 @@ internal static class ObliqueChecks
         for(int i=0;i<surface.Vertices.Count;i+=3)
         {var a=surface.Vertices[i];var b=surface.Vertices[i+1];var c=surface.Vertices[i+2];triangleArea+=Math.Abs((double)(b.x-a.x)*(c.y-a.y)-(double)(b.y-a.y)*(c.x-a.x));}
         Assert(Math.Abs(polygonArea-triangleArea)<0.001,"Triangulação deve preencher a ilha sem sobreposição nem buracos.");
-        foreach(var block in PrototypeWorldLayout.Blocks)
+        var islandGround = WorldIslandArt.Ground(); Validate(islandGround,"Pintura continua da ilha");
+        for (int i = 0; i < islandGround.Vertices.Count; i++)
         {
-            if(block.Name=="Mar"||block.Name.StartsWith("Costa")||block.Name.StartsWith("Ilha -")) continue;
-            var data=ObliqueScenery.BlockData(block.Name,block.Size,block.Color,block.Solid,block.Order);Validate(data,block.Name);AddBlock(world,block);
+            var p = islandGround.Vertices[i]; var bounds = PrototypeWorldLayout.GroundPaintingBounds;
+            Near(islandGround.UVs[i].x, (p.x - bounds.xMin) / bounds.width, "UV X absoluta da pintura da ilha.");
+            Near(islandGround.UVs[i].y, (p.y - bounds.yMin) / bounds.height, "UV Y absoluta da pintura da ilha.");
+            Assert(islandGround.UVs[i].x >= 0 && islandGround.UVs[i].x <= 1 && islandGround.UVs[i].y >= 0 && islandGround.UVs[i].y <= 1,
+                "Ilha inteira deve ficar dentro da pintura, sem repeticao nas bordas.");
         }
-        var castle=ObliqueScenery.CastleIconData();Validate(castle,"Castelo global");
-        var forest=ObliqueScenery.ForestIconData();Validate(forest,"Bosque global");
-        var volcano=ObliqueScenery.VolcanoIconData();Validate(volcano,"Vulcão global");
-        var ruinsIcon=ObliqueScenery.RuinsIconData();Validate(ruinsIcon,"Ruinas globais");
-        foreach(var icon in new[]{castle,forest})
-            Assert(-icon.Vertices.Min(p=>p.z)>1.45f&&-icon.Vertices.Min(p=>p.z)<=2,"Ícones precisam ser ligeiramente mais altos que o herói.");
-        var worldCastle = new ObliqueMeshData(); worldCastle.Append(castle,ObliqueProjection.Point(PrototypeWorldLayout.Castle));
-        world.Append(forest,ObliqueProjection.Point(PrototypeWorldLayout.WestForest));
-        world.Append(forest,ObliqueProjection.Point(PrototypeWorldLayout.EastForest));
-        world.Append(volcano,ObliqueProjection.Point(PrototypeWorldLayout.Volcano));
-        world.Append(ruinsIcon,ObliqueProjection.Point(PrototypeWorldLayout.Ruins));
+        var ward = new ObliqueMeshData(); ward.Append(WorldIslandArt.Ward(), ObliqueProjection.Point(PrototypeWorldLayout.Volcano));
+        Validate(ward,"Barreira magica circular");
+        Assert(ward.Colors.All(c=>c.a>0&&c.a<1),"Barreira deve permitir ver o vulcao atraves dela.");
+        foreach (var p in WorldIslandArt.Ward().Vertices)
+            Near((float)Math.Sqrt(p.x*p.x+p.y*p.y),PrototypeWorldLayout.WardRadius,"Parede magica deve acompanhar o colisor circular.");
         MapDefinition worldMap=travel.Current;
         float worldSize=ObliqueProjection.FrameSize(worldMap.CameraSize,worldMap.Bounds,16f/9,worldMap.FixedCamera);
         Vector2 worldFocus=ObliqueProjection.CameraFocus(PrototypeWorldLayout.Spawn,worldMap.Bounds,worldSize,16f/9,worldMap.FixedCamera);
         Export(directory,"WorldOblique",world,worldFocus,worldSize,ObliqueProjection.HeroCenterHeight,
-            new[]{Sprite("ArenWalk",0,PrototypeWorldLayout.Spawn)});
-        Export(directory,"WorldCastle",worldCastle,worldFocus,worldSize,ObliqueProjection.HeroCenterHeight,atlas:"CastleMaterialsAtlas");
+            new[]{Sprite("ArenWalk",0,PrototypeWorldLayout.Spawn),
+                WorldIcon(0,PrototypeWorldLayout.Castle),WorldIcon(1,PrototypeWorldLayout.WestForest),
+                WorldIcon(2,PrototypeWorldLayout.EastForest),WorldIcon(3,PrototypeWorldLayout.Ruins),WorldIcon(4,PrototypeWorldLayout.Volcano)});
+        Export(directory,"WorldGround",islandGround,worldFocus,worldSize,ObliqueProjection.HeroCenterHeight,atlas:"WorldGroundMap",singleTexture:true);
+        Export(directory,"WorldWard",ward,worldFocus,worldSize,ObliqueProjection.HeroCenterHeight,additive:true);
 
         var city=new ObliqueMeshData(); var cityDetails=new ObliqueMeshData(); var cityGlow=new ObliqueMeshData(); var fortress=new ObliqueMeshData();
         foreach(var block in PrototypeCityLayout.Blocks)
@@ -471,4 +472,6 @@ internal static class ObliqueChecks
         return nearest;
     }
     private static object Sprite(string atlas,int frame,Vector2 position) => new {atlas,frame,position=new[]{position.x,position.y},footHeight=atlas=="NpcRoster"&&frame==11?0.15f:0.075f};
+    private static object WorldIcon(int frame,Vector2 position) => new {atlas="WorldPoiSprites",frame,
+        position=new[]{position.x+ObliqueProjection.YawSin*0.3f,position.y-ObliqueProjection.YawCos*0.3f},footHeight=0.015f};
 }

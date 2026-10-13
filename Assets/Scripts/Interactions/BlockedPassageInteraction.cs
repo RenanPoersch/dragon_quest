@@ -4,44 +4,58 @@ namespace DragonQuest.Interactions
 {
     public sealed class BlockedPassageInteraction : Interactable
     {
-        public override string Prompt => "Examinar passagem entre as rochas";
+        public override string Prompt => secrets?.PassageOpen == true ? "Examinar passagem aberta" : "Examinar barreira magica";
         private GameObject barrier;
         private float openingTime;
         private bool opening;
         private Progression.AncientSecrets secrets;
         private bool fullyOpen;
-        public void Initialize(GameObject rocks, Progression.AncientSecrets progress = null) { barrier=rocks; secrets=progress; }
+        public void Initialize(GameObject ward, Progression.AncientSecrets progress = null)
+        { barrier=ward; secrets=progress; RestoreBarrierState(); }
+        public void RestoreBarrierState()
+        {
+            if (barrier == null) return;
+            opening = false; fullyOpen = secrets?.PassageOpen == true;
+            barrier.transform.localScale = Vector3.one;
+            barrier.GetComponent<Collider2D>().enabled = !fullyOpen;
+            barrier.SetActive(!fullyOpen); Physics2D.SyncTransforms();
+        }
         public override void Interact(InteractionContext context)
         {
             if(context.Secrets.PassageOpen)
                 context.Dialogue.Open("Trilha antiga","Os selos estao desfeitos. A trilha ate o vulcao permanece livre.");
             else if(context.Secrets.TryOpenPassage())
             {
-                barrier.GetComponent<BoxCollider2D>().enabled=false;
+                barrier.GetComponent<Collider2D>().enabled=false;
                 Physics2D.SyncTransforms(); opening=true; openingTime=0;
-                context.Dialogue.Open("Passagem oculta","A Escama ancestral vibra. Os tres selos se desfazem e as rochas se afastam, revelando a trilha do vulcao.",
-                    "A escama permanece com a equipe. Um sopro quente desce das montanhas.");
+                context.Dialogue.Open("Barreira ancestral","A Escama ancestral vibra. Os tres selos se desfazem e a barreira magica ao redor do vulcao se dissipa.",
+                    "A escama permanece com a equipe. O caminho ate a cratera esta livre.");
             }
-            else context.Dialogue.Open("Passagem oculta","Uma trilha estreita segue por entre as montanhas ate o vulcao.",
-                context.Secrets.HasScale?"A escama vibra, mas alguns selos ainda resistem.":"As rochas estao marcadas com tres selos. A passagem permanece bloqueada.");
+            else context.Dialogue.Open("Barreira ancestral","Uma barreira magica envolve o vulcao. Tres selos brilham sobre a superficie.",
+                context.Secrets.HasScale?"A escama vibra, mas alguns selos ainda resistem.":"A magia impede a aproximacao. Talvez os sinais antigos da ilha revelem como desfaze-la.");
         }
         private void Update()
         {
+            if (barrier == null) return;
+            if (secrets?.PassageOpen != true)
+            {
+                if (opening || fullyOpen)
+                {
+                    opening = fullyOpen = false; barrier.SetActive(true); barrier.transform.localScale = Vector3.one;
+                    barrier.GetComponent<Collider2D>().enabled = true; Physics2D.SyncTransforms();
+                }
+                return;
+            }
             if (!opening && !fullyOpen && secrets?.PassageOpen == true && barrier != null)
             {
-                barrier.GetComponent<BoxCollider2D>().enabled = false;
-                SetOffset(2.35f); fullyOpen = true; Physics2D.SyncTransforms();
+                barrier.GetComponent<Collider2D>().enabled = false;
+                barrier.SetActive(false); fullyOpen = true; Physics2D.SyncTransforms();
             }
             if(!opening || barrier==null) return;
             openingTime+=Time.unscaledDeltaTime;
-            float offset=Mathf.SmoothStep(0.75f,2.35f,Mathf.Clamp01(openingTime/0.8f));
-            SetOffset(offset);
-            if(openingTime>=0.8f) { opening=false; fullyOpen=true; }
-        }
-        private void SetOffset(float offset)
-        {
-            for(int i=0;i<barrier.transform.childCount;i++)
-                barrier.transform.GetChild(i).localPosition=new Vector3(i==0?-offset:offset,0,0);
+            float height = 1 - Mathf.SmoothStep(0, 1, Mathf.Clamp01(openingTime / 0.8f));
+            barrier.transform.localScale = new Vector3(1, 1, height);
+            if(openingTime>=0.8f) { opening=false; fullyOpen=true; barrier.SetActive(false); }
         }
     }
 }

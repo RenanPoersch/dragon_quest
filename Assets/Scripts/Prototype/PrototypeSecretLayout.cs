@@ -11,7 +11,7 @@ namespace DragonQuest.Prototype
         public static readonly Vector2 Inscription = new Vector2(-2, 3);
         public static readonly Vector2 ClawStone = new Vector2(2, 3);
         public static readonly Vector2 HollowTree = new Vector2(4.5f, 5);
-        public const string SealedRocks = "Rochas da passagem selada";
+        public const string SealedRocks = "Barreira magica do vulcao";
         public static IReadOnlyList<CityBlock> WestMonoliths { get; } = Array.AsReadOnly(new[]
         {
             new CityBlock("Monolito - Sol",2,-1.5f,0.9f,0.8f,"8A8A7B",true,2),

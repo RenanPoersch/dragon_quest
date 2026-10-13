@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using DragonQuest.Exploration;
+using DragonQuest.Interactions;
 
 namespace DragonQuest.Prototype
 {
@@ -51,7 +52,10 @@ namespace DragonQuest.Prototype
         public void Restore(string map, Vector2 position)
         {
             if (!navigation.TryRestore(map, position)) throw new System.ArgumentException("Posicao de save invalida.");
+            mapRoots[PrototypeTravel.World].GetComponentInChildren<BlockedPassageInteraction>(true)?.RestoreBarrierState();
             if (map == PrototypeTravel.City) position = PrototypeCityLayout.SafeSavedPosition(position);
+            if (map == PrototypeTravel.World) position = PrototypeWorldLayout.SafeSavedPosition(position,
+                navigation.CanEnterVolcano);
             ApplyMap(position);
         }
 

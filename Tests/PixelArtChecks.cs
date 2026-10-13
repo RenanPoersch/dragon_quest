@@ -52,6 +52,7 @@ internal static class PixelArtChecks
         CheckWalking();
         CheckMovementTurns();
         CheckChestFrames();
+        CheckWorldIcons();
         var alpha = new byte[40 * 30];
         for (int i = 0; i < 12; i++)
         {
@@ -102,6 +103,27 @@ internal static class PixelArtChecks
         var shadow = new ObliqueMeshData {DefaultSurface=PixelSurface.Roof}; shadow.Shadow(0,0,1,1);
         Assert(shadow.Colors[0].a > 0 && shadow.Colors[0].a < 1 && shadow.Surfaces[0].x == -1, "Sombra deve ser transparente e nao herdar textura do telhado.");
         Console.WriteLine(checks + " verificacoes de sprites, materiais e movimento passaram.");
+    }
+    private static void CheckWorldIcons()
+    {
+        var alpha = new byte[1536 * 1024];
+        for (int i = 0; i < 5; i++)
+        {
+            RectInt region = PixelSpriteLayout.WorldIconRegion(i);
+            int x = region.xMin + region.width / 2, y = 1024 - region.yMin - region.height / 2;
+            for (int yy = y - 12; yy <= y + 12; yy++) for (int xx = x - 10; xx <= x + 10; xx++) alpha[yy * 1536 + xx] = 253;
+        }
+        var frames = PixelSpriteLayout.ReadWorldIcons(1536,1024,alpha);
+        Assert(frames.Length==5,"Folha de POIs deve fornecer os cinco locais, sem uma sexta imagem vazia.");
+        foreach (var frame in frames)
+            Assert(frame.Width==23&&frame.Height==27&&frame.FootX==0.5f&&frame.Pivot.y==1f/27,
+                "POIs conservam margem, ancora central e base apoiada no chao.");
+        bool refused = false;
+        try { PixelSpriteLayout.ReadWorldIcons(1536,1024,new byte[1536*1024]); } catch (ArgumentException) { refused=true; }
+        Assert(refused,"POI ausente deve ser recusado.");
+        alpha[900*1536]=253; refused=false;
+        try { PixelSpriteLayout.ReadWorldIcons(1536,1024,alpha); } catch (ArgumentException) { refused=true; }
+        Assert(refused,"POI encostado no limite da janela nao pode ser cortado silenciosamente.");
     }
     private static void CheckMovementTurns()
     {

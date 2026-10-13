@@ -26,30 +26,31 @@ Use essa versão do Editor para evitar migrações involuntárias.
 
 ## Parte 7A — ilha e cenários locais
 
-A demo começa no **mapa global de uma pequena ilha cercada pelo mar**. Castelo e florestas aparecem como ícones um pouco mais altos que o herói. Caminhe até a área de entrada dos pontos para mudar automaticamente para os cenários locais:
+A demo começa no **mapa global de uma pequena ilha arredondada e irregular, cercada pelo mar**. Chão e POIs usam pixel art na mesma direção da periferia, com ícones um pouco mais altos que o herói. Caminhe até a área de entrada dos pontos para mudar automaticamente para os cenários locais:
 
 - Castelo no mapa global → **periferia do castelo**, bairro de 26 × 44 com viela central, lojas, moradores, missão e patrulha.
 - Ponte de pedra ao norte e porta do castelo → **interior do castelo**, com salão, trono e confronto final da parte 8.
-- Duas florestas no mapa global → cenários próprios com clareira, árvores e moradores.
+- Pedreira dos monólitos a noroeste → interior da antiga floresta oeste, conservado nesta etapa.
+- Floresta a leste → cenário próprio com clareira, árvores e moradores.
 - Ruínas antigas ao sudoeste da ilha → cenário próprio com colunas quebradas e o altar da lenda.
-- Passagem escondida ao norte → trilha para o vulcão, bloqueada por rochas e três selos. Depois de abri-la, o ícone leva ao caminho de lava e à arena do dragão.
+- Vulcão a nordeste, exatamente oposto às ruínas → bloqueado por uma barreira mágica circular e três selos. Depois de abri-la com E no acesso ao sul da barreira, o ícone leva ao caminho de lava e à arena do dragão.
 - Hospedaria próxima à entrada sul → interior com camas; a equipe retorna para lá após perder para o dragão.
 
 Entradas e saídas, incluindo lojas, funcionam ao caminhar pela área de passagem, sem confirmar com E. Chegadas ficam fora dessas áreas para evitar retorno imediato; diálogos, inventário, lojas abertas e batalhas suspendem a viagem. E continua sendo usado para conversar, examinar objetos e desfazer os selos da trilha. Ouro, inventário, equipamentos, missão, estoques e Limit usam a mesma sessão entre cenários.
 
-A apresentação usa **câmera oblíqua e modelos com volume**, com sprites em pixel art para herói/moradores desde a parte 10A. A ilha tem costa elevada, montanhas, mar e ícones pequenos de locais; casas têm paredes, telhados e janelas texturizados. No mapa mundial, a câmera está aproximadamente duas vezes mais próxima no enquadramento e acompanha o herói perto do centro da tela. Na periferia, ela também acompanha o herói mantendo o ângulo. Florestas, ruínas, castelo e lojas usam enquadramentos fixos. WASD/setas acompanham as direções da tela.
+A apresentação usa **câmera oblíqua e modelos com volume**, com sprites em pixel art para herói/moradores desde a parte 10A. A ilha tem costa elevada, mar texturizado e chão contínuo; os POIs usam sprites próprios e a cordilheira foi retirada. Casas da periferia têm paredes, telhados e janelas texturizados. No mapa mundial, a câmera acompanha o herói perto do centro da tela. Na periferia, ela também acompanha o herói mantendo o ângulo. Cenários pequenos mantêm seus enquadramentos fixos. WASD/setas acompanham as direções da tela.
 
-Abra `Assets/Scenes/CidadePrototipo.unity` e siga `Docs/PERIFERIA_PIXEL_ART.md` para a periferia atual. `Docs/PARTE_7A.md` e `Docs/VISUAL_25D.md` registram a implantação anterior da ilha/apresentação. A batalha e os menus conservam sua interface atual.
+Abra `Assets/Scenes/CidadePrototipo.unity` e siga `Docs/MAPA_GLOBAL_PIXEL_ART.md` para a ilha atual e `Docs/PERIFERIA_PIXEL_ART.md` para a periferia. `Docs/PARTE_7A.md` e `Docs/VISUAL_25D.md` registram a implantação anterior da ilha/apresentação. A batalha e os menus conservam sua interface atual.
 
 ## Parte 7B — três segredos e poema em latim
 
 A camponesa do bairro residencial recita um poema original de três versos em latim e explica cada frase, sem identificar a resposta do altar. Termine a conversa para consultar o poema e suas explicações com **P**.
 
 - Altar nas ruínas antigas: saia da periferia e caminhe até o ponto de interesse ao sudoeste da ilha. Dentro das ruínas, escolha o verso que corresponde à imagem de chama e reino destruído, com clique ou teclas 1/2/3.
-- Floresta oeste: interprete outro verso do mesmo poema para ativar os monólitos. Erros reiniciam sem punição.
+- Pedreira a noroeste: interprete outro verso do mesmo poema para ativar os monólitos. Erros reiniciam sem punição; o cenário interno continua com a arte da floresta oeste nesta etapa.
 - Floresta leste: marcas de garras apontam para uma árvore oca que guarda a Escama ancestral, um objeto de história protegido contra venda.
 
-O contador fica oculto até concluir o primeiro segredo. Depois dos três, use **E** na passagem ao norte da ilha: a escama desfaz os selos, as rochas se afastam e a trilha fica livre até o vulcão. A escama permanece no inventário e o progresso persiste entre mapas da sessão.
+O contador fica oculto até concluir o primeiro segredo. Depois dos três, use **E** ao sul da barreira do vulcão, a nordeste: a escama desfaz os selos, a barreira se dissipa e o acesso à cratera fica livre. A escama permanece no inventário e o progresso persiste entre mapas da sessão.
 
 Veja `Docs/PARTE_7B.md` para o poema, soluções e roteiro de teste em Play.
 

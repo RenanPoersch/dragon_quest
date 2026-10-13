@@ -8,11 +8,15 @@ namespace DragonQuest.Prototype
         public static readonly Rect Bounds = new Rect(-20, -14, 40, 28);
         public static readonly Vector2 Spawn = new Vector2(0, -7);
         public static readonly Vector2 Castle = Vector2.zero;
-        public static readonly Vector2 WestForest = new Vector2(-8, 2);
-        public static readonly Vector2 EastForest = new Vector2(7, -4);
-        public static readonly Vector2 Ruins = new Vector2(-7, -5);
-        public static readonly Vector2 Volcano = new Vector2(3, 8.5f);
-        public static readonly Vector2 Trail = new Vector2(3, 5.5f);
+        // O ID west-forest permanece para conservar as jornadas existentes.
+        public static readonly Vector2 WestForest = new Vector2(-8, 5);
+        public static readonly Vector2 EastForest = new Vector2(8, -2.5f);
+        public static readonly Vector2 Ruins = new Vector2(-8, -6);
+        public static readonly Vector2 Volcano = -Ruins;
+        public static readonly Vector2 Trail = Volcano + Vector2.down * 3.5f;
+        public static readonly Vector2 RuinsReturn = Ruins + new Vector2(1.5f, -1.9f);
+        public static readonly Rect GroundPaintingBounds = new Rect(-18, -12, 36, 24);
+        public const float WardRadius = 2.45f;
         public static readonly Rect ForestBounds = new Rect(-9, -7, 18, 14);
         public static readonly Rect CastleBounds = new Rect(-10, -8, 20, 16);
         public static readonly Vector2 LocalExit = new Vector2(0, -5.8f);
@@ -24,26 +28,18 @@ namespace DragonQuest.Prototype
         public static readonly Vector2 CityExit = PrototypeCityLayout.Exit;
         public static readonly Vector2 CastleDoor = PrototypeCityLayout.CastleDoor;
 
-        public static IReadOnlyList<Vector2> Coast { get; } = BeveledCoast(new[]
-        {
-            new Vector2(-13, -7), new Vector2(-10, -7), new Vector2(-10, -10), new Vector2(8, -10),
-            new Vector2(8, -8), new Vector2(13, -8), new Vector2(13, -3), new Vector2(15, -3),
-            new Vector2(15, 4), new Vector2(12, 4), new Vector2(12, 8), new Vector2(6, 8),
-            new Vector2(6, 10), new Vector2(-4, 10), new Vector2(-4, 8), new Vector2(-11, 8),
-            new Vector2(-11, 5), new Vector2(-15, 5), new Vector2(-15, -2), new Vector2(-13, -2)
-        });
+        public static IReadOnlyList<Vector2> Coast { get; } = RoundedCoast();
 
-        // Cantos facetados compartilhados pela malha da ilha e pelo limite fisico do mar.
-        private static IReadOnlyList<Vector2> BeveledCoast(Vector2[] corners)
+        // Uma oval irregular, com enseadas suaves; a mesma costa serve ao renderer e ao mar fisico.
+        private static IReadOnlyList<Vector2> RoundedCoast()
         {
             var points = new List<Vector2>();
-            for (int i = 0; i < corners.Length; i++)
+            for (int i = 0; i < 64; i++)
             {
-                Vector2 p = corners[i], previous = corners[(i + corners.Length - 1) % corners.Length], next = corners[(i + 1) % corners.Length];
-                float before = (float)System.Math.Sqrt((previous.x-p.x)*(previous.x-p.x)+(previous.y-p.y)*(previous.y-p.y));
-                float after = (float)System.Math.Sqrt((next.x-p.x)*(next.x-p.x)+(next.y-p.y)*(next.y-p.y));
-                points.Add(new Vector2(p.x+(previous.x-p.x)*0.45f/before,p.y+(previous.y-p.y)*0.45f/before));
-                points.Add(new Vector2(p.x+(next.x-p.x)*0.45f/after,p.y+(next.y-p.y)*0.45f/after));
+                double angle = i * System.Math.PI * 2 / 64;
+                double variation = 1 + 0.055 * System.Math.Sin(angle * 3 + 0.4) + 0.025 * System.Math.Cos(angle * 5);
+                points.Add(new Vector2((float)(15.3 * System.Math.Cos(angle) * variation),
+                    (float)(10.8 * System.Math.Sin(angle) * variation)));
             }
             return points.AsReadOnly();
         }
@@ -60,6 +56,25 @@ namespace DragonQuest.Prototype
             return inside;
         }
 
+        public static bool WardOverlaps(Rect body)
+        {
+            float x = System.Math.Max(body.xMin, System.Math.Min(Volcano.x, body.xMax));
+            float y = System.Math.Max(body.yMin, System.Math.Min(Volcano.y, body.yMax));
+            return (x - Volcano.x) * (x - Volcano.x) + (y - Volcano.y) * (y - Volcano.y) <= WardRadius * WardRadius;
+        }
+
+        public static Vector2 SafeSavedPosition(Vector2 position, bool passageOpen)
+        {
+            var body = new Rect(position.x - 0.355f, position.y - 0.38f, 0.71f, 0.76f);
+            foreach (Vector2 corner in new[] { body.min, body.max, new Vector2(body.xMin, body.yMax), new Vector2(body.xMax, body.yMin) })
+                if (!IsLand(corner)) return Spawn;
+            if (!passageOpen && WardOverlaps(body)) return Trail;
+            foreach (var pair in new[] { (Castle, CastleIcon), (WestForest, QuarryIcon), (Ruins, PrototypeRuinsLayout.Icon) })
+                foreach (var block in pair.Item2)
+                    if (block.Solid && body.Overlaps(new Rect(pair.Item1 + block.Position - block.Size / 2, block.Size))) return Spawn;
+            return position;
+        }
+
         public static IReadOnlyList<CityBlock> Blocks { get; } = CreateBlocks();
         public static IReadOnlyList<CityBlock> CastleBlocks { get; } = CreateCastleBlocks();
         public static IReadOnlyList<CityBlock> CastleIcon { get; } = System.Array.AsReadOnly(new[]
@@ -72,6 +87,10 @@ namespace DragonQuest.Prototype
             new CityBlock("Castelo - porta", 0, -0.1f, 0.28f, 0.35f, "3C3C47", false, 5)
         });
         public static IReadOnlyList<CityBlock> ForestIcon { get; } = CreateForestIcon();
+        public static IReadOnlyList<CityBlock> QuarryIcon { get; } = System.Array.AsReadOnly(new[]
+        {
+            new CityBlock("Pedreira - base", 0, 0.1f, 1.6f, 0.7f, "9D9A88", true, 2)
+        });
         public static IReadOnlyList<CityBlock> VolcanoIcon { get; } = System.Array.AsReadOnly(new[]
         {
             new CityBlock("Vulcao - base", 0, 0, 1.7f, 0.6f, "797369", false, 3),
@@ -93,31 +112,13 @@ namespace DragonQuest.Prototype
 
         private static IReadOnlyList<CityBlock> CreateBlocks()
         {
-            var blocks = new List<CityBlock> { new CityBlock("Mar", 0, 0, 40, 28, "315F7E", false, -20) };
-            for (int x = -15; x < 15; x++)
-                for (int y = -10; y < 10; y++)
-                {
-                    Vector2 point = new Vector2(x + 0.5f, y + 0.5f);
-                    if (!IsLand(point)) continue;
-                    bool beach = !IsLand(point + Vector2.up) || !IsLand(point + Vector2.down)
-                        || !IsLand(point + Vector2.left) || !IsLand(point + Vector2.right);
-                    blocks.Add(new CityBlock(beach ? "Costa - areia" : "Ilha - gramado", point.x, point.y, 1, 1,
-                        beach ? "D0BF89" : (x + y) % 3 == 0 ? "55774E" : "4D7048", false, -19));
-                }
-            blocks.Add(new CityBlock("Trilha para o castelo", 0, -3.8f, 0.45f, 6, "B2A578", false, -18));
-            blocks.Add(new CityBlock("Trilha oeste", -4, 0, 8, 0.4f, "B2A578", false, -18));
-            blocks.Add(new CityBlock("Trilha da floresta oeste", -8, 1, 0.4f, 2, "B2A578", false, -18));
-            blocks.Add(new CityBlock("Trilha leste", 3.5f, -4, 7, 0.4f, "B2A578", false, -18));
-            blocks.Add(new CityBlock("Trilha sul para as ruinas",-3.5f,-6.5f,7,0.35f,"B2A578",false,-18));
-            blocks.Add(new CityBlock("Trilha da entrada das ruinas",-7,-6.15f,0.35f,0.7f,"B2A578",false,-18));
-            blocks.Add(new CityBlock("Vegetacao da passagem", 3, 4.8f, 2.8f, 2.4f, "3C5F40", false, -18));
-            blocks.Add(new CityBlock("Trilha oculta", 3, 6.8f, 0.45f, 3.2f, "827B58", false, -17));
-            blocks.Add(new CityBlock("Cordilheira oeste", -4.75f, 6.5f, 12.5f, 1, "777C72", true, 2));
-            blocks.Add(new CityBlock("Cordilheira leste", 8.25f, 6.5f, 7.5f, 1, "777C72", true, 2));
-            blocks.Add(new CityBlock(PrototypeSecretLayout.SealedRocks, 3, 6.5f, 3, 1, "676A68", true, 2));
-            foreach (Vector2 point in new[] { new Vector2(-11, -4), new Vector2(-5, -5), new Vector2(10, 1), new Vector2(-5, 4), new Vector2(6, 3) })
-                blocks.Add(new CityBlock("Arvore distante", point.x, point.y, 0.65f, 0.8f, "2D5038", false, 1));
-            return blocks.AsReadOnly();
+            return System.Array.AsReadOnly(new[]
+            {
+                new CityBlock("Mar", 0, 0, 40, 28, "315F7E", false, -20),
+                // Limites de referencia; a colisao real e circular, com WardRadius.
+                new CityBlock(PrototypeSecretLayout.SealedRocks, Volcano.x, Volcano.y,
+                    WardRadius * 2, WardRadius * 2, "9377CE", true, 2)
+            });
         }
 
         public static IReadOnlyList<CityBlock> CreateForestBlocks(bool eastern)

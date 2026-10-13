@@ -1,5 +1,7 @@
 # Parte 7B — poema, três segredos e trilha do vulcão
 
+O mapa global recebeu uma revisão posterior: as ruínas ficam em (−8; −6), o vulcão em (8; 6) e o ícone da floresta oeste virou uma pedreira a noroeste. A barreira mágica circular substituiu montanhas e rochas, mantendo os mesmos três segredos e a interação E. Consulte `MAPA_GLOBAL_PIXEL_ART.md` para posições, aparência e roteiro atuais; abaixo permanece o registro da implantação original dos enigmas.
+
 A lenda da ilha aparece em um poema original de três versos em latim. A camponesa, no bairro residencial da periferia, recita o poema e explica cada verso. Ela não identifica a resposta do altar nem apresenta uma missão de encontrar os segredos.
 
 ## Poema da lenda

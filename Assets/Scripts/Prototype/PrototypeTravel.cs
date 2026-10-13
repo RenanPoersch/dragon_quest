@@ -42,6 +42,7 @@ namespace DragonQuest.Prototype
         public IReadOnlyList<MapDefinition> Maps { get; }
         public IReadOnlyList<MapRoute> Routes { get; }
         public MapDefinition Current { get; private set; }
+        public bool CanEnterVolcano => secrets?.PassageOpen == true;
 
         public PrototypeTravel(AncientSecrets ancientSecrets = null)
         {
@@ -52,7 +53,7 @@ namespace DragonQuest.Prototype
                 new MapDefinition(City, "PERIFERIA DO CASTELO", PrototypeCityLayout.Bounds, PrototypeWorldLayout.CityEntry, 6,
                     coveredGroundBounds: PrototypeCityLayout.TerrainBounds),
                 new MapDefinition(Castle, "INTERIOR DO CASTELO", PrototypeWorldLayout.CastleBounds, PrototypeWorldLayout.CastleSpawn, 9, false, true),
-                new MapDefinition(WestForest, "FLORESTA OESTE", PrototypeWorldLayout.ForestBounds, PrototypeWorldLayout.ForestSpawn, 8, false, true),
+                new MapDefinition(WestForest, "PEDREIRA DOS MONOLITOS", PrototypeWorldLayout.ForestBounds, PrototypeWorldLayout.ForestSpawn, 8, false, true),
                 new MapDefinition(EastForest, "FLORESTA LESTE", PrototypeWorldLayout.ForestBounds, PrototypeWorldLayout.ForestSpawn, 8, false, true),
                 new MapDefinition(Ruins,"RUINAS ANTIGAS",PrototypeRuinsLayout.Bounds,PrototypeRuinsLayout.Spawn,8,false,true),
                 new MapDefinition(Volcano,"VULCAO / CAMINHO ANCESTRAL",PrototypeVolcanoLayout.Bounds,PrototypeVolcanoLayout.Spawn,7.5f),
@@ -72,7 +73,7 @@ namespace DragonQuest.Prototype
             Connect(connections, World, EastForest, PrototypeWorldLayout.EastForest,
                 PrototypeWorldLayout.LocalExit, PrototypeWorldLayout.EastForest + Vector2.down * 2.5f);
             Connect(connections, World, Ruins, PrototypeWorldLayout.Ruins,
-                PrototypeRuinsLayout.Exit, PrototypeWorldLayout.Ruins + Vector2.down * 2.5f);
+                PrototypeRuinsLayout.Exit, PrototypeWorldLayout.RuinsReturn);
             Connect(connections, City, Castle, PrototypeWorldLayout.CastleDoor, PrototypeWorldLayout.CastleExit, PrototypeCityLayout.CastleReturn);
             Connect(connections, City, "item-shop", PrototypeCityLayout.ItemDoor, new Vector2(0, -3.8f), PrototypeCityLayout.DoorReturn(PrototypeCityLayout.ItemDoor), entranceSize: PrototypeCityLayout.DoorSize);
             Connect(connections, City, "materia-shop", PrototypeCityLayout.MateriaDoor, new Vector2(0, -3.8f), PrototypeCityLayout.DoorReturn(PrototypeCityLayout.MateriaDoor), entranceSize: PrototypeCityLayout.DoorSize);
@@ -99,7 +100,7 @@ namespace DragonQuest.Prototype
         public bool TryTravel(string destination, out Vector2 arrival)
         {
             arrival = Current.Spawn;
-            if (destination == Volcano && secrets?.PassageOpen != true) return false;
+            if (destination == Volcano && !CanEnterVolcano) return false;
             if (destination == null || !routes.TryGetValue((Current.Id, destination), out MapRoute route)) return false;
             Current = maps[destination]; arrival = route.Arrival; return true;
         }
@@ -112,7 +113,7 @@ namespace DragonQuest.Prototype
             if (mapId == null || !maps.TryGetValue(mapId, out var map) || float.IsNaN(position.x) || float.IsNaN(position.y)
                 || float.IsInfinity(position.x) || float.IsInfinity(position.y)
                 || !map.Bounds.Contains(position) && (mapId != City || !PrototypeCityLayout.LegacyBounds.Contains(position))
-                || mapId == Volcano && secrets?.PassageOpen != true) return false;
+                || mapId == Volcano && !CanEnterVolcano) return false;
             Current = map; return true;
         }
 
