@@ -9,4 +9,4 @@ Folhas originais criadas com ImageGen, com quatro quadros sequenciais em uma lin
 | prepare-meteor | TyrantMeteorCharge.png | Concentração crescente em quatro etapas |
 | flaming-meteor | TyrantFlamingMeteor.png | Queda inicial, aproximação, explosão, dissipação |
 
-Os quadros têm larguras variáveis. Recortar pelos intervalos transparentes, não por uma grade uniforme. Preservar alpha e usar filtro Point, sem compressão ou mipmaps. Estas folhas são assets de animação; ainda não estão ligadas ao controlador de combate.
+Os quadros têm larguras variáveis. Recortar pelos intervalos transparentes, não por uma grade uniforme. Preservar alpha e usar filtro Point, sem compressão ou mipmaps. Estas folhas estão ligadas ao controlador de combate pelas ações royal-strike, royal-heavy, prepare-meteor e flaming-meteor. A queda e explosão do meteoro são apresentadas sobre a arena. Consulte RANDOM_BATTLES.md para comportamento e validação.

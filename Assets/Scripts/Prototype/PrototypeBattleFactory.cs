@@ -47,6 +47,38 @@ namespace DragonQuest.Prototype
             return new BattleSession(party.Consumables,participants.ToArray());
         }
 
+        public static BattleSession CreateRegionEncounter(PartyProgress party, RandomEncounterType type, int enemyCount)
+        {
+            if (party == null) throw new System.ArgumentNullException(nameof(party));
+            if (type == RandomEncounterType.None || !System.Enum.IsDefined(typeof(RandomEncounterType), type))
+                throw new System.ArgumentOutOfRangeException(nameof(type));
+            if (enemyCount < 1 || enemyCount > 3) throw new System.ArgumentOutOfRangeException(nameof(enemyCount));
+            var participants = new System.Collections.Generic.List<CombatantState>();
+            foreach (PartyMember member in party.Members) participants.Add(member.CreateCombatant());
+            CombatantDefinition enemy;
+            string id;
+            switch (type)
+            {
+                case RandomEncounterType.Pirate:
+                    id = "pirate";
+                    enemy = new CombatantDefinition("Bandido pirata", "Pirata", 85, 0, 13, 5, 0, 8,
+                        new ElementalAffinities(new[] { DamageElement.Lightning }, new DamageElement[0]), 12, Attack, Defend);
+                    break;
+                case RandomEncounterType.Golem:
+                    id = "golem";
+                    enemy = new CombatantDefinition("Golem da pedreira", "Golem", 145, 0, 17, 11, 0, 4,
+                        new ElementalAffinities(new[] { DamageElement.Ice }, new[] { DamageElement.Earth }), 20, Attack, Defend);
+                    break;
+                default:
+                    id = "wolf";
+                    enemy = new CombatantDefinition("Lobo da floresta", "Lobo", 65, 0, 12, 3, 0, 11,
+                        new ElementalAffinities(new[] { DamageElement.Fire }, new DamageElement[0]), 8, Attack, Defend);
+                    break;
+            }
+            for (int i = 0; i < enemyCount; i++) participants.Add(new CombatantState(id + "-" + (i + 1), enemy, CombatTeam.Enemy));
+            return new BattleSession(party.Consumables, participants.ToArray());
+        }
+
         public static BattleSession CreateEncounter(PartyProgress party = null)
         {
             if (party == null) party = PrototypePartyFactory.Create();

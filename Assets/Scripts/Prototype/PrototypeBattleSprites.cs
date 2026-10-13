@@ -22,15 +22,18 @@ namespace DragonQuest.Prototype
         {
             { "aren/attack", "ArenBattle" }, { "lia/attack", "LiaBattle" }, { "bram/attack", "BramBattle" }
         };
-        private static string ActionKey(string id, AbilityDefinition ability) => id + "/" + (ability == null ? "attack" : ability.SourceAbilityId);
         public static bool HasAnimation(string id, AbilityDefinition ability) => ability != null
-            && !ability.UsesLimit && resources.ContainsKey(ActionKey(id, ability));
+            && BattleAnimationCatalog.Resource(id, ability) != null;
         public PrototypeBattleSprites()
         {
             // Original generated sheets have unequal gutters around extended weapons/effects.
             Load("aren/attack", resources["aren/attack"], new[] { 0, 512, 918, 1711, 2172 });
             Load("lia/attack", resources["lia/attack"], new[] { 0, 492, 1038, 1665, 2172 });
             Load("bram/attack", resources["bram/attack"], new[] { 0, 554, 1011, 1687, 2172 });
+            foreach (string id in new[] { "guard", "pirate", "golem", "wolf", "tyrant", "evil-spirit" })
+                Load(id + "/attack", BattleAnimationCatalog.Idle(id), null);
+            foreach (string resource in new[] { "TyrantRoyalStrike", "TyrantRoyalHeavy", "TyrantMeteorCharge", "TyrantFlamingMeteor" })
+                Load(resource, resource, null);
         }
 
         private void Load(string id, string resource, int[] boundaries)
@@ -38,6 +41,24 @@ namespace DragonQuest.Prototype
             Texture2D texture = Resources.Load<Texture2D>("PixelArt/" + resource);
             if (texture == null) return;
             Color32[] pixels = texture.GetPixels32();
+            if (boundaries == null)
+            {
+                var density = new int[texture.width];
+                for (int y = 0; y < texture.height; y++) for (int x = 0; x < texture.width; x++)
+                    if (pixels[y * texture.width + x].a >= 128) density[x]++;
+                boundaries = new[] { 0, 0, 0, 0, 2172 };
+                for (int col = 1; col < 4; col++)
+                {
+                    int expected = texture.width * col / 4, radius = texture.width / 12, best = expected;
+                    float score = float.MaxValue;
+                    for (int x = expected - radius; x <= expected + radius; x++)
+                    {
+                        float candidate = density[x] + Math.Abs(x - expected) * .03f;
+                        if (candidate < score) { score = candidate; best = x; }
+                    }
+                    boundaries[col] = (int)Math.Round(best * 2172f / texture.width);
+                }
+            }
             var sheet = new Sheet { Texture = texture };
             for (int frame = 0; frame < 4; frame++)
             {
@@ -63,18 +84,43 @@ namespace DragonQuest.Prototype
                     sheet.Size[frame].x / texture.width, sheet.Size[frame].y / texture.height);
                 if (frame == 0) sheet.BodyHeight = sheet.Size[frame].y;
             }
+            float referenceBottom = sheet.Uv[0].y * texture.height;
+            for (int frame = 0; frame < 4; frame++)
+                sheet.Foot[frame].y = sheet.Uv[frame].y * texture.height - referenceBottom;
             sheets.Add(id, sheet);
         }
 
         public bool Draw(Rect area, string id, int frame, Color tint, AbilityDefinition ability = null)
         {
-            if (!sheets.TryGetValue(ActionKey(id, ability), out Sheet sheet)) return false;
+            string family = BattleAnimationCatalog.Family(id);
+            string resource = BattleAnimationCatalog.Resource(id, ability);
+            string key = BattleAnimationCatalog.Sequential(resource) ? resource : family + "/attack";
+            if (ability != null && resource == null) frame = 0;
+            if (!sheets.TryGetValue(key, out Sheet sheet)) return false;
             frame = Mathf.Clamp(frame, 0, 3);
             // All poses use idle body scale, rather than shrinking the character to fit attack effects.
-            float scale = area.height / sheet.BodyHeight;
+            float bodyHeight = sheet.BodyHeight;
+            // The raised mace belongs to anticipation, not to the king's body height.
+            if (resource == "TyrantRoyalStrike" || resource == "TyrantRoyalHeavy") bodyHeight *= .8f;
+            float scale = area.height / bodyHeight;
             Vector2 size = sheet.Size[frame] * scale;
             Rect destination = new Rect(area.center.x - sheet.Foot[frame].x * scale,
-                area.yMax - size.y, size.x, size.y);
+                area.yMax - size.y - sheet.Foot[frame].y * scale, size.x, size.y);
+            Color previous = GUI.color; GUI.color = tint;
+            GUI.DrawTextureWithTexCoords(destination, sheet.Texture, sheet.Uv[frame], true);
+            GUI.color = previous;
+            return true;
+        }
+
+        public bool DrawMeteor(Rect area, float elapsed, Color tint)
+        {
+            if (!sheets.TryGetValue("TyrantFlamingMeteor", out Sheet sheet)) return false;
+            int frame = BattleAnimationCatalog.Frame("TyrantFlamingMeteor", elapsed, 1.6f);
+            float peakHeight = 0;
+            foreach (Vector2 size in sheet.Size) peakHeight = Mathf.Max(peakHeight, size.y);
+            float scale = area.height / peakHeight;
+            Vector2 dimensions = sheet.Size[frame] * scale;
+            Rect destination = new Rect(area.center.x - dimensions.x * .5f, area.yMax - dimensions.y, dimensions.x, dimensions.y);
             Color previous = GUI.color; GUI.color = tint;
             GUI.DrawTextureWithTexCoords(destination, sheet.Texture, sheet.Uv[frame], true);
             GUI.color = previous;

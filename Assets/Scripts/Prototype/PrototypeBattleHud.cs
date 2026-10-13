@@ -235,7 +235,8 @@ namespace DragonQuest.Prototype
             {
                 case PrototypeTravel.Volcano: sky = new Color(.20f, .08f, .06f); ground = new Color(.28f, .12f, .08f); break;
                 case PrototypeTravel.Castle: sky = new Color(.10f, .09f, .17f); ground = new Color(.20f, .19f, .25f); break;
-                case PrototypeTravel.EastForest: case PrototypeTravel.WestForest: sky = new Color(.06f, .15f, .12f); ground = new Color(.13f, .23f, .14f); break;
+                case PrototypeTravel.EastForest: sky = new Color(.06f, .15f, .12f); ground = new Color(.13f, .23f, .14f); break;
+                case PrototypeTravel.WestForest: sky = new Color(.25f, .24f, .21f); ground = new Color(.34f, .32f, .27f); break;
                 case PrototypeTravel.Ruins: sky = new Color(.17f, .16f, .13f); ground = new Color(.25f, .23f, .18f); break;
             }
             RectBox(arena, sky); RectBox(new Rect(20, 240, 1240, 176), ground);
@@ -274,6 +275,9 @@ namespace DragonQuest.Prototype
                 foreach (CombatantState target in controller.PresentingTargets)
                     spellAnimation.Draw(FigureRect(target), controller.PresentingAbility,
                         Time.unscaledTime - controller.ActionStartedAt);
+            if (controller.IsPresentingAction && controller.PresentingActor.Id == CastleBattleRules.TyrantId
+                && controller.PresentingAbility.SourceAbilityId == "flaming-meteor")
+                battleSprites.DrawMeteor(new Rect(370, 65, 650, 335), Time.unscaledTime - controller.ActionStartedAt, Color.white);
             foreach (FloatingNumber floating in numbers)
             {
                 Rect figure = FigureRect(floating.Target);
@@ -371,6 +375,27 @@ namespace DragonQuest.Prototype
         }
         private void DrawFighter(Rect rect, CombatantState participant)
         {
+            bool acting = controller.IsPresentingAction && controller.PresentingActor == participant;
+            if (controller.IsPresentingAction)
+            {
+                float sinceImpact = Time.unscaledTime - controller.ActionImpactAt;
+                foreach (CombatantState target in controller.PresentingTargets)
+                    if (target == participant && sinceImpact >= 0 && sinceImpact < .22f
+                        && controller.PresentingAbility.Effect != AbilityEffect.Prepare)
+                    { rect.x += Mathf.Sin(sinceImpact * 75f) * 5f; break; }
+            }
+            // Every action has readable movement, even when it has no dedicated pose sheet.
+            if (acting && !HeroCastAnimation.IsCasting(controller.PresentingAbility)
+                && !PrototypeBattleSprites.HasAnimation(participant.Id, controller.PresentingAbility)
+                && !controller.IsPresentingDragonAttack)
+            {
+                float progress = Mathf.Clamp01((Time.unscaledTime - controller.ActionStartedAt) / controller.ActionDuration);
+                rect.x += Mathf.Sin(progress * Mathf.PI) * (participant.Team == CombatTeam.Party ? -18 : 18);
+                rect.y -= Mathf.Sin(progress * Mathf.PI) * 5;
+            }
+            if (participant.Team == CombatTeam.Enemy && battleSprites != null
+                && battleSprites.Draw(rect, participant.Id, acting ? controller.AttackPose : 0,
+                    participant.IsAlive ? Color.white : new Color(.4f, .4f, .4f), acting ? controller.PresentingAbility : null)) return;
             if (participant.Team == CombatTeam.Party && battleSprites != null)
             {
                 bool attacking = controller.IsPresentingAction && controller.PresentingActor == participant;
