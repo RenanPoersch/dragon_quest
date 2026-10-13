@@ -12,6 +12,7 @@ namespace DragonQuest.Prototype
     {
         private PrototypeBattleController controller;
         private PixelSpriteLibrary pixelSprites;
+        private readonly DragonBattleSprites dragonSprites = new DragonBattleSprites();
         private PrototypeBattleSprites battleSprites;
         private readonly SpellAnimation spellAnimation = new SpellAnimation();
         private readonly HeroCastAnimation heroCastAnimation = new HeroCastAnimation();
@@ -388,8 +389,8 @@ namespace DragonQuest.Prototype
                 string abilityId = controller.PresentingAbility?.Id;
                 string resource = attacking ? DragonAttackAnimation.Resource(abilityId) : "Dragon";
                 int frame = attacking ? DragonAttackAnimation.Frame(abilityId, Time.unscaledTime - controller.ActionStartedAt) : 0;
-                pixelSprites.Atlas(resource).Draw(rect, frame,
-                    participant.IsAlive ? Color.white : new Color(.4f, .4f, .4f)); return;
+                if (dragonSprites.Draw(rect, resource, frame,
+                    participant.IsAlive ? Color.white : new Color(.4f, .4f, .4f))) return;
             }
             if (pixelSprites != null && participant.Team == CombatTeam.Party)
             {
