@@ -14,6 +14,8 @@ namespace DragonQuest.Prototype
         private PixelSpriteLibrary pixelSprites;
         private PrototypeBattleSprites battleSprites;
         private readonly SpellAnimation spellAnimation = new SpellAnimation();
+        private readonly HeroCastAnimation heroCastAnimation = new HeroCastAnimation();
+        private readonly SummonAnimation summonAnimation = new SummonAnimation();
         private Texture2D pixel, hand, dragonPortrait, spiritPortrait, kingPortrait, background;
         private GUIStyle title, text, small, centered, button, number;
         private Rect handUv = new Rect(0, 0, 1, 1);
@@ -241,10 +243,13 @@ namespace DragonQuest.Prototype
             foreach (CombatantState participant in observedBattle.Combatants)
             {
                 Rect figure = FigureRect(participant);
-                RectBox(new Rect(figure.x - 8, figure.yMax - 8, figure.width + 16, 10), new Color(0, 0, 0, .25f));
+                float castStep = controller.IsPresentingAction && controller.PresentingActor == participant
+                    && HeroCastAnimation.IsCasting(controller.PresentingAbility)
+                    ? HeroCastAnimation.Step(Time.unscaledTime - controller.ActionStartedAt, controller.ActionDuration) : 0;
+                RectBox(new Rect(figure.x + castStep - 8, figure.yMax - 8, figure.width + 16, 10), new Color(0, 0, 0, .25f));
                 DrawFighter(figure, participant);
                 if (participant == (controller.IsPresentingAction ? controller.PresentingActor : observedActor))
-                    DrawTurnArrow(figure.center.x, figure.y - 30 + Mathf.Sin(Time.unscaledTime * 5) * 3);
+                    DrawTurnArrow(figure.center.x + castStep, figure.y - 30 + Mathf.Sin(Time.unscaledTime * 5) * 3);
                 bool group = selected != null && (selected.Targets == TargetRule.AllEnemies || selected.Targets == TargetRule.AllAllies);
                 for (int i = 0; i < targets.Count; i++)
                 {
@@ -253,6 +258,16 @@ namespace DragonQuest.Prototype
                     if (GUI.Button(figure, GUIContent.none, GUIStyle.none)) { targetIndex = i; ExecuteTarget(participant); }
                 }
                 if (participant.IsCharging) GUI.Label(new Rect(figure.center.x - 140, figure.y - 53, 280, 24), "PREPARANDO ATAQUE!", centered);
+            }
+            if (controller.IsPresentingAction && controller.IsPresentingSummon)
+            {
+                float elapsed = Time.unscaledTime - controller.ActionStartedAt;
+                summonAnimation.Draw(controller.PresentingAbility, elapsed);
+                AbilityDefinition impact = SummonAnimation.ImpactEffect(controller.PresentingAbility);
+                if (elapsed >= SummonAnimation.ImpactDelay - .15f)
+                    foreach (CombatantState target in controller.PresentingTargets)
+                        spellAnimation.Draw(FigureRect(target), impact,
+                            elapsed - SummonAnimation.ImpactDelay + SpellAnimation.ImpactDelay);
             }
             if (controller.IsPresentingAction && controller.IsPresentingSpell)
                 foreach (CombatantState target in controller.PresentingTargets)
@@ -358,9 +373,14 @@ namespace DragonQuest.Prototype
             if (participant.Team == CombatTeam.Party && battleSprites != null)
             {
                 bool attacking = controller.IsPresentingAction && controller.PresentingActor == participant;
-                int pose = attacking ? controller.AttackPose : 0;
+                if (attacking && HeroCastAnimation.IsCasting(controller.PresentingAbility)
+                    && heroCastAnimation.Draw(rect, participant.Id, controller.PresentingAbility,
+                        Time.unscaledTime - controller.ActionStartedAt, controller.ActionDuration,
+                        participant.IsAlive ? Color.white : new Color(.4f, .4f, .4f))) return;
+                bool casting = attacking && HeroCastAnimation.IsCasting(controller.PresentingAbility);
+                int pose = attacking && !casting ? controller.AttackPose : 0;
                 if (battleSprites.Draw(rect, participant.Id, pose, participant.IsAlive ? Color.white : new Color(.4f, .4f, .4f),
-                    attacking ? controller.PresentingAbility : null)) return;
+                    attacking && !casting ? controller.PresentingAbility : null)) return;
             }
             if (pixelSprites != null && participant.Id == DragonProgress.EnemyId)
             {

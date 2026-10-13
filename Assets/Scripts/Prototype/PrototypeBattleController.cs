@@ -49,14 +49,17 @@ namespace DragonQuest.Prototype
         public CombatantState PresentingActor { get; private set; }
         public AbilityDefinition PresentingAbility { get; private set; }
         public System.Collections.Generic.IReadOnlyList<CombatantState> PresentingTargets { get; private set; } = new CombatantState[0];
+        public bool IsPresentingSummon => SummonAnimation.Resource(PresentingAbility) != null;
+        public float ActionDuration => IsPresentingDragonAttack ? DragonAttackAnimation.Duration(PresentingAbility.Id)
+            : IsPresentingSummon ? SummonAnimation.Duration : IsPresentingSpell ? SpellAnimation.Duration : 0.72f;
         public bool IsPresentingSpell => SpellAnimation.Resource(PresentingAbility) != null;
         public float ActionStartedAt { get; private set; }
         public bool IsPresentingDragonAttack => PresentingActor?.Id == DragonProgress.EnemyId
             && DragonAttackAnimation.Resource(PresentingAbility?.Id) != null;
         public bool IsPresentingAction => IsActive && PresentingActor != null && Time.unscaledTime < ActionStartedAt
-            + (IsPresentingDragonAttack ? DragonAttackAnimation.Duration(PresentingAbility.Id) : IsPresentingSpell ? SpellAnimation.Duration : 0.72f);
+            + ActionDuration;
         public float ActionImpactAt => ActionStartedAt
-            + (IsPresentingDragonAttack ? DragonAttackAnimation.ImpactDelay(PresentingAbility.Id) : IsPresentingSpell ? SpellAnimation.ImpactDelay : 0.18f);
+            + (IsPresentingDragonAttack ? DragonAttackAnimation.ImpactDelay(PresentingAbility.Id) : IsPresentingSummon ? SummonAnimation.ImpactDelay : IsPresentingSpell ? SpellAnimation.ImpactDelay : 0.18f);
         public int AttackPose => Time.unscaledTime < ActionImpactAt ? 1
             : Time.unscaledTime < ActionStartedAt + 0.44f ? 2 : 3;
 
@@ -130,7 +133,7 @@ namespace DragonQuest.Prototype
             ErrorMessage = accepted ? string.Empty : message;
             if (accepted)
             {
-                if (PrototypeBattleSprites.HasAnimation(actor.Id, ability) || SpellAnimation.Resource(ability) != null)
+                if (PrototypeBattleSprites.HasAnimation(actor.Id, ability) || SpellAnimation.Resource(ability) != null || HeroCastAnimation.IsCasting(ability))
                 { PresentingActor = actor; PresentingAbility = ability; PresentingTargets = effectTargets; ActionStartedAt = Time.unscaledTime; }
                 AwardIfComplete();
             }
