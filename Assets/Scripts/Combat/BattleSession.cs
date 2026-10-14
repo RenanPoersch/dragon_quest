@@ -13,6 +13,7 @@ namespace DragonQuest.Combat
         private readonly List<CombatantState> combatants;
         private readonly List<CombatantState> turnOrder = new List<CombatantState>();
         private int turnIndex;
+        private readonly Func<double> criticalRoll;
 
         public IReadOnlyList<CombatantState> Combatants { get; }
         public ItemInventory Inventory { get; }
@@ -27,7 +28,11 @@ namespace DragonQuest.Combat
         public BattleSession(ItemInventory inventory, params CombatantState[] participants) : this(null,inventory,participants) { }
 
         public BattleSession(IBattleRules rules, ItemInventory inventory, params CombatantState[] participants)
+            : this(new Random().NextDouble, rules, inventory, participants) { }
+
+        public BattleSession(Func<double> criticalRoll, IBattleRules rules, ItemInventory inventory, params CombatantState[] participants)
         {
+            this.criticalRoll = criticalRoll ?? throw new ArgumentNullException(nameof(criticalRoll));
             Rules = rules;
             Inventory = inventory ?? throw new ArgumentNullException(nameof(inventory));
             if (participants == null) throw new ArgumentNullException(nameof(participants));
@@ -305,7 +310,7 @@ namespace DragonQuest.Combat
             }
         }
 
-        private static int ApplyDamage(CombatantState actor, AbilityDefinition ability, CombatantState target,
+        private int ApplyDamage(CombatantState actor, AbilityDefinition ability, CombatantState target,
             bool allowProtection, StringBuilder report)
         {
             if (allowProtection && ability.Effect == AbilityEffect.PhysicalDamage && target.ProtectedBy != null && target.ProtectedBy.IsAlive)
@@ -318,11 +323,13 @@ namespace DragonQuest.Combat
             int offense = ability.Effect == AbilityEffect.MagicDamage || ability.Effect == AbilityEffect.Drain ? actor.Definition.Magic : actor.Definition.Attack;
             long damage = Math.Max(1L, (long)offense + ability.Power - target.Definition.Defense);
             int elementalPercent = target.Definition.Affinities.DamagePercent(ability.Element);
-            // Primeiro defesa numerica, depois afinidade (para baixo), por fim Defender (para cima).
+            // Defesa numerica, afinidade e critico (para baixo), depois Defender e Shield (para cima).
             damage = Math.Max(1L, damage * elementalPercent / 100);
+            bool critical = actor.Definition.CriticalChance > 0 && criticalRoll() < actor.Definition.CriticalChance;
+            if (critical) damage = damage * CombatantDefinition.CriticalDamagePercent / 100;
             if (target.IsDefending) damage = (damage + 1) / 2;
             int previousHp = target.Hp;
-            target.TakeDamage((int)Math.Min(int.MaxValue, damage));
+            target.TakeDamage((int)Math.Min(int.MaxValue, damage), critical);
             report.Append(target.Definition.Name).Append(" -").Append(previousHp - target.Hp).Append(" HP");
             if (ability.Element != DamageElement.None)
             {
@@ -331,6 +338,7 @@ namespace DragonQuest.Combat
                 else if (elementalPercent == 50) report.Append(", resistencia");
                 report.Append(")");
             }
+            if (critical) report.Append(" (critico x1,25)");
             if (!target.IsAlive) report.Append(" (derrotado)");
             else if (ability.PoisonTurns > 0)
             {

@@ -21,9 +21,11 @@ foreach ($saveFolder in @('Combat', 'Equipment', 'Inventory', 'Shops', 'Progress
 }
 $saveArguments += Join-Path $saveProjectRoot 'Assets/Scripts/Exploration/ExplorationProgress.cs'
 foreach ($saveName in @('PrototypePartyFactory', 'PrototypeShopFactory', 'PrototypeBattleFactory', 'PrototypeCastleBattleFactory',
-    'PrototypeTravel', 'PrototypeWorldLayout', 'PrototypeCityLayout', 'PrototypeSecretLayout', 'PrototypeRuinsLayout', 'PrototypeVolcanoLayout', 'PrototypeInnLayout')) {
+    'PrototypeTravel', 'PrototypeWorldLayout', 'PrototypeCityLayout', 'PrototypeSecretLayout', 'PrototypeRuinsLayout', 'PrototypeVolcanoLayout', 'PrototypeInnLayout',
+    'QuarryLayout', 'EastForestLayout', 'PrototypeShopLayout')) {
     $saveArguments += Join-Path $saveProjectRoot "Assets/Scripts/Prototype/$saveName.cs"
 }
+$saveArguments += Join-Path $saveProjectRoot 'Assets/Scripts/Exploration/ObliqueProjection.cs'
 $saveArguments += Join-Path $saveProjectRoot 'Tests/SaveChecks.cs'
 & $saveDotnet $saveCsc.FullName @saveArguments
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

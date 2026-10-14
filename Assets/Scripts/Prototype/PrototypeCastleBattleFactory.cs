@@ -19,12 +19,12 @@ namespace DragonQuest.Prototype
             var rules=new CastleBattleRules(party);
             var participants=new List<CombatantState>();
             foreach(PartyMember member in party.Members) participants.Add(member.CreateCombatant());
-            var tyrant=new CombatantDefinition("Tirano dominado","Rei possuido",600,0,28,10,0,7,
+            var tyrant=new CombatantDefinition("Tirano dominado","Rei possuido",600,0,28,10,0,7,ElementalAffinities.Neutral,0,250,0,
                 CastleBattleRules.RoyalStrike,CastleBattleRules.RoyalHeavy,CastleBattleRules.PrepareMeteor,CastleBattleRules.Meteor);
             participants.Add(new CombatantState(CastleBattleRules.TyrantId,tyrant,CombatTeam.Enemy));
             if(rules.IsSpiritRevealed)
             {
-                var spirit=new CombatantDefinition("Espirito maligno","Possessor",280,0,0,8,26,10,DrainLife,Chains,ChaosMagic);
+                var spirit=new CombatantDefinition("Espirito maligno","Possessor",280,0,0,8,26,10,ElementalAffinities.Neutral,0,500,0,DrainLife,Chains,ChaosMagic);
                 participants.Add(new CombatantState(CastleBattleRules.SpiritId,spirit,CombatTeam.Enemy));
             }
             return new BattleSession(rules,party.Consumables,participants.ToArray());

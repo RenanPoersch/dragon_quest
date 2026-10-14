@@ -40,6 +40,8 @@ namespace DragonQuest.Persistence
         [DataMember(IsRequired = true)] public string Weapon;
         [DataMember(IsRequired = true)] public string Armor;
         [DataMember(IsRequired = true)] public int Limit;
+        // Campo opcional: saves anteriores comecam no nivel 1, sem XP.
+        [DataMember(EmitDefaultValue = false)] public int Experience;
     }
     [DataContract] public sealed class GearData
     {

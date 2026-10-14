@@ -56,11 +56,11 @@ namespace DragonQuest.Prototype
         public static PartyProgress Create()
         {
             var aren = new PartyMember("aren", "Aren", CharacterClass.Attacker,
-                new CombatantDefinition("Aren", "Atacante", 100, 28, 22, 7, 4, 14, MateriaResolver.Attack, MateriaResolver.Defend), InitialWeapon, InitialArmor);
+                new CombatantDefinition("Aren", "Atacante", 100, 28, 22, 7, 4, 14, ElementalAffinities.Neutral, 0, 0, .05, MateriaResolver.Attack, MateriaResolver.Defend), InitialWeapon, InitialArmor);
             var lia = new PartyMember("lia", "Lia", CharacterClass.Healer,
-                new CombatantDefinition("Lia", "Healer", 80, 60, 9, 5, 20, 12, MateriaResolver.Attack, MateriaResolver.Defend), InitialWeapon, InitialArmor);
+                new CombatantDefinition("Lia", "Healer", 80, 60, 9, 5, 20, 12, ElementalAffinities.Neutral, 0, 0, .05, MateriaResolver.Attack, MateriaResolver.Defend), InitialWeapon, InitialArmor);
             var bram = new PartyMember("bram", "Bram", CharacterClass.Tank,
-                new CombatantDefinition("Bram", "Tank", 150, 30, 14, 13, 3, 8, MateriaResolver.Attack, MateriaResolver.Defend), InitialWeapon, InitialArmor);
+                new CombatantDefinition("Bram", "Tank", 150, 30, 14, 13, 3, 8, ElementalAffinities.Neutral, 0, 0, .05, MateriaResolver.Attack, MateriaResolver.Defend), InitialWeapon, InitialArmor);
             var materias = new[] { new MateriaInstance("start-heavy", HeavyMateria), new MateriaInstance("start-thunder", ThunderMateria),
                 new MateriaInstance("start-cure", CureMateria), new MateriaInstance("start-cleanse", CleanseMateria), new MateriaInstance("start-guardian", GuardianMateria) };
             var party = new PartyProgress(new[] { aren, lia, bram }, materias, consumables:
@@ -79,11 +79,11 @@ namespace DragonQuest.Prototype
             var weapon = InitialWeapon;
             var armor = InitialArmor;
             var aren = new PartyMember("aren", "Aren", CharacterClass.Attacker,
-                new CombatantDefinition("Aren", "Atacante", 100, 28, 22, 7, 4, 14, MateriaResolver.Attack, MateriaResolver.Defend), weapon, armor);
+                new CombatantDefinition("Aren", "Atacante", 100, 28, 22, 7, 4, 14, ElementalAffinities.Neutral, 0, 0, .05, MateriaResolver.Attack, MateriaResolver.Defend), weapon, armor);
             var lia = new PartyMember("lia", "Lia", CharacterClass.Healer,
-                new CombatantDefinition("Lia", "Healer", 80, 60, 9, 5, 20, 12, MateriaResolver.Attack, MateriaResolver.Defend), weapon, armor);
+                new CombatantDefinition("Lia", "Healer", 80, 60, 9, 5, 20, 12, ElementalAffinities.Neutral, 0, 0, .05, MateriaResolver.Attack, MateriaResolver.Defend), weapon, armor);
             var bram = new PartyMember("bram", "Bram", CharacterClass.Tank,
-                new CombatantDefinition("Bram", "Tank", 150, 30, 14, 13, 3, 8, MateriaResolver.Attack, MateriaResolver.Defend), weapon, armor);
+                new CombatantDefinition("Bram", "Tank", 150, 30, 14, 13, 3, 8, ElementalAffinities.Neutral, 0, 0, .05, MateriaResolver.Attack, MateriaResolver.Defend), weapon, armor);
             var inventory = new List<MateriaInstance>();
             foreach (MateriaDefinition definition in new[] { HeavyMateria, CleaveMateria, ThunderMateria, AllMateria,
                 CureMateria, CleanseMateria, ReviveMateria, SummonMateria, GuardianMateria, InfuseMateria, AllMateria, ThunderMateria,

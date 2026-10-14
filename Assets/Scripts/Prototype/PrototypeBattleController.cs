@@ -78,7 +78,7 @@ namespace DragonQuest.Prototype
             movement = hero; dialogue = dialogueController;
             otherMenuOpen = externalMenuOpen ?? (() => false);
             Party = restoredParty ?? PrototypePartyFactory.Create();
-            Rewards = new BattleRewards(progress);
+            Rewards = new BattleRewards(progress, Party);
             Dragon = dragonProgress ?? new DragonProgress(); secrets = ancientSecrets; recoverAtInn = recovery;
             showEnding=endingPresentation;
             trackingWalk = false;
@@ -210,6 +210,10 @@ namespace DragonQuest.Prototype
                     Rewards.TryClaim(Session,out string message);
                     RewardMessage = message + (IsDragonEncounter && Dragon.IsDefeated ? " Armadura draconica recebida!" : "");
                 }
+            }
+            else if (Session.Outcome == BattleOutcome.Completed && CastleRules?.Ending == GameEnding.KingFreed)
+            {
+                if (Rewards.TryClaimExperience(Session, out string message)) RewardMessage = message;
             }
             if (notifiedCompletion) return;
             notifiedCompletion = true; EncounterCompleted?.Invoke(Session.Outcome);

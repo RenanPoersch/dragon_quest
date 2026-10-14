@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using DragonQuest.Combat;
 using DragonQuest.Inventory;
+using DragonQuest.Progression;
 
 namespace DragonQuest.Equipment
 {
@@ -16,18 +17,29 @@ namespace DragonQuest.Equipment
         public EquipmentLoadout Weapon { get; private set; }
         public EquipmentLoadout Armor { get; private set; }
         public LimitGauge Limit { get; } = new LimitGauge();
+        public CharacterProgression Progression { get; } = new CharacterProgression();
+        public int Level => Progression.Level;
+        public int Experience => Progression.Experience;
+        public int Speed => Grow(BaseStats.Speed, 1);
+        public double CriticalChance => Math.Min(1, BaseStats.CriticalChance + (Level - 1) * .0025);
+        private int Grow(int value, int perLevel) => (int)Math.Min(int.MaxValue, (long)value + (Level - 1) * perLevel);
+        private int HpGrowth => Class == CharacterClass.Tank ? 14 : Class == CharacterClass.Attacker ? 10 : 7;
+        private int MpGrowth => Class == CharacterClass.Healer ? 5 : 2;
+        private int AttackGrowth => Class == CharacterClass.Attacker ? 3 : 1;
+        private int DefenseGrowth => Class == CharacterClass.Tank ? 3 : 1;
+        private int MagicGrowth => Class == CharacterClass.Healer ? 3 : 1;
         public string AffinityDescription => Class == CharacterClass.Attacker ? "+20% no ataque base da arma"
             : Class == CharacterClass.Healer ? "+25% no poder de magia, invocacao e cura" : "+25% na defesa base da armadura";
         public int Attack => AttackWith(Weapon, Armor);
         public int Defense => DefenseWith(Weapon, Armor);
         public int Magic => MagicWith(Weapon, Armor);
-        public int MaxHp => StatWithMaterias(BaseStats.MaxHp, MateriaModifier.HpUp, Weapon, Armor);
-        public int MaxMp => StatWithMaterias(BaseStats.MaxMp, MateriaModifier.MpUp, Weapon, Armor);
+        public int MaxHp => StatWithMaterias(Grow(BaseStats.MaxHp, HpGrowth), MateriaModifier.HpUp, Weapon, Armor);
+        public int MaxMp => StatWithMaterias(Grow(BaseStats.MaxMp, MpGrowth), MateriaModifier.MpUp, Weapon, Armor);
         public ElementalAffinities Affinities => ElementalAffinities.Combine(BaseStats.Affinities,
             Weapon?.Definition.Affinities, Armor?.Definition.Affinities,
             new ElementalAffinities(resistances: new List<DamageElement>(new HashSet<DamageElement>(MateriaResolver.InfusedElements(Armor))).ToArray()));
 
-        private static int StatWithMaterias(int value, MateriaModifier modifier, EquipmentLoadout weapon, EquipmentLoadout armor)
+        private static int StatWithMaterias(long value, MateriaModifier modifier, EquipmentLoadout weapon, EquipmentLoadout armor)
         {
             long percent = 100;
             foreach (var equipment in new[] { weapon, armor })
@@ -49,13 +61,13 @@ namespace DragonQuest.Equipment
             Weapon = new EquipmentLoadout(weapon, id + "/weapon"); Armor = new EquipmentLoadout(armor, id + "/armor");
         }
 
-        private int Bonus(int value, CharacterClass affinity, int percent) => Class == affinity ? (int)((long)value * (100 + percent) / 100) : value;
-        public int AttackWith(EquipmentLoadout weapon, EquipmentLoadout armor) => StatWithMaterias(BaseStats.Attack
+        private int Bonus(int value, CharacterClass affinity, int percent) => Class == affinity ? (int)Math.Min(int.MaxValue, (long)value * (100 + percent) / 100) : value;
+        public int AttackWith(EquipmentLoadout weapon, EquipmentLoadout armor) => StatWithMaterias((long)Grow(BaseStats.Attack, AttackGrowth)
             + Bonus(weapon?.Definition.AttackBonus ?? 0, CharacterClass.Attacker, 20) + (armor?.Definition.AttackBonus ?? 0), MateriaModifier.AttackUp, weapon, armor);
-        public int DefenseWith(EquipmentLoadout weapon, EquipmentLoadout armor) => StatWithMaterias(BaseStats.Defense
+        public int DefenseWith(EquipmentLoadout weapon, EquipmentLoadout armor) => StatWithMaterias((long)Grow(BaseStats.Defense, DefenseGrowth)
             + (weapon?.Definition.DefenseBonus ?? 0) + Bonus(armor?.Definition.DefenseBonus ?? 0, CharacterClass.Tank, 25), MateriaModifier.DefenseUp, weapon, armor);
-        public int MagicWith(EquipmentLoadout weapon, EquipmentLoadout armor) => BaseStats.Magic
-            + (weapon?.Definition.MagicBonus ?? 0) + (armor?.Definition.MagicBonus ?? 0);
+        public int MagicWith(EquipmentLoadout weapon, EquipmentLoadout armor) => (int)Math.Min(int.MaxValue, (long)Grow(BaseStats.Magic, MagicGrowth)
+            + (weapon?.Definition.MagicBonus ?? 0) + (armor?.Definition.MagicBonus ?? 0));
         internal void SetEquipment(EquipmentSlot slot, EquipmentLoadout item)
         {
             if (slot == EquipmentSlot.Weapon) Weapon = item; else Armor = item;
@@ -67,7 +79,7 @@ namespace DragonQuest.Equipment
             var commands = new AbilityDefinition[abilities.Count];
             abilities.CopyTo(commands);
             var stats = new CombatantDefinition(Name, BaseStats.Role, MaxHp, MaxMp,
-                Attack, Defense, Magic, BaseStats.Speed, Affinities, BaseStats.GoldReward, commands);
+                Attack, Defense, Magic, Speed, Affinities, BaseStats.GoldReward, BaseStats.ExperienceReward, CriticalChance, commands);
             return new CombatantState(Id, stats, CombatTeam.Party, Limit);
         }
     }
@@ -110,6 +122,24 @@ namespace DragonQuest.Equipment
                 foreach (EquipmentLoadout item in spareEquipment) RegisterEquipment(item, ids);
             Equipments = equipments.AsReadOnly();
             Consumables = consumables ?? new ItemInventory();
+        }
+
+        internal string AwardExperience(BattleSession battle, long experience)
+        {
+            var participants = new HashSet<string>();
+            foreach (CombatantState combatant in battle.Combatants)
+                if (combatant.Team == CombatTeam.Party) participants.Add(combatant.Id);
+            var report = new List<string>();
+            foreach (PartyMember member in members)
+            {
+                if (!participants.Contains(member.Id)) continue;
+                int before = member.Experience;
+                int levels = member.Progression.AddExperience(experience);
+                if (levels > 0) report.Add(member.Name + " chegou ao nivel " + member.Level + "!");
+                if (member.Experience != before) report.Add(member.Name + " +" + (member.Experience - before) + " XP.");
+            }
+            if (report.Count > 0) Changed?.Invoke();
+            return string.Join(" ", report);
         }
 
         private void RegisterEquipment(EquipmentLoadout item, HashSet<string> ids)

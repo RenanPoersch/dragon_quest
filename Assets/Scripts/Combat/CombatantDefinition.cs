@@ -14,6 +14,10 @@ namespace DragonQuest.Combat
         public int Magic { get; }
         public int Speed { get; }
         public int GoldReward { get; }
+        public int ExperienceReward { get; }
+        public double CriticalChance { get; }
+        public const int CriticalDamagePercent = 125;
+        public const double CriticalDamageMultiplier = CriticalDamagePercent / 100d;
         public ElementalAffinities Affinities { get; }
         public IReadOnlyList<AbilityDefinition> Abilities { get; }
 
@@ -27,8 +31,16 @@ namespace DragonQuest.Combat
 
         public CombatantDefinition(string name, string role, int maxHp, int maxMp, int attack,
             int defense, int magic, int speed, ElementalAffinities affinities, int goldReward, params AbilityDefinition[] abilities)
+            : this(name, role, maxHp, maxMp, attack, defense, magic, speed, affinities, goldReward, 0, 0, abilities) { }
+
+        public CombatantDefinition(string name, string role, int maxHp, int maxMp, int attack,
+            int defense, int magic, int speed, ElementalAffinities affinities, int goldReward, int experienceReward,
+            double criticalChance, params AbilityDefinition[] abilities)
         {
             Affinities = affinities ?? throw new ArgumentNullException(nameof(affinities));
+            if (experienceReward < 0) throw new ArgumentOutOfRangeException(nameof(experienceReward));
+            if (double.IsNaN(criticalChance) || criticalChance < 0 || criticalChance > 1)
+                throw new ArgumentOutOfRangeException(nameof(criticalChance));
             if (goldReward < 0) throw new ArgumentOutOfRangeException(nameof(goldReward), "Recompensa nao pode ser negativa.");
             if (maxHp <= 0 || maxMp < 0 || attack < 0 || defense < 0 || magic < 0 || speed < 0)
                 throw new ArgumentOutOfRangeException(nameof(maxHp), "Atributos invalidos.");
@@ -45,6 +57,8 @@ namespace DragonQuest.Combat
             Magic = magic;
             Speed = speed;
             GoldReward = goldReward;
+            ExperienceReward = experienceReward;
+            CriticalChance = criticalChance;
             Abilities = Array.AsReadOnly((AbilityDefinition[])abilities.Clone());
         }
     }

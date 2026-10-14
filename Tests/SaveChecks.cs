@@ -63,6 +63,31 @@ internal static class SaveChecks
         shops.TrySell(shops.FindShop("equipment-shop"), sale, 1, out _);
         return JourneySnapshot.Capture(party, progress, secrets, dragon, shops, quest, PrototypeTravel.Volcano, 0.4f, -2.5f);
     }
+    private static void CheckLevelPersistence()
+    {
+        var journey = JourneySnapshot.Restore(Initial());
+        int[] experience = { 100, 525, 5000 };
+        for (int i = 0; i < 3; i++) journey.Party.Members[i].Progression.AddExperience(experience[i]);
+        var snapshot = JourneySnapshot.Capture(journey.Party, journey.Progress, journey.Secrets, journey.Dragon,
+            journey.Shops, journey.Quest, PrototypeTravel.World, 0, -7);
+        var restored = RoundTrip(snapshot);
+        for (int i = 0; i < 3; i++)
+        {
+            var before = journey.Party.Members[i]; var after = restored.Party.Members[i];
+            Assert(after.Experience == experience[i] && after.Level == before.Level && after.MaxHp == before.MaxHp
+                && after.MaxMp == before.MaxMp && after.Attack == before.Attack && after.Defense == before.Defense
+                && after.Magic == before.Magic && after.Speed == before.Speed && after.CriticalChance == before.CriticalChance,
+                "XP individual, nivel e todos os atributos derivados persistem sem reaplicar crescimento.");
+        }
+        restored.Party.Members[0].Progression.AddExperience(150);
+        Assert(restored.Party.Members[0].Level == 3 && journey.Party.Members[0].Level == 2, "Jornada carregada evolui independentemente.");
+        string legacy = System.Text.RegularExpressions.Regex.Replace(Encoding.UTF8.GetString(SaveStore.Encode(snapshot)),
+            "\"Experience\":\\d+,", "");
+        var old = JourneySnapshot.Restore(SaveStore.Decode(Encoding.UTF8.GetBytes(legacy)));
+        Assert(old.Party.Members.All(m => m.Level == 1 && m.Experience == 0), "Saves anteriores sem XP permanecem carregaveis no nivel 1.");
+        Invalid(snapshot, d => d.Members[0].Experience = -1, "XP negativo");
+        Invalid(snapshot, d => d.Members[0].Experience = CharacterProgression.MaxExperience + 1, "XP acima do limite");
+    }
     private static void CheckDomain()
     {
         var fresh = RoundTrip(Initial()); Assert(fresh.Progress.Gold == 50 && fresh.Party.Consumables.QuantityOf(PrototypePartyFactory.Potion) == 2, "Kit inicial restaurado.");
@@ -197,7 +222,7 @@ internal static class SaveChecks
     {
         try
         {
-            CheckDomain(); CheckInventoryEvents();
+            CheckDomain(); CheckInventoryEvents(); CheckLevelPersistence();
             CheckManualPersistence(Path.Combine(args[0], "manual-" + Guid.NewGuid().ToString("N")));
             CheckFiles(Path.Combine(args[0], "saves-" + Guid.NewGuid().ToString("N")));
             Console.WriteLine("Salvamento: " + checks + " verificacoes passaram."); return 0;

@@ -30,7 +30,7 @@ namespace DragonQuest.Persistence
             var members = new List<MemberData>(); var gear = new List<GearData>();
             var materias = new List<MateriaData>(); var items = new List<StackData>(); var stocks = new List<StockData>();
             foreach (var member in party.Members) members.Add(new MemberData
-                {Id = member.Id, Weapon = member.Weapon?.Id, Armor = member.Armor?.Id, Limit = member.Limit.Charge});
+                {Id = member.Id, Weapon = member.Weapon?.Id, Armor = member.Armor?.Id, Limit = member.Limit.Charge, Experience = member.Experience});
             foreach (var equipment in party.Equipments)
             {
                 var sockets = new string[equipment.Sockets.Count];
@@ -109,6 +109,7 @@ namespace DragonQuest.Persistence
                 member.SetEquipment(EquipmentSlot.Weapon, AssignGear(saved.Weapon, EquipmentSlot.Weapon, gear, usedGear));
                 member.SetEquipment(EquipmentSlot.Armor, AssignGear(saved.Armor, EquipmentSlot.Armor, gear, usedGear));
                 member.Limit.Restore(saved.Limit);
+                member.Progression.Restore(saved.Experience);
             }
             foreach (var g in data.Gear)
                 for (int i = 0; i < g.Sockets.Length; i++)
