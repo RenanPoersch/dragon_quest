@@ -59,13 +59,13 @@ namespace DragonQuest.Prototype
                 owned.Add(stone);
                 var renderer = visual.AddComponent<SpriteRenderer>();
                 renderer.sharedMaterial = propMaterial; renderer.sprite = stone;
-                Sprite rune = Rune(symbol); owned.Add(rune);
                 float runeX = column == 0 ? .01f : column == 1 ? -.053f : -.067f;
                 float runeY = TotemHeight * (column == 1 ? .577f : column == 2 ? .559f : .545f);
-                DrawRune(visual.transform, rune, new Color(.47f,.50f,.40f), "Simbolo gravado", -.01f, runeX, runeY);
-                Color light = symbol == MonolithSymbol.Moon ? new Color(.65f,.93f,1)
-                    : symbol == MonolithSymbol.Star ? new Color(.76f,1,.81f) : new Color(1,.85f,.38f);
-                GameObject glow = DrawRune(visual.transform, rune, light, "Luz do totem / " + symbol, -.025f, runeX, runeY);
+                GameObject glow = DrawRune(visual.transform, null, Color.white, "Luz do totem / " + symbol, -.025f, runeX, runeY);
+                var animation = glow.AddComponent<QuarryRuneAnimation>();
+                animation.Initialize(symbol);
+                GameObject engraving = DrawRune(visual.transform, animation.DormantSprite, new Color(.66f,.64f,.58f), "Simbolo gravado", -.01f, runeX, runeY, 1);
+                animation.BindEngraving(engraving.GetComponent<SpriteRenderer>());
                 var interaction = anchor.AddComponent<AncientSecretInteraction>();
                 interaction.Initialize(SecretObject.Monolith, progress, symbol, glow);
                 interactions.Add(interaction);
@@ -101,52 +101,15 @@ namespace DragonQuest.Prototype
             return new Rect(minX,minY,maxX-minX+1,maxY-minY+1);
         }
 
-        private GameObject DrawRune(Transform parent, Sprite rune, Color color, string name, float depth, float x, float y)
+        private GameObject DrawRune(Transform parent, Sprite rune, Color color, string name, float depth, float x, float y, float desaturate = 0)
         {
             var obj = new GameObject(name); obj.transform.SetParent(parent, false);
             obj.transform.localPosition = new Vector3(x,y,depth);
             var renderer = obj.AddComponent<SpriteRenderer>();
             var material = new Material(runeShader) { name = name + " / cor" };
-            material.SetColor("_Tint",color); owned.Add(material);
+            material.SetColor("_Tint",color); material.SetFloat("_Desaturate",desaturate); owned.Add(material);
             renderer.sharedMaterial = material; renderer.sprite = rune;
             return obj;
-        }
-
-        private Sprite Rune(MonolithSymbol symbol)
-        {
-            const int size = 17;
-            var texture = new Texture2D(size,size,TextureFormat.RGBA32,false) { name = "Runa pixel art / " + symbol,
-                filterMode = FilterMode.Point, wrapMode = TextureWrapMode.Clamp };
-            var pixels = new Color32[size*size];
-            var star = new Vector2[10];
-            for (int i = 0; i < star.Length; i++)
-            {
-                double angle = Math.PI/2 + i*Math.PI/5;
-                float radius = i%2 == 0 ? 7 : 3;
-                star[i] = new Vector2(8+(float)Math.Cos(angle)*radius,8+(float)Math.Sin(angle)*radius);
-            }
-            for (int y = 0; y < size; y++)
-                for (int x = 0; x < size; x++)
-                {
-                    int dx=x-8, dy=y-8;
-                    bool ink = symbol == MonolithSymbol.Moon ? dx*dx+dy*dy <= 36 && (dx-3)*(dx-3)+(dy-2)*(dy-2) > 28
-                        : symbol == MonolithSymbol.Star ? InsideStar(new Vector2(x,y),star)
-                        : dx*dx+dy*dy <= 15 || ((dx==0 || dy==0 || Math.Abs(dx)==Math.Abs(dy)) && dx*dx+dy*dy>=30 && dx*dx+dy*dy<=55);
-                    if (ink) pixels[y*size+x] = new Color32(255,255,255,255);
-                }
-            texture.SetPixels32(pixels); texture.Apply(); owned.Add(texture);
-            return Sprite.Create(texture,new Rect(0,0,size,size),new Vector2(.5f,.5f),size/.4f,0,SpriteMeshType.FullRect);
-        }
-
-        private static bool InsideStar(Vector2 p, Vector2[] vertices)
-        {
-            bool inside = false;
-            for (int i = 0, j = vertices.Length-1; i < vertices.Length; j = i++)
-            {
-                Vector2 a = vertices[i], b = vertices[j];
-                if ((a.y>p.y)!=(b.y>p.y) && p.x<(b.x-a.x)*(p.y-a.y)/(b.y-a.y)+a.x) inside=!inside;
-            }
-            return inside;
         }
 
         private void OnDestroy()

@@ -4,6 +4,7 @@ Shader "DragonQuest/QuarryRune"
     {
         [PerRendererData] _MainTex ("Pixel rune", 2D) = "white" {}
         _Tint ("Stone or awakened color", Color) = (1,1,1,1)
+        _Desaturate ("Engraved stone", Range(0,1)) = 0
     }
     SubShader
     {
@@ -19,6 +20,7 @@ Shader "DragonQuest/QuarryRune"
             TEXTURE2D(_MainTex); SAMPLER(sampler_MainTex);
             CBUFFER_START(UnityPerMaterial)
                 half4 _Tint;
+                half _Desaturate;
             CBUFFER_END
             struct Attributes { float4 positionOS : POSITION; float2 uv : TEXCOORD0; };
             struct Varyings { float4 positionCS : SV_POSITION; float2 uv : TEXCOORD0; };
@@ -31,7 +33,8 @@ Shader "DragonQuest/QuarryRune"
             {
                 half4 pixel = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, input.uv);
                 clip(pixel.a - .5h);
-                return half4(pixel.rgb * _Tint.rgb, 1);
+                half stone = dot(pixel.rgb, half3(.2126h,.7152h,.0722h));
+                return half4(lerp(pixel.rgb,stone.xxx,saturate(_Desaturate)) * _Tint.rgb, 1);
             }
             ENDHLSL
         }
