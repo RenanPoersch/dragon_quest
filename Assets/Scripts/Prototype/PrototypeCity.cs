@@ -311,15 +311,15 @@ namespace DragonQuest.Prototype
 
         private Transform CreateVolcano(List<Interactable> interactions)
         {
-            Transform volcano=Group("Vulcao - trilha e arena");
-            DrawBlocks(PrototypeVolcanoLayout.Blocks,volcano);
-            CreatePassage("Saida do vulcao",PrototypeTravel.Volcano,volcano,PrototypeTravel.World);
-            GameObject boss=Entity("Dragao corrompido",PrototypeVolcanoLayout.Dragon,volcano);
-            BoxCollider2D collider=boss.AddComponent<BoxCollider2D>(); collider.size=new Vector2(1.8f,1.8f);collider.sharedMaterial=frictionless;
-            Transform model=scenery.Dragon(boss.transform);
-            Transform glow=scenery.DragonEssence(boss.transform);
-            DragonInteraction interaction=boss.AddComponent<DragonInteraction>();
-            interaction.Initialize(dragon,()=>battle.StartDragonBattle(),model.gameObject,glow.gameObject);
+            Transform volcano = Group("Covil do dragao - caverna lateral");
+            var lair = volcano.gameObject.AddComponent<DragonLairScenery>();
+            lair.Build();
+            CreatePassage("Saida do covil", PrototypeTravel.Volcano, volcano, PrototypeTravel.World);
+            GameObject boss = Entity("Dragao corrompido", PrototypeVolcanoLayout.Dragon, volcano);
+            var model = lair.CreateDragon(boss.transform);
+            GameObject glow = lair.CreateEssence(boss.transform);
+            DragonInteraction interaction = boss.AddComponent<DragonInteraction>();
+            interaction.Initialize(dragon, () => battle.StartDragonBattle(), model.gameObject, glow);
             interactions.Add(interaction);
             return volcano;
         }

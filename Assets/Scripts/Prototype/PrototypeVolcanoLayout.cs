@@ -1,26 +1,37 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace DragonQuest.Prototype
 {
+    // A lateral corridor, following the same presentation and controls as the ruins.
     public static class PrototypeVolcanoLayout
     {
-        public static readonly Rect Bounds = new Rect(-10,-14,20,28);
-        public static readonly Vector2 Spawn = new Vector2(0,-10), Exit = new Vector2(0,-12.5f), Dragon = new Vector2(0,8);
-        public static IReadOnlyList<CityBlock> Blocks { get; } = System.Array.AsReadOnly(new[]
+        public static readonly Rect Bounds = new Rect(-22, -4, 44, 14);
+        public static readonly Rect LegacyBounds = new Rect(-10, -14, 20, 28);
+        public const float CameraSize = 5.4f, CameraHeight = 3.2f;
+        public const float MinX = -20, MaxX = 12.9f;
+        public const float WalkingSpeedMultiplier = 1.15f;
+        public static readonly Vector2 Spawn = new Vector2(-17.5f, 0);
+        public static readonly Vector2 Exit = new Vector2(-19.6f, 0);
+        public static readonly Vector2 Dragon = new Vector2(14.1f, .9f);
+
+        // Retained for existing map inspection; the painting now supplies all visible terrain.
+        public static IReadOnlyList<CityBlock> Blocks { get; } = Array.AsReadOnly(new CityBlock[0]);
+
+        public static float FloorAt(float x)
         {
-            new CityBlock("Piso vulcanico",0,0,20,28,"423E42",false,-10),
-            new CityBlock("Lava oeste",-6,-4,7.5f,18,"B54A29",true,-8),
-            new CityBlock("Lava leste",6,-4,7.5f,18,"B54A29",true,-8),
-            new CityBlock("Trilha de basalto",0,-4,4.5f,18,"655D59",false,-7),
-            new CityBlock("Arena ancestral",0,8,16,9,"716666",false,-7),
-            new CityBlock("Rochas - oeste",-9.7f,0,0.6f,28,"574E55",true,3),
-            new CityBlock("Rochas - leste",9.7f,0,0.6f,28,"574E55",true,3),
-            new CityBlock("Rochas - norte",0,13.7f,20,0.6f,"574E55",true,3),
-            new CityBlock("Rochas - sul",0,-13.7f,20,0.6f,"574E55",true,3),
-            new CityBlock("Rochas - trilha oeste",-1.6f,-5,0.7f,1.2f,"70605D",true,3),
-            new CityBlock("Rochas - trilha leste",1.6f,0,0.7f,1.2f,"70605D",true,3),
-            new CityBlock("Runa da arena",0,8,5.5f,5.5f,"95725F",false,-6)
-        });
+            float height = 0;
+            for (int i = 0; i < 3; i++)
+                height += .3f * Mathf.SmoothStep(0, 1, Mathf.InverseLerp(4.7f + i * 1.1f, 5.3f + i * 1.1f, x));
+            return height;
+        }
+
+        public static Vector2 SafeSavedPosition(Vector2 position)
+        {
+            if (Mathf.Abs(position.y - FloorAt(position.x)) > .2f) return Spawn;
+            float x = Mathf.Clamp(position.x, MinX, MaxX);
+            return new Vector2(x, FloorAt(x));
+        }
     }
 }

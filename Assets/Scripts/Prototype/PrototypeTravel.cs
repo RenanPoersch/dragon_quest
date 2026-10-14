@@ -56,7 +56,7 @@ namespace DragonQuest.Prototype
                 new MapDefinition(WestForest, "PEDREIRA DOS MONOLITOS", QuarryLayout.Bounds, QuarryLayout.Spawn, 8, false, true),
                 new MapDefinition(EastForest, "FLORESTA LESTE", EastForestLayout.Bounds, EastForestLayout.Spawn, 8, false, true),
                 new MapDefinition(Ruins,"RUINAS ANTIGAS",PrototypeRuinsLayout.Bounds,PrototypeRuinsLayout.Spawn,PrototypeRuinsLayout.CameraSize),
-                new MapDefinition(Volcano,"VULCAO / CAMINHO ANCESTRAL",PrototypeVolcanoLayout.Bounds,PrototypeVolcanoLayout.Spawn,7.5f),
+                new MapDefinition(Volcano,"COVIL DO DRAGAO",PrototypeVolcanoLayout.Bounds,PrototypeVolcanoLayout.Spawn,PrototypeVolcanoLayout.CameraSize),
                 new MapDefinition(Inn,"HOSPEDARIA",PrototypeInnLayout.Bounds,PrototypeInnLayout.Spawn,6,false,true),
                 new MapDefinition("item-shop", "LOJA DE ITENS", PrototypeShopLayout.Bounds, PrototypeShopLayout.Spawn, PrototypeShopLayout.CameraSize, true, true),
                 new MapDefinition("equipment-shop", "LOJA DE EQUIPAMENTOS", PrototypeShopLayout.Bounds, PrototypeShopLayout.Spawn, PrototypeShopLayout.CameraSize, true, true),
@@ -115,6 +115,7 @@ namespace DragonQuest.Prototype
                 || !map.Bounds.Contains(position) && (mapId != City || !PrototypeCityLayout.LegacyBounds.Contains(position))
                 && (!map.IsShop || !PrototypeShopLayout.LegacyBounds.Contains(position))
                 && (mapId != Ruins || !PrototypeRuinsLayout.LegacyBounds.Contains(position))
+                && (mapId != Volcano || !PrototypeVolcanoLayout.LegacyBounds.Contains(position))
                 || mapId == Volcano && !CanEnterVolcano) return false;
             Current = map; return true;
         }

@@ -57,6 +57,7 @@ namespace DragonQuest.Prototype
             if (map == PrototypeTravel.WestForest) position = QuarryLayout.SafeSavedPosition(position);
             if (map == PrototypeTravel.City) position = PrototypeCityLayout.SafeSavedPosition(position);
             if (map == PrototypeTravel.Ruins) position = PrototypeRuinsLayout.SafeSavedPosition(position);
+            if (map == PrototypeTravel.Volcano) position = PrototypeVolcanoLayout.SafeSavedPosition(position);
             if (map == PrototypeTravel.World) position = PrototypeWorldLayout.SafeSavedPosition(position,
                 navigation.CanEnterVolcano);
             ApplyMap(position);
@@ -65,17 +66,22 @@ namespace DragonQuest.Prototype
         private void ApplyMap(Vector2 arrival)
         {
             foreach (var root in mapRoots) root.Value.SetActive(root.Key == LocationId);
-            bool lateral = LocationId == PrototypeTravel.Ruins;
+            bool volcano = LocationId == PrototypeTravel.Volcano;
+            bool lateral = LocationId == PrototypeTravel.Ruins || volcano;
             bool forest=LocationId==PrototypeTravel.EastForest;
             bool quarry = LocationId == PrototypeTravel.WestForest;
             player.SetMovementConstraint(forest ? EastForestLayout.ConstrainMove : quarry ? QuarryLayout.ConstrainMove : (System.Func<Vector2,Vector2,Vector2>)null);
             if (quarry) arrival = QuarryLayout.SafeSavedPosition(arrival);
             if(forest) arrival=EastForestLayout.SafeSavedPosition(arrival);
-            player.SetLateralPath(lateral ? PrototypeRuinsLayout.FloorAt : (System.Func<float, float>)null,
-                PrototypeRuinsLayout.MinX, PrototypeRuinsLayout.MaxX, PrototypeRuinsLayout.WalkingSpeedMultiplier);
+            if (volcano) arrival = PrototypeVolcanoLayout.SafeSavedPosition(arrival);
+            player.SetLateralPath(volcano ? PrototypeVolcanoLayout.FloorAt
+                : lateral ? PrototypeRuinsLayout.FloorAt : (System.Func<float, float>)null,
+                volcano ? PrototypeVolcanoLayout.MinX : PrototypeRuinsLayout.MinX,
+                volcano ? PrototypeVolcanoLayout.MaxX : PrototypeRuinsLayout.MaxX,
+                volcano ? PrototypeVolcanoLayout.WalkingSpeedMultiplier : PrototypeRuinsLayout.WalkingSpeedMultiplier);
             Transform heroShadow = player.transform.Find("Sombra no chao");
             if (heroShadow != null) heroShadow.gameObject.SetActive(!lateral);
-            cameraFollow.SetSideView(lateral, PrototypeRuinsLayout.CameraHeight);
+            cameraFollow.SetSideView(lateral, volcano ? PrototypeVolcanoLayout.CameraHeight : PrototypeRuinsLayout.CameraHeight);
             cameraFollow.SetArtworkFrame(forest || quarry);
             player.Teleport(arrival);
             cameraFollow.Initialize(player.transform, (forest || quarry) ? PrototypeWorldLayout.ForestBounds : navigation.Current.Bounds, navigation.Current.CameraSize,

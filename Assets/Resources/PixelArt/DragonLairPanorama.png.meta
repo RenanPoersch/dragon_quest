@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 94357d1e15a04d2b80921aef15209ebc
+guid: 4bcac17edead458dafc6cea2b5ba78db
 TextureImporter:
   externalObjects: {}
   serializedVersion: 13
@@ -7,7 +7,7 @@ TextureImporter:
     mipMapMode: 0
     enableMipMap: 0
     sRGBTexture: 1
-  isReadable: 0
+  isReadable: 1
   streamingMipmaps: 0
   textureFormat: 1
   maxTextureSize: 4096
