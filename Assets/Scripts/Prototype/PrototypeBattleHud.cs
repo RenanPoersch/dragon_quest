@@ -19,7 +19,7 @@ namespace DragonQuest.Prototype
         private readonly SummonAnimation summonAnimation = new SummonAnimation();
         private readonly BattleStatusIcons statusIcons = new BattleStatusIcons();
         private Texture2D pixel, hand, dragonPortrait, spiritPortrait, kingPortrait, background;
-        private GUIStyle title, text, small, centered, button, number;
+        private GUIStyle title, text, small, centered, button, itemButton, number;
         private Rect handUv = new Rect(0, 0, 1, 1);
         private float handAspect = 1;
         private BattleSession observedBattle;
@@ -350,7 +350,8 @@ namespace DragonQuest.Prototype
             for (int i = 0; i < CommandCount(); i++)
             {
                 if (CommandButton(new Rect(0, i * 36, 253, 34), CommandLabel(i), !targeting && i == commandIndex,
-                    CommandEnabled(i) && !targeting)) { ChooseCommand(i); break; }
+                    CommandEnabled(i) && !targeting, itemMode && i < observedBattle.Inventory.Items.Count
+                        ? InventoryPixelArt.Texture(observedBattle.Inventory.Items[i].Definition) : null)) { ChooseCommand(i); break; }
             }
             GUI.EndScrollView();
             if (!targeting) return;
@@ -393,10 +394,12 @@ namespace DragonQuest.Prototype
             RectBox(new Rect(rect.x, rect.y, rect.width * (maximum == 0 ? 0 : Mathf.Clamp01((float)value / maximum)), rect.height), color);
             GUI.Label(rect, value + "/" + maximum, centered);
         }
-        private bool CommandButton(Rect rect, string label, bool focused, bool enabled)
+        private bool CommandButton(Rect rect, string label, bool focused, bool enabled, Texture2D icon = null)
         {
             bool previous = GUI.enabled; GUI.enabled = previous && enabled;
-            bool clicked = GUI.Button(rect, label, button); GUI.enabled = previous;
+            bool clicked = GUI.Button(rect, label, icon == null ? button : itemButton);
+            InventoryPixelArt.Draw(new Rect(rect.x + 50, rect.center.y - 14, 28, 28), icon);
+            GUI.enabled = previous;
             if (focused) DrawHand(new Rect(rect.x + 2, rect.center.y - 15, 44, 30));
             return clicked;
         }
@@ -512,7 +515,8 @@ namespace DragonQuest.Prototype
             centered = new GUIStyle(GUI.skin.label) { fontSize = 17, alignment = TextAnchor.MiddleCenter };
             number = new GUIStyle(centered) { fontSize = 30, fontStyle = FontStyle.Bold };
             button = new GUIStyle(GUI.skin.label) { fontSize = 17, alignment = TextAnchor.MiddleLeft, padding = new RectOffset(50, 4, 2, 2) };
-            foreach (GUIStyle style in new[] { title, text, small, centered, button })
+            itemButton = InventoryPixelArt.ButtonStyle(button, 86);
+            foreach (GUIStyle style in new[] { title, text, small, centered, button, itemButton })
             { style.normal.textColor = Color.white; style.hover.textColor = Color.white; style.active.textColor = Color.white; }
             LoadHandSprite();
         }

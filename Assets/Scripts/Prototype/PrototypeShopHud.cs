@@ -8,7 +8,7 @@ namespace DragonQuest.Prototype
     {
         private PrototypeShopController controller;
         private Texture2D pixel;
-        private GUIStyle title, text, small, button;
+        private GUIStyle title, text, small, button, iconButton;
         private ShopInventory observedShop;
         private ShopProduct selectedProduct;
         private SaleEntry selectedSale;
@@ -57,8 +57,9 @@ namespace DragonQuest.Prototype
             {
                 ShopProduct product = products[i];
                 if (GUI.Button(new Rect(0, i * 55, 526, 49), (selectedProduct == product ? "> " : "") + product.Name
-                    + "\n" + product.Price + " moedas / " + (product.Stock == 0 ? "ESGOTADO" : "Estoque: " + product.Stock), button))
+                    + "\n" + product.Price + " moedas / " + (product.Stock == 0 ? "ESGOTADO" : "Estoque: " + product.Stock), iconButton))
                 { selectedProduct = product; quantity = 1; }
+                InventoryPixelArt.Draw(new Rect(7, i * 55 + 6, 36, 36), ProductTexture(product));
             }
             GUI.EndScrollView();
         }
@@ -81,8 +82,9 @@ namespace DragonQuest.Prototype
                 string location = entry.Equipment != null ? controller.Service.Party.LocationOf(entry.Equipment)
                     : entry.Materia != null ? controller.Service.Party.LocationOf(entry.Materia) : "Inventario";
                 if (GUI.Button(new Rect(0, i * 60, 526, 54), (selectedSale != null && SameObject(entry, selectedSale) ? "> " : "")
-                    + entry.Name + " / x" + entry.Quantity + " / " + location + "\n" + (entry.CanSell ? entry.UnitPrice + " moedas cada" : entry.BlockReason), button))
+                    + entry.Name + " / x" + entry.Quantity + " / " + location + "\n" + (entry.CanSell ? entry.UnitPrice + " moedas cada" : entry.BlockReason), iconButton))
                 { selectedSale = entry; quantity = 1; }
+                InventoryPixelArt.Draw(new Rect(7, i * 60 + 9, 36, 36), SaleTexture(entry));
             }
             GUI.EndScrollView();
             if (entries.Count == 0) GUI.Label(new Rect(48, 249, 530, 100), "Nao ha objetos desta categoria no seu inventario.", text);
@@ -90,11 +92,17 @@ namespace DragonQuest.Prototype
         private static bool SameObject(SaleEntry one, SaleEntry two) => one.Item != null && one.Item == two.Item
             || one.Equipment != null && one.Equipment == two.Equipment || one.Materia != null && one.Materia == two.Materia;
 
+        private static Texture2D ProductTexture(ShopProduct product) => product.Item != null ? InventoryPixelArt.Texture(product.Item)
+            : product.Equipment != null ? InventoryPixelArt.Texture(product.Equipment) : InventoryPixelArt.Texture(product.Materia);
+        private static Texture2D SaleTexture(SaleEntry entry) => entry.Item != null ? InventoryPixelArt.Texture(entry.Item)
+            : entry.Equipment != null ? InventoryPixelArt.Texture(entry.Equipment.Definition) : InventoryPixelArt.Texture(entry.Materia?.Definition);
+
         private void DrawDetails()
         {
             bool selected = selling ? selectedSale != null : selectedProduct != null;
             GUI.Label(new Rect(665, 192, 555, 35), !selected ? "Escolha um objeto" : selling ? selectedSale.Name : selectedProduct.Name, title);
-            GUI.Label(new Rect(665, 242, 555, 125), !selected ? "Confira descricao, quantidade e valor antes de confirmar a transacao. Equipamentos e materias em uso precisam ser desequipados para venda."
+            if (selected) InventoryPixelArt.Draw(new Rect(1128, 242, 88, 88), selling ? SaleTexture(selectedSale) : ProductTexture(selectedProduct));
+            GUI.Label(new Rect(665, 242, selected ? 447 : 555, 125), !selected ? "Confira descricao, quantidade e valor antes de confirmar a transacao. Equipamentos e materias em uso precisam ser desequipados para venda."
                 : selling ? selectedSale.Description : selectedProduct.Description, text);
             if (!selected) return;
             int price = selling ? selectedSale.UnitPrice : selectedProduct.Price;
@@ -138,6 +146,7 @@ namespace DragonQuest.Prototype
             text = new GUIStyle(GUI.skin.label) { fontSize = 18, wordWrap = true };
             small = new GUIStyle(GUI.skin.label) { fontSize = 14, wordWrap = true };
             button = new GUIStyle(GUI.skin.button) { fontSize = 15, wordWrap = true };
+            iconButton = InventoryPixelArt.ButtonStyle(button);
             title.normal.textColor = new Color(0.96f, 0.8f, 0.48f); text.normal.textColor = Color.white;
             small.normal.textColor = new Color(0.85f, 0.9f, 0.95f);
         }

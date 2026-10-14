@@ -11,7 +11,7 @@ namespace DragonQuest.Prototype
         private PrototypeBattleController controller;
         private AncientSecrets secrets;
         private Texture2D pixel;
-        private GUIStyle title, text, small, button;
+        private GUIStyle title, text, small, button, iconButton, socketButton;
         private int memberIndex;
         private int page;
         private MateriaInstance selected;
@@ -83,9 +83,10 @@ namespace DragonQuest.Prototype
                 Color previousColor = GUI.backgroundColor;
                 GUI.backgroundColor = MateriaColor(materia.Definition.Type);
                 if (GUI.Button(new Rect(0, i * 45, 509, 40), (selected == materia ? "> " : "")
-                    + materia.Definition.Name + "\n" + party.LocationOf(materia), button))
+                    + materia.Definition.Name + "\n" + party.LocationOf(materia), iconButton))
                 { selected = materia; message = "Agora clique no encaixe de destino, em qualquer personagem."; }
                 GUI.backgroundColor = previousColor;
+                InventoryPixelArt.Draw(new Rect(8, i * 45 + 6, 28, 28), InventoryPixelArt.Texture(materia.Definition));
             }
             GUI.EndScrollView();
             GUI.Label(new Rect(690, 620, 535, 65), selected == null
@@ -126,8 +127,10 @@ namespace DragonQuest.Prototype
         private void DrawGear(PartyMember member, PartyProgress party)
         {
             Panel(new Rect(30, 245, 615, 209));
-            GUI.Label(new Rect(48, 252, 570, 29), "Arma: " + (member.Weapon?.Definition.Name ?? "nenhuma"), text);
-            GUI.Label(new Rect(48, 286, 570, 29), "Armadura: " + (member.Armor?.Definition.Name ?? "nenhuma"), text);
+            InventoryPixelArt.Draw(new Rect(48, 250, 32, 32), InventoryPixelArt.Texture(member.Weapon?.Definition));
+            InventoryPixelArt.Draw(new Rect(48, 284, 32, 32), InventoryPixelArt.Texture(member.Armor?.Definition));
+            GUI.Label(new Rect(90, 252, 528, 29), "Arma: " + (member.Weapon?.Definition.Name ?? "nenhuma"), text);
+            GUI.Label(new Rect(90, 286, 528, 29), "Armadura: " + (member.Armor?.Definition.Name ?? "nenhuma"), text);
             if (pendingGear != null)
             {
                 EquipmentLoadout weapon = pendingGear.Definition.Slot == EquipmentSlot.Weapon ? pendingGear : member.Weapon;
@@ -157,10 +160,12 @@ namespace DragonQuest.Prototype
                 if (GUI.Button(new Rect(0, i * 52, 509, 47), (pendingGear == item ? "> " : "") + item.Definition.Name
                     + " / " + (item.Definition.Slot == EquipmentSlot.Weapon ? "Arma" : "Armadura") + "\n"
                     + party.LocationOf(item) + " / ATQ +" + item.Definition.AttackBonus + " DEF +" + item.Definition.DefenseBonus
-                    + " MAG +" + item.Definition.MagicBonus + " / " + item.Sockets.Count + " encaixes", button)) pendingGear = item;
+                    + " MAG +" + item.Definition.MagicBonus + " / " + item.Sockets.Count + " encaixes", iconButton)) pendingGear = item;
+                InventoryPixelArt.Draw(new Rect(6, i * 52 + 5, 38, 38), InventoryPixelArt.Texture(item.Definition));
             }
             GUI.EndScrollView();
-            GUI.Label(new Rect(690, 620, 535, 65), pendingGear == null
+            if (pendingGear != null) InventoryPixelArt.Draw(new Rect(690, 618, 64, 64), InventoryPixelArt.Texture(pendingGear.Definition));
+            GUI.Label(new Rect(pendingGear == null ? 690 : 770, 620, pendingGear == null ? 535 : 455, 65), pendingGear == null
                 ? "Selecione um equipamento para comparar atributos. A troca devolve as materias."
                 : pendingGear.Definition.Affinities.Description + (pendingGear.Definition.IsStoryItem ? " / Item de historia: protegido contra venda." : ""), small);
         }
@@ -174,7 +179,8 @@ namespace DragonQuest.Prototype
             {
                 ItemStack stack = party.Consumables.Items[i];
                 if (GUI.Button(new Rect(48, 305 + i * 54, 570, 45), (selectedInventoryItem == stack.Definition ? "> " : "")
-                    + stack.Definition.Name + " / Quantidade: " + stack.Quantity, button)) selectedInventoryItem = stack.Definition;
+                    + stack.Definition.Name + " / Quantidade: " + stack.Quantity, iconButton)) selectedInventoryItem = stack.Definition;
+                InventoryPixelArt.Draw(new Rect(56, 309 + i * 54, 36, 36), InventoryPixelArt.Texture(stack.Definition));
             }
             GUI.Label(new Rect(48, 595, 560, 67), "O uso acontece na batalha: escolha Itens e depois um alvo. Abrir a lista ou cancelar nao gasta item nem turno.", text);
             if(secrets.HasScale)
@@ -183,7 +189,8 @@ namespace DragonQuest.Prototype
                 GUI.Label(new Rect(48,565,560,25),"Guardada com a equipe; protegida contra venda.",small);
             }
             GUI.Label(new Rect(690, 255, 530, 30), selectedInventoryItem?.Name ?? "Escolha um item", title);
-            GUI.Label(new Rect(690, 310, 530, 135), selectedInventoryItem?.Description
+            InventoryPixelArt.Draw(new Rect(1138, 300, 80, 80), InventoryPixelArt.Texture(selectedInventoryItem));
+            GUI.Label(new Rect(690, 310, 432, 135), selectedInventoryItem?.Description
                 ?? "Pocao recupera HP, eter recupera MP, antidoto remove veneno e Pluma da Fenix revive.", text);
             GUI.Label(new Rect(690, 483, 530, 130), "Itens nao recebem bonus de classe ou combos de materia. O estoque nao e restaurado a cada batalha. Compre suprimentos na loja de itens.", text);
             if(secrets.IsDiscovered) GUI.Label(new Rect(690,635,530,45),secrets.Summary,small);
@@ -196,7 +203,8 @@ namespace DragonQuest.Prototype
         private void DrawEquipment(PartyMember member, EquipmentLoadout equipment, EquipmentSlot slot, float y, PartyProgress party)
         {
             string kind = slot == EquipmentSlot.Weapon ? "Arma" : "Armadura";
-            GUI.Label(new Rect(0, y, 540, 24), kind + ": " + (equipment?.Definition.Name ?? "nenhuma")
+            InventoryPixelArt.Draw(new Rect(0, y, 24, 24), InventoryPixelArt.Texture(equipment?.Definition));
+            GUI.Label(new Rect(32, y, 508, 24), kind + ": " + (equipment?.Definition.Name ?? "nenhuma")
                 + (equipment == null ? "" : " / " + equipment.Sockets.Count + " encaixes"), small);
             if (equipment == null || equipment.Sockets.Count == 0) return;
             for (int i = 0; i < equipment.Sockets.Count; i++)
@@ -208,7 +216,7 @@ namespace DragonQuest.Prototype
                 GUI.backgroundColor = materia == null ? Color.gray : MateriaColor(materia.Definition.Type);
                 string label = (selectedEquipment == equipment && selectedSlot == i ? "> " : "")
                     + (i + 1) + ": " + (materia == null ? "Vazio" : materia.Definition.Name);
-                if (GUI.Button(socket, label, button))
+                if (GUI.Button(socket, label, socketButton))
                 {
                     selectedEquipment = equipment; selectedSlot = i;
                     if (selected != null)
@@ -216,6 +224,7 @@ namespace DragonQuest.Prototype
                     else message = "Encaixe selecionado. Escolha uma materia ou remova a atual.";
                 }
                 GUI.backgroundColor = previous;
+                InventoryPixelArt.Draw(new Rect(socket.x + 6, socket.y + 3, 24, 24), InventoryPixelArt.Texture(materia?.Definition));
                 if (column == 0) GUI.Label(new Rect(253, socket.y + 3, 28, 23), "--", small);
             }
         }
@@ -243,6 +252,8 @@ namespace DragonQuest.Prototype
             text = new GUIStyle(GUI.skin.label) { fontSize = 18, wordWrap = true };
             small = new GUIStyle(GUI.skin.label) { fontSize = 14, wordWrap = true };
             button = new GUIStyle(GUI.skin.button) { fontSize = 14, wordWrap = true };
+            iconButton = InventoryPixelArt.ButtonStyle(button);
+            socketButton = InventoryPixelArt.ButtonStyle(button, 38);
             title.normal.textColor = new Color(0.96f, 0.8f, 0.48f);
             text.normal.textColor = Color.white; small.normal.textColor = new Color(0.85f, 0.9f, 0.95f);
         }
