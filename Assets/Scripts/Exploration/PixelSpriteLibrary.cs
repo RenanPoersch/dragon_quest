@@ -17,16 +17,19 @@ namespace DragonQuest.Exploration
             bool walkingSheet = resource == "ArenWalk" || resource == "ArenDiagonalWalk";
             bool chest = resource == "ChestStates";
             bool worldPoi = resource == "WorldPoiSprites";
+            bool castleBoss = resource == "TyrantBattle" || resource == "SpiritBattle";
             bool dragonAttack = resource == "DragonClaw" || resource == "DragonBreath";
             bool dragon = resource == "Dragon" || dragonAttack;
             var frames = dragonAttack ? PixelSpriteLayout.ReadAttack(Texture.width, Texture.height, alpha)
                 : dragon ? PixelSpriteLayout.ReadSingle(Texture.width, Texture.height, alpha)
+                : castleBoss ? PixelSpriteLayout.ReadBattleIdle(Texture.width, Texture.height, alpha)
                 : worldPoi ? PixelSpriteLayout.ReadWorldIcons(Texture.width, Texture.height, alpha)
                 : chest ? PixelSpriteLayout.ReadPropPair(Texture.width, Texture.height, alpha)
                 : PixelSpriteLayout.Read(Texture.width, Texture.height, alpha, walkingSheet);
             int maxHeight = 1; foreach (var frame in frames) maxHeight = Math.Max(maxHeight, frame.Height);
             // Mesma escala nos dois estados; abrir a tampa nao redimensiona a caixa.
-            float pixelsPerUnit = chest ? frames[0].Width / 1.1f : maxHeight / ((dragon ? 3.8f : worldPoi ? 1.95f * 1.10f * 1.15f * 1.25f : 1.45f) * ObliqueProjection.HeightScale);
+            float bodyHeight = castleBoss ? (resource == "SpiritBattle" ? 2.1f : 1.65f) : 1.45f;
+            float pixelsPerUnit = chest ? frames[0].Width / 1.1f : maxHeight / ((dragon ? 3.8f : worldPoi ? 1.95f * 1.10f * 1.15f * 1.25f : bodyHeight) * ObliqueProjection.HeightScale);
             Sprites = new Sprite[frames.Length];
             for (int i = 0; i < frames.Length; i++)
             {

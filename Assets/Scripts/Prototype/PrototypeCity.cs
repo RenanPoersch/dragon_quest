@@ -286,9 +286,9 @@ namespace DragonQuest.Prototype
             CreatePassage("Saida do castelo", PrototypeTravel.Castle, castle, PrototypeTravel.City);
             GameObject king=Entity("Tirano",PrototypeWorldLayout.Throne,castle);
             BoxCollider2D collider=king.AddComponent<BoxCollider2D>();collider.size=new Vector2(0.55f,0.6f);collider.sharedMaterial=frictionless;
-            scenery.PixelPerson(king.transform, "NpcRoster", 11);
+            scenery.PixelPerson(king.transform, "TyrantBattle");
             GameObject spirit=Entity("Espirito junto ao trono",PrototypeWorldLayout.Throne+Vector2.right*1.8f,castle);
-            scenery.Spirit(spirit.transform);spirit.SetActive(false);
+            scenery.PixelPerson(spirit.transform, "SpiritBattle");spirit.SetActive(false);
             TyrantInteraction tyrant=king.AddComponent<TyrantInteraction>();
             tyrant.Initialize(()=>battle?.Party,()=>battle.StartCastleBattle(),spirit);
             interactions.Add(tyrant);

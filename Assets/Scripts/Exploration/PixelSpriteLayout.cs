@@ -58,6 +58,27 @@ namespace DragonQuest.Exploration
         public static PixelFrame[] ReadSingle(int width, int height, byte[] alpha)
             => ReadGrid(width, height, alpha, 1, 1, false);
 
+        // O castelo usa somente a postura inicial das folhas de batalha, sem alterar os PNGs.
+        public static PixelFrame[] ReadBattleIdle(int width, int height, byte[] alpha)
+        {
+            if (width < 16 || height < 4 || alpha == null || alpha.Length != (long)width * height)
+                throw new ArgumentException("Folha de batalha invalida.");
+            // As margens variam: a segunda pose do espirito comeca antes de um quarto da folha.
+            int expected = width / 4, radius = width / 12, cellWidth = expected;
+            float best = float.MaxValue;
+            for (int x = expected - radius; x <= expected + radius; x++)
+            {
+                int density = 0;
+                for (int y = 0; y < height; y++) if (alpha[y * width + x] >= 128) density++;
+                float score = density + Math.Abs(x - expected) * .03f;
+                if (score < best) { best = score; cellWidth = x; }
+            }
+            var idle = new byte[cellWidth * height];
+            for (int y = 0; y < height; y++)
+                Buffer.BlockCopy(alpha, y * width, idle, y * cellWidth, cellWidth);
+            return ReadSingle(cellWidth, height, idle);
+        }
+
         // Janelas em pixels do PNG original; o gerador preservou os desenhos fora da grade regular.
         // Recortamos apenas em memoria, mantendo a imagem inteira sem edicao ou redimensionamento.
         public static RectInt WorldIconRegion(int index)
