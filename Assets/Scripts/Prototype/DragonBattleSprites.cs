@@ -11,7 +11,7 @@ namespace DragonQuest.Prototype
 
         public bool Draw(Rect area, string resource, int frame, Color tint)
         {
-            if (resource != "Dragon" && resource != "DragonClaw" && resource != "DragonBreath") return false;
+            if (resource != "Dragon" && resource != "DragonClaw" && resource != "DragonBreath" && resource != "DragonCharge") return false;
             if (!sheets.TryGetValue(resource, out BattleAnimationSheet sheet))
             {
                 bool idle = resource == "Dragon";

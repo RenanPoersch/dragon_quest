@@ -444,8 +444,9 @@ namespace DragonQuest.Prototype
             {
                 bool attacking = controller.IsPresentingAction && controller.IsPresentingDragonAttack;
                 string abilityId = controller.PresentingAbility?.Id;
-                string resource = attacking ? DragonAttackAnimation.Resource(abilityId) : "Dragon";
-                int frame = attacking ? DragonAttackAnimation.Frame(abilityId, Time.unscaledTime - controller.ActionStartedAt) : 0;
+                bool charged = participant.IsAlive && participant.IsCharging;
+                string resource = attacking ? DragonAttackAnimation.Resource(abilityId) : charged ? "DragonCharge" : "Dragon";
+                int frame = attacking ? DragonAttackAnimation.Frame(abilityId, Time.unscaledTime - controller.ActionStartedAt) : charged ? 5 : 0;
                 if (dragonSprites.Draw(rect, resource, frame,
                     tint)) return;
             }
