@@ -41,7 +41,7 @@ namespace DragonQuest.Prototype
             var glowShader = Resources.Load<Shader>("PixelGlow");
             if (glowShader == null) throw new InvalidOperationException("Shader PixelGlow ausente.");
             glowMaterial = new Material(glowShader) {name = "Periferia / vapor"};
-            materiaShopMaterial = AtlasMaterial(Resources.Load<Shader>("MateriaShop"), "MateriaShopAtlas", "Lojas / madeira e tecido pixel art");
+            materiaShopMaterial = AtlasMaterial(Resources.Load<Shader>("MateriaShop"), "MateriaShopAtlas", "Loja de itens / madeira, frascos e cortinas");
             PixelSprites = new PixelSpriteLibrary();
             shopPixels = new ShopPixelArt(PixelSprites.Material);
             var shadowShader = Resources.Load<Shader>("PixelShadow");
@@ -293,6 +293,7 @@ namespace DragonQuest.Prototype
             mesh.Triangle(c,d,peak,color); mesh.Triangle(d,a,peak,color);
         }
 
+        // Exportadores antigos recebem a mesma superficie plana da pintura unica.
         public static ObliqueMeshData IslandData(bool includeGround = true) => WorldIslandArt.Ground();
         public GameObject World(Transform parent)
         {
@@ -618,13 +619,12 @@ namespace DragonQuest.Prototype
         public void Dispose()
         {
             foreach(Mesh mesh in meshes) if(mesh!=null) UnityEngine.Object.Destroy(mesh);
-            UnityEngine.Object.Destroy(material); UnityEngine.Object.Destroy(shadowMaterial);
+            UnityEngine.Object.Destroy(materiaShopMaterial); UnityEngine.Object.Destroy(material); UnityEngine.Object.Destroy(shadowMaterial);
             UnityEngine.Object.Destroy(cityMaterial); UnityEngine.Object.Destroy(cityDetailsMaterial); UnityEngine.Object.Destroy(glowMaterial);
             UnityEngine.Object.Destroy(castleMaterial);
             UnityEngine.Object.Destroy(cityGroundMaterial);
             UnityEngine.Object.Destroy(worldGroundMaterial);
             shopPixels.Dispose();
-            UnityEngine.Object.Destroy(materiaShopMaterial);
             PixelSprites.Dispose();
         }
     }

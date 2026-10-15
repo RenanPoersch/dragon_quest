@@ -53,13 +53,15 @@ namespace DragonQuest.Prototype
         {
             if (!navigation.TryRestore(map, position)) throw new System.ArgumentException("Posicao de save invalida.");
             mapRoots[PrototypeTravel.World].GetComponentInChildren<BlockedPassageInteraction>(true)?.RestoreBarrierState();
-            if (map == PrototypeTravel.EastForest) position = EastForestLayout.SafeSavedPosition(position);
-            if (map == PrototypeTravel.WestForest) position = QuarryLayout.SafeSavedPosition(position);
             if (map == PrototypeTravel.City) position = PrototypeCityLayout.SafeSavedPosition(position);
             if (map == PrototypeTravel.Ruins) position = PrototypeRuinsLayout.SafeSavedPosition(position);
             if (map == PrototypeTravel.Volcano) position = PrototypeVolcanoLayout.SafeSavedPosition(position);
+            if (map == PrototypeTravel.EastForest) position = EastForestLayout.SafeSavedPosition(position);
+            if (map == PrototypeTravel.WestForest) position = QuarryLayout.SafeSavedPosition(position);
             if (map == PrototypeTravel.World) position = PrototypeWorldLayout.SafeSavedPosition(position,
                 navigation.CanEnterVolcano);
+            // Saves de lojas reaparecem na entrada livre, inclusive os da planta antiga.
+            if (navigation.Current.IsShop) position = PrototypeShopLayout.Spawn;
             ApplyMap(position);
         }
 
@@ -68,11 +70,11 @@ namespace DragonQuest.Prototype
             foreach (var root in mapRoots) root.Value.SetActive(root.Key == LocationId);
             bool volcano = LocationId == PrototypeTravel.Volcano;
             bool lateral = LocationId == PrototypeTravel.Ruins || volcano;
-            bool forest=LocationId==PrototypeTravel.EastForest;
+            bool forest = LocationId == PrototypeTravel.EastForest;
             bool quarry = LocationId == PrototypeTravel.WestForest;
             player.SetMovementConstraint(forest ? EastForestLayout.ConstrainMove : quarry ? QuarryLayout.ConstrainMove : (System.Func<Vector2,Vector2,Vector2>)null);
             if (quarry) arrival = QuarryLayout.SafeSavedPosition(arrival);
-            if(forest) arrival=EastForestLayout.SafeSavedPosition(arrival);
+            if (forest) arrival=EastForestLayout.SafeSavedPosition(arrival);
             if (volcano) arrival = PrototypeVolcanoLayout.SafeSavedPosition(arrival);
             player.SetLateralPath(volcano ? PrototypeVolcanoLayout.FloorAt
                 : lateral ? PrototypeRuinsLayout.FloorAt : (System.Func<float, float>)null,
@@ -86,8 +88,10 @@ namespace DragonQuest.Prototype
             player.Teleport(arrival);
             cameraFollow.Initialize(player.transform, (forest || quarry) ? PrototypeWorldLayout.ForestBounds : navigation.Current.Bounds, navigation.Current.CameraSize,
                 navigation.Current.FixedCamera, navigation.Current.CoveredGroundBounds);
-            cameraFollow.GetComponent<Camera>().backgroundColor = lateral ? new Color(.22f, .24f, .25f) : LocationId == PrototypeTravel.World
-                ? new Color(0.19f, 0.37f, 0.49f) : new Color(0.15f, 0.24f, 0.21f);
+            bool singleRoom = navigation.Current.IsShop || LocationId == PrototypeTravel.Inn || LocationId == PrototypeTravel.Castle;
+            cameraFollow.GetComponent<Camera>().backgroundColor = singleRoom ? Color.black
+                : lateral ? new Color(.22f, .24f, .25f)
+                : LocationId == PrototypeTravel.World ? new Color(0.19f, 0.37f, 0.49f) : new Color(0.15f, 0.24f, 0.21f);
             Physics2D.SyncTransforms();
         }
     }
