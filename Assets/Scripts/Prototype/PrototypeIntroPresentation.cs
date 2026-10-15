@@ -94,12 +94,13 @@ namespace DragonQuest.Prototype
                 GUI.depth = -100;
                 GUI.color = Color.black;
                 GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), Texture2D.whiteTexture);
+                float alpha = sequence.Opacity;
+                GUI.color = new Color(1, 1, 1, alpha);
+                // Cover the entire viewport while keeping the artwork proportional.
+                GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), background, ScaleMode.ScaleAndCrop);
                 float scale = Mathf.Min(Screen.width / 1280f, Screen.height / 720f);
                 GUI.matrix = Matrix4x4.TRS(new Vector3((Screen.width - 1280 * scale) / 2,
                     (Screen.height - 720 * scale) / 2, 0), Quaternion.identity, new Vector3(scale, scale, 1));
-                float alpha = sequence.Opacity;
-                GUI.color = new Color(1, 1, 1, alpha);
-                GUI.DrawTexture(new Rect(0, 0, 1280, 720), background, ScaleMode.ScaleAndCrop);
                 DrawBirds(alpha);
                 DrawTitle(alpha * sequence.TitleOpacity);
                 float promptAlpha = Mathf.Clamp01((sequence.Elapsed - 3.1f) / .7f)

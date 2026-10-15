@@ -2,7 +2,7 @@
 
 A cena `CidadePrototipo` abre com a paisagem antes do menu `New game / Continue`. O controle do jogador permanece bloqueado pelo menu durante a abertura.
 
-- Paisagem: fade-in de 3,2 segundos, preservando a composição e a proporção em outras resoluções.
+- Paisagem: fade-in de 3,2 segundos e preenchimento de toda a janela, sem faixas pretas. A imagem mantém a proporção e recorta o excedente quando a proporção da tela difere da arte; título e instrução permanecem dentro da área visível.
 - Título `DRAGON QUEST`: começa em 2,6 segundos e aparece letra por letra em posições fixas, usando Pixel Operator Bold.
 - Oito pássaros independentes percorrem o céu, com seis sprites de bater de asas, tamanhos, velocidades e fases diferentes. Não existem pássaros pintados no fundo.
 - A abertura permanece na tela, com os pássaros animados, até o jogador pressionar para continuar.
