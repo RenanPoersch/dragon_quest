@@ -103,7 +103,7 @@ namespace DragonQuest.Prototype
                 return;
             }
             if (observedActor == null || observedActor.Team != CombatTeam.Party) return;
-            if (keys.escapeKey.wasPressedThisFrame || keys.leftArrowKey.wasPressedThisFrame) { Cancel(); return; }
+            if (keys.escapeKey.wasPressedThisFrame || keys.leftArrowKey.wasPressedThisFrame || keys.aKey.wasPressedThisFrame) { Cancel(); return; }
             bool targeting = selected != null || selectedItem != null;
             int count = targeting ? TargetRowCount() : CommandCount();
             if (targeting) targetIndex = Mathf.Clamp(targetIndex, 0, Mathf.Max(0, count - 1));
@@ -127,7 +127,7 @@ namespace DragonQuest.Prototype
                 if (targeting && count > 0) ExecuteTarget(Targets()[targetIndex]);
                 else if (!targeting) ChooseCommand(commandIndex);
             }
-            else if (!targeting && keys.rightArrowKey.wasPressedThisFrame)
+            else if (!targeting && (keys.rightArrowKey.wasPressedThisFrame || keys.dKey.wasPressedThisFrame))
                 ChooseCommand(commandIndex, navigateOnly: true);
         }
 
