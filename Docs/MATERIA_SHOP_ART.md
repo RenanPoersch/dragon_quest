@@ -1,4 +1,4 @@
-> Registro historico da decoracao das lojas, preservado na auditoria dos chats. A decoracao posterior em sprites compartilhados esta documentada em ShopPixelArt/README.md.
+> Registro histórico da decoração aposentada. A loja atual está documentada em [COMPACT_SHOPS_PIXEL_ART.md](COMPACT_SHOPS_PIXEL_ART.md).
 
 # Loja de materias â€” pixel art
 

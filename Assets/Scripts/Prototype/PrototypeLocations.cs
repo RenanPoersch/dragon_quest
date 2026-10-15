@@ -74,7 +74,9 @@ namespace DragonQuest.Prototype
             bool quarry = LocationId == PrototypeTravel.WestForest;
             bool inn = LocationId == PrototypeTravel.Inn;
             bool weapons = LocationId == WeaponShopLayout.MapId;
-            player.SetMovementConstraint(weapons ? WeaponShopLayout.ConstrainMove : inn ? PrototypeInnLayout.ConstrainMove : forest ? EastForestLayout.ConstrainMove : quarry ? QuarryLayout.ConstrainMove : (System.Func<Vector2,Vector2,Vector2>)null);
+            CompactShopLayout compact=CompactShopLayout.Find(LocationId);
+            player.SetMovementConstraint(compact != null ? compact.ConstrainMove : weapons ? WeaponShopLayout.ConstrainMove : inn ? PrototypeInnLayout.ConstrainMove : forest ? EastForestLayout.ConstrainMove : quarry ? QuarryLayout.ConstrainMove : (System.Func<Vector2,Vector2,Vector2>)null);
+            if (compact != null) arrival=compact.SafeSavedPosition(arrival);
             if (weapons) arrival = WeaponShopLayout.SafeSavedPosition(arrival);
             if (LocationId == PrototypeTravel.Inn) arrival = PrototypeInnLayout.SafeSavedPosition(arrival);
             if (quarry) arrival = QuarryLayout.SafeSavedPosition(arrival);
@@ -88,7 +90,8 @@ namespace DragonQuest.Prototype
             Transform heroShadow = player.transform.Find("Sombra no chao");
             if (heroShadow != null) heroShadow.gameObject.SetActive(!lateral);
             cameraFollow.SetSideView(lateral, volcano ? PrototypeVolcanoLayout.CameraHeight : PrototypeRuinsLayout.CameraHeight);
-            cameraFollow.SetArtworkFrame(forest || quarry || inn || weapons, inn || weapons, weapons ? WeaponShopLayout.ArtAspect : inn ? PrototypeInnLayout.ArtAspect : 16f / 9f);
+            cameraFollow.SetArtworkFrame(forest || quarry || inn || weapons || compact != null, inn || weapons || compact != null,
+                compact != null ? CompactShopLayout.ArtAspect : weapons ? WeaponShopLayout.ArtAspect : inn ? PrototypeInnLayout.ArtAspect : 16f / 9f);
             player.Teleport(arrival);
             cameraFollow.Initialize(player.transform, (forest || quarry) ? PrototypeWorldLayout.ForestBounds : navigation.Current.Bounds, navigation.Current.CameraSize,
                 navigation.Current.FixedCamera, navigation.Current.CoveredGroundBounds);

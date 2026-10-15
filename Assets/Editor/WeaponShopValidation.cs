@@ -31,7 +31,7 @@ public static class WeaponShopValidation
             Assert(root.GetComponentsInChildren<PolygonCollider2D>().Length == 3,"counter, anvil and chest footprints match the painting");
             foreach (Vector2[] outline in WeaponShopPixelScenery.Foregrounds)
                 Assert(PaintedInteriorScenery.Triangulate(outline).Length == (outline.Length-2)*3,"all depth contours triangulate");
-            CheckNavigation(); CheckTravel(); CheckTrade(); CheckSharedSprites();
+            CheckNavigation(); CheckTravel(); CheckTrade();
 
             var cameraObject = new GameObject("Loja de armas / camera de validacao");
             UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(cameraObject,scene);
@@ -73,7 +73,7 @@ public static class WeaponShopValidation
                 }
                 finally { camera.targetTexture = null; target.Release(); UnityEngine.Object.DestroyImmediate(target); }
             }
-            File.WriteAllText(Path.Combine(output,"result.txt"),"WEAPON_SHOP_VALIDATION_OK: full painting, depth, collisions, navigation, movement limits, merchant, purchases, sales, saves, shared shop assets and three aspect ratios.");
+            File.WriteAllText(Path.Combine(output,"result.txt"),"WEAPON_SHOP_VALIDATION_OK: full painting, depth, collisions, navigation, movement limits, merchant, purchases, sales, saves and three aspect ratios.");
             Debug.Log("WEAPON_SHOP_VALIDATION_OK: complete room, navigation, trade and three display aspects.");
         }
         finally
@@ -123,7 +123,7 @@ public static class WeaponShopValidation
         var travel = new PrototypeTravel(); Vector2 arrival = default;
         Assert(travel.TryTravel(PrototypeTravel.City,out _) && travel.TryTravel(WeaponShopLayout.MapId,out arrival) && arrival == WeaponShopLayout.Spawn,"city door leads to new weapon shop entrance");
         Assert(!travel.TryEnter(arrival,false,out _),"arrival does not immediately exit");
-        Assert(travel.TryRestore(WeaponShopLayout.MapId,PrototypeShopLayout.Spawn),"legacy shop saves still load");
+        Assert(travel.TryRestore(WeaponShopLayout.MapId,new Vector2(0,-1.89f)),"legacy shop saves still load");
         Assert(travel.TryEnter(WeaponShopLayout.Exit,false,out _) && travel.Current.Id == PrototypeTravel.City,"painted threshold returns to city");
     }
     private static void CheckTrade()
@@ -133,17 +133,6 @@ public static class WeaponShopValidation
         Assert(service.TryBuy(shop,sword,1,out _) && service.Progress.Gold == 940 && sword.Stock == 1,"existing purchase charges gold, updates stock and grants weapon");
         var sale = service.SaleEntries(shop).First(e=>e.Equipment != null && e.Equipment.Definition == PrototypePartyFactory.IronSword);
         Assert(service.TrySell(shop,sale,1,out _) && service.Progress.Gold == 970,"existing weapon sale remains functional");
-    }
-    private static void CheckSharedSprites()
-    {
-        var source = Resources.Load<Texture2D>("PixelArt/ShopPropsAtlas");
-        Assert(source != null,"shared item and materia shop atlas remains available");
-        Color32[] sampled = ShopPixelArt.SampleAtlas(source.GetPixels32(),source.width,source.height);
-        foreach (string kind in new[] { "item-shop","materia-shop" })
-            foreach (var prop in ShopPixelArt.Layout(kind)) Assert(ShopPixelArt.CellBounds(prop.Index,sampled).width > 0,"other shops retain every referenced sprite");
-        bool rejected = false;
-        try { ShopPixelArt.Layout(WeaponShopLayout.MapId); } catch (ArgumentException) { rejected = true; }
-        Assert(rejected,"retired weapon sprite layout is removed");
     }
     private static Transform Person(Transform root,PixelSpriteLibrary people,string name,Vector2 ground,string atlas,int frame)
     {

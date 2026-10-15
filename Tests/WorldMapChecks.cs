@@ -227,19 +227,14 @@ internal static class WorldMapChecks
         var volcano=new Paths(PrototypeVolcanoLayout.Bounds,PrototypeVolcanoLayout.Blocks.Concat(new[]{new CityBlock("Dragao",0,8,1.8f,1.8f,"",true,0)}),PrototypeVolcanoLayout.Spawn);
         var inn=new Paths(PrototypeInnLayout.Bounds,Array.Empty<CityBlock>(),PrototypeInnLayout.Spawn,floor:PrototypeInnLayout.IsWalkable,step:.1f);
         var openWorld = new Paths(PrototypeWorldLayout.Bounds, WorldBlocks().Where(block=>block.Name!=PrototypeSecretLayout.SealedRocks),PrototypeWorldLayout.Spawn,true);
-        var shop = new Paths(new Rect(-7, -5, 14, 10), new[]
-        {
-            new CityBlock("Balcao", 0, 0.15f, 4, 0.6f, "", true, 0),
-            new CityBlock("Estante oeste", -4.8f, 1.5f, 1.5f, 3, "", true, 0),
-            new CityBlock("Estante leste", 4.8f, 1.5f, 1.5f, 3, "", true, 0),
-            new CityBlock("Parede norte",0,4.7f,14,.6f,"",true,0),new CityBlock("Parede sul",0,-4.7f,14,.6f,"",true,0),
-            new CityBlock("Parede oeste",-6.7f,0,.6f,10,"",true,0),new CityBlock("Parede leste",6.7f,0,.6f,10,"",true,0)
-        }, new Vector2(0, -2.7f));
+        var item=CompactShopLayout.Items; var materia=CompactShopLayout.Materia;
+        var itemPaths=new Paths(item.Bounds,Array.Empty<CityBlock>(),item.Spawn,floor:item.IsWalkable,step:.1f);
+        var materiaPaths=new Paths(materia.Bounds,Array.Empty<CityBlock>(),materia.Spawn,floor:materia.IsWalkable,step:.1f);
         var paths = new Dictionary<string, Paths>
         {
             { PrototypeTravel.World, openWorld }, { PrototypeTravel.WestForest, west }, { PrototypeTravel.EastForest, east },
             { PrototypeTravel.Volcano,volcano }, { PrototypeTravel.Inn,inn },
-            { PrototypeTravel.Castle, castle }, { PrototypeTravel.Ruins,ruins }, { "item-shop", shop }, { WeaponShopLayout.MapId, new Paths(WeaponShopLayout.Bounds,Array.Empty<CityBlock>(),WeaponShopLayout.Spawn,floor:WeaponShopLayout.IsWalkable,step:.1f) }, { "materia-shop", shop }
+            { PrototypeTravel.Castle, castle }, { PrototypeTravel.Ruins,ruins }, { "item-shop", itemPaths }, { WeaponShopLayout.MapId, new Paths(WeaponShopLayout.Bounds,Array.Empty<CityBlock>(),WeaponShopLayout.Spawn,floor:WeaponShopLayout.IsWalkable,step:.1f) }, { "materia-shop", materiaPaths }
         };
         foreach (Vector2 icon in new[] { PrototypeWorldLayout.Castle, PrototypeWorldLayout.WestForest, PrototypeWorldLayout.EastForest,PrototypeWorldLayout.Ruins })
             Assert(world.Accessible(icon + Vector2.down * 0.85f), "Entrada global deve ser acessivel pela ilha.");

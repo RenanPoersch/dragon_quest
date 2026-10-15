@@ -36,6 +36,7 @@ namespace DragonQuest.Prototype
     public sealed class PrototypeTravel
     {
         public const string World = "world", City = "city", Castle = "castle", WestForest = "west-forest", EastForest = "east-forest", Ruins = "ancient-ruins", Volcano = "volcano", Inn = "inn";
+        private static readonly Rect LegacyShopBounds = new Rect(-7,-5,14,10);
         private readonly AncientSecrets secrets;
         private readonly Dictionary<string, MapDefinition> maps = new Dictionary<string, MapDefinition>();
         private readonly Dictionary<(string, string), MapRoute> routes = new Dictionary<(string, string), MapRoute>();
@@ -47,6 +48,7 @@ namespace DragonQuest.Prototype
         public PrototypeTravel(AncientSecrets ancientSecrets = null)
         {
             secrets = ancientSecrets;
+            var items=CompactShopLayout.Items; var materia=CompactShopLayout.Materia;
             var definitions = new[]
             {
                 new MapDefinition(World, "ILHA / MAPA GLOBAL", PrototypeWorldLayout.Bounds, PrototypeWorldLayout.Spawn, 6.85f),
@@ -58,9 +60,9 @@ namespace DragonQuest.Prototype
                 new MapDefinition(Ruins,"RUINAS ANTIGAS",PrototypeRuinsLayout.Bounds,PrototypeRuinsLayout.Spawn,PrototypeRuinsLayout.CameraSize),
                 new MapDefinition(Volcano,"COVIL DO DRAGAO",PrototypeVolcanoLayout.Bounds,PrototypeVolcanoLayout.Spawn,PrototypeVolcanoLayout.CameraSize),
                 new MapDefinition(Inn,"HOSPEDARIA",PrototypeInnLayout.Bounds,PrototypeInnLayout.Spawn,PrototypeInnLayout.CameraSize,false,true),
-                new MapDefinition("item-shop", "LOJA DE ITENS", PrototypeShopLayout.Bounds, PrototypeShopLayout.Spawn, PrototypeShopLayout.CameraSize, true, true),
+                new MapDefinition(items.MapId,"LOJA DE ITENS",items.Bounds,items.Spawn,CompactShopLayout.CameraSize,true,true),
                 new MapDefinition(WeaponShopLayout.MapId, "LOJA DE EQUIPAMENTOS", WeaponShopLayout.Bounds, WeaponShopLayout.Spawn, WeaponShopLayout.CameraSize, true, true),
-                new MapDefinition("materia-shop", "LOJA DE MATERIAS", PrototypeShopLayout.Bounds, PrototypeShopLayout.Spawn, PrototypeShopLayout.CameraSize, true, true)
+                new MapDefinition(materia.MapId,"LOJA DE MATERIAS",materia.Bounds,materia.Spawn,CompactShopLayout.CameraSize,true,true)
             };
             foreach (MapDefinition map in definitions) maps.Add(map.Id, map);
             Maps = Array.AsReadOnly(definitions);
@@ -75,8 +77,8 @@ namespace DragonQuest.Prototype
             Connect(connections, World, Ruins, PrototypeWorldLayout.Ruins,
                 PrototypeRuinsLayout.Exit, PrototypeWorldLayout.RuinsReturn);
             Connect(connections, City, Castle, PrototypeWorldLayout.CastleDoor, PrototypeWorldLayout.CastleExit, PrototypeCityLayout.CastleReturn);
-            Connect(connections, City, "item-shop", PrototypeCityLayout.ItemDoor, PrototypeShopLayout.Exit, PrototypeCityLayout.DoorReturn(PrototypeCityLayout.ItemDoor), entranceSize: PrototypeCityLayout.DoorSize);
-            Connect(connections, City, "materia-shop", PrototypeCityLayout.MateriaDoor, PrototypeShopLayout.Exit, PrototypeCityLayout.DoorReturn(PrototypeCityLayout.MateriaDoor), entranceSize: PrototypeCityLayout.DoorSize);
+            Connect(connections, City, items.MapId, PrototypeCityLayout.ItemDoor, items.Exit, PrototypeCityLayout.DoorReturn(PrototypeCityLayout.ItemDoor), entranceSize: PrototypeCityLayout.DoorSize);
+            Connect(connections, City, materia.MapId, PrototypeCityLayout.MateriaDoor, materia.Exit, PrototypeCityLayout.DoorReturn(PrototypeCityLayout.MateriaDoor), entranceSize: PrototypeCityLayout.DoorSize);
             Connect(connections, City, WeaponShopLayout.MapId, PrototypeCityLayout.EquipmentDoor, WeaponShopLayout.Exit, PrototypeCityLayout.DoorReturn(PrototypeCityLayout.EquipmentDoor), entranceSize: PrototypeCityLayout.DoorSize);
             Connect(connections, City, Inn, PrototypeCityLayout.InnDoor, PrototypeInnLayout.Exit, PrototypeCityLayout.DoorReturn(PrototypeCityLayout.InnDoor), entranceSize: PrototypeCityLayout.DoorSize);
             Connect(connections, World, Volcano, PrototypeWorldLayout.Volcano,
@@ -113,7 +115,7 @@ namespace DragonQuest.Prototype
             if (mapId == null || !maps.TryGetValue(mapId, out var map) || float.IsNaN(position.x) || float.IsNaN(position.y)
                 || float.IsInfinity(position.x) || float.IsInfinity(position.y)
                 || !map.Bounds.Contains(position) && (mapId != City || !PrototypeCityLayout.LegacyBounds.Contains(position))
-                && (!map.IsShop || !PrototypeShopLayout.LegacyBounds.Contains(position))
+                && (!map.IsShop || !LegacyShopBounds.Contains(position))
                 && (mapId != Ruins || !PrototypeRuinsLayout.LegacyBounds.Contains(position))
                 && (mapId != Volcano || !PrototypeVolcanoLayout.LegacyBounds.Contains(position))
                 || mapId == Volcano && !CanEnterVolcano) return false;

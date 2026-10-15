@@ -1,8 +1,8 @@
-# Sprites compartilhados de itens e matérias
+# Arquivo dos sprites antigos das lojas
 
-A loja de armas usa agora uma pintura completa, descrita em `../WEAPON_SHOP_PIXEL_ART.md`. A Pousada também tem cenário integral, descrito em `../INN_PIXEL_ART.md`.
+As três lojas agora usam pinturas completas: [itens e matérias](../COMPACT_SHOPS_PIXEL_ART.md) e [armas](../WEAPON_SHOP_PIXEL_ART.md). A [Pousada](../INN_PIXEL_ART.md) também usa cenário integral.
 
-`ShopPropsAtlas.png` continua necessário para as lojas de itens e matérias. Dos 20 desenhos originais, 12 são amostrados e instanciados; os oito recortes exclusivos de armas foram desativados. A disposição antiga da loja de armas e `WeaponShopArt.cs` foram removidos. O PNG compartilhado e seu prompt original ficam preservados.
+Os atlas e renderizadores abaixo foram aposentados e removidos do jogo. Este diretório conserva o prompt e a prévia históricos como registro da implementação anterior.
 
 ## Registro da implementação anterior — 13/10/2026
 
