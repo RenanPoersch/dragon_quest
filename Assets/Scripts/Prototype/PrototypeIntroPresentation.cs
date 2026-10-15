@@ -96,8 +96,7 @@ namespace DragonQuest.Prototype
                 GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), Texture2D.whiteTexture);
                 float alpha = sequence.Opacity;
                 GUI.color = new Color(1, 1, 1, alpha);
-                // Cover the entire viewport while keeping the artwork proportional.
-                GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), background, ScaleMode.ScaleAndCrop);
+                DrawContainedBackground();
                 float scale = Mathf.Min(Screen.width / 1280f, Screen.height / 720f);
                 GUI.matrix = Matrix4x4.TRS(new Vector3((Screen.width - 1280 * scale) / 2,
                     (Screen.height - 720 * scale) / 2, 0), Quaternion.identity, new Vector3(scale, scale, 1));
@@ -116,6 +115,30 @@ namespace DragonQuest.Prototype
                 GUI.color = previousColor;
                 GUI.depth = previousDepth;
             }
+        }
+
+        private void DrawContainedBackground()
+        {
+            float scale = Mathf.Min(Screen.width / (float)background.width, Screen.height / (float)background.height);
+            float width = background.width * scale, height = background.height * scale;
+            var frame = new Rect((Screen.width - width) / 2, (Screen.height - height) / 2, width, height);
+            float pixelWidth = 1f / background.width, pixelHeight = 1f / background.height;
+            // Extend only the outermost pixels into spare space; the full composition stays inside the frame.
+            if (frame.y > 0)
+            {
+                GUI.DrawTextureWithTexCoords(new Rect(0, 0, Screen.width, frame.y), background,
+                    new Rect(0, 1 - pixelHeight, 1, pixelHeight), true);
+                GUI.DrawTextureWithTexCoords(new Rect(0, frame.yMax, Screen.width, Screen.height - frame.yMax), background,
+                    new Rect(0, 0, 1, pixelHeight), true);
+            }
+            if (frame.x > 0)
+            {
+                GUI.DrawTextureWithTexCoords(new Rect(0, 0, frame.x, Screen.height), background,
+                    new Rect(0, 0, pixelWidth, 1), true);
+                GUI.DrawTextureWithTexCoords(new Rect(frame.xMax, 0, Screen.width - frame.xMax, Screen.height), background,
+                    new Rect(1 - pixelWidth, 0, pixelWidth, 1), true);
+            }
+            GUI.DrawTexture(frame, background, ScaleMode.ScaleToFit, true);
         }
 
         private void DrawBirds(float alpha)
