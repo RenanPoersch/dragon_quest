@@ -1,4 +1,10 @@
-# Todas as lojas em pixel art — 13/10/2026
+# Sprites compartilhados de itens e matérias
+
+A loja de armas usa agora uma pintura completa, descrita em `../WEAPON_SHOP_PIXEL_ART.md`. A Pousada também tem cenário integral, descrito em `../INN_PIXEL_ART.md`.
+
+`ShopPropsAtlas.png` continua necessário para as lojas de itens e matérias. Dos 20 desenhos originais, 12 são amostrados e instanciados; os oito recortes exclusivos de armas foram desativados. A disposição antiga da loja de armas e `WeaponShopArt.cs` foram removidos. O PNG compartilhado e seu prompt original ficam preservados.
+
+## Registro da implementação anterior — 13/10/2026
 
 ShopPropsAtlas.png foi criado com image_gen integrado. Prompt integral em PROMPT.md. PNG original RGBA 1254x1254 preservado, com 20 desenhos: estantes/balcoes de pocoes, materias e armas, armaduras, livro, cajados, orb, estandarte, orrerio, bigorna, barras, lanterna, cortina, escada e bonsai. Nenhuma parte da imagem de referencia do usuario foi extraida.
 

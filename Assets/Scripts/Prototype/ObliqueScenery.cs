@@ -79,11 +79,9 @@ namespace DragonQuest.Prototype
             return model.transform;
         }
 
-        public void MateriaShop(Transform parent) { ShowWithMaterial("Loja de materias / estrutura pixel art", ShopPixelArt.Shell("materia-shop"), parent, materiaShopMaterial); shopPixels.Populate(parent,"materia-shop"); }
+        public void MateriaShop(Transform parent) { ShowWithMaterial("Loja de materias / estrutura pixel art", ShopPixelArt.Shell(), parent, materiaShopMaterial); shopPixels.Populate(parent,"materia-shop"); }
 
-        public void WeaponShop(Transform parent) { ShowWithMaterial("Loja de armas / estrutura pixel art", ShopPixelArt.Shell("equipment-shop"), parent, materiaShopMaterial); shopPixels.Populate(parent,"equipment-shop"); }
-
-        public void ItemShop(Transform parent) { ShowWithMaterial("Loja de itens / estrutura pixel art", ShopPixelArt.Shell("item-shop"), parent, materiaShopMaterial); shopPixels.Populate(parent,"item-shop"); }
+        public void ItemShop(Transform parent) { ShowWithMaterial("Loja de itens / estrutura pixel art", ShopPixelArt.Shell(), parent, materiaShopMaterial); shopPixels.Populate(parent,"item-shop"); }
 
         public void CityBlock(CityBlock block, Transform parent)
             => ShowWithMaterial("Volume da periferia", CityPeripheryArt.Block(block), parent,

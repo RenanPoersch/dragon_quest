@@ -59,7 +59,7 @@ namespace DragonQuest.Prototype
                 new MapDefinition(Volcano,"COVIL DO DRAGAO",PrototypeVolcanoLayout.Bounds,PrototypeVolcanoLayout.Spawn,PrototypeVolcanoLayout.CameraSize),
                 new MapDefinition(Inn,"HOSPEDARIA",PrototypeInnLayout.Bounds,PrototypeInnLayout.Spawn,PrototypeInnLayout.CameraSize,false,true),
                 new MapDefinition("item-shop", "LOJA DE ITENS", PrototypeShopLayout.Bounds, PrototypeShopLayout.Spawn, PrototypeShopLayout.CameraSize, true, true),
-                new MapDefinition("equipment-shop", "LOJA DE EQUIPAMENTOS", PrototypeShopLayout.Bounds, PrototypeShopLayout.Spawn, PrototypeShopLayout.CameraSize, true, true),
+                new MapDefinition(WeaponShopLayout.MapId, "LOJA DE EQUIPAMENTOS", WeaponShopLayout.Bounds, WeaponShopLayout.Spawn, WeaponShopLayout.CameraSize, true, true),
                 new MapDefinition("materia-shop", "LOJA DE MATERIAS", PrototypeShopLayout.Bounds, PrototypeShopLayout.Spawn, PrototypeShopLayout.CameraSize, true, true)
             };
             foreach (MapDefinition map in definitions) maps.Add(map.Id, map);
@@ -77,7 +77,7 @@ namespace DragonQuest.Prototype
             Connect(connections, City, Castle, PrototypeWorldLayout.CastleDoor, PrototypeWorldLayout.CastleExit, PrototypeCityLayout.CastleReturn);
             Connect(connections, City, "item-shop", PrototypeCityLayout.ItemDoor, PrototypeShopLayout.Exit, PrototypeCityLayout.DoorReturn(PrototypeCityLayout.ItemDoor), entranceSize: PrototypeCityLayout.DoorSize);
             Connect(connections, City, "materia-shop", PrototypeCityLayout.MateriaDoor, PrototypeShopLayout.Exit, PrototypeCityLayout.DoorReturn(PrototypeCityLayout.MateriaDoor), entranceSize: PrototypeCityLayout.DoorSize);
-            Connect(connections, City, "equipment-shop", PrototypeCityLayout.EquipmentDoor, PrototypeShopLayout.Exit, PrototypeCityLayout.DoorReturn(PrototypeCityLayout.EquipmentDoor), entranceSize: PrototypeCityLayout.DoorSize);
+            Connect(connections, City, WeaponShopLayout.MapId, PrototypeCityLayout.EquipmentDoor, WeaponShopLayout.Exit, PrototypeCityLayout.DoorReturn(PrototypeCityLayout.EquipmentDoor), entranceSize: PrototypeCityLayout.DoorSize);
             Connect(connections, City, Inn, PrototypeCityLayout.InnDoor, PrototypeInnLayout.Exit, PrototypeCityLayout.DoorReturn(PrototypeCityLayout.InnDoor), entranceSize: PrototypeCityLayout.DoorSize);
             Connect(connections, World, Volcano, PrototypeWorldLayout.Volcano,
                 PrototypeVolcanoLayout.Exit, PrototypeWorldLayout.Volcano+Vector2.down*1.8f);

@@ -61,7 +61,7 @@ namespace DragonQuest.Prototype
             if (map == PrototypeTravel.World) position = PrototypeWorldLayout.SafeSavedPosition(position,
                 navigation.CanEnterVolcano);
             // Saves de lojas reaparecem na entrada livre, inclusive os da planta antiga.
-            if (navigation.Current.IsShop) position = PrototypeShopLayout.Spawn;
+            if (navigation.Current.IsShop) position = navigation.Current.Spawn;
             ApplyMap(position);
         }
 
@@ -73,7 +73,9 @@ namespace DragonQuest.Prototype
             bool forest = LocationId == PrototypeTravel.EastForest;
             bool quarry = LocationId == PrototypeTravel.WestForest;
             bool inn = LocationId == PrototypeTravel.Inn;
-            player.SetMovementConstraint(inn ? PrototypeInnLayout.ConstrainMove : forest ? EastForestLayout.ConstrainMove : quarry ? QuarryLayout.ConstrainMove : (System.Func<Vector2,Vector2,Vector2>)null);
+            bool weapons = LocationId == WeaponShopLayout.MapId;
+            player.SetMovementConstraint(weapons ? WeaponShopLayout.ConstrainMove : inn ? PrototypeInnLayout.ConstrainMove : forest ? EastForestLayout.ConstrainMove : quarry ? QuarryLayout.ConstrainMove : (System.Func<Vector2,Vector2,Vector2>)null);
+            if (weapons) arrival = WeaponShopLayout.SafeSavedPosition(arrival);
             if (LocationId == PrototypeTravel.Inn) arrival = PrototypeInnLayout.SafeSavedPosition(arrival);
             if (quarry) arrival = QuarryLayout.SafeSavedPosition(arrival);
             if (forest) arrival=EastForestLayout.SafeSavedPosition(arrival);
@@ -86,7 +88,7 @@ namespace DragonQuest.Prototype
             Transform heroShadow = player.transform.Find("Sombra no chao");
             if (heroShadow != null) heroShadow.gameObject.SetActive(!lateral);
             cameraFollow.SetSideView(lateral, volcano ? PrototypeVolcanoLayout.CameraHeight : PrototypeRuinsLayout.CameraHeight);
-            cameraFollow.SetArtworkFrame(forest || quarry || inn, inn, inn ? PrototypeInnLayout.ArtAspect : 16f / 9f);
+            cameraFollow.SetArtworkFrame(forest || quarry || inn || weapons, inn || weapons, weapons ? WeaponShopLayout.ArtAspect : inn ? PrototypeInnLayout.ArtAspect : 16f / 9f);
             player.Teleport(arrival);
             cameraFollow.Initialize(player.transform, (forest || quarry) ? PrototypeWorldLayout.ForestBounds : navigation.Current.Bounds, navigation.Current.CameraSize,
                 navigation.Current.FixedCamera, navigation.Current.CoveredGroundBounds);

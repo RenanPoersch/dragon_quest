@@ -239,7 +239,7 @@ internal static class WorldMapChecks
         {
             { PrototypeTravel.World, openWorld }, { PrototypeTravel.WestForest, west }, { PrototypeTravel.EastForest, east },
             { PrototypeTravel.Volcano,volcano }, { PrototypeTravel.Inn,inn },
-            { PrototypeTravel.Castle, castle }, { PrototypeTravel.Ruins,ruins }, { "item-shop", shop }, { "equipment-shop", shop }, { "materia-shop", shop }
+            { PrototypeTravel.Castle, castle }, { PrototypeTravel.Ruins,ruins }, { "item-shop", shop }, { WeaponShopLayout.MapId, new Paths(WeaponShopLayout.Bounds,Array.Empty<CityBlock>(),WeaponShopLayout.Spawn,floor:WeaponShopLayout.IsWalkable,step:.1f) }, { "materia-shop", shop }
         };
         foreach (Vector2 icon in new[] { PrototypeWorldLayout.Castle, PrototypeWorldLayout.WestForest, PrototypeWorldLayout.EastForest,PrototypeWorldLayout.Ruins })
             Assert(world.Accessible(icon + Vector2.down * 0.85f), "Entrada global deve ser acessivel pela ilha.");

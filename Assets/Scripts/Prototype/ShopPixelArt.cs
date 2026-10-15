@@ -11,6 +11,7 @@ namespace DragonQuest.Prototype
         public const int Columns=5, Rows=4, Count=20, CellPixels=96;
         private Texture2D pixels;
         private readonly Sprite[] sprites=new Sprite[Count];
+        private static readonly int[] Active = { 0,1,2,3,9,10,11,13,16,17,18,19 };
         private readonly Material material;
         // Janelas medidas no PNG original (origem superior). Os desenhos nao seguem
         // exatamente as celulas pedidas ao gerador; recortes permanecem em memoria.
@@ -32,7 +33,7 @@ namespace DragonQuest.Prototype
             pixels.filterMode=FilterMode.Point;pixels.wrapMode=TextureWrapMode.Clamp;
             var sampled=SampleAtlas(original,source.width,source.height);
             pixels.SetPixels32(sampled);pixels.Apply(false,false);
-            for(int index=0;index<Count;index++) {
+            foreach(int index in Active) {
                 RectInt bounds=CellBounds(index,sampled);
                 sprites[index]=Sprite.Create(pixels,new Rect(bounds.x,bounds.y,bounds.width,bounds.height),new Vector2(.5f,0),CellPixels,0,SpriteMeshType.FullRect);
                 sprites[index].name="Decoracao pixel art / "+index;
@@ -42,7 +43,7 @@ namespace DragonQuest.Prototype
         {
             if(original==null||original.Length!=width*height||width!=1254||height!=1254)throw new ArgumentException("Dimensoes do atlas das lojas invalidas.");
             var result=new Color32[Columns*Rows*CellPixels*CellPixels];
-            for(int index=0;index<Count;index++) {
+            foreach(int index in Active) {
                 RectInt r=Regions[index];int rw=r.width,rh=r.height;
                 var labels=new int[rw*rh];int label=0,best=0,bestCount=0;
                 var queue=new Queue<int>();
@@ -129,18 +130,10 @@ namespace DragonQuest.Prototype
                 Prop(9,-4.9f,-2.5f,1.1f,1.08f);Prop(11,4.9f,-2.5f,1.02f,1.39f);
                 Prop(10,5.1f,3.55f,.83f,1.52f);Prop(13,2.65f,3.88f,1.36f,1.26f,2.73f);
             }
-            else {
-                Prop(4,-4.8f,1.15f,1.62f,2.26f);Prop(5,4.8f,1.15f,1.62f,2.26f);
-                Prop(6,0,-.12f,3.15f,1.14f);
-                Prop(7,-4.9f,-2.5f,1.04f,1.53f);Prop(8,4.9f,-2.5f,1.04f,1.53f);
-                foreach(float x in new[]{-2.4f,0,2.4f})Prop(4,x,4.16f,1.48f,2.04f);
-                foreach(float x in new[]{-5.75f,5.75f})Prop(12,x,4.21f,.7f,1.85f,.54f);
-                Prop(14,-2.8f,3.1f,1.15f,.97f);Prop(15,2.8f,3.1f,1.15f,.85f);
-                foreach(float x in new[]{-3.75f,3.75f})Prop(16,x,4.1f,.36f,.63f,1.8f);
-            }
+            else throw new ArgumentException("Loja sem layout de sprites compartilhados: "+kind);
             return props.ToArray();
         }
-        public static ObliqueMeshData Shell(string kind)
+        public static ObliqueMeshData Shell()
         {
             var m=new ObliqueMeshData();m.DefaultSurface=(PixelSurface)7;
             m.Plane(0,0,14,10,.02f,Color.white);m.DefaultSurface=(PixelSurface)0;

@@ -344,6 +344,16 @@ namespace DragonQuest.Prototype
 
         private void CreateShop(Transform shop, List<Interactable> interactions, string shopId, string shopName, string displayColor)
         {
+            if (shopId == WeaponShopLayout.MapId)
+            {
+                shop.gameObject.AddComponent<WeaponShopPixelScenery>().Build(frictionless);
+                MerchantInteraction smith=CreateNpcFigure(shopName,WeaponShopLayout.Merchant,displayColor,shop).AddComponent<MerchantInteraction>();
+                smith.Initialize(shopId,shopName); interactions.Add(smith);
+                MerchantInteraction counter=Entity("Balcao / negociar armas",WeaponShopLayout.Counter,shop).AddComponent<MerchantInteraction>();
+                counter.Initialize(shopId,shopName); interactions.Add(counter);
+                CreatePassage("Saida da loja",shopId,shop,PrototypeTravel.City);
+                return;
+            }
             Transform interior = Entity("Interior compacto", Vector2.zero, shop).transform;
             if (shopId == "item-shop")
             {
@@ -361,16 +371,6 @@ namespace DragonQuest.Prototype
                 foreach (var bounds in ArcaneMateriaShopArt.Fixtures)
                 {
                     var fixture = Entity("Mobilia da loja de materias", new Vector2(bounds.x, bounds.y), interior);
-                    var collider = fixture.AddComponent<BoxCollider2D>();
-                    collider.size = new Vector2(bounds.z, bounds.w); collider.sharedMaterial = frictionless;
-                }
-            }
-            else if (shopId == "equipment-shop")
-            {
-                scenery.WeaponShop(interior);
-                foreach (var bounds in WeaponShopArt.Fixtures)
-                {
-                    var fixture = Entity("Mobilia da loja de armas", new Vector2(bounds.x, bounds.y), interior);
                     var collider = fixture.AddComponent<BoxCollider2D>();
                     collider.size = new Vector2(bounds.z, bounds.w); collider.sharedMaterial = frictionless;
                 }
