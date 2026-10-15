@@ -57,7 +57,7 @@ namespace DragonQuest.Prototype
                 new MapDefinition(EastForest, "FLORESTA LESTE", EastForestLayout.Bounds, EastForestLayout.Spawn, 8, false, true),
                 new MapDefinition(Ruins,"RUINAS ANTIGAS",PrototypeRuinsLayout.Bounds,PrototypeRuinsLayout.Spawn,PrototypeRuinsLayout.CameraSize),
                 new MapDefinition(Volcano,"COVIL DO DRAGAO",PrototypeVolcanoLayout.Bounds,PrototypeVolcanoLayout.Spawn,PrototypeVolcanoLayout.CameraSize),
-                new MapDefinition(Inn,"HOSPEDARIA",PrototypeInnLayout.Bounds,PrototypeInnLayout.Spawn,6,false,true),
+                new MapDefinition(Inn,"HOSPEDARIA",PrototypeInnLayout.Bounds,PrototypeInnLayout.Spawn,PrototypeInnLayout.CameraSize,false,true),
                 new MapDefinition("item-shop", "LOJA DE ITENS", PrototypeShopLayout.Bounds, PrototypeShopLayout.Spawn, PrototypeShopLayout.CameraSize, true, true),
                 new MapDefinition("equipment-shop", "LOJA DE EQUIPAMENTOS", PrototypeShopLayout.Bounds, PrototypeShopLayout.Spawn, PrototypeShopLayout.CameraSize, true, true),
                 new MapDefinition("materia-shop", "LOJA DE MATERIAS", PrototypeShopLayout.Bounds, PrototypeShopLayout.Spawn, PrototypeShopLayout.CameraSize, true, true)

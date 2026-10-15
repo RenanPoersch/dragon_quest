@@ -73,6 +73,7 @@ namespace DragonQuest.Prototype
             bool forest = LocationId == PrototypeTravel.EastForest;
             bool quarry = LocationId == PrototypeTravel.WestForest;
             player.SetMovementConstraint(forest ? EastForestLayout.ConstrainMove : quarry ? QuarryLayout.ConstrainMove : (System.Func<Vector2,Vector2,Vector2>)null);
+            if (LocationId == PrototypeTravel.Inn) arrival = PrototypeInnLayout.SafeSavedPosition(arrival);
             if (quarry) arrival = QuarryLayout.SafeSavedPosition(arrival);
             if (forest) arrival=EastForestLayout.SafeSavedPosition(arrival);
             if (volcano) arrival = PrototypeVolcanoLayout.SafeSavedPosition(arrival);

@@ -331,7 +331,7 @@ namespace DragonQuest.Prototype
         private Transform CreateInn(List<Interactable> interactions)
         {
             Transform inn=Group("Hospedaria - interior");
-            DrawBlocks(PrototypeInnLayout.Blocks,inn);
+            inn.gameObject.AddComponent<InnPixelScenery>().Build(frictionless);
             CreatePassage("Saida da hospedaria",PrototypeTravel.Inn,inn,PrototypeTravel.City);
             InnInteraction keeper=CreateNpcFigure("Hospedeira",PrototypeInnLayout.Keeper,"B89673",inn).AddComponent<InnInteraction>();
             keeper.Initialize(() => saves.SaveManual());
