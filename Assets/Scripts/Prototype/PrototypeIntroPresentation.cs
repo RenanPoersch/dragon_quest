@@ -17,13 +17,13 @@ namespace DragonQuest.Prototype
         private bool awaitingRelease;
         private bool hasDrawn;
 
-        // x, y, width and speed in the same 1280x720 coordinate space as the menu.
+        // Orbit center x/y, sprite width and flight speed in the menu's 1280x720 space.
         private static readonly Vector4[] Flock =
         {
-            new Vector4(1050, 280, 50, 26), new Vector4(1130, 236, 34, 22),
-            new Vector4(1190, 304, 42, 29), new Vector4(1010, 345, 29, 19),
-            new Vector4(942, 296, 21, 17), new Vector4(1220, 184, 18, 15),
-            new Vector4(1100, 156, 15, 13), new Vector4(870, 248, 13, 12)
+            new Vector4(990, 290, 50, 26), new Vector4(1100, 255, 34, 22),
+            new Vector4(1060, 345, 42, 29), new Vector4(940, 345, 29, 19),
+            new Vector4(1010, 235, 21, 17), new Vector4(1130, 205, 18, 15),
+            new Vector4(1050, 205, 15, 13), new Vector4(900, 265, 13, 12)
         };
 
         public bool IsPlaying => sequence.IsPlaying;
@@ -147,14 +147,18 @@ namespace DragonQuest.Prototype
             {
                 Vector4 flight = Flock[bird];
                 float t = sequence.Elapsed;
-                float x = Mathf.Repeat(flight.x - t * flight.w + 80, 1440) - 80;
-                float y = flight.y + Mathf.Sin(t * .95f + bird * 1.7f) * (3 + bird % 3);
+                float radius = 32 + flight.z * .9f;
+                float angle = t * flight.w / radius + bird * .83f;
+                float x = flight.x + Mathf.Cos(angle) * radius;
+                float y = flight.y + Mathf.Sin(angle) * radius;
                 int frame = (Mathf.FloorToInt(t * (7.5f + bird * .23f)) + bird * 2) % BirdFrameCount;
                 Sprite sprite = birdFrames[frame];
                 Rect source = sprite.rect;
                 Texture2D texture = sprite.texture;
                 Rect uv = new Rect(source.x / texture.width, source.y / texture.height,
                     source.width / texture.width, source.height / texture.height);
+                // The drawn bird faces left; mirror it while the orbit carries it to the right.
+                if (Mathf.Sin(angle) < 0) { uv.x += uv.width; uv.width = -uv.width; }
                 float height = flight.z * source.height / source.width;
                 GUI.color = new Color(1, 1, 1, alpha * (bird < 4 ? 1 : .82f));
                 GUI.DrawTextureWithTexCoords(new Rect(Mathf.Round(x), Mathf.Round(y - height / 2),
@@ -165,6 +169,7 @@ namespace DragonQuest.Prototype
         private void DrawTitle(float alpha)
         {
             const float spacing = 5;
+            const float titleTop = 40;
             string title = IntroSequence.Title;
             float width = (title.Length - 1) * spacing;
             for (int i = 0; i < title.Length; i++) width += titleStyle.CalcSize(new GUIContent(title[i].ToString())).x;
@@ -176,13 +181,13 @@ namespace DragonQuest.Prototype
                 if (i < sequence.VisibleLetters)
                 {
                     GUI.color = new Color(0, 0, 0, alpha);
-                    GUI.Label(new Rect(x, 109, advance + 8, 135), letter, titleStyle);
+                    GUI.Label(new Rect(x, titleTop, advance + 8, 135), letter, titleStyle);
                 }
                 x += advance + spacing;
             }
             float reveal = Mathf.Clamp01(sequence.VisibleLetters / (float)title.Length);
             GUI.color = new Color(0, 0, 0, alpha);
-            GUI.DrawTexture(new Rect((1280 - width * reveal) / 2, 237, width * reveal, 5), Texture2D.whiteTexture);
+            GUI.DrawTexture(new Rect((1280 - width * reveal) / 2, titleTop + 128, width * reveal, 5), Texture2D.whiteTexture);
         }
 
         private void EnsureStyles()
