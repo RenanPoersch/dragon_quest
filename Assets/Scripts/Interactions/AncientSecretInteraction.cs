@@ -58,8 +58,8 @@ namespace DragonQuest.Interactions
                 MonolithResult result=secrets.Activate(symbol);
                 dialogue.Open("Monolito / "+SymbolName(symbol),result==MonolithResult.Reset
                     ? "As luzes se apagam. O ciclo precisa recomecar. Nenhum ferimento ou gasto foi causado."
-                    : result==MonolithResult.Completed?"Os tres simbolos brilham juntos. Um tremor distante atravessa o chao."
-                    : result==MonolithResult.AlreadyCompleted?"O ciclo foi completado. A luz permanece na pedra."
+                    : result==MonolithResult.Completed?"Os tres simbolos se erguem acima das pedras. Um tremor distante atravessa o chao."
+                    : result==MonolithResult.AlreadyCompleted?"O ciclo foi completado. Os simbolos permanecem suspensos sobre as pedras."
                     : "O simbolo ganha um brilho suave. As outras pedras continuam em silencio.");
                 RefreshLight();
             }

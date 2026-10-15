@@ -66,6 +66,7 @@ namespace DragonQuest.Prototype
                 animation.Initialize(symbol);
                 GameObject engraving = DrawRune(visual.transform, animation.DormantSprite, new Color(.66f,.64f,.58f), "Simbolo gravado", -.01f, runeX, runeY, 1);
                 animation.BindEngraving(engraving.GetComponent<SpriteRenderer>());
+                animation.BindCompletion(progress,TotemHeight);
                 var interaction = anchor.AddComponent<AncientSecretInteraction>();
                 interaction.Initialize(SecretObject.Monolith, progress, symbol, glow);
                 interactions.Add(interaction);

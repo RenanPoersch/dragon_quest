@@ -10,10 +10,16 @@ namespace DragonQuest.Prototype
     {
         public const int FrameCount = 8, Columns = 4, Rows = 2;
         private const float FaceWidth = .37f, FaceHeight = .46f;
+        public const float FloatingScale = 4f, RevealDuration = .7f;
         private readonly Sprite[] frames = new Sprite[FrameCount];
         private SpriteRenderer view;
         private SpriteRenderer engraving;
         private float elapsed;
+        private AncientSecrets completion;
+        private Vector3 facePosition, faceScale;
+        private float stoneTop, completionElapsed;
+        private bool completionBound;
+        public bool IsFloating { get; private set; }
         public MonolithSymbol Symbol { get; private set; }
         public int CurrentFrame { get; private set; }
         public Sprite DormantSprite => frames[0];
@@ -74,15 +80,74 @@ namespace DragonQuest.Prototype
             if (view.sprite != frames[CurrentFrame]) view.sprite = frames[CurrentFrame];
         }
         public void BindEngraving(SpriteRenderer resting)
-        { engraving = resting; if (engraving != null) engraving.enabled = !isActiveAndEnabled; }
+        { engraving = resting; RefreshEngraving(); }
+
+        public void BindCompletion(AncientSecrets progress, float stoneHeight)
+        {
+            if (completion != null) completion.Changed -= CompletionChanged;
+            completion = progress; stoneTop = stoneHeight;
+            facePosition = transform.localPosition; faceScale = transform.localScale;
+            completionBound = true;
+            if (completion != null) completion.Changed += CompletionChanged;
+            SynchronizeCompletion(true);
+        }
+
+        private void CompletionChanged() => SynchronizeCompletion(false);
+
+        private void SynchronizeCompletion(bool immediate)
+        {
+            if (!completionBound) return;
+            bool solved = completion != null && completion.MonolithsSolved;
+            if (solved != IsFloating)
+            {
+                IsFloating = solved;
+                completionElapsed = solved && immediate ? RevealDuration : 0;
+            }
+            ApplyCompletion();
+        }
+
+        // The editor can sample the reveal and hover without advancing the puzzle or sprite clock.
+        public void ShowCompletionAt(float seconds)
+        {
+            completionElapsed = float.IsNaN(seconds) || float.IsInfinity(seconds) ? 0 : Math.Max(0,seconds);
+            ApplyCompletion();
+        }
+
+        private void ApplyCompletion()
+        {
+            if (completionBound)
+            {
+                float t = IsFloating ? Mathf.Clamp01(completionElapsed/RevealDuration) : 0;
+                float reveal = 1-Mathf.Pow(1-t,3);
+                float hover = Mathf.Sin(completionElapsed*(2*Mathf.PI/2.8f)+(int)Symbol*1.2f)*.10f;
+                // FaceHeight bounds all opaque pixels, leaving daylight between every frame and the stone.
+                var floating = new Vector3(0,stoneTop+.30f+FaceHeight*FloatingScale/2+hover,facePosition.z);
+                transform.localPosition = Vector3.Lerp(facePosition,floating,reveal);
+                transform.localScale = faceScale*Mathf.Lerp(1,FloatingScale,reveal);
+            }
+            RefreshEngraving();
+        }
+
+        private void RefreshEngraving()
+        {
+            if (engraving != null)
+                engraving.enabled = !isActiveAndEnabled || (IsFloating && completionElapsed >= RevealDuration);
+        }
+
         private void OnEnable()
-        { elapsed = 0; ShowAt(0); if (engraving != null) engraving.enabled = false; }
+        { elapsed = 0; ShowAt(0); SynchronizeCompletion(true); RefreshEngraving(); }
         private void OnDisable()
-        { elapsed = 0; ShowAt(0); if (engraving != null) engraving.enabled = true; }
+        {
+            elapsed = 0; ShowAt(0); SynchronizeCompletion(true);
+            if (IsFloating) completionElapsed = Math.Max(completionElapsed,RevealDuration);
+            ApplyCompletion();
+        }
         private void Update()
         {
+            SynchronizeCompletion(true);
             elapsed = Mathf.Repeat(elapsed+Time.deltaTime,(float)FrameCount/Rate(Symbol));
             ShowAt(elapsed);
+            if (IsFloating) { completionElapsed += Time.deltaTime; ApplyCompletion(); }
         }
 
         private static Rect LargestBody(Color32[] pixels, int stride, int left, int bottom, int width, int height, out Vector2 center)
@@ -125,6 +190,7 @@ namespace DragonQuest.Prototype
 
         private void OnDestroy()
         {
+            if (completion != null) completion.Changed -= CompletionChanged;
             foreach (Sprite frame in frames)
                 if (frame != null) { if (Application.isPlaying) Destroy(frame); else DestroyImmediate(frame); }
         }

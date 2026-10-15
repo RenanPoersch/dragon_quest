@@ -61,6 +61,11 @@ public static class QuarryValidation
                     secrets.Activate(MonolithSymbol.Moon); secrets.Activate(MonolithSymbol.Star); secrets.Activate(MonolithSymbol.Sun);
                     Refresh(targets);
                     foreach (CityBlock block in QuarryLayout.Monoliths) Assert(Glow(root.transform.Find(block.Name)).activeSelf, "completed symbols stay lit");
+                    foreach (QuarryRuneAnimation rune in root.GetComponentsInChildren<QuarryRuneAnimation>(true))
+                    {
+                        rune.ShowCompletionAt(QuarryRuneAnimation.RevealDuration);
+                        Assert(rune.IsFloating && rune.transform.localScale.x > 3,"completed symbols float enlarged above stones");
+                    }
                 }
                 foreach (var resolution in new[] { new Vector2Int(1280,720), new Vector2Int(1280,800), new Vector2Int(960,720) })
                 {
@@ -75,8 +80,8 @@ public static class QuarryValidation
                         if (state == "lit" && resolution.x == 1280 && resolution.y == 720)
                         {
                             var star = root.transform.Find("Monolito - Estrela");
-                            camera.orthographicSize = 2.1f;
-                            camera.transform.position = star.position + rotation*Vector3.up*1.2f - camera.transform.forward*60;
+                            camera.orthographicSize = 2.6f;
+                            camera.transform.position = star.position + rotation*Vector3.up*2.5f - camera.transform.forward*60;
                             camera.Render(); Save(target,Path.Combine(output,"quarry-totem-detail.png"));
                         }
                     }
