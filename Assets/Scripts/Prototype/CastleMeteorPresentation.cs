@@ -30,6 +30,7 @@ namespace DragonQuest.Prototype
     public sealed class CastleCastCounter
     {
         public int Value { get; private set; }
+        public int DisplayValue => Value > 0 ? CastleBattleRules.MeteorCastTurns - Value + 1 : 0;
         public float StartedAt { get; private set; }
         public void Reset() { Value = 0; StartedAt = 0; }
         public void Observe(string actorId, AbilityDefinition ability, int elapsedTurns, float actionStartedAt)

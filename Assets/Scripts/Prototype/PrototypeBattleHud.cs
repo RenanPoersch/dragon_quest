@@ -363,7 +363,7 @@ namespace DragonQuest.Prototype
             float alpha = Mathf.Clamp01((CastleMeteorPresentation.TurnNumberDuration - elapsed) / .35f);
             // Mesmo movimento, sombra e fade dos danos; acima deles para nao sobrepor os digitos.
             Rect rect = new Rect(figure.center.x - 90, figure.y - 56 - elapsed * 40, 180, 54);
-            string label = castCounter.Value.ToString();
+            string label = castCounter.DisplayValue.ToString();
             castNumber.normal.textColor = new Color(0, 0, 0, alpha);
             GUI.Label(new Rect(rect.x + 2, rect.y + 2, rect.width, rect.height), label, castNumber);
             castNumber.normal.textColor = new Color(1, 1, 1, alpha);

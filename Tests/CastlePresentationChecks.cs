@@ -46,7 +46,7 @@ public static class CastlePresentationChecks
             Check(rules.MeteorTurnsElapsed==turn,"A contagem segue os cinco turnos proprios.");
             float start=turn*10;
             counter.Observe(CastleBattleRules.TyrantId,ability,rules.MeteorTurnsElapsed,start);
-            Check(counter.Value==turn,"Apenas o numero do turno atual e exibido.");
+            Check(counter.Value==turn&&counter.DisplayValue==6-turn,"Os cinco turnos exibem 5, 4, 3, 2, 1.");
             if(turn==1)
             {
                 Check(!counter.IsVisible(start+.5f),"O primeiro numero aguarda o Shield terminar.");
@@ -64,14 +64,14 @@ public static class CastlePresentationChecks
             Check(counter.StartedAt==scheduled,"Observacoes repetidas nao reiniciam o numero flutuante.");
             Check(counter.IsVisible(scheduled+.5f)&&!counter.IsVisible(scheduled+1.5f),"O numero sobe e desaparece na janela dos danos.");
         }
-        Check(counter.Value==5&&rules.Ending==GameEnding.CastleDestroyed,"O numero cinco precede a conclusao do meteoro.");
+        Check(counter.Value==5&&counter.DisplayValue==1&&rules.Ending==GameEnding.CastleDestroyed,"O numero um precede a conclusao do meteoro.");
         counter.Reset();
-        Check(counter.Value==0&&!counter.IsVisible(100),"Nova batalha limpa numeros pendentes.");
+        Check(counter.Value==0&&counter.DisplayValue==0&&!counter.IsVisible(100),"Nova batalha limpa numeros pendentes.");
         counter.Observe("aren",CastleBattleRules.Protect,1,100);
         counter.Observe(CastleBattleRules.TyrantId,CastleBattleRules.RoyalStrike,1,100);
         Check(counter.Value==0,"Acoes de aliados e golpes normais nao contam.");
         counter.Observe(CastleBattleRules.TyrantId,CastleBattleRules.Protect,1,100);
-        Check(counter.Value==1,"Uma nova conjuracao reinicia a contagem em um.");
+        Check(counter.Value==1&&counter.DisplayValue==5,"Uma nova conjuracao reinicia a contagem em cinco.");
     }
     private static void Check(bool value,string message) {checks++;if(!value)throw new Exception(message);}
 }
