@@ -114,6 +114,32 @@ namespace DragonQuest.Equipment
         public ItemInventory Consumables { get; private set; }
         public event Action Changed;
         public event Action<PartyMember, int> PoisonDamage;
+        public bool HasInfiniteLimit { get; private set; }
+
+        public void SetInfiniteLimit(bool enabled)
+        {
+            HasInfiniteLimit = enabled;
+            foreach (var member in members) member.Limit.SetInfinite(enabled);
+            Changed?.Invoke();
+        }
+
+        public void SetMaxLevel(BattleSession activeBattle = null)
+        {
+            foreach (var member in members)
+            {
+                CombatantState participant = null;
+                if (activeBattle != null)
+                    foreach (var state in activeBattle.Combatants)
+                        if (state.Team == CombatTeam.Party && state.Id == member.Id) { participant = state; break; }
+                if (participant != null) member.CaptureVitals(participant);
+                int hp = member.Hp, mp = member.Mp;
+                member.Progression.AddExperience(CharacterProgression.MaxExperience);
+                member.RestoreVitals(hp, mp, member.IsPoisoned, member.BoundActions);
+                participant?.RefreshDefinition(member.CreateCombatant().Definition);
+            }
+            Changed?.Invoke();
+        }
+
         public const float PoisonTickSeconds = 3f;
         private float poisonElapsed;
         public bool HasLivingMembers

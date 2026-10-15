@@ -51,6 +51,9 @@ namespace DragonQuest.Prototype
         public void Initialize(PrototypeBattleController battleController, PixelSpriteLibrary sprites = null)
         { controller = battleController; pixelSprites = sprites; }
 
+        private CombatantDefinition observedDefinition;
+        private bool observedLimitReady;
+
         private void ObserveBattle()
         {
             BattleSession battle = controller.Session;
@@ -63,9 +66,12 @@ namespace DragonQuest.Prototype
                 background = Resources.Load<Texture2D>("BattleBackgrounds/" + controller.BattleLocationId);
                 if (controller.IsCastleEncounter) castleSpells.Prepare();
             }
-            if (observedActor != battle.CurrentActor)
+            if (observedActor != battle.CurrentActor || observedDefinition != battle.CurrentActor?.Definition
+                || observedLimitReady != (battle.CurrentActor?.Limit.IsReady ?? false))
             {
                 observedActor = battle.CurrentActor; selected = null; selectedItem = null;
+                observedDefinition = observedActor?.Definition;
+                observedLimitReady = observedActor?.Limit.IsReady ?? false;
                 itemMode = false; menuGroup = AbilityMenuGroup.Direct; rootIndex = commandIndex = targetIndex = 0;
                 rootCommands = observedActor == null ? new List<BattleMenuCommand>() : BattleCommandMenu.Root(observedActor);
                 groupAbilities.Clear(); actionsScroll = targetsScroll = Vector2.zero;
@@ -98,6 +104,7 @@ namespace DragonQuest.Prototype
         {
             if (controller == null || !controller.IsActive || controller.IsPostBattleOpen) { numbers.Clear(); return; }
             ObserveBattle();
+            if (controller.IsCheatMenuBlocking) return;
             if (controller.IsPresentingAction) return;
             Keyboard keys = Keyboard.current;
             if (keys == null || !Application.isFocused) return;

@@ -58,6 +58,7 @@ namespace DragonQuest.Prototype
         }
         private void Update()
         {
+            if (battle == null || battle.IsCheatMenuBlocking) return;
             if (IsOpen && Application.isFocused && Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame) Close();
         }
     }

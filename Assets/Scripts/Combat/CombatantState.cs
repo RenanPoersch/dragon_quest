@@ -15,7 +15,7 @@ namespace DragonQuest.Combat
     public sealed class CombatantState
     {
         public string Id { get; }
-        public CombatantDefinition Definition { get; }
+        public CombatantDefinition Definition { get; private set; }
         public CombatTeam Team { get; }
         private readonly System.Collections.Generic.List<CombatVitalChange> vitalChanges = new System.Collections.Generic.List<CombatVitalChange>();
         private int vitalSequence;
@@ -52,6 +52,14 @@ namespace DragonQuest.Combat
             Hp = definition.MaxHp;
             Mp = definition.MaxMp;
             Limit = limit ?? new LimitGauge();
+        }
+
+        // Preserve the actor, turn, vitals and temporary conditions when a cheat raises its level.
+        internal void RefreshDefinition(CombatantDefinition definition)
+        {
+            Definition = definition ?? throw new ArgumentNullException(nameof(definition));
+            Hp = Math.Min(Hp, definition.MaxHp);
+            Mp = Math.Min(Mp, definition.MaxMp);
         }
 
         internal void SpendMp(int cost) => Mp -= cost;

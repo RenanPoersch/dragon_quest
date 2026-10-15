@@ -25,6 +25,8 @@ namespace DragonQuest.Prototype
         private CombatantState pendingEnemy;
         private float enemyActionTime;
         private DialogueController dialogue;
+        private PrototypeCheatMenu cheatMenu;
+        public bool IsCheatMenuBlocking => cheatMenu != null && cheatMenu.BlocksInput;
         private System.Func<bool> otherMenuOpen = () => false;
         private AncientSecrets secrets;
         private System.Action recoverAtInn;
@@ -89,6 +91,7 @@ namespace DragonQuest.Prototype
             PartyProgress restoredParty = null)
         {
             movement = hero; dialogue = dialogueController;
+            cheatMenu = GetComponent<PrototypeCheatMenu>();
             otherMenuOpen = externalMenuOpen ?? (() => false);
             if (Party != null) Party.PoisonDamage -= ShowMapPoison;
             Party = restoredParty ?? PrototypePartyFactory.Create();
@@ -222,6 +225,7 @@ namespace DragonQuest.Prototype
 
         public bool TryPlayerAction(AbilityDefinition ability, CombatantState target)
         {
+            if (IsCheatMenuBlocking) return false;
             if (!IsActive || IsPresentingAction || Session.CurrentActor == null || Session.CurrentActor.Team != CombatTeam.Party) return false;
             CombatantState actor = Session.CurrentActor;
             target = Session.ResolveLivingEnemyTarget(ability, target);
@@ -248,6 +252,7 @@ namespace DragonQuest.Prototype
 
         public bool TryPlayerItem(ConsumableDefinition item, CombatantState target)
         {
+            if (IsCheatMenuBlocking) return false;
             if (!IsActive || IsPresentingAction || Session.CurrentActor == null || Session.CurrentActor.Team != CombatTeam.Party) return false;
             CombatantState actor = Session.CurrentActor;
             bool accepted = Session.TryUseItem(actor, item, target, out string message);
@@ -294,6 +299,7 @@ namespace DragonQuest.Prototype
 
         private void Update()
         {
+            if (IsCheatMenuBlocking) { pendingEnemy = null; return; }
             if (IsPresentingAction) return;
             if (IsActive && PostBattle?.IsComplete == true)
             {
@@ -355,6 +361,7 @@ namespace DragonQuest.Prototype
 
         public void ReturnToCity()
         {
+            if (IsCheatMenuBlocking) return;
             if (!IsActive || IsPresentingAction || Session.Outcome == BattleOutcome.None) return;
             if (PostBattleResults.IsVictory(Session) && (!IsPostBattleOpen || !PostBattle.CanContinue(Time.unscaledTime - PostBattleStartedAt))) return;
             IsPostBattleOpen = false;

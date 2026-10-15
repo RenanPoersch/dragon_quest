@@ -30,7 +30,7 @@ namespace DragonQuest.Persistence
             var members = new List<MemberData>(); var gear = new List<GearData>();
             var materias = new List<MateriaData>(); var items = new List<StackData>(); var stocks = new List<StockData>();
             foreach (var member in party.Members) members.Add(new MemberData
-                {Id = member.Id, Weapon = member.Weapon?.Id, Armor = member.Armor?.Id, Limit = member.Limit.Charge, Experience = member.Experience,
+                {Id = member.Id, Weapon = member.Weapon?.Id, Armor = member.Armor?.Id, Limit = member.Limit.SavedCharge, Experience = member.Experience,
                     Hp = member.Hp, Mp = member.Mp, Poisoned = member.IsPoisoned, BoundActions = member.BoundActions});
             foreach (var equipment in party.Equipments)
             {
@@ -46,7 +46,7 @@ namespace DragonQuest.Persistence
             return new JourneyData
             {
                 Version = JourneyData.CurrentVersion, SavedUtc = DateTime.UtcNow.ToString("O", CultureInfo.InvariantCulture),
-                Map = map, X = x, Y = y, Ending = (int)ending, Gold = progress.Gold, OpenedChests = chests,
+                Map = map, X = x, Y = y, Ending = (int)ending, Gold = progress.SavedGold, OpenedChests = chests,
                 Secrets = new SecretData {KnowsPoem = secrets.KnowsPoem, AltarSolved = secrets.AltarSolved,
                     MonolithStep = secrets.MonolithStep, HasScale = secrets.HasScale, PassageOpen = secrets.PassageOpen},
                 DragonDefeated = dragon.IsDefeated, Members = members.ToArray(), Gear = gear.ToArray(),

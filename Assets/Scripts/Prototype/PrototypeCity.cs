@@ -110,7 +110,8 @@ namespace DragonQuest.Prototype
             PrototypeEndingController endings=gameObject.AddComponent<PrototypeEndingController>();
             endings.Initialize(mapRoots,player.GetComponent<PlayerMovement>(),camera,cameraFollow,scenery);
             battle = gameObject.AddComponent<PrototypeBattleController>();
-            battle.Initialize(player.GetComponent<PlayerMovement>(), dialogue, progress, () => shops.IsOpen || saves.IsMenuVisible,dragon,secrets,locations.RecoverAtInn,endings.Show);
+            var cheats = gameObject.AddComponent<PrototypeCheatMenu>();
+            battle.Initialize(player.GetComponent<PlayerMovement>(), dialogue, progress, () => shops.IsOpen || saves.IsMenuVisible || cheats.BlocksInput,dragon,secrets,locations.RecoverAtInn,endings.Show);
             shops.Initialize(player.GetComponent<PlayerMovement>(), dialogue, battle, progress);
             locations.Initialize(mapRoots, player.GetComponent<PlayerMovement>(), cameraFollow, navigation,
                 () => dialogue.IsOpen || battle.IsBusy);
@@ -129,14 +130,16 @@ namespace DragonQuest.Prototype
                 var s = journey.Secrets;
                 secrets.Restore(s.KnowsPoem, s.AltarSolved, s.MonolithStep, s.HasScale, s.PassageOpen);
                 dragon.Restore(journey.Dragon.IsDefeated);
-                battle.Initialize(player.GetComponent<PlayerMovement>(), dialogue, progress, () => shops.IsOpen || saves.IsMenuVisible,
+                battle.Initialize(player.GetComponent<PlayerMovement>(), dialogue, progress, () => shops.IsOpen || saves.IsMenuVisible || cheats.BlocksInput,
                     dragon, secrets, locations.RecoverAtInn, endings.Show, journey.Party);
                 shops.Initialize(player.GetComponent<PlayerMovement>(), dialogue, battle, progress, journey.Shops, journey.Quest);
                 interaction.Initialize(new InteractionContext(dialogue, progress, locations.TravelTo,
                     battle.StartBattle, () => battle.IsBusy, shops.Open, secrets), interactables.ToArray());
                 hud.Initialize(interaction, dialogue, battle);
+                cheats.Initialize(player.GetComponent<PlayerMovement>(), battle, saves, progress);
                 locations.Restore(journey.Data.Map, new Vector2(journey.Data.X, journey.Data.Y));
             });
+            cheats.Initialize(player.GetComponent<PlayerMovement>(), battle, saves, progress);
         }
 
         private Transform Group(string groupName, Transform parent = null)

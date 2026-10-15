@@ -8,28 +8,39 @@ namespace DragonQuest.Exploration
     {
         private readonly HashSet<string> openedChests = new HashSet<string>();
 
-        public int Gold { get; private set; }
+        private int gold;
+        public bool HasInfiniteGold { get; private set; }
+        public int Gold => HasInfiniteGold ? int.MaxValue : gold;
+        internal int SavedGold => gold;
+        public void SetInfiniteGold(bool enabled)
+        {
+            if (HasInfiniteGold == enabled) return;
+            HasInfiniteGold = enabled;
+            Changed?.Invoke();
+        }
         public event Action Changed;
         internal string[] OpenedChests => new List<string>(openedChests).ToArray();
         internal void Restore(int gold, string[] chests)
-        { Gold = gold; openedChests.Clear(); foreach (string id in chests) openedChests.Add(id); }
+        { this.gold = gold; openedChests.Clear(); foreach (string id in chests) openedChests.Add(id); }
 
         public ExplorationProgress(int initialGold = 0)
         {
             if (initialGold < 0) throw new ArgumentOutOfRangeException(nameof(initialGold));
-            Gold = initialGold;
+            gold = initialGold;
         }
 
-        public bool CanReceiveGold(int amount) => amount > 0 && Gold <= int.MaxValue - amount;
+        public bool CanReceiveGold(int amount) => amount > 0 && (HasInfiniteGold || gold <= int.MaxValue - amount);
         public bool TryAddGold(int amount)
         {
             if (!CanReceiveGold(amount)) return false;
-            Gold += amount; Changed?.Invoke(); return true;
+            if (!HasInfiniteGold) gold += amount;
+            Changed?.Invoke(); return true;
         }
         public bool TrySpendGold(int amount)
         {
             if (amount <= 0 || amount > Gold) return false;
-            Gold -= amount; Changed?.Invoke(); return true;
+            if (!HasInfiniteGold) gold -= amount;
+            Changed?.Invoke(); return true;
         }
 
         public bool HasOpenedChest(string id) => openedChests.Contains(id);
@@ -39,9 +50,9 @@ namespace DragonQuest.Exploration
             if (string.IsNullOrWhiteSpace(id)) throw new ArgumentException("Bau precisa de ID.", nameof(id));
             if (goldReward < 0) throw new ArgumentOutOfRangeException(nameof(goldReward));
             if (openedChests.Contains(id)) return false;
-            int total = checked(Gold + goldReward);
+            int total = HasInfiniteGold ? gold : checked(gold + goldReward);
             openedChests.Add(id);
-            Gold = total;
+            gold = total;
             Changed?.Invoke();
             return true;
         }

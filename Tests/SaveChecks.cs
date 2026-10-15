@@ -37,6 +37,22 @@ internal static class SaveChecks
         Assert(Encoding.UTF8.GetString(SaveStore.Encode(data)) == Encoding.UTF8.GetString(SaveStore.Encode(recaptured)), "Roundtrip deve preservar todo o snapshot, incluindo IDs e encaixes.");
         return restored;
     }
+    private static void CheckCheatPersistence()
+    {
+        var journey = JourneySnapshot.Restore(Initial());
+        journey.Party.Members[0].Limit.Restore(42);
+        journey.Party.SetInfiniteLimit(true);
+        journey.Progress.SetInfiniteGold(true);
+        journey.Party.SetMaxLevel();
+        var data = JourneySnapshot.Capture(journey.Party, journey.Progress, journey.Secrets, journey.Dragon,
+            journey.Shops, journey.Quest, journey.Data.Map, journey.Data.X, journey.Data.Y);
+        var loaded = RoundTrip(data);
+        Assert(loaded.Progress.Gold == 50 && !loaded.Progress.HasInfiniteGold, "Unlimited gold never overwrites the saved wallet.");
+        Assert(loaded.Party.Members[0].Limit.Charge == 42 && !loaded.Party.HasInfiniteLimit
+            && loaded.Party.Members.All(m => !m.Limit.IsInfinite), "Unlimited LIMIT preserves original saved charges and resets on load.");
+        Assert(loaded.Party.Members.All(m => m.Level == 99), "Level 99 survives save/load with the normal progression format.");
+    }
+
     private static JourneyData Advanced()
     {
         var party = PrototypePartyFactory.CreateTestParty(); var progress = new ExplorationProgress(1000);
@@ -258,7 +274,7 @@ internal static class SaveChecks
     {
         try
         {
-            CheckDomain(); CheckInventoryEvents(); CheckLevelPersistence(); CheckConditionPersistence();
+            CheckDomain(); CheckInventoryEvents(); CheckLevelPersistence(); CheckConditionPersistence(); CheckCheatPersistence();
             CheckManualPersistence(Path.Combine(args[0], "manual-" + Guid.NewGuid().ToString("N")));
             CheckFiles(Path.Combine(args[0], "saves-" + Guid.NewGuid().ToString("N")));
             Console.WriteLine("Salvamento: " + checks + " verificacoes passaram."); return 0;
