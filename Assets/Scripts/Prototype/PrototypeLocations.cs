@@ -72,7 +72,8 @@ namespace DragonQuest.Prototype
             bool lateral = LocationId == PrototypeTravel.Ruins || volcano;
             bool forest = LocationId == PrototypeTravel.EastForest;
             bool quarry = LocationId == PrototypeTravel.WestForest;
-            player.SetMovementConstraint(forest ? EastForestLayout.ConstrainMove : quarry ? QuarryLayout.ConstrainMove : (System.Func<Vector2,Vector2,Vector2>)null);
+            bool inn = LocationId == PrototypeTravel.Inn;
+            player.SetMovementConstraint(inn ? PrototypeInnLayout.ConstrainMove : forest ? EastForestLayout.ConstrainMove : quarry ? QuarryLayout.ConstrainMove : (System.Func<Vector2,Vector2,Vector2>)null);
             if (LocationId == PrototypeTravel.Inn) arrival = PrototypeInnLayout.SafeSavedPosition(arrival);
             if (quarry) arrival = QuarryLayout.SafeSavedPosition(arrival);
             if (forest) arrival=EastForestLayout.SafeSavedPosition(arrival);
@@ -85,7 +86,7 @@ namespace DragonQuest.Prototype
             Transform heroShadow = player.transform.Find("Sombra no chao");
             if (heroShadow != null) heroShadow.gameObject.SetActive(!lateral);
             cameraFollow.SetSideView(lateral, volcano ? PrototypeVolcanoLayout.CameraHeight : PrototypeRuinsLayout.CameraHeight);
-            cameraFollow.SetArtworkFrame(forest || quarry);
+            cameraFollow.SetArtworkFrame(forest || quarry || inn, inn, inn ? PrototypeInnLayout.ArtAspect : 16f / 9f);
             player.Teleport(arrival);
             cameraFollow.Initialize(player.transform, (forest || quarry) ? PrototypeWorldLayout.ForestBounds : navigation.Current.Bounds, navigation.Current.CameraSize,
                 navigation.Current.FixedCamera, navigation.Current.CoveredGroundBounds);

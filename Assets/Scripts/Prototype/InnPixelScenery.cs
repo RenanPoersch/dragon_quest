@@ -5,161 +5,114 @@ using UnityEngine;
 
 namespace DragonQuest.Prototype
 {
-    // A mobilia usa sprites com profundidade; o chao e as colisoes continuam em XY.
+    // Uma unica pintura completa. Os recortes de profundidade reutilizam os mesmos pixels.
     public sealed class InnPixelScenery : MonoBehaviour
     {
-        public const int CellPixels = 128, Columns = 4, Rows = 2;
         private readonly List<UnityEngine.Object> owned = new List<UnityEngine.Object>();
-        private static readonly RectInt[] Regions = {
-            new RectInt(16,136,365,365), new RectInt(390,40,362,444),
-            new RectInt(764,158,440,352), new RectInt(1227,38,279,472),
-            new RectInt(26,622,435,337), new RectInt(474,525,343,429),
-            new RectInt(917,555,200,375), new RectInt(1196,548,304,413)
+        public static readonly Vector2[][] Foregrounds = {
+            new[] { new Vector2(.589f,.589f),new Vector2(.611f,.576f),new Vector2(.65f,.585f),new Vector2(.68f,.600f),
+                new Vector2(.84f,.600f),new Vector2(.85f,.58f),new Vector2(.89f,.58f),new Vector2(.915f,.63f),
+                new Vector2(.91f,.776f),new Vector2(.603f,.776f),new Vector2(.588f,.73f) },
+            new[] { new Vector2(.099f,.57f),new Vector2(.112f,.548f),new Vector2(.123f,.545f),new Vector2(.13f,.575f),
+                new Vector2(.145f,.558f),new Vector2(.164f,.54f),new Vector2(.17f,.505f),new Vector2(.18f,.495f),
+                new Vector2(.188f,.50f),new Vector2(.193f,.529f),new Vector2(.21f,.535f),new Vector2(.227f,.555f),
+                new Vector2(.258f,.585f),new Vector2(.282f,.56f),new Vector2(.297f,.565f),new Vector2(.297f,.602f),
+                new Vector2(.287f,.626f),new Vector2(.291f,.677f),new Vector2(.279f,.708f),new Vector2(.266f,.703f),
+                new Vector2(.257f,.657f),new Vector2(.239f,.65f),new Vector2(.211f,.674f),new Vector2(.212f,.710f),
+                new Vector2(.194f,.713f),new Vector2(.192f,.678f),new Vector2(.158f,.663f),new Vector2(.145f,.697f),
+                new Vector2(.13f,.705f),new Vector2(.12f,.693f),new Vector2(.124f,.655f),new Vector2(.107f,.63f) },
+            new[] { new Vector2(.50f,.325f),new Vector2(.516f,.32f),new Vector2(.545f,.346f),new Vector2(.591f,.346f),
+                new Vector2(.591f,.318f),new Vector2(.611f,.318f),new Vector2(.615f,.474f),new Vector2(.499f,.474f) },
+            new[] { new Vector2(.85f,.325f),new Vector2(.872f,.325f),new Vector2(.872f,.345f),new Vector2(.951f,.345f),
+                new Vector2(.953f,.475f),new Vector2(.85f,.475f) }
         };
-        private static readonly string[] Names = {
-            "Cama com colcha bordada", "Lareira de pedra", "Recepcao e livro de hospedes",
-            "Armario de enxoval", "Mesa do cafe", "Janela e cortinas", "Lanterna de parede", "Samambaia"
-        };
+        private static readonly Vector2[] Anchors = { new Vector2(.752f,.765f),new Vector2(.20f,.70f),new Vector2(.555f,.468f),new Vector2(.902f,.468f) };
 
         public void Build(PhysicsMaterial2D physics = null)
         {
-            var source = Resources.Load<Texture2D>("PixelArt/InnPropsAtlas");
-            var materials = Resources.Load<Texture2D>("PixelArt/MateriaShopAtlas");
-            var shellShader = Resources.Load<Shader>("MateriaShop");
-            var propShader = Resources.Load<Shader>("PixelCharacter");
-            if (source == null || materials == null || shellShader == null || propShader == null)
-                throw new InvalidOperationException("Arte pixel art da Pousada ausente.");
-
-            var roomMaterial = new Material(shellShader) { name = "Pousada / madeira e tecido" };
-            roomMaterial.SetTexture("_PixelAtlas", materials); owned.Add(roomMaterial);
-            var room = new GameObject("Pousada / assoalho, paredes e tapetes");
-            room.transform.SetParent(transform, false);
-            ObliqueMeshData data = Shell();
-            var mesh = new Mesh { name = room.name };
-            mesh.SetVertices(data.Vertices); mesh.SetColors(data.Colors); mesh.SetTriangles(data.Triangles, 0);
-            mesh.SetUVs(0, data.UVs); mesh.SetUVs(1, data.Surfaces); mesh.RecalculateBounds(); owned.Add(mesh);
-            room.AddComponent<MeshFilter>().sharedMesh = mesh;
-            room.AddComponent<MeshRenderer>().sharedMaterial = roomMaterial;
-
-            var texture = new Texture2D(Columns * CellPixels, Rows * CellPixels, TextureFormat.RGBA32, false) {
-                name = "Pousada / grade logica de 128 pixels", filterMode = FilterMode.Point, wrapMode = TextureWrapMode.Clamp
-            };
-            Color32[] sampled = SampleAtlas(source.GetPixels32(), source.width, source.height);
-            texture.SetPixels32(sampled); texture.Apply(false, false); owned.Add(texture);
-            var propMaterial = new Material(propShader) { name = "Pousada / sprites pixel art com profundidade" };
-            owned.Add(propMaterial);
-            var sprites = new Sprite[Names.Length];
-            for (int i = 0; i < sprites.Length; i++)
+            var painting = Resources.Load<Texture2D>("PixelArt/InnInterior");
+            var backdropShader = Resources.Load<Shader>("ForestPixelBackdrop");
+            var depthShader = Resources.Load<Shader>("PixelCharacter");
+            if (painting == null || backdropShader == null || depthShader == null)
+                throw new InvalidOperationException("Pintura completa da Pousada ausente.");
+            var backdrop = new Material(backdropShader) { name = "Pousada / pintura integral em pixel art", mainTexture = painting };
+            var depth = new Material(depthShader) { name = "Pousada / profundidade da mesma pintura", mainTexture = painting };
+            owned.Add(backdrop); owned.Add(depth);
+            Quaternion rotation = Quaternion.AngleAxis(ObliqueProjection.YawDegrees,Vector3.forward) * Quaternion.Euler(-ObliqueProjection.TiltDegrees,0,0);
+            Vector2[] corners = { Vector2.zero,Vector2.up,Vector2.one,Vector2.right };
+            var vertices = new Vector3[4];
+            for (int i = 0; i < corners.Length; i++)
             {
-                RectInt r = SpriteBounds(i, sampled);
-                sprites[i] = Sprite.Create(texture, new Rect(r.x, r.y, r.width, r.height), new Vector2(.5f, 0), CellPixels, 0, SpriteMeshType.FullRect);
-                sprites[i].name = Names[i]; owned.Add(sprites[i]);
+                Vector2 screen = PrototypeInnLayout.ScreenPoint(corners[i]);
+                vertices[i] = rotation * new Vector3(screen.x,screen.y,20);
             }
-            foreach (CityBlock block in PrototypeInnLayout.Blocks)
+            Draw("Pousada / cenario completo pintado", vertices, corners, new[] { 0,1,2,0,2,3 }, backdrop);
+            for (int i = 0; i < Foregrounds.Length; i++)
             {
-                if (!block.Solid) continue;
-                var anchor = new GameObject(block.Name); anchor.transform.SetParent(transform, false);
-                anchor.transform.localPosition = block.Position;
-                var collider = anchor.AddComponent<BoxCollider2D>(); collider.size = block.Size; collider.sharedMaterial = physics;
-            }
-
-            foreach (float x in new[] { -4f, 0f, 4f }) Prop(sprites[0], propMaterial, x, 1.3f, 2.3f, 2.3f);
-            Prop(sprites[1], propMaterial, -5.1f, -.8f, 2.25f, 2.8f);
-            Prop(sprites[2], propMaterial, 4.4f, -1.7f, 3.05f, 2.05f);
-            Prop(sprites[3], propMaterial, 5.65f, .85f, 1.65f, 2.65f);
-            Prop(sprites[4], propMaterial, -3.65f, -3.2f, 2.65f, 2.1f);
-            foreach (float x in new[] { -4f, 0f, 4f }) Prop(sprites[5], propMaterial, x, 4.34f, 1.35f, 1.55f, .95f);
-            foreach (float x in new[] { -6f, -2f, 2f, 6f }) Prop(sprites[6], propMaterial, x, 4.32f, .38f, .72f, 1.9f);
-            Prop(sprites[7], propMaterial, -5.8f, -3.6f, .95f, 1.25f);
-            Prop(sprites[7], propMaterial, 5.8f, -3.6f, .95f, 1.25f);
-        }
-
-        private void Prop(Sprite sprite, Material material, float x, float y, float width, float height, float altitude = 0)
-        {
-            var anchor = new GameObject(sprite.name); anchor.transform.SetParent(transform, false);
-            anchor.transform.localPosition = new Vector3(x, y, -altitude);
-            var visual = new GameObject("Arte / " + sprite.name); visual.transform.SetParent(anchor.transform, false);
-            var renderer = visual.AddComponent<SpriteRenderer>(); renderer.sprite = sprite; renderer.sharedMaterial = material;
-            visual.transform.localRotation = Quaternion.LookRotation(
-                new Vector3(-ObliqueProjection.YawSin, ObliqueProjection.YawCos, 0), PixelSpriteLayout.UprightUp);
-            float scale = Math.Min(width / sprite.bounds.size.x, height / sprite.bounds.size.y);
-            visual.transform.localScale = new Vector3(scale, scale * PixelSpriteLayout.UprightScaleY, 1);
-        }
-
-        // Recortes e registro em memoria; o PNG de origem fica preservado.
-        public static Color32[] SampleAtlas(Color32[] source, int width, int height)
-        {
-            if (source == null || width != 1536 || height != 1024 || source.Length != width * height)
-                throw new ArgumentException("Dimensoes do atlas da Pousada invalidas.");
-            var pixels = new Color32[Columns * Rows * CellPixels * CellPixels];
-            for (int i = 0; i < Regions.Length; i++)
-            {
-                RectInt r = Regions[i];
-                float scale = Math.Min((CellPixels - 6f) / r.width, (CellPixels - 6f) / r.height);
-                int dw = Math.Max(1, (int)Math.Round(r.width * scale)), dh = Math.Max(1, (int)Math.Round(r.height * scale));
-                int ox = i % Columns * CellPixels + (CellPixels - dw) / 2;
-                int oy = (Rows - 1 - i / Columns) * CellPixels + 3;
-                for (int y = 0; y < dh; y++) for (int x = 0; x < dw; x++)
+                Vector2[] outline = Foregrounds[i];
+                Vector2 ground = PrototypeInnLayout.Ground(Anchors[i].x,Anchors[i].y);
+                Vector2 foot = PrototypeInnLayout.ScreenPoint(Anchors[i]);
+                Vector3 right = new Vector3(ObliqueProjection.YawCos,ObliqueProjection.YawSin,0);
+                var points = new Vector3[outline.Length];
+                for (int j = 0; j < outline.Length; j++)
                 {
-                    int sx = r.x + Math.Min(r.width - 1, (int)((x + .5f) * r.width / dw));
-                    int sy = r.y + Math.Min(r.height - 1, (int)((y + .5f) * r.height / dh));
-                    Color32 color = source[(height - 1 - sy) * width + sx];
-                    if (color.a < 128) continue;
-                    color.a = 255; pixels[(oy + dh - 1 - y) * Columns * CellPixels + ox + x] = color;
+                    Vector2 p = PrototypeInnLayout.ScreenPoint(outline[j]);
+                    points[j] = (Vector3)ground + right * (p.x-foot.x) + new Vector3(0,0,-(p.y-foot.y)/ObliqueProjection.HeightScale);
                 }
+                Draw("Pousada / recorte de profundidade " + i,points,outline,Triangulate(outline),depth);
             }
-            return pixels;
-        }
-
-        public static RectInt SpriteBounds(int index, Color32[] pixels)
-        {
-            if (index < 0 || index >= Regions.Length || pixels == null || pixels.Length != Columns * Rows * CellPixels * CellPixels)
-                throw new ArgumentException("Sprite da Pousada invalido.");
-            int left = index % Columns * CellPixels, bottom = (Rows - 1 - index / Columns) * CellPixels;
-            int minX = left + CellPixels, minY = bottom + CellPixels, maxX = left - 1, maxY = bottom - 1;
-            for (int y = bottom; y < bottom + CellPixels; y++) for (int x = left; x < left + CellPixels; x++)
-                if (pixels[y * Columns * CellPixels + x].a >= 128)
-                { minX = Math.Min(minX, x); minY = Math.Min(minY, y); maxX = Math.Max(maxX, x); maxY = Math.Max(maxY, y); }
-            if (maxX < minX) throw new InvalidOperationException("Sprite vazio na Pousada: " + index);
-            return new RectInt(minX, minY, maxX - minX + 1, maxY - minY + 1);
-        }
-
-        public static ObliqueMeshData Shell()
-        {
-            var m = new ObliqueMeshData();
-            m.DefaultSurface = (PixelSurface)7; m.Plane(0, 0, 14, 10, .02f, Color.white);
-            m.DefaultSurface = PixelSurface.None;
-            m.Box(0, 4.7f, 14, .6f, 0, 2.85f, ObliqueMeshData.Hex("C3A77B"));
-            m.DefaultSurface = (PixelSurface)0;
-            foreach (float x in new[] { -6.7f, 6.7f }) m.Box(x, 0, .6f, 10, 0, .4f, Color.white);
-            foreach (float x in new[] { -3.95f, 3.95f }) m.Box(x, -4.7f, 6.1f, .6f, 0, .18f, Color.white);
-            foreach (float x in new[] { -6.25f, -2f, 2f, 6.25f }) m.Box(x, 4.32f, .14f, .15f, 0, 2.91f, Color.white);
-            m.Box(0, 4.29f, 13.4f, .18f, 2.72f, 2.91f, Color.white);
-            m.Box(0, 4.3f, 13.4f, .14f, .16f, .32f, Color.white);
-            // Lambris de madeira abaixo das janelas.
-            for (int i = 0; i < 34; i++) m.Box(-6.3f + i * .38f, 4.36f, .35f, .08f, .33f, .85f, Color.white);
-            m.Box(0, 4.29f, 13.4f, .13f, .82f, .94f, Color.white);
-            m.DefaultSurface = PixelSurface.None;
-            Color gold = ObliqueMeshData.Hex("C79B5C"), teal = ObliqueMeshData.Hex("315A5A"), thread = ObliqueMeshData.Hex("719589");
-            m.Plane(0, -2.1f, 2.8f, 4.65f, .035f, gold);
-            m.Plane(0, -2.1f, 2.58f, 4.43f, .04f, teal);
-            foreach (float x in new[] { -1.12f, 1.12f }) m.Plane(x, -2.1f, .035f, 4.08f, .045f, thread);
-            foreach (float y in new[] { -4.13f, -.07f }) m.Plane(0, y, 2.25f, .035f, .045f, thread);
-            for (int i = 0; i < 14; i++) foreach (float y in new[] { -4.48f, .28f })
-                m.Plane(-1.25f + i * .19f, y, .045f, .18f, .04f, gold);
-            foreach (float x in new[] { -4f, 0f, 4f })
+            // Poligonos no chao acompanham exatamente as bases pintadas.
+            for (int i = 0; i < PrototypeInnLayout.Fixtures.Length; i++)
             {
-                m.Plane(x, 1.05f, 1.95f, .55f, .03f, gold);
-                m.Plane(x, 1.05f, 1.8f, .4f, .035f, teal);
+                var fixture = new GameObject(i == 0 ? "Base da mesa e cadeiras" : "Base do balcao");
+                fixture.transform.SetParent(transform,false);
+                var points = new Vector2[PrototypeInnLayout.Fixtures[i].Length];
+                for (int j = 0; j < points.Length; j++) { Vector2 uv = PrototypeInnLayout.Fixtures[i][j]; points[j] = PrototypeInnLayout.Ground(uv.x,uv.y); }
+                var collider = fixture.AddComponent<PolygonCollider2D>(); collider.points = points; collider.sharedMaterial = physics;
             }
-            // Soleira livre no centro da parede sul: acompanha a saida existente.
-            m.DefaultSurface = (PixelSurface)0; m.Plane(0, -4.62f, 1.8f, .76f, .03f, Color.white);
-            return m;
         }
 
+        private void Draw(string name, Vector3[] vertices, Vector2[] image, int[] triangles, Material material)
+        {
+            var obj = new GameObject(name); obj.transform.SetParent(transform,false);
+            var uv = new Vector2[image.Length]; var colors = new Color[image.Length];
+            for (int i = 0; i < uv.Length; i++) { uv[i] = new Vector2(image[i].x,1-image[i].y); colors[i] = Color.white; }
+            var mesh = new Mesh { name = name, vertices = vertices, uv = uv, colors = colors, triangles = triangles };
+            mesh.RecalculateBounds(); owned.Add(mesh);
+            obj.AddComponent<MeshFilter>().sharedMesh = mesh; obj.AddComponent<MeshRenderer>().sharedMaterial = material;
+        }
+
+        // Ear clipping permite seguir contornos concavos sem cobrir os vazios ao redor dos moveis.
+        public static int[] Triangulate(Vector2[] points)
+        {
+            var remaining = new List<int>(); var triangles = new List<int>(); float area = 0;
+            for (int i = 0; i < points.Length; i++) { remaining.Add(i); Vector2 a=points[i],b=points[(i+1)%points.Length]; area += a.x*b.y-b.x*a.y; }
+            float sign = area > 0 ? 1 : -1;
+            while (remaining.Count > 3)
+            {
+                bool clipped = false;
+                for (int i = 0; i < remaining.Count; i++)
+                {
+                    int a=remaining[(i+remaining.Count-1)%remaining.Count],b=remaining[i],c=remaining[(i+1)%remaining.Count];
+                    if (Cross(points[a],points[b],points[c])*sign <= .0000001f) continue;
+                    bool occupied = false;
+                    foreach (int index in remaining)
+                    {
+                        if (index==a || index==b || index==c) continue;
+                        Vector2 p=points[index];
+                        if (Cross(points[a],points[b],p)*sign >= 0 && Cross(points[b],points[c],p)*sign >= 0 && Cross(points[c],points[a],p)*sign >= 0) { occupied=true; break; }
+                    }
+                    if (occupied) continue;
+                    triangles.Add(a); triangles.Add(b); triangles.Add(c); remaining.RemoveAt(i); clipped=true; break;
+                }
+                if (!clipped) throw new InvalidOperationException("Contorno de profundidade invalido na Pousada.");
+            }
+            triangles.AddRange(remaining); return triangles.ToArray();
+        }
+        private static float Cross(Vector2 a, Vector2 b, Vector2 c) => (b.x-a.x)*(c.y-a.y)-(b.y-a.y)*(c.x-a.x);
         private void OnDestroy()
         {
-            for (int i = owned.Count - 1; i >= 0; i--)
+            for (int i = owned.Count-1; i >= 0; i--)
                 if (owned[i] != null) { if (Application.isPlaying) Destroy(owned[i]); else DestroyImmediate(owned[i]); }
         }
     }

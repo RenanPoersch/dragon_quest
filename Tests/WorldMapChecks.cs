@@ -23,7 +23,9 @@ internal static class WorldMapChecks
 
     private sealed class Paths
     {
-        private const float Step = 0.5f, HalfWidth = 0.355f, HalfHeight = 0.38f;
+        private const float HalfWidth = 0.355f, HalfHeight = 0.38f;
+        private readonly float Step;
+        private readonly Func<Vector2,bool> geometry;
         private readonly Rect bounds;
         private readonly List<Rect> solids;
         private readonly bool island;
@@ -33,6 +35,7 @@ internal static class WorldMapChecks
         private Vector2 Point((int, int) cell) => new Vector2(bounds.xMin + cell.Item1 * Step, bounds.yMin + cell.Item2 * Step);
         public bool Walkable(Vector2 point)
         {
+            if (geometry != null) return geometry(point);
             if (point.x - HalfWidth <= bounds.xMin || point.x + HalfWidth >= bounds.xMax
                 || point.y - HalfHeight <= bounds.yMin || point.y + HalfHeight >= bounds.yMax) return false;
             if (island)
@@ -51,9 +54,9 @@ internal static class WorldMapChecks
             foreach(var cell in reachable) {Vector2 point=Point(cell);if(area.Contains(point)) return point;}
             return null;
         }
-        public Paths(Rect limits, IEnumerable<CityBlock> blocks, Vector2 spawn, bool isIsland = false, Vector2? npc = null)
+        public Paths(Rect limits, IEnumerable<CityBlock> blocks, Vector2 spawn, bool isIsland = false, Vector2? npc = null, Func<Vector2,bool> floor = null, float step = .5f)
         {
-            bounds = limits; island = isIsland;
+            bounds = limits; island = isIsland; geometry = floor; Step = step;
             sealedWard = blocks.Any(block => block.Name == PrototypeSecretLayout.SealedRocks);
             solids = blocks.Where(block => block.Solid && block.Name != PrototypeSecretLayout.SealedRocks).Select(block => block.Bounds).ToList();
             if (npc.HasValue) solids.Add(new Rect(npc.Value.x - 0.275f, npc.Value.y - 0.3f, 0.55f, 0.6f));
@@ -222,14 +225,16 @@ internal static class WorldMapChecks
         var castle = new Paths(PrototypeWorldLayout.CastleBounds, PrototypeWorldLayout.CastleBlocks, PrototypeWorldLayout.CastleSpawn, npc: PrototypeWorldLayout.Throne);
         var ruins = new Paths(PrototypeRuinsLayout.Bounds,Array.Empty<CityBlock>(),PrototypeRuinsLayout.Spawn);
         var volcano=new Paths(PrototypeVolcanoLayout.Bounds,PrototypeVolcanoLayout.Blocks.Concat(new[]{new CityBlock("Dragao",0,8,1.8f,1.8f,"",true,0)}),PrototypeVolcanoLayout.Spawn);
-        var inn=new Paths(PrototypeInnLayout.Bounds,PrototypeInnLayout.Blocks,PrototypeInnLayout.Spawn,npc:PrototypeInnLayout.Keeper);
+        var inn=new Paths(PrototypeInnLayout.Bounds,Array.Empty<CityBlock>(),PrototypeInnLayout.Spawn,floor:PrototypeInnLayout.IsWalkable,step:.1f);
         var openWorld = new Paths(PrototypeWorldLayout.Bounds, WorldBlocks().Where(block=>block.Name!=PrototypeSecretLayout.SealedRocks),PrototypeWorldLayout.Spawn,true);
         var shop = new Paths(new Rect(-7, -5, 14, 10), new[]
         {
             new CityBlock("Balcao", 0, 0.15f, 4, 0.6f, "", true, 0),
             new CityBlock("Estante oeste", -4.8f, 1.5f, 1.5f, 3, "", true, 0),
-            new CityBlock("Estante leste", 4.8f, 1.5f, 1.5f, 3, "", true, 0)
-        }.Concat(PrototypeInnLayout.Blocks.Where(block=>block.Name.StartsWith("Parede"))), new Vector2(0, -2.7f));
+            new CityBlock("Estante leste", 4.8f, 1.5f, 1.5f, 3, "", true, 0),
+            new CityBlock("Parede norte",0,4.7f,14,.6f,"",true,0),new CityBlock("Parede sul",0,-4.7f,14,.6f,"",true,0),
+            new CityBlock("Parede oeste",-6.7f,0,.6f,10,"",true,0),new CityBlock("Parede leste",6.7f,0,.6f,10,"",true,0)
+        }, new Vector2(0, -2.7f));
         var paths = new Dictionary<string, Paths>
         {
             { PrototypeTravel.World, openWorld }, { PrototypeTravel.WestForest, west }, { PrototypeTravel.EastForest, east },

@@ -14,12 +14,13 @@ namespace DragonQuest.Exploration
         private float requestedSize;
         private bool sideView;
         private float sideHeight;
-        private bool artworkFrame;
+        private bool artworkFrame, artworkContain;
+        private float artworkAspect = 16f / 9f;
 
-        public void SetArtworkFrame(bool enabled)
+        public void SetArtworkFrame(bool enabled, bool contain = false, float referenceAspect = 16f / 9f)
         {
-            if (artworkFrame == enabled) return;
-            artworkFrame = enabled;
+            if (artworkFrame == enabled && artworkContain == contain && Mathf.Approximately(artworkAspect, referenceAspect)) return;
+            artworkFrame = enabled; artworkContain = contain; artworkAspect = referenceAspect;
             if (view == null) view = GetComponent<Camera>();
             view.rect = new Rect(0,0,1,1);
             view.ResetAspect();
@@ -28,8 +29,9 @@ namespace DragonQuest.Exploration
         public static Rect ArtworkViewport(float displayAspect)
             => new Rect(0,0,1,1);
 
-        public static float ArtworkFrameSize(float halfHeight, float displayAspect)
-            => (float)System.Math.Min(halfHeight, halfHeight*(16f/9f)/System.Math.Max(.1f,displayAspect));
+        public static float ArtworkFrameSize(float halfHeight, float displayAspect, bool contain = false, float referenceAspect = 16f / 9f)
+            => (float)(contain ? System.Math.Max(halfHeight, halfHeight*referenceAspect/System.Math.Max(.1f,displayAspect))
+                : System.Math.Min(halfHeight, halfHeight*referenceAspect/System.Math.Max(.1f,displayAspect)));
 
         public void SetSideView(bool enabled, float height = 0)
         { sideView = enabled; sideHeight = height; }
@@ -69,7 +71,7 @@ namespace DragonQuest.Exploration
                 float aspect=width/Mathf.Max(1,height);
                 view.rect=ArtworkViewport(aspect);
                 view.aspect=aspect;
-                view.orthographicSize=ArtworkFrameSize(requestedSize,aspect);
+                view.orthographicSize=ArtworkFrameSize(requestedSize,aspect,artworkContain,artworkAspect);
                 return;
             }
             view.orthographicSize = sideView ? requestedSize
@@ -88,7 +90,7 @@ namespace DragonQuest.Exploration
             Vector3 position = ObliqueProjection.CameraPosition(target.position, worldBounds,
                 view.orthographicSize, view.aspect, fixedFrame, transform.forward, coveredGroundBounds);
             // Anchor the proportional crop to the bottom so the forest exit stays on screen.
-            return artworkFrame ? position + transform.up*(view.orthographicSize-requestedSize) : position;
+            return artworkFrame && !artworkContain ? position + transform.up*(view.orthographicSize-requestedSize) : position;
         }
     }
 }

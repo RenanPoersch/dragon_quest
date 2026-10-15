@@ -336,6 +336,9 @@ namespace DragonQuest.Prototype
             InnInteraction keeper=CreateNpcFigure("Hospedeira",PrototypeInnLayout.Keeper,"B89673",inn).AddComponent<InnInteraction>();
             keeper.Initialize(() => saves.SaveManual());
             interactions.Add(keeper);
+            InnInteraction reception=Entity("Recepcao / falar com a hospedeira",PrototypeInnLayout.Reception,inn).AddComponent<InnInteraction>();
+            reception.Initialize(() => saves.SaveManual());
+            interactions.Add(reception);
             return inn;
         }
 

@@ -218,11 +218,7 @@ internal static class ObliqueChecks
         cavern.Append(dragon,ObliqueProjection.Point(PrototypeVolcanoLayout.Dragon));
         Export(directory,"VolcanoOblique",cavern,new Vector2(0,5),7.5f,ObliqueProjection.HeroCenterHeight,
             new[]{Sprite("ArenWalk",0,new Vector2(0,5))});
-        var inn=new ObliqueMeshData();
-        foreach(var block in PrototypeInnLayout.Blocks)
-        {Validate(ObliqueScenery.BlockData(block.Name,block.Size,block.Color,block.Solid,block.Order),block.Name);AddBlock(inn,block);}
-        Export(directory,"InnOblique",inn,Vector2.zero,ObliqueProjection.FrameSize(6,PrototypeInnLayout.Bounds,16f/9,true),0,
-            new[]{Sprite("ArenWalk",0,PrototypeInnLayout.Spawn),Sprite("NpcRoster",7,PrototypeInnLayout.Keeper)});
+        // The complete painted inn is rendered and checked by InnValidation in Unity.
         foreach(var ending in new[]{DragonQuest.Progression.GameEnding.KingFreed,DragonQuest.Progression.GameEnding.CastleDestroyed,DragonQuest.Progression.GameEnding.HeroPossessed})
         {
             var data=ObliqueScenery.EndingSceneData(ending);Validate(data,"Cena final / "+ending);

@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 66a021ea385b4fb8b6594c9ad8888027
+guid: 8a5850acd5fb496994e1fe0e675f4a4e
 TextureImporter:
   externalObjects: {}
   serializedVersion: 13
@@ -7,10 +7,10 @@ TextureImporter:
     mipMapMode: 0
     enableMipMap: 0
     sRGBTexture: 1
-  isReadable: 1
+  isReadable: 0
   streamingMipmaps: 0
   textureFormat: 1
-  maxTextureSize: 2048
+  maxTextureSize: 4096
   textureSettings:
     serializedVersion: 2
     filterMode: 0
@@ -24,11 +24,11 @@ TextureImporter:
   spriteMode: 0
   textureType: 0
   alphaSource: 1
-  alphaIsTransparency: 1
+  alphaIsTransparency: 0
   platformSettings:
   - serializedVersion: 4
     buildTarget: DefaultTexturePlatform
-    maxTextureSize: 2048
+    maxTextureSize: 4096
     resizeAlgorithm: 0
     textureFormat: -1
     textureCompression: 0
