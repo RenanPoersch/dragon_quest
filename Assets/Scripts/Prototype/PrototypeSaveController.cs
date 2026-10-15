@@ -28,6 +28,11 @@ namespace DragonQuest.Prototype
         private readonly bool[] occupied = new bool[SaveStore.SlotCount];
         private Texture2D pixel;
         private Texture2D scaleSprite;
+        private Texture2D hand;
+        private Rect handUv = new Rect(0, 0, 1, 1);
+        private float handAspect = 1;
+        private Vector2 lastMousePosition;
+        private bool pointerMoved;
         private GUIStyle titleStyle, textStyle, smallStyle, buttonStyle, titleButtonStyle;
         private string message;
         private float messageUntil;
@@ -51,6 +56,7 @@ namespace DragonQuest.Prototype
                 occupied[slot - 1] = store.Exists(slot);
                 store.TryRead(slot, out previews[slot - 1], out slotMessages[slot - 1]);
             }
+            if (!OptionEnabled(selectedOption)) MoveSelection(1);
         }
         private JourneyData Capture()
         {
@@ -114,11 +120,10 @@ namespace DragonQuest.Prototype
                 else if (page != MenuPage.Title) OpenPage(MenuPage.Title);
                 return;
             }
-            int count = page == MenuPage.Title || overwriteSlot != 0 ? 2 : SaveStore.SlotCount + 1;
             if (key == KeyCode.UpArrow || key == KeyCode.W)
-                selectedOption = (selectedOption + count - 1) % count;
+                MoveSelection(-1);
             if (key == KeyCode.DownArrow || key == KeyCode.S)
-                selectedOption = (selectedOption + 1) % count;
+                MoveSelection(1);
             if (key != KeyCode.Return && key != KeyCode.KeypadEnter && key != KeyCode.Space) return;
             if (overwriteSlot != 0)
             {
@@ -128,6 +133,17 @@ namespace DragonQuest.Prototype
             else if (page == MenuPage.Title) OpenPage(selectedOption == 0 ? MenuPage.NewGame : MenuPage.Continue);
             else if (selectedOption == SaveStore.SlotCount) OpenPage(MenuPage.Title);
             else SelectSlot(selectedOption + 1);
+        }
+        private bool OptionEnabled(int option) => page != MenuPage.Continue || overwriteSlot != 0
+            || option == SaveStore.SlotCount || previews[option] != null;
+        private void MoveSelection(int direction)
+        {
+            int count = page == MenuPage.Title || overwriteSlot != 0 ? 2 : SaveStore.SlotCount + 1;
+            for (int i = 0; i < count; i++)
+            {
+                selectedOption = (selectedOption + direction + count) % count;
+                if (OptionEnabled(selectedOption)) break;
+            }
         }
         private void ShowMessage(string text)
         { message = text; messageUntil = Time.unscaledTime + 8f; }
@@ -156,6 +172,8 @@ namespace DragonQuest.Prototype
             float scale = Mathf.Min(Screen.width / 1280f, Screen.height / 720f);
             GUI.matrix = Matrix4x4.TRS(new Vector3((Screen.width - 1280 * scale) / 2, (Screen.height - 720 * scale) / 2, 0),
                 Quaternion.identity, new Vector3(scale, scale, 1));
+            pointerMoved = Event.current.mousePosition != lastMousePosition;
+            lastMousePosition = Event.current.mousePosition;
             if (page == MenuPage.Title)
             {
                 if (scaleSprite != null)
@@ -190,6 +208,7 @@ namespace DragonQuest.Prototype
                     if (MenuButton(new Rect(650, 365, 320, 48), "Cancelar", 1, buttonStyle)) overwriteSlot = 0;
                 }
             }
+            DrawSelectedHand();
             if (IsMenuVisible && !string.IsNullOrEmpty(message) && Time.unscaledTime < messageUntil)
             {
                 Rect rect = new Rect(110, 650, 1060, 50);
@@ -200,13 +219,48 @@ namespace DragonQuest.Prototype
         }
         private bool MenuButton(Rect rect, string label, int option, GUIStyle style)
         {
-            if (GUI.enabled && Event.current.type == EventType.MouseMove && rect.Contains(Event.current.mousePosition))
+            if (GUI.enabled && (pointerMoved || Event.current.type == EventType.MouseMove
+                || Event.current.type == EventType.MouseDown) && rect.Contains(Event.current.mousePosition))
                 selectedOption = option;
             Color previous = GUI.color;
             if (GUI.enabled && selectedOption == option) GUI.color = new Color(0.96f, 0.8f, 0.48f);
             bool clicked = GUI.Button(rect, label, style);
             GUI.color = previous;
             return clicked;
+        }
+        private void DrawSelectedHand()
+        {
+            if (!IsMenuVisible || hand == null || !OptionEnabled(selectedOption)) return;
+            Rect option;
+            if (overwriteSlot != 0) option = new Rect(selectedOption == 0 ? 310 : 650, 365, 320, 48);
+            else if (page == MenuPage.Title) option = new Rect(490, selectedOption == 0 ? 562 : 620, 300, 48);
+            else option = selectedOption == SaveStore.SlotCount ? new Rect(110, 585, 200, 45)
+                : new Rect(950, 196 + selectedOption * 126, 210, 45);
+            float left = page == MenuPage.Title
+                ? option.center.x - titleButtonStyle.CalcSize(new GUIContent(selectedOption == 0 ? "New game" : "Continue")).x / 2
+                : option.x;
+            float width = Mathf.Min(44, 30 * handAspect), height = width / handAspect;
+            Color previous = GUI.color; GUI.color = Color.white;
+            GUI.DrawTextureWithTexCoords(new Rect(left - width - 12, option.center.y - height / 2, width, height), hand, handUv, true);
+            GUI.color = previous;
+        }
+        private void LoadHandSprite()
+        {
+            hand = Resources.Load<Texture2D>("PixelArt/BattleGloveCursor");
+            if (hand == null) return;
+            Color32[] pixels = hand.GetPixels32();
+            int left = hand.width, right = -1, bottom = hand.height, top = -1;
+            for (int y = 0; y < hand.height; y++) for (int x = 0; x < hand.width; x++)
+            {
+                if (pixels[y * hand.width + x].a <= 16) continue;
+                left = Mathf.Min(left, x); right = Mathf.Max(right, x);
+                bottom = Mathf.Min(bottom, y); top = Mathf.Max(top, y);
+            }
+            if (right < left || top < bottom) return;
+            int width = right - left + 1, height = top - bottom + 1;
+            handUv = new Rect((float)left / hand.width, (float)bottom / hand.height,
+                (float)width / hand.width, (float)height / hand.height);
+            handAspect = (float)width / height;
         }
         private static string LocationTitle(RestoredJourney journey)
         {
@@ -226,6 +280,7 @@ namespace DragonQuest.Prototype
             if (pixel != null) return;
             pixel = new Texture2D(1, 1); pixel.SetPixel(0, 0, Color.white); pixel.Apply();
             scaleSprite = Resources.Load<Texture2D>("PixelArt/DragonScale");
+            LoadHandSprite();
             titleStyle = PrototypeTypography.Style(GUI.skin.label, 48, true); titleStyle.normal.textColor = new Color(0.96f, 0.8f, 0.48f);
             textStyle = PrototypeTypography.Style(GUI.skin.label, 24); textStyle.wordWrap = true; textStyle.normal.textColor = Color.white;
             smallStyle = PrototypeTypography.Style(textStyle, 20); buttonStyle = PrototypeTypography.Style(GUI.skin.button, 24);
