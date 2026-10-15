@@ -9,22 +9,22 @@ namespace DragonQuest.Prototype
         private PrototypeBattleController controller;
         private readonly HeroVictoryAnimation sprites = new HeroVictoryAnimation();
         private Texture2D pixel;
-        private GUIStyle text, title, value, right, small, up, button;
+        private GUIStyle text, title, value, right, small, up;
         public void Initialize(PrototypeBattleController battleController) => controller = battleController;
         private void Update()
         {
             if (controller == null || !controller.IsPostBattleOpen || !Application.isFocused) return;
             var keys = Keyboard.current;
-            if (keys != null && (keys.enterKey.wasPressedThisFrame || keys.spaceKey.wasPressedThisFrame)) controller.ReturnToCity();
+            if (keys != null && (keys.enterKey.wasPressedThisFrame || keys.spaceKey.wasPressedThisFrame
+                || keys.escapeKey.wasPressedThisFrame)) controller.ReturnToCity();
         }
         private void OnGUI()
         {
             if (controller == null || !controller.IsPostBattleOpen) return;
-            Draw(controller.PostBattle, Time.unscaledTime - controller.PostBattleStartedAt,
-                controller.ReturnLabel, controller.ReturnToCity);
+            Draw(controller.PostBattle, Time.unscaledTime - controller.PostBattleStartedAt);
         }
         // Shared by the live game and the Editor validation capture.
-        public void Draw(PostBattleResults result, double elapsed, string continueLabel, System.Action continueAction)
+        public void Draw(PostBattleResults result, double elapsed)
         {
             if (result == null || !result.IsComplete) return;
             EnsureStyles();
@@ -42,15 +42,12 @@ namespace DragonQuest.Prototype
             GUI.Label(new Rect(834, 93, 300, 32), "+" + result.Gold, right);
             float rowHeight = 146;
             for (int i = 0; i < result.Members.Count; i++) DrawMember(result.Members[i], 136 + i * rowHeight, rowHeight, elapsed);
-            float footer = 136 + result.Members.Count * rowHeight;
-            Panel(new Rect(110, footer, 1060, 116));
             if (!string.IsNullOrEmpty(result.BonusMessage))
+            {
+                float footer = 136 + result.Members.Count * rowHeight;
+                Panel(new Rect(110, footer, 1060, 54));
                 GUI.Label(new Rect(142, footer + 12, 990, 28), result.BonusMessage, small);
-            else GUI.Label(new Rect(142, footer + 12, 990, 28), "Vitoria! A equipe recebeu suas recompensas.", small);
-            bool enabled = GUI.enabled; GUI.enabled = enabled && result.CanContinue(elapsed);
-            if (GUI.Button(new Rect(726, footer + 57, 410, 42), continueLabel + "  >", button)) continueAction?.Invoke();
-            GUI.enabled = enabled;
-            GUI.Label(new Rect(142, footer + 63, 500, 30), result.CanContinue(elapsed) ? "Enter / Espaco para continuar" : "Recebendo experiencia...", small);
+            }
             GUI.matrix = previous;
         }
         private void DrawMember(PostBattleMemberResult member, float y, float height, double elapsed)
@@ -100,7 +97,6 @@ namespace DragonQuest.Prototype
             small = PrototypeTypography.Style(text, 24);
             right = new GUIStyle(text) { alignment = TextAnchor.MiddleRight };
             up = PrototypeTypography.Style(text, 36, true); up.alignment = TextAnchor.MiddleCenter;
-            button = PrototypeTypography.Style(GUI.skin.button, 28, true);
             foreach (var style in new[] { text, title, value, small, right, up }) style.normal.textColor = Color.white;
         }
         private void OnDestroy() { if (pixel != null) Destroy(pixel); }

@@ -21,6 +21,7 @@ namespace DragonQuest.Prototype
         private readonly CastleSpellAnimation castleSpells = new CastleSpellAnimation();
         private Texture2D pixel, hand, dragonPortrait, spiritPortrait, kingPortrait, background;
         private GUIStyle title, text, small, centered, button, itemButton, number;
+        private GUISkin battleSkin;
         private Rect handUv = new Rect(0, 0, 1, 1);
         private float handAspect = 1;
         private BattleSession observedBattle;
@@ -102,7 +103,7 @@ namespace DragonQuest.Prototype
                 return;
             }
             if (observedActor == null || observedActor.Team != CombatTeam.Party) return;
-            if (keys.escapeKey.wasPressedThisFrame) { Cancel(); return; }
+            if (keys.escapeKey.wasPressedThisFrame || keys.leftArrowKey.wasPressedThisFrame) { Cancel(); return; }
             bool targeting = selected != null || selectedItem != null;
             int count = targeting ? TargetRowCount() : CommandCount();
             if (targeting) targetIndex = Mathf.Clamp(targetIndex, 0, Mathf.Max(0, count - 1));
@@ -126,16 +127,17 @@ namespace DragonQuest.Prototype
                 if (targeting && count > 0) ExecuteTarget(Targets()[targetIndex]);
                 else if (!targeting) ChooseCommand(commandIndex);
             }
+            else if (!targeting && keys.rightArrowKey.wasPressedThisFrame)
+                ChooseCommand(commandIndex, navigateOnly: true);
         }
 
         private bool InSubmenu => itemMode || menuGroup != AbilityMenuGroup.Direct;
-        private int CommandCount() => itemMode ? observedBattle.Inventory.Items.Count + 1
-            : InSubmenu ? groupAbilities.Count + 1 : rootCommands.Count;
+        private int CommandCount() => itemMode ? observedBattle.Inventory.Items.Count
+            : InSubmenu ? groupAbilities.Count : rootCommands.Count;
         private AbilityDefinition CommandAbility(int index) => InSubmenu
             ? index < groupAbilities.Count ? groupAbilities[index] : null : rootCommands[index].Ability;
         private string CommandLabel(int index)
         {
-            if (InSubmenu && index == CommandCount() - 1) return "Voltar";
             if (itemMode)
             {
                 ItemStack stack = observedBattle.Inventory.Items[index];
@@ -147,7 +149,6 @@ namespace DragonQuest.Prototype
         }
         private bool CommandEnabled(int index)
         {
-            if (InSubmenu && index == CommandCount() - 1) return true;
             if (itemMode) return observedBattle.Inventory.Items[index].Quantity > 0;
             AbilityDefinition ability = CommandAbility(index);
             return ability == null || observedActor.Mp >= ability.MpCost && (!ability.UsesLimit || observedActor.Limit.IsReady);
@@ -159,18 +160,17 @@ namespace DragonQuest.Prototype
         private void Cancel()
         {
             if (selected != null || selectedItem != null) { selected = null; selectedItem = null; targetIndex = 0; }
-            else
+            else if (InSubmenu)
             {
                 itemMode = false; menuGroup = AbilityMenuGroup.Direct; groupAbilities.Clear();
                 commandIndex = rootIndex;
                 actionsScroll = new Vector2(0, BattleCommandMenu.KeepRowVisible(0, commandIndex, CommandCount(), 120));
             }
         }
-        private void ChooseCommand(int index)
+        private void ChooseCommand(int index, bool navigateOnly = false)
         {
             if (index < 0 || index >= CommandCount()) return;
             commandIndex = index;
-            if (InSubmenu && index == CommandCount() - 1) { Cancel(); return; }
             if (!CommandEnabled(index)) return;
             if (!InSubmenu && rootCommands[index].Kind != BattleCommandKind.Ability)
             {
@@ -190,7 +190,11 @@ namespace DragonQuest.Prototype
             {
                 AbilityDefinition ability = CommandAbility(index);
                 if (observedActor.Mp < ability.MpCost || ability.UsesLimit && !observedActor.Limit.IsReady) return;
-                if (ability.Targets == TargetRule.Self) controller.TryPlayerAction(ability, observedActor);
+                if (ability.Targets == TargetRule.Self)
+                {
+                    if (navigateOnly) return;
+                    controller.TryPlayerAction(ability, observedActor);
+                }
                 else selected = ability;
             }
             targetIndex = 0; targetsScroll = Vector2.zero;
@@ -219,6 +223,8 @@ namespace DragonQuest.Prototype
         {
             if (controller == null || !controller.IsActive || controller.IsPostBattleOpen) return;
             EnsureStyles(); ObserveBattle();
+            GUISkin previousSkin = GUI.skin;
+            GUI.skin = battleSkin;
             RectBox(new Rect(0, 0, Screen.width, Screen.height), new Color(.015f, .02f, .045f));
             float scale = Mathf.Min(Screen.width / 1280f, Screen.height / 720f);
             Matrix4x4 previous = GUI.matrix;
@@ -250,6 +256,7 @@ namespace DragonQuest.Prototype
             else if (observedActor != null) DrawActions();
             if (!string.IsNullOrEmpty(controller.ErrorMessage)) GUI.Label(new Rect(40, 668, 560, 25), controller.ErrorMessage, small);
             if (!string.IsNullOrEmpty(GUI.tooltip)) GUI.Label(new Rect(660, 683, 585, 18), GUI.tooltip, small);
+            GUI.skin = previousSkin;
             GUI.matrix = previous;
         }
 
@@ -360,8 +367,7 @@ namespace DragonQuest.Prototype
         private void DrawActions()
         {
             bool targeting = selected != null || selectedItem != null;
-            GUI.Label(new Rect(40, 506, 555, 30), observedActor.Definition.Name + " / " +
-                (itemMode ? "Itens" : menuGroup == AbilityMenuGroup.Magic ? "Magic" : menuGroup == AbilityMenuGroup.Summon ? "Summon" : "Comandos"), title);
+            GUI.Label(new Rect(40, 506, 555, 30), observedActor.Definition.Name, title);
             actionsScroll = GUI.BeginScrollView(new Rect(38, 542, 280, 120), actionsScroll, new Rect(0, 0, 253, CommandCount() * 36));
             for (int i = 0; i < CommandCount(); i++)
             {
@@ -373,7 +379,6 @@ namespace DragonQuest.Prototype
             if (!targeting) return;
             IReadOnlyList<CombatantState> targets = Targets();
             targetIndex = Mathf.Clamp(targetIndex, 0, Mathf.Max(0, targets.Count - 1));
-            GUI.Label(new Rect(337, 510, 278, 30), "Escolha o alvo", text);
             bool group = selected != null && (selected.Targets == TargetRule.AllEnemies || selected.Targets == TargetRule.AllAllies);
             targetsScroll = GUI.BeginScrollView(new Rect(333, 542, 280, 88), targetsScroll, new Rect(0, 0, 253, (group ? 1 : targets.Count) * 36));
             for (int i = 0; i < (group ? Mathf.Min(1, targets.Count) : targets.Count); i++)
@@ -381,12 +386,10 @@ namespace DragonQuest.Prototype
                     group || targetIndex == i, true)) { targetIndex = i; ExecuteTarget(targets[i]); break; }
             GUI.EndScrollView();
             if (targets.Count == 0) GUI.Label(new Rect(337, 546, 270, 78), "Nenhum alvo valido para esta acao.", small);
-            if (CommandButton(new Rect(337, 632, 260, 32), "Voltar", false, true)) Cancel();
         }
 
         private void DrawPartyStatus()
         {
-            GUI.Label(new Rect(665, 508, 190, 28), "PERSONAGEM", small);
             GUI.Label(new Rect(850, 508, 170, 28), "HP", centered);
             GUI.Label(new Rect(1030, 508, 120, 28), "MP", centered);
             GUI.Label(new Rect(1155, 508, 80, 28), "LIMIT", centered);
@@ -534,6 +537,16 @@ namespace DragonQuest.Prototype
         {
             if (pixel != null) return;
             pixel = new Texture2D(1, 1); pixel.SetPixel(0, 0, Color.white); pixel.Apply();
+            battleSkin = Instantiate(GUI.skin);
+            battleSkin.verticalScrollbar = new GUIStyle { fixedWidth = 12, stretchHeight = true };
+            battleSkin.verticalScrollbarUpButton = new GUIStyle { fixedWidth = 12 };
+            battleSkin.verticalScrollbarDownButton = new GUIStyle { fixedWidth = 12 };
+            battleSkin.verticalScrollbarThumb = new GUIStyle { fixedWidth = 12, stretchHeight = true };
+            foreach (GUIStyleState state in new[] { battleSkin.verticalScrollbarThumb.normal,
+                battleSkin.verticalScrollbarThumb.hover, battleSkin.verticalScrollbarThumb.active,
+                battleSkin.verticalScrollbarThumb.focused, battleSkin.verticalScrollbarThumb.onNormal,
+                battleSkin.verticalScrollbarThumb.onHover, battleSkin.verticalScrollbarThumb.onActive,
+                battleSkin.verticalScrollbarThumb.onFocused }) state.background = pixel;
             battleSprites = new PrototypeBattleSprites();
             dragonPortrait = Resources.Load<Texture2D>("DragonPortrait");
             spiritPortrait = Resources.Load<Texture2D>("PixelArt/SpiritBattle"); kingPortrait = Resources.Load<Texture2D>("KingPortrait");
@@ -578,6 +591,9 @@ namespace DragonQuest.Prototype
         }
 
         private void OnDestroy()
-        { if (pixel != null) Destroy(pixel); }
+        {
+            if (battleSkin != null) Destroy(battleSkin);
+            if (pixel != null) Destroy(pixel);
+        }
     }
 }
