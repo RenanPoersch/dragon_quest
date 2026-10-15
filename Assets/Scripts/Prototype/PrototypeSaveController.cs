@@ -38,6 +38,10 @@ namespace DragonQuest.Prototype
         private float messageUntil;
         private int overwriteSlot;
         private PrototypeIntroPresentation intro;
+        private const float MenuFadeInDuration = 1.2f;
+        private float menuFadeInElapsed;
+        private bool menuHasDrawn;
+        private bool IsMenuFadingIn => menuFadeInElapsed < MenuFadeInDuration;
         public bool IsMenuVisible { get; private set; } = true;
         public int ActiveSlot { get; private set; }
 
@@ -98,7 +102,12 @@ namespace DragonQuest.Prototype
         {
             if (store == null) return;
             intro?.Update(Time.unscaledDeltaTime);
-            if (IsMenuVisible) return;
+            if (IsMenuVisible)
+            {
+                if ((intro == null || !intro.IsPlaying) && menuHasDrawn)
+                    menuFadeInElapsed = Mathf.Min(MenuFadeInDuration, menuFadeInElapsed + Time.unscaledDeltaTime);
+                return;
+            }
             if (!IsMenuVisible && !dialogue.IsOpen && !battle.IsBusy && Application.isFocused
                 && Keyboard.current?.f5Key.wasPressedThisFrame == true) SaveManual();
         }
@@ -156,8 +165,9 @@ namespace DragonQuest.Prototype
             // Save notices belong to the journey selection menu, never to the game maps.
             if (store == null || !IsMenuVisible) return;
             if (intro != null && intro.IsPlaying) { intro.Draw(); return; }
-            // A held skip key or click cannot activate a menu option after the fade.
-            if (intro != null && intro.BlocksMenuInput && (Event.current.isKey || Event.current.isMouse))
+            // Wait for the reveal and release of the skip input before allowing menu selection.
+            if ((IsMenuFadingIn || intro != null && intro.BlocksMenuInput)
+                && (Event.current.isKey || Event.current.isMouse))
                 Event.current.Use();
             // Consume menu keys before drawing controls so a focused IMGUI button cannot activate twice.
             if (Event.current.type == EventType.KeyDown && (Event.current.keyCode == KeyCode.Return
@@ -223,6 +233,14 @@ namespace DragonQuest.Prototype
                 Panel(rect); GUI.Label(new Rect(rect.x + 12, rect.y + 6, rect.width - 24, rect.height - 10),
                     message, smallStyle);
             }
+            if (IsMenuFadingIn)
+            {
+                // Fade the whole menu, including the cursor and highlighted buttons, from black.
+                GUI.matrix = Matrix4x4.identity; GUI.depth = -101;
+                GUI.color = new Color(0, 0, 0, Mathf.SmoothStep(1, 0, menuFadeInElapsed / MenuFadeInDuration));
+                GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), pixel);
+            }
+            if (Event.current.type == EventType.Repaint) menuHasDrawn = true;
             GUI.matrix = previousMatrix; GUI.depth = previousDepth; GUI.color = previousColor;
         }
         private bool MenuButton(Rect rect, string label, int option, GUIStyle style)
