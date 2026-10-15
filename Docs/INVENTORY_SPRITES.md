@@ -17,6 +17,9 @@ Exportacao para 64 x 64 por nearest-neighbor, preservando o canal alpha da gerac
 As 19 definicoes de materia usam apenas quatro sprites: verde para magia, azul para suporte,
 vermelho para invocacao e roxo para aprimoramento fisico. A Escama ancestral conserva a arte existente.
 
+A Armadura draconica tem escamas vermelhas, sombras em vinho, detalhes dourados e uma gema ambar.
+A cor representa sua afinidade com fogo e a absorcao do Meteoro flamejante na batalha final.
+
 `InventoryIconCatalog` resolve equipamentos pela definicao, consumiveis pelo ID e materias pelo tipo.
 `InventoryPixelArt` carrega e compartilha as texturas de Resources. Os PNGs tambem sao importados
 como Sprite Single, com pivot central, 64 pixels por unidade, Point, sem mipmaps e sem compressao.
