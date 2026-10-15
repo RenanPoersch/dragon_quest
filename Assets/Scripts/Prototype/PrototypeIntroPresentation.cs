@@ -151,16 +151,14 @@ namespace DragonQuest.Prototype
                 float advance = titleStyle.CalcSize(new GUIContent(letter)).x;
                 if (i < sequence.VisibleLetters)
                 {
-                    GUI.color = new Color(.12f, .12f, .2f, alpha);
-                    GUI.Label(new Rect(x + 3, 112, advance + 8, 135), letter, titleStyle);
-                    GUI.color = new Color(1, .94f, .79f, alpha);
+                    GUI.color = new Color(0, 0, 0, alpha);
                     GUI.Label(new Rect(x, 109, advance + 8, 135), letter, titleStyle);
                 }
                 x += advance + spacing;
             }
             float reveal = Mathf.Clamp01(sequence.VisibleLetters / (float)title.Length);
-            GUI.color = new Color(.13f, .12f, .21f, alpha * .85f);
-            GUI.DrawTexture(new Rect((1280 - width * reveal) / 2, 237, width * reveal, 3), Texture2D.whiteTexture);
+            GUI.color = new Color(0, 0, 0, alpha);
+            GUI.DrawTexture(new Rect((1280 - width * reveal) / 2, 237, width * reveal, 5), Texture2D.whiteTexture);
         }
 
         private void EnsureStyles()
