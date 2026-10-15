@@ -10,6 +10,7 @@ namespace DragonQuest.Prototype
         private PrototypeBattleController battle;
         private GUIStyle titleStyle;
         private GUIStyle bodyStyle;
+        private GUIStyle choiceStyle;
         private Texture2D panelTexture;
 
         public void Initialize(PlayerInteraction playerInteraction, DialogueController dialogueController,
@@ -41,7 +42,7 @@ namespace DragonQuest.Prototype
                 {
                     var choices=dialogue.Choices;
                     for(int i=0;i<choices.Count;i++)
-                        if(GUI.Button(new Rect(30,panelTop+120+i*44,width-60,38),(i+1)+". "+choices[i]))
+                        if(GUI.Button(new Rect(30,panelTop+120+i*44,width-60,38),(i+1)+". "+choices[i], choiceStyle))
                         {dialogue.Choose(i);break;}
                 }
                 GUI.Label(new Rect(30, panelTop + (choosing ? 262 : 145), width - 60, 30), choosing
@@ -65,9 +66,10 @@ namespace DragonQuest.Prototype
         private void EnsureStyles()
         {
             if (titleStyle != null) return;
-            titleStyle = new GUIStyle(GUI.skin.label) { fontSize = 17, fontStyle = FontStyle.Bold };
+            titleStyle = PrototypeTypography.Style(GUI.skin.label, 24, true);
             titleStyle.normal.textColor = new Color(0.94f, 0.80f, 0.48f);
-            bodyStyle = new GUIStyle(GUI.skin.label) { fontSize = 14, wordWrap = true };
+            bodyStyle = PrototypeTypography.Style(GUI.skin.label, 20); bodyStyle.wordWrap = true;
+            choiceStyle = PrototypeTypography.Style(GUI.skin.button, 20);
             bodyStyle.normal.textColor = new Color(0.93f, 0.93f, 0.88f);
             panelTexture = new Texture2D(1, 1);
             panelTexture.SetPixel(0, 0, new Color(0.08f, 0.12f, 0.11f, 0.92f));

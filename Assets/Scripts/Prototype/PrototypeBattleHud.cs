@@ -89,7 +89,7 @@ namespace DragonQuest.Prototype
 
         private void Update()
         {
-            if (controller == null || !controller.IsActive) { numbers.Clear(); return; }
+            if (controller == null || !controller.IsActive || controller.IsPostBattleOpen) { numbers.Clear(); return; }
             ObserveBattle();
             if (controller.IsPresentingAction) return;
             Keyboard keys = Keyboard.current;
@@ -215,7 +215,7 @@ namespace DragonQuest.Prototype
 
         private void OnGUI()
         {
-            if (controller == null || !controller.IsActive) return;
+            if (controller == null || !controller.IsActive || controller.IsPostBattleOpen) return;
             EnsureStyles(); ObserveBattle();
             RectBox(new Rect(0, 0, Screen.width, Screen.height), new Color(.015f, .02f, .045f));
             float scale = Mathf.Min(Screen.width / 1280f, Screen.height / 720f);
@@ -509,12 +509,13 @@ namespace DragonQuest.Prototype
             battleSprites = new PrototypeBattleSprites();
             dragonPortrait = Resources.Load<Texture2D>("DragonPortrait");
             spiritPortrait = Resources.Load<Texture2D>("SpiritPortrait"); kingPortrait = Resources.Load<Texture2D>("KingPortrait");
-            title = new GUIStyle(GUI.skin.label) { fontSize = 21, fontStyle = FontStyle.Bold };
-            text = new GUIStyle(GUI.skin.label) { fontSize = 18, wordWrap = true };
-            small = new GUIStyle(GUI.skin.label) { fontSize = 13, wordWrap = true };
-            centered = new GUIStyle(GUI.skin.label) { fontSize = 17, alignment = TextAnchor.MiddleCenter };
-            number = new GUIStyle(centered) { fontSize = 30, fontStyle = FontStyle.Bold };
-            button = new GUIStyle(GUI.skin.label) { fontSize = 17, alignment = TextAnchor.MiddleLeft, padding = new RectOffset(50, 4, 2, 2) };
+            title = PrototypeTypography.Style(GUI.skin.label, 28, true);
+            text = PrototypeTypography.Style(GUI.skin.label, 24); text.wordWrap = true;
+            small = PrototypeTypography.Style(GUI.skin.label, 16); small.wordWrap = true;
+            centered = PrototypeTypography.Style(GUI.skin.label, 24); centered.alignment = TextAnchor.MiddleCenter;
+            number = PrototypeTypography.Style(centered, 40, true);
+            button = PrototypeTypography.Style(GUI.skin.label, 24);
+            button.alignment = TextAnchor.MiddleLeft; button.padding = new RectOffset(50, 4, 2, 2);
             itemButton = InventoryPixelArt.ButtonStyle(button, 86);
             foreach (GUIStyle style in new[] { title, text, small, centered, button, itemButton })
             { style.normal.textColor = Color.white; style.hover.textColor = Color.white; style.active.textColor = Color.white; }

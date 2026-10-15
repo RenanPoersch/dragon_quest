@@ -65,9 +65,9 @@ namespace DragonQuest.Prototype
         {
             if(pixel!=null) return;
             pixel=new Texture2D(1,1);pixel.SetPixel(0,0,Color.white);pixel.Apply();
-            titleStyle=new GUIStyle(GUI.skin.label){fontSize=23,fontStyle=FontStyle.Bold,wordWrap=true};titleStyle.normal.textColor=new Color(0.96f,0.8f,0.48f);
-            textStyle=new GUIStyle(GUI.skin.label){fontSize=18,wordWrap=true};textStyle.normal.textColor=Color.white;
-            smallStyle=new GUIStyle(textStyle){fontSize=14};buttonStyle=new GUIStyle(GUI.skin.button){fontSize=15};
+            titleStyle=PrototypeTypography.Style(GUI.skin.label,28,true);titleStyle.wordWrap=true;titleStyle.normal.textColor=new Color(0.96f,0.8f,0.48f);
+            textStyle=PrototypeTypography.Style(GUI.skin.label,24);textStyle.wordWrap=true;textStyle.normal.textColor=Color.white;
+            smallStyle=PrototypeTypography.Style(textStyle,16);buttonStyle=PrototypeTypography.Style(GUI.skin.button,20);
         }
         private void OnDestroy() {if(pixel!=null) Destroy(pixel);}
     }

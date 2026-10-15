@@ -142,10 +142,10 @@ namespace DragonQuest.Prototype
         {
             if (pixel != null) return;
             pixel = new Texture2D(1, 1); pixel.SetPixel(0, 0, Color.white); pixel.Apply();
-            title = new GUIStyle(GUI.skin.label) { fontSize = 21, fontStyle = FontStyle.Bold };
-            text = new GUIStyle(GUI.skin.label) { fontSize = 18, wordWrap = true };
-            small = new GUIStyle(GUI.skin.label) { fontSize = 14, wordWrap = true };
-            button = new GUIStyle(GUI.skin.button) { fontSize = 15, wordWrap = true };
+            title = PrototypeTypography.Style(GUI.skin.label, 28, true);
+            text = PrototypeTypography.Style(GUI.skin.label, 24); text.wordWrap = true;
+            small = PrototypeTypography.Style(GUI.skin.label, 20); small.wordWrap = true;
+            button = PrototypeTypography.Style(GUI.skin.button, 20); button.wordWrap = true;
             iconButton = InventoryPixelArt.ButtonStyle(button);
             title.normal.textColor = new Color(0.96f, 0.8f, 0.48f); text.normal.textColor = Color.white;
             small.normal.textColor = new Color(0.85f, 0.9f, 0.95f);

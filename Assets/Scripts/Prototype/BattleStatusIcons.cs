@@ -39,8 +39,11 @@ namespace DragonQuest.Prototype
         }
         public void Draw(float x, float y, CombatantState member)
         {
-            if (count == null) count = new GUIStyle(GUI.skin.label) { fontSize = 9, fontStyle = FontStyle.Bold,
-                alignment = TextAnchor.LowerRight, padding = new RectOffset(0,0,0,0) };
+            if (count == null)
+            {
+                count = PrototypeTypography.Style(GUI.skin.label, 12, true);
+                count.alignment = TextAnchor.LowerRight; count.padding = new RectOffset(0,0,0,0);
+            }
             int index = 0;
             foreach (StatusIndicator indicator in CombatStatuses.Active(member))
             {

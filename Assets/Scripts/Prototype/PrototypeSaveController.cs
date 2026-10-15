@@ -226,10 +226,10 @@ namespace DragonQuest.Prototype
             if (pixel != null) return;
             pixel = new Texture2D(1, 1); pixel.SetPixel(0, 0, Color.white); pixel.Apply();
             scaleSprite = Resources.Load<Texture2D>("PixelArt/DragonScale");
-            titleStyle = new GUIStyle(GUI.skin.label) {fontSize = 38, fontStyle = FontStyle.Bold}; titleStyle.normal.textColor = new Color(0.96f, 0.8f, 0.48f);
-            textStyle = new GUIStyle(GUI.skin.label) {fontSize = 20, wordWrap = true}; textStyle.normal.textColor = Color.white;
-            smallStyle = new GUIStyle(textStyle) {fontSize = 16}; buttonStyle = new GUIStyle(GUI.skin.button) {fontSize = 18};
-            titleButtonStyle = new GUIStyle(GUI.skin.label) {fontSize = 28, alignment = TextAnchor.MiddleCenter};
+            titleStyle = PrototypeTypography.Style(GUI.skin.label, 48, true); titleStyle.normal.textColor = new Color(0.96f, 0.8f, 0.48f);
+            textStyle = PrototypeTypography.Style(GUI.skin.label, 24); textStyle.wordWrap = true; textStyle.normal.textColor = Color.white;
+            smallStyle = PrototypeTypography.Style(textStyle, 20); buttonStyle = PrototypeTypography.Style(GUI.skin.button, 24);
+            titleButtonStyle = PrototypeTypography.Style(GUI.skin.label, 36, true); titleButtonStyle.alignment = TextAnchor.MiddleCenter;
             titleButtonStyle.normal.textColor = Color.white;
             titleButtonStyle.hover.textColor = new Color(0.96f, 0.8f, 0.48f);
             titleButtonStyle.active.textColor = new Color(0.96f, 0.8f, 0.48f);

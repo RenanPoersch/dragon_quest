@@ -50,6 +50,9 @@ namespace DragonQuest.Prototype
         public string ErrorMessage { get; private set; }
         public BattleRewards Rewards { get; private set; }
         public string RewardMessage { get; private set; }
+        public PostBattleResults PostBattle { get; private set; }
+        public bool IsPostBattleOpen { get; private set; }
+        public float PostBattleStartedAt { get; private set; }
         public CombatantState PresentingActor { get; private set; }
         public AbilityDefinition PresentingAbility { get; private set; }
         public System.Collections.Generic.IReadOnlyList<CombatantState> PresentingTargets { get; private set; } = new CombatantState[0];
@@ -79,6 +82,9 @@ namespace DragonQuest.Prototype
             otherMenuOpen = externalMenuOpen ?? (() => false);
             Party = restoredParty ?? PrototypePartyFactory.Create();
             Rewards = new BattleRewards(progress, Party);
+            var postBattleHud = GetComponent<PrototypePostBattleHud>();
+            if (postBattleHud == null) postBattleHud = gameObject.AddComponent<PrototypePostBattleHud>();
+            postBattleHud.Initialize(this);
             Dragon = dragonProgress ?? new DragonProgress(); secrets = ancientSecrets; recoverAtInn = recovery;
             showEnding=endingPresentation;
             trackingWalk = false;
@@ -133,6 +139,8 @@ namespace DragonQuest.Prototype
         private void StartEncounter(BattleSession encounter, bool dragonEncounter)
         {
             Session = encounter; IsDragonEncounter = dragonEncounter;
+            PostBattle = new PostBattleResults(Party, encounter);
+            IsPostBattleOpen = false; PostBattleStartedAt = 0;
             RandomEncounter = RandomEncounterType.None;
             PresentingActor = null; PresentingAbility = null; PresentingTargets = new CombatantState[0];
             PresentingPartyTargets = new CombatantState[0];
@@ -215,6 +223,9 @@ namespace DragonQuest.Prototype
             {
                 if (Rewards.TryClaimExperience(Session, out string message)) RewardMessage = message;
             }
+            if (PostBattleResults.IsVictory(Session) && !PostBattle.IsComplete)
+                PostBattle.Complete(Party, Rewards.HasClaimed(Session),
+                    IsDragonEncounter && Dragon.IsDefeated ? "Armadura draconica recebida!" : "");
             if (notifiedCompletion) return;
             notifiedCompletion = true; EncounterCompleted?.Invoke(Session.Outcome);
         }
@@ -222,6 +233,11 @@ namespace DragonQuest.Prototype
         private void Update()
         {
             if (IsPresentingAction) return;
+            if (IsActive && PostBattle?.IsComplete == true)
+            {
+                if (!IsPostBattleOpen) { IsPostBattleOpen = true; PostBattleStartedAt = Time.unscaledTime; }
+                return;
+            }
             Keyboard keyboard = Keyboard.current;
             if (!HasEnded && !IsActive && !otherMenuOpen() && !dialogue.IsOpen && keyboard != null && Application.isFocused)
             {
@@ -270,6 +286,8 @@ namespace DragonQuest.Prototype
         public void ReturnToCity()
         {
             if (!IsActive || IsPresentingAction || Session.Outcome == BattleOutcome.None) return;
+            if (PostBattleResults.IsVictory(Session) && (!IsPostBattleOpen || !PostBattle.CanContinue(Time.unscaledTime - PostBattleStartedAt))) return;
+            IsPostBattleOpen = false;
             if(IsCastleEncounter&&Session.Outcome==BattleOutcome.Completed)
             {
                 IsActive=false;HasEnded=true;pendingEnemy=null;movement.SetMovementEnabled(false);
