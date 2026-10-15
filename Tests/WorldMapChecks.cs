@@ -222,7 +222,7 @@ internal static class WorldMapChecks
         var world = new Paths(PrototypeWorldLayout.Bounds, WorldBlocks(), PrototypeWorldLayout.Spawn, true);
         var west = new Paths(PrototypeWorldLayout.ForestBounds, PrototypeWorldLayout.CreateForestBlocks(false), PrototypeWorldLayout.ForestSpawn, npc: new Vector2(1.5f, 1));
         var east = new Paths(PrototypeWorldLayout.ForestBounds, PrototypeWorldLayout.CreateForestBlocks(true), PrototypeWorldLayout.ForestSpawn, npc: new Vector2(1.5f, 1));
-        var castle = new Paths(PrototypeWorldLayout.CastleBounds, PrototypeWorldLayout.CastleBlocks, PrototypeWorldLayout.CastleSpawn, npc: PrototypeWorldLayout.Throne);
+        var castle = new Paths(ThroneRoomLayout.Bounds,Array.Empty<CityBlock>(),ThroneRoomLayout.Spawn,floor:ThroneRoomLayout.IsWalkable,step:.1f);
         var ruins = new Paths(PrototypeRuinsLayout.Bounds,Array.Empty<CityBlock>(),PrototypeRuinsLayout.Spawn);
         var volcano=new Paths(PrototypeVolcanoLayout.Bounds,PrototypeVolcanoLayout.Blocks.Concat(new[]{new CityBlock("Dragao",0,8,1.8f,1.8f,"",true,0)}),PrototypeVolcanoLayout.Spawn);
         var inn=new Paths(PrototypeInnLayout.Bounds,Array.Empty<CityBlock>(),PrototypeInnLayout.Spawn,floor:PrototypeInnLayout.IsWalkable,step:.1f);
@@ -273,7 +273,7 @@ internal static class WorldMapChecks
             Assert(!world.Walkable(water), "Mar e baia nao podem permitir caminhar fora da ilha.");
         Assert(west.Accessible(PrototypeWorldLayout.LocalExit) && east.Accessible(PrototypeWorldLayout.LocalExit), "Duas florestas devem ter saidas acessiveis.");
         Assert(west.Accessible(new Vector2(1.5f, 0)) && east.Accessible(new Vector2(1.5f, 0)), "Moradores das florestas precisam ser alcancaveis.");
-        Assert(castle.Accessible(PrototypeWorldLayout.CastleExit) && castle.Accessible(PrototypeWorldLayout.Throne + Vector2.down), "Castelo precisa de caminho ate o trono e a saida.");
+        Assert(castle.Accessible(ThroneRoomLayout.Exit) && castle.Accessible(ThroneRoomLayout.Audience), "Castelo precisa de caminho ate o trono e a saida.");
         Assert(CityLayoutChecks.Accessible(PrototypeWorldLayout.CastleDoor) && CityLayoutChecks.Accessible(PrototypeWorldLayout.CityExit),
             "Periferia precisa permitir entrar no castelo e voltar a ilha.");
         foreach (IReadOnlyList<CityBlock> icon in new[] { PrototypeWorldLayout.CastleIcon, PrototypeWorldLayout.ForestIcon })

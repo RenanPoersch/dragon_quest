@@ -14,6 +14,26 @@ namespace DragonQuest.Exploration
         private float requestedSize;
         private bool sideView;
         private float sideHeight;
+        private bool perspectiveView;
+        private Vector3 perspectivePosition;
+        private Quaternion perspectiveRotation;
+        private float perspectiveFieldOfView, perspectiveAspect;
+        public void SetPerspectiveView(bool enabled, Vector3 position = default, Quaternion rotation = default,
+            float fieldOfView = 45f, float referenceAspect = 16f/9f)
+        {
+            if(perspectiveView!=enabled)
+            {
+                if(view==null) view=GetComponent<Camera>();
+                view.rect=new Rect(0,0,1,1); view.ResetAspect();
+            }
+            perspectiveView=enabled; perspectivePosition=position; perspectiveRotation=rotation;
+            perspectiveFieldOfView=fieldOfView; perspectiveAspect=referenceAspect;
+        }
+        public static float PerspectiveFieldOfView(float fieldOfView,float displayAspect,float referenceAspect)
+        {
+            double halfTan=System.Math.Tan(fieldOfView*System.Math.PI/360);
+            return (float)(2*System.Math.Atan(halfTan*System.Math.Max(1,referenceAspect/System.Math.Max(.1f,displayAspect)))*180/System.Math.PI);
+        }
         private bool artworkFrame, artworkContain;
         private float artworkAspect = 16f / 9f;
 
@@ -43,12 +63,12 @@ namespace DragonQuest.Exploration
             coveredGroundBounds = groundCoverage;
             fixedFrame = fixedCamera;
             view = GetComponent<Camera>();
-            view.orthographic = true;
+            view.orthographic = !perspectiveView;
             requestedSize = Mathf.Max(0.1f, orthographicSize);
             UpdateSize();
             view.nearClipPlane = 0.1f;
             view.farClipPlane = 150f;
-            transform.rotation = sideView ? Quaternion.identity : Quaternion.AngleAxis(ObliqueProjection.YawDegrees, Vector3.forward)
+            transform.rotation = perspectiveView ? perspectiveRotation : sideView ? Quaternion.identity : Quaternion.AngleAxis(ObliqueProjection.YawDegrees, Vector3.forward)
                 * Quaternion.Euler(-ObliqueProjection.TiltDegrees, 0, 0);
             transform.position = GetFollowPosition();
         }
@@ -64,6 +84,14 @@ namespace DragonQuest.Exploration
 
         private void UpdateSize()
         {
+            if (perspectiveView)
+            {
+                float width=view.targetTexture != null ? view.targetTexture.width : Screen.width;
+                float height=view.targetTexture != null ? view.targetTexture.height : Screen.height;
+                view.rect=new Rect(0,0,1,1); view.aspect=width/Mathf.Max(1,height);
+                view.fieldOfView=PerspectiveFieldOfView(perspectiveFieldOfView,view.aspect,perspectiveAspect);
+                return;
+            }
             if (artworkFrame)
             {
                 float width=view.targetTexture != null ? view.targetTexture.width : Screen.width;
@@ -80,6 +108,7 @@ namespace DragonQuest.Exploration
 
         private Vector3 GetFollowPosition()
         {
+            if (perspectiveView) return perspectivePosition;
             if (sideView)
             {
                 float halfWidth = view.orthographicSize * view.aspect;

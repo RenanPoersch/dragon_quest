@@ -20,6 +20,8 @@ namespace DragonQuest.Exploration
         private float lateralMin, lateralMax;
         private float lateralSpeedMultiplier = 1, lateralVelocity;
         public bool IsSideView => lateralFloor != null;
+        public bool IsFrontalView { get; private set; }
+        public void SetFrontalView(bool enabled) => IsFrontalView=enabled;
 
         public void SetLateralPath(System.Func<float, float> floor, float minX = 0, float maxX = 0, float speedMultiplier = 1)
         {
@@ -61,6 +63,7 @@ namespace DragonQuest.Exploration
 
             // Clamp evita que a diagonal seja mais rápida que os eixos.
             movement = IsSideView ? new Vector2(horizontal, 0)
+                : IsFrontalView ? Vector2.ClampMagnitude(new Vector2(horizontal, vertical), 1f)
                 : ObliqueProjection.GroundDirection(Vector2.ClampMagnitude(new Vector2(horizontal, vertical), 1f));
             if (movement.sqrMagnitude > 0f) FacingDirection = movement.normalized;
         }

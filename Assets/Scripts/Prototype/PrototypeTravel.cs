@@ -54,7 +54,7 @@ namespace DragonQuest.Prototype
                 new MapDefinition(World, "ILHA / MAPA GLOBAL", PrototypeWorldLayout.Bounds, PrototypeWorldLayout.Spawn, 6.85f),
                 new MapDefinition(City, "PERIFERIA DO CASTELO", PrototypeCityLayout.Bounds, PrototypeWorldLayout.CityEntry, 6,
                     coveredGroundBounds: PrototypeCityLayout.TerrainBounds),
-                new MapDefinition(Castle, "INTERIOR DO CASTELO", PrototypeWorldLayout.CastleBounds, PrototypeWorldLayout.CastleSpawn, 9, false, true),
+                new MapDefinition(Castle, "SALA DO TRONO", ThroneRoomLayout.Bounds, ThroneRoomLayout.Spawn, 9, false, true),
                 new MapDefinition(WestForest, "PEDREIRA DOS MONOLITOS", QuarryLayout.Bounds, QuarryLayout.Spawn, 8, false, true),
                 new MapDefinition(EastForest, "FLORESTA LESTE", EastForestLayout.Bounds, EastForestLayout.Spawn, 8, false, true),
                 new MapDefinition(Ruins,"RUINAS ANTIGAS",PrototypeRuinsLayout.Bounds,PrototypeRuinsLayout.Spawn,PrototypeRuinsLayout.CameraSize),
@@ -76,7 +76,7 @@ namespace DragonQuest.Prototype
                 EastForestLayout.Exit, PrototypeWorldLayout.EastForest + Vector2.down * 2.5f, exitSize: EastForestLayout.ExitSize);
             Connect(connections, World, Ruins, PrototypeWorldLayout.Ruins,
                 PrototypeRuinsLayout.Exit, PrototypeWorldLayout.RuinsReturn);
-            Connect(connections, City, Castle, PrototypeWorldLayout.CastleDoor, PrototypeWorldLayout.CastleExit, PrototypeCityLayout.CastleReturn);
+            Connect(connections, City, Castle, PrototypeWorldLayout.CastleDoor, ThroneRoomLayout.Exit, PrototypeCityLayout.CastleReturn);
             Connect(connections, City, items.MapId, PrototypeCityLayout.ItemDoor, items.Exit, PrototypeCityLayout.DoorReturn(PrototypeCityLayout.ItemDoor), entranceSize: PrototypeCityLayout.DoorSize);
             Connect(connections, City, materia.MapId, PrototypeCityLayout.MateriaDoor, materia.Exit, PrototypeCityLayout.DoorReturn(PrototypeCityLayout.MateriaDoor), entranceSize: PrototypeCityLayout.DoorSize);
             Connect(connections, City, WeaponShopLayout.MapId, PrototypeCityLayout.EquipmentDoor, WeaponShopLayout.Exit, PrototypeCityLayout.DoorReturn(PrototypeCityLayout.EquipmentDoor), entranceSize: PrototypeCityLayout.DoorSize);

@@ -29,6 +29,9 @@ namespace DragonQuest.Prototype
             foreach(GameObject map in maps.Values) map.SetActive(false);
             player.SetMovementEnabled(false);player.gameObject.SetActive(false);follow.enabled=false;
             scenery.Show("Cena final / "+result,ObliqueScenery.EndingSceneData(result),transform);
+            view.orthographic=true;view.rect=new Rect(0,0,1,1);view.ResetAspect();
+            view.transform.rotation=Quaternion.AngleAxis(ObliqueProjection.YawDegrees,Vector3.forward)
+                *Quaternion.Euler(-ObliqueProjection.TiltDegrees,0,0);
             view.orthographicSize=5.8f;
             view.transform.position=-view.transform.forward*ObliqueProjection.Distance;
             view.backgroundColor=result==GameEnding.KingFreed?new Color(0.22f,0.33f,0.3f):new Color(0.13f,0.1f,0.17f);

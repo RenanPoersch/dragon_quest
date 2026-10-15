@@ -13,6 +13,6 @@ A direção comum usa pedra escura, estandartes e tapete violeta com ouro envelh
 
 Prompts: [1](01-obliqua-classica.prompt.txt), [2](02-frontal-monumental.prompt.txt), [3](03-isometrica-diagonal.prompt.txt), [4](04-lateral-teatral.prompt.txt).
 
-A escolha visual está pendente. Estes arquivos são propostas; nenhuma câmera, colisão, sprite do rei, interação ou cena do jogo foi alterada nesta atividade. A implementação da opção escolhida deverá adaptar piso, escala, profundidade e posicionamento do rei à câmera aprovada.
+O usuário escolheu a opção **2 — Frontal monumental**. A implementação com câmera em perspectiva real, redução natural dos personagens com a distância e subida da escadaria está descrita em [THRONE_ROOM_PIXEL_ART.md](../../THRONE_ROOM_PIXEL_ART.md). As quatro imagens originais continuam arquivadas para comparação.
 
 Validação dos entregáveis: quatro PNGs legíveis de 1672×941, originais preservados byte a byte, quatro perspectivas distintas conferidas visualmente, quatro prompts integrais arquivados e todos os links locais conferidos.

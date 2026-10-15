@@ -22,7 +22,7 @@ foreach ($saveFolder in @('Combat', 'Equipment', 'Inventory', 'Shops', 'Progress
 $saveArguments += Join-Path $saveProjectRoot 'Assets/Scripts/Exploration/ExplorationProgress.cs'
 foreach ($saveName in @('PrototypePartyFactory', 'PrototypeShopFactory', 'PrototypeBattleFactory', 'PrototypeCastleBattleFactory',
     'PrototypeTravel', 'PrototypeWorldLayout', 'PrototypeCityLayout', 'PrototypeSecretLayout', 'PrototypeRuinsLayout', 'PrototypeVolcanoLayout', 'PrototypeInnLayout',
-    'QuarryLayout', 'EastForestLayout', 'CompactShopLayout', 'WeaponShopLayout')) {
+    'QuarryLayout', 'EastForestLayout', 'CompactShopLayout', 'WeaponShopLayout', 'ThroneRoomLayout')) {
     $saveArguments += Join-Path $saveProjectRoot "Assets/Scripts/Prototype/$saveName.cs"
 }
 $saveArguments += Join-Path $saveProjectRoot 'Assets/Scripts/Exploration/ObliqueProjection.cs'

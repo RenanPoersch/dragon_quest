@@ -1,3 +1,5 @@
+> Apresentação atual da exploração: [THRONE_ROOM_PIXEL_ART.md](THRONE_ROOM_PIXEL_ART.md). O rei usa `TyrantSeated.png`, sem cadeira, sobre o trono da pintura escolhida. `TyrantThrone.png` permanece como referência de identidade para a criação do novo sprite. O registro abaixo descreve a implementação anterior e as artes de batalha.
+
 # Tirano e espírito no castelo
 
 O interior do castelo usa `TyrantThrone.png`: o rei normal sentado, sem maça ou pose de combate. A imagem inclui o trono e preserva a identidade do rei em `NpcRoster`. Os antigos blocos do trono ficam sem renderização e conservam seus colisores. O espírito usa a imagem única de `SpiritBattle.png`, copiada sem alterações do modelo 3 escolhido em `ArtInputs/SpiritVariants/03-espectro-glacial.png`. O azul é apenas visual: o nome, as afinidades neutras e as habilidades Drenar vida, Correntes e Caos Magic continuam iguais.

@@ -32,7 +32,8 @@ namespace DragonQuest.Exploration
             walk.Advance(distance, Time.deltaTime, movement.HasMovementInput, teleported);
             var facing = movement.IsSideView
                 ? movement.FacingDirection.x < 0 ? PixelDirection.Left : PixelDirection.Right
-                : PixelSpriteLayout.Facing(movement.FacingDirection, diagonalAtlas != null);
+                : PixelSpriteLayout.Facing(movement.IsFrontalView ? ObliqueProjection.GroundDirection(movement.FacingDirection)
+                    : movement.FacingDirection, diagonalAtlas != null);
             var source = PixelSpriteLayout.IsDiagonal(facing) ? diagonalAtlas : atlas;
             int pose = PixelSpriteLayout.WalkFrame(facing, walk.Distance, walk.Walking);
             var next = source.Sprites[pose];

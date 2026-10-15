@@ -285,17 +285,15 @@ namespace DragonQuest.Prototype
         private Transform CreateCastle(List<Interactable> interactions)
         {
             Transform castle = Group("Castelo - interior");
-            DrawBlocks(PrototypeWorldLayout.CastleBlocks, castle);
-            // O novo sprite inclui o trono; os antigos blocos conservam apenas a colisao.
-            foreach (Transform block in castle)
-                if (block.name == "Trono - encosto" || block.name == "Trono - ouro")
-                    foreach (Renderer renderer in block.GetComponentsInChildren<Renderer>()) renderer.enabled = false;
+            castle.gameObject.AddComponent<ThroneRoomPixelScenery>().Build();
             CreatePassage("Saida do castelo", PrototypeTravel.Castle, castle, PrototypeTravel.City);
-            GameObject king=Entity("Tirano",PrototypeWorldLayout.Throne,castle);
+            GameObject king=Entity("Tirano",ThroneRoomLayout.King,castle);
             BoxCollider2D collider=king.AddComponent<BoxCollider2D>();collider.size=new Vector2(0.55f,0.6f);collider.sharedMaterial=frictionless;
-            scenery.PixelPerson(king.transform, "TyrantThrone");
-            GameObject spirit=Entity("Espirito junto ao trono",PrototypeWorldLayout.Throne+Vector2.right*1.8f,castle);
-            scenery.PixelPerson(spirit.transform, "SpiritBattle");spirit.SetActive(false);
+            scenery.PixelPerson(king.transform, "TyrantSeated");
+            king.AddComponent<ThroneRoomDepth>();
+            GameObject spirit=Entity("Espirito junto ao trono",ThroneRoomLayout.Spirit,castle);
+            scenery.PixelPerson(spirit.transform, "SpiritBattle");
+            spirit.AddComponent<ThroneRoomDepth>();spirit.SetActive(false);
             TyrantInteraction tyrant=king.AddComponent<TyrantInteraction>();
             tyrant.Initialize(()=>battle?.Party,()=>battle.StartCastleBattle(),spirit);
             interactions.Add(tyrant);

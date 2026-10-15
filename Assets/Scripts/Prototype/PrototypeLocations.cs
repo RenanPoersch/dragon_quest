@@ -12,6 +12,7 @@ namespace DragonQuest.Prototype
         private PrototypeTravel navigation;
         private PlayerMovement player;
         private CameraFollow cameraFollow;
+        private ThroneRoomDepth throneDepth;
         private System.Func<bool> travelBlocked;
 
         public string LocationId => navigation?.Current.Id ?? PrototypeTravel.World;
@@ -25,6 +26,7 @@ namespace DragonQuest.Prototype
         {
             mapRoots = roots; player = hero; cameraFollow = camera;
             navigation = travel; travelBlocked = blocked;
+            throneDepth=player.gameObject.AddComponent<ThroneRoomDepth>(); throneDepth.enabled=false;
             foreach (MapDefinition map in navigation.Maps)
                 if (!mapRoots.ContainsKey(map.Id) || mapRoots[map.Id] == null)
                     throw new System.ArgumentException("Cenario ausente: " + map.Id);
@@ -74,8 +76,14 @@ namespace DragonQuest.Prototype
             bool quarry = LocationId == PrototypeTravel.WestForest;
             bool inn = LocationId == PrototypeTravel.Inn;
             bool weapons = LocationId == WeaponShopLayout.MapId;
+            bool throne = LocationId == PrototypeTravel.Castle;
             CompactShopLayout compact=CompactShopLayout.Find(LocationId);
-            player.SetMovementConstraint(compact != null ? compact.ConstrainMove : weapons ? WeaponShopLayout.ConstrainMove : inn ? PrototypeInnLayout.ConstrainMove : forest ? EastForestLayout.ConstrainMove : quarry ? QuarryLayout.ConstrainMove : (System.Func<Vector2,Vector2,Vector2>)null);
+            player.SetMovementConstraint(throne ? ThroneRoomLayout.ConstrainMove : compact != null ? compact.ConstrainMove : weapons ? WeaponShopLayout.ConstrainMove : inn ? PrototypeInnLayout.ConstrainMove : forest ? EastForestLayout.ConstrainMove : quarry ? QuarryLayout.ConstrainMove : (System.Func<Vector2,Vector2,Vector2>)null);
+            if (throne) arrival=ThroneRoomLayout.SafeSavedPosition(arrival);
+            player.SetFrontalView(throne);
+            throneDepth.enabled=throne;
+            cameraFollow.SetPerspectiveView(throne,ThroneRoomLayout.CameraPosition,ThroneRoomLayout.CameraRotation,
+                ThroneRoomLayout.FieldOfView,ThroneRoomLayout.ArtAspect);
             if (compact != null) arrival=compact.SafeSavedPosition(arrival);
             if (weapons) arrival = WeaponShopLayout.SafeSavedPosition(arrival);
             if (LocationId == PrototypeTravel.Inn) arrival = PrototypeInnLayout.SafeSavedPosition(arrival);
@@ -93,6 +101,7 @@ namespace DragonQuest.Prototype
             cameraFollow.SetArtworkFrame(forest || quarry || inn || weapons || compact != null, inn || weapons || compact != null,
                 compact != null ? CompactShopLayout.ArtAspect : weapons ? WeaponShopLayout.ArtAspect : inn ? PrototypeInnLayout.ArtAspect : 16f / 9f);
             player.Teleport(arrival);
+            if(throne) throneDepth.Refresh();
             cameraFollow.Initialize(player.transform, (forest || quarry) ? PrototypeWorldLayout.ForestBounds : navigation.Current.Bounds, navigation.Current.CameraSize,
                 navigation.Current.FixedCamera, navigation.Current.CoveredGroundBounds);
             bool singleRoom = navigation.Current.IsShop || LocationId == PrototypeTravel.Inn || LocationId == PrototypeTravel.Castle;
