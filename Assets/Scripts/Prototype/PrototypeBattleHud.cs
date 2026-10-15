@@ -352,7 +352,8 @@ namespace DragonQuest.Prototype
             if (participant.Team == CombatTeam.Party) return new Rect(925 + (index % 2) * 60,
                 background != null ? 125 + index * 78 : 103 + index * 83, 64, 90);
             if (participant.Id == DragonProgress.EnemyId) return new Rect(160, 110, 350, 250);
-            if (participant.Id == CastleBattleRules.SpiritId) return new Rect(365, 104, 170, 175);
+            if (participant.Id == CastleBattleRules.SpiritId) return new Rect(215, 90, 170, 175);
+            if (participant.Id == CastleBattleRules.TyrantId) return new Rect(410, 169, 80, 110);
             return new Rect(260 + index * 145, 155 + index * 72, 80, 110);
         }
 

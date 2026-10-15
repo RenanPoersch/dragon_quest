@@ -19,7 +19,7 @@ namespace DragonQuest.Prototype
         {
             Load();
             float height = CastleMeteorPresentation.ChargeHeight(CastleMeteorPresentation.ChargeLevel(rules));
-            meteor.Draw(new Vector2(360, 120 + Mathf.Sin(time * 2) * 3), height, 0, Color.white);
+            meteor.Draw(new Vector2(510, 134 + Mathf.Sin(time * 2) * 3), height, 0, Color.white);
         }
         public void DrawProtect(Rect king, float elapsed)
         {
@@ -43,7 +43,7 @@ namespace DragonQuest.Prototype
             {
                 float travel = Mathf.Clamp01(elapsed / CastleMeteorPresentation.ImpactDelay);
                 Vector2 end = new Vector2(target.center.x, target.center.y + 25);
-                Vector2 foot = Vector2.Lerp(new Vector2(360, 120), end, travel);
+                Vector2 foot = Vector2.Lerp(new Vector2(510, 134), end, travel);
                 float shrink = 1 - Mathf.Clamp01((elapsed - CastleMeteorPresentation.AbsorptionStart)
                     / (CastleMeteorPresentation.ImpactDelay - CastleMeteorPresentation.AbsorptionStart));
                 if (elapsed < CastleMeteorPresentation.ImpactDelay)
@@ -60,7 +60,7 @@ namespace DragonQuest.Prototype
             if (elapsed < CastleMeteorPresentation.ImpactDelay)
             {
                 float travel = Mathf.Clamp01(elapsed / CastleMeteorPresentation.ImpactDelay);
-                Vector2 foot = Vector2.Lerp(new Vector2(360, 120), new Vector2(820, 375), travel * travel);
+                Vector2 foot = Vector2.Lerp(new Vector2(510, 134), new Vector2(820, 375), travel * travel);
                 meteor.Draw(foot, Mathf.Lerp(180, 330, travel), CastleMeteorPresentation.MeteorFrame(elapsed), Color.white);
             }
             else
