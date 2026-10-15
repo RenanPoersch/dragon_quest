@@ -6,13 +6,13 @@ namespace DragonQuest.Prototype
     public sealed class IntroSequence
     {
         public const string Title = "DRAGON QUEST";
-        public const float FadeInDuration = 1.8f;
-        public const float TitleDelay = 1.45f;
+        public const float FadeInDuration = 3.2f;
+        public const float TitleDelay = 2.6f;
         public const float LetterInterval = .11f;
-        public const float AutoExitTime = 7.8f;
         public const float FadeOutDuration = .85f;
         public const float EarliestSkip = .35f;
-        private float exitAt = AutoExitTime;
+        // Stay on the title screen until the player explicitly continues.
+        private float exitAt = float.PositiveInfinity;
 
         public float Elapsed { get; private set; }
         public bool IsPlaying => Elapsed < exitAt + FadeOutDuration;

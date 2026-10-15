@@ -16,22 +16,23 @@ public static class IntroChecks
         var intro = new IntroSequence();
         Check(intro.IsPlaying && Near(intro.Opacity, 0) && intro.VisibleLetters == 0, "Opening starts black with no title.");
         Check(!intro.TrySkip(), "The input that launched the scene cannot dismiss the intro.");
-        intro.Advance(.9f);
+        intro.Advance(IntroSequence.FadeInDuration / 2);
         Check(Near(intro.Opacity, .5f), "The landscape fades in gradually.");
         Check(intro.VisibleLetters == 0, "The landscape is revealed before lettering.");
-        intro.Advance(.9f);
+        intro.Advance(IntroSequence.FadeInDuration / 2);
         Check(Near(intro.Opacity, 1), "The landscape reaches full opacity.");
         Check(intro.VisibleLetters > 0 && intro.VisibleLetters < IntroSequence.Title.Length, "Title writes letter by letter.");
         intro.Advance(1.5f);
         Check(intro.VisibleLetters == IntroSequence.Title.Length && Near(intro.TitleOpacity, 1), "The complete game name stays visible.");
-        intro.Advance(4.5f);
-        Check(intro.IsPlaying && intro.IsExiting && Near(intro.Opacity, 1), "Automatic transition starts after the title hold.");
+        intro.Advance(100);
+        Check(intro.IsPlaying && !intro.IsExiting && Near(intro.Opacity, 1), "The intro stays visible until the player continues.");
+        Check(intro.TrySkip(), "Continuing explicitly starts fade-out.");
         intro.Advance(IntroSequence.FadeOutDuration / 2);
-        Check(Near(intro.Opacity, .5f), "Automatic transition fades out before exposing the menu.");
+        Check(Near(intro.Opacity, .5f), "Continuing fades out before exposing the menu.");
         intro.Advance(IntroSequence.FadeOutDuration / 2 + .001f);
         Check(!intro.IsPlaying && Near(intro.Opacity, 0), "Menu is released only after fade-out completes.");
 
-        foreach (float skipAt in new[] { .36f, 1.1f, 4f, 7.7f })
+        foreach (float skipAt in new[] { .36f, 1.1f, 4f, 60f })
         {
             var skip = new IntroSequence();
             skip.Advance(skipAt);
@@ -46,8 +47,8 @@ public static class IntroChecks
         paused.Advance(0);
         Check(Near(paused.Elapsed, 0), "A zero delta is stable.");
         paused.Advance(100);
-        Check(!paused.IsPlaying && paused.VisibleLetters == IntroSequence.Title.Length, "A slow frame cannot leave the menu blocked.");
-        Console.WriteLine("INTRO_CHECKS_OK: " + checks + " timing, title reveal, automatic transition and skip checks.");
+        Check(paused.IsPlaying && !paused.IsExiting && paused.VisibleLetters == IntroSequence.Title.Length, "A slow frame cannot dismiss the intro without input.");
+        Console.WriteLine("INTRO_CHECKS_OK: " + checks + " timing, title reveal, manual continuation and fade-out checks.");
         return 0;
     }
 }
