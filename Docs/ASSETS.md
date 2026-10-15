@@ -85,5 +85,25 @@ A pintura cobre terra, musgo, vielas, pátios, grelhas, leito do fosso e pavimen
 
 `Docs/ArtInputs/CityGroundCore.png` conserva a fonte original; `CityGroundRebuilt.png` conserva o núcleo da revisão atual para verificar seus pixels no PNG final. Reconstrução: `python Tools/Build-UnifiedCityGround.py --output Assets/Resources/PixelArt/CityGroundMap.png --core-output Docs/ArtInputs/CityGroundRebuilt.png`; copiar o JSON gerado ao lado do PNG para `Docs/ArtInputs/CityGroundBake.json`. Pillow e NumPy são dependências de desenvolvimento; o jogo consome apenas o PNG pronto.
 
-## Mapa mundial continuo — 13 de outubro de 2026
-WorldGroundMap.png foi recriado inteiro em uma geracao com image_gen: terreno, montanhas, costa, praia, espuma e oceano no mesmo PNG original de 1536 x 1024. Uma superficie, uma textura, mar estatico pintado. Guia original em ArtInputs/UnifiedWorldGuide.png. Prompt e verificacoes em WORLD_UNIFIED_MAP.md.
+## Sprite do dragão — 12 de outubro de 2026
+
+Assets/Resources/PixelArt/Dragon.png foi criado com a ferramenta integrada image_gen: dragão original em pixel art de RPG, corpo inteiro, asas abertas e pose de batalha, com alpha transparente. Substitui a malha provisória no vulcão e o retrato na batalha; a imagem é recortada em memória e espelhada na batalha para olhar para a equipe. O PNG original permanece sem edição posterior, com filtro Point, sem mipmaps e sem compressão. DragonPortrait.png e DragonData() permanecem como arte provisória antiga e referência dos testes.
+
+## Revisão da ilha — 12 de outubro de 2026
+Ver Docs/WORLD_MAP_REVISION.md: terreno claro sem caminhos gerado com image_gen, costa rochosa inclinada, praia e espuma animada original. POIs preservados, com sombras de contato.
+
+
+## Mapa aprovado — 13 de outubro de 2026
+WorldGroundMap.png substituído pela pintura original gerada com image_gen a partir da opção 5. Resolução nativa 1536 × 1024, sem edição posterior. POIs aumentados 10% por pixels por unidade. Prompt e detalhes em WORLD_MAP_APPROVED.md.
+
+## Rochedos e oceano animado — 13 de outubro de 2026
+Malhas costeiras e materiais procedurais originais criados por código. WorldCoast.shader anima a água e detalha rocha/areia; WorldSurf.shader anima a espuma. Sem novos recursos externos. Detalhes em WORLD_COAST_ANIMATION.md.
+
+## Ilha com penínsulas — 13 de outubro de 2026
+Quatro pinturas originais WorldGroundNW/NE/SW/SE.png geradas com image_gen em 1536 × 1024 nativos cada. Material WorldGround.shader combina as regiões sem editar os PNGs. Nova costa irregular e montanhas ao norte, praias descontínuas, sprites +15% sobre a escala anterior, sombra projetada apenas atrás. Água animada preservada. Prompts completos e validação em WORLD_PENINSULA_FINAL.md.
+
+## Costa plana em pixel art — 13 de outubro de 2026
+WorldShoreAtlas.png gerado com image_gen, 1536 × 1024 originais, sem edição posterior. WorldCoast.shader aplica rocha e areia pintadas em planos horizontais; volumes 3D externos removidos. POIs +25% adicionais e sombra de caixa atrás/direita. Prompt e verificações em WORLD_FLAT_PIXEL_COAST.md.
+
+## Mapa mundial contínuo — 13 de outubro de 2026
+WorldGroundMap.png foi recriado inteiro em uma geração com image_gen: terreno, montanhas, costa, praia, espuma e oceano no mesmo PNG original de 1536 × 1024. Uma superfície, uma textura, mar estático pintado; quadrantes e materiais costeiros não são carregados. Guia geométrico original em ArtInputs/UnifiedWorldGuide.png. Prompt e verificações em WORLD_UNIFIED_MAP.md.

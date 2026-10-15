@@ -30,3 +30,7 @@ Desktop.ini
 # Unity crash reports
 sysinfo.txt
 *.stackdump
+
+# Unity crash recovery copies (keep locally)
+/Assets/_Recovery/
+/Assets/_Recovery.meta
