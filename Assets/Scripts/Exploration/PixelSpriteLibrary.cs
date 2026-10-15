@@ -22,7 +22,7 @@ namespace DragonQuest.Exploration
             bool dragonAttack = resource == "DragonClaw" || resource == "DragonBreath";
             bool dragon = resource == "Dragon" || dragonAttack;
             var frames = dragonAttack ? PixelSpriteLayout.ReadAttack(Texture.width, Texture.height, alpha)
-                : dragon || throne ? PixelSpriteLayout.ReadSingle(Texture.width, Texture.height, alpha)
+                : dragon || throne || resource == "SpiritBattle" ? PixelSpriteLayout.ReadSingle(Texture.width, Texture.height, alpha)
                 : castleBoss ? PixelSpriteLayout.ReadBattleIdle(Texture.width, Texture.height, alpha)
                 : worldPoi ? PixelSpriteLayout.ReadWorldIcons(Texture.width, Texture.height, alpha)
                 : chest ? PixelSpriteLayout.ReadPropPair(Texture.width, Texture.height, alpha)

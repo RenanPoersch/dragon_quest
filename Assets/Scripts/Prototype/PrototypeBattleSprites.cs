@@ -41,7 +41,9 @@ namespace DragonQuest.Prototype
             Texture2D texture = Resources.Load<Texture2D>("PixelArt/" + resource);
             if (texture == null) return;
             Color32[] pixels = texture.GetPixels32();
-            if (boundaries == null)
+            // The selected spirit is one complete sprite, shared by all action phases.
+            bool singlePose = resource == "SpiritBattle";
+            if (boundaries == null && !singlePose)
             {
                 var density = new int[texture.width];
                 for (int y = 0; y < texture.height; y++) for (int x = 0; x < texture.width; x++)
@@ -62,8 +64,8 @@ namespace DragonQuest.Prototype
             var sheet = new Sheet { Texture = texture };
             for (int frame = 0; frame < 4; frame++)
             {
-                int cellLeft = boundaries[frame] * texture.width / 2172;
-                int cellRight = boundaries[frame + 1] * texture.width / 2172;
+                int cellLeft = singlePose ? 0 : boundaries[frame] * texture.width / 2172;
+                int cellRight = singlePose ? texture.width : boundaries[frame + 1] * texture.width / 2172;
                 int left = cellRight, right = cellLeft - 1, bottom = texture.height, top = -1;
                 for (int y = 0; y < texture.height; y++) for (int x = cellLeft; x < cellRight; x++)
                 {

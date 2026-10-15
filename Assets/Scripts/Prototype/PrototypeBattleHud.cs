@@ -535,7 +535,7 @@ namespace DragonQuest.Prototype
             pixel = new Texture2D(1, 1); pixel.SetPixel(0, 0, Color.white); pixel.Apply();
             battleSprites = new PrototypeBattleSprites();
             dragonPortrait = Resources.Load<Texture2D>("DragonPortrait");
-            spiritPortrait = Resources.Load<Texture2D>("SpiritPortrait"); kingPortrait = Resources.Load<Texture2D>("KingPortrait");
+            spiritPortrait = Resources.Load<Texture2D>("PixelArt/SpiritBattle"); kingPortrait = Resources.Load<Texture2D>("KingPortrait");
             title = PrototypeTypography.Style(GUI.skin.label, 28, true);
             text = PrototypeTypography.Style(GUI.skin.label, 24); text.wordWrap = true;
             small = PrototypeTypography.Style(GUI.skin.label, 16); small.wordWrap = true;

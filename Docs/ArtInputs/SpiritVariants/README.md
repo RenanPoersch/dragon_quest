@@ -11,6 +11,6 @@ Quatro propostas em pixel art com formatos e paletas diferentes, criadas para es
 
 Geração: ferramenta integrada `image_gen`, uma chamada por modelo. A arte `Assets/Resources/PixelArt/TyrantBattle.png` foi usada somente como referência visual de pixel art. Os prompts completos estão em [prompts.json](prompts.json).
 
-Nenhum recurso de `Assets` nem referência de execução foi alterado nesta atividade. Os quatro modelos permanecem disponíveis para comparação antes de aplicar a escolha.
+Modelo escolhido pelo usuário: **3 — Espectro glacial**, apenas como aparência. A imagem foi copiada sem alterações para `Assets/Resources/PixelArt/SpiritBattle.png`, usada inteira na exploração, nas quatro fases de apresentação do combate e no retrato de fallback. O espírito mantém o nome, as afinidades neutras e as habilidades originais; a escolha não adiciona elemento de gelo. Os outros três modelos permanecem arquivados para referência.
 
-Validação dos quatro PNGs: arquivos RGBA de 1254 × 1254, alpha de 0 a 255, conteúdo visível sem cortes e cópias idênticas às imagens geradas. A conferência de margens usa alpha ≥ 2/255: os originais preservam alguns pixels residuais com alpha 1/255 fora das silhuetas. Esses conceitos ainda precisarão de preparação da folha de animações após a escolha.
+Validação dos quatro PNGs: arquivos RGBA de 1254 × 1254, alpha de 0 a 255, conteúdo visível sem cortes e cópias idênticas às imagens geradas. A conferência de margens usa alpha ≥ 2/255: os originais preservam alguns pixels residuais com alpha 1/255 fora das silhuetas. O modelo escolhido usa uma pose única compartilhada pelas quatro fases de apresentação, preservando exatamente a arte aprovada.

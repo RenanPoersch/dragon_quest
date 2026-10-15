@@ -107,3 +107,7 @@ WorldShoreAtlas.png gerado com image_gen, 1536 × 1024 originais, sem edição p
 
 ## Mapa mundial contínuo — 13 de outubro de 2026
 WorldGroundMap.png foi recriado inteiro em uma geração com image_gen: terreno, montanhas, costa, praia, espuma e oceano no mesmo PNG original de 1536 × 1024. Uma superfície, uma textura, mar estático pintado; quadrantes e materiais costeiros não são carregados. Guia geométrico original em ArtInputs/UnifiedWorldGuide.png. Prompt e verificações em WORLD_UNIFIED_MAP.md.
+
+## Aparência escolhida do espírito
+
+`Assets/Resources/PixelArt/SpiritBattle.png` usa o modelo 3 de `ArtInputs/SpiritVariants/03-espectro-glacial.png`, gerado pela ferramenta integrada `image_gen` e escolhido pelo usuário. O PNG foi copiado sem edição, redimensionamento ou mudança de alpha. Prompts completos em `ArtInputs/SpiritVariants/prompts.json`. O jogo usa essa mesma imagem inteira no castelo, no combate e no retrato de fallback; o antigo `SpiritPortrait.png` derivado de malha permanece apenas como asset histórico. A paleta azul não muda elementos, afinidades ou habilidades.
