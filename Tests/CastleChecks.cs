@@ -62,9 +62,10 @@ internal static class CastleChecks
             Assert(EnemyAI.TryTakeTurn(battle,out _)&&Rules(battle).PreparationsRemaining==CastleBattleRules.MeteorCastTurns-2-turn&&battle.Outcome==BattleOutcome.None,"Preparar nao pode explodir o castelo.");
             Assert(Find(battle,CastleBattleRules.TyrantId).IsCharging,"Pose de cast persiste entre todos os turnos.");
             Assert(Find(battle,CastleBattleRules.TyrantId).ShieldTurns==CastleBattleRules.MeteorCastTurns-1-turn,"Protect cobre cada turno anterior ao impacto.");
+            Assert(Rules(battle).MeteorTurnsElapsed==turn+1,"Contagem incrementa uma vez por turno proprio da conjuracao.");
             int remaining=Rules(battle).PreparationsRemaining;
             Rules(battle).AfterAction(battle);
-            Assert(Rules(battle).PreparationsRemaining==remaining,"Turnos alheios e verificacoes de estado nao aceleram o meteoro.");
+            Assert(Rules(battle).PreparationsRemaining==remaining&&Rules(battle).MeteorTurnsElapsed==turn+1,"Turnos alheios e verificacoes de estado nao aceleram o meteoro nem a contagem.");
         }
     }
     private static void CheckVisibilityAndThreshold()
@@ -99,6 +100,7 @@ internal static class CastleChecks
     {
         var battle=Create(Party(false));PrepareUntilMeteor(battle);BeforeKing(battle);
         Assert(EnemyAI.ChooseAbility(battle)==CastleBattleRules.Meteor&&EnemyAI.TryTakeTurn(battle,out _),"Quinto turno do tirano lanca o meteoro.");
+        Assert(Rules(battle).MeteorTurnsElapsed==5,"O quinto turno e registrado antes da animacao de queda.");
         Assert(battle.Outcome==BattleOutcome.Completed&&Rules(battle).Ending==GameEnding.CastleDestroyed
             &&battle.Combatants.All(c=>!c.IsAlive),"Meteoro ignora defender e derrota inclusive o tirano, com final de destruicao.");
         Assert(!new BattleRewards(new ExplorationProgress()).TryClaim(battle,out _),"Fim da historia nao pode pagar vitoria comum.");

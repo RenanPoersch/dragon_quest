@@ -38,7 +38,7 @@ namespace DragonQuest.Prototype
                 {
                     case "royal-strike": return "TyrantRoyalStrike";
                     case "royal-heavy": return "TyrantRoyalHeavy";
-                    case "tyrant-protect":
+                    case "tyrant-protect": return "TyrantBattle";
                     case "prepare-meteor": return "TyrantMeteorCharge";
                 }
                 return null;

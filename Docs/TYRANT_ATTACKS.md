@@ -13,7 +13,7 @@ Os quadros têm larguras variáveis. A leitura encontra os intervalos transparen
 
 ## Meteoro em cinco turnos
 
-Aos 20% de HP do tirano, a postura de conjuração fica persistente, inclusive durante as ações dos outros participantes. Um meteoro aparece acima da arena e cresce com o progresso. A contagem considera apenas os turnos próprios do tirano:
+Aos 20% de HP do tirano, o rei aguarda Shield em sua postura normal. A animação de Shield termina por completo antes de começar a pose de conjuração, que permanece durante as ações dos outros participantes. Durante a carga fica apenas o sprite do rei: não há meteoro separado acima da arena. Um número flutuante, de 1 a 5 e sem rótulo, aparece uma vez por turno próprio do tirano. Usa fonte 44 (dano: 40), subida de 40 unidades por segundo, sombra e dissipação de 1,4 segundo, como os danos. O primeiro número aguarda Shield terminar; os demais surgem ao apresentar a ação do turno. A contagem considera apenas os turnos próprios do tirano:
 
 1. Protect: cria a barreira e começa a canalização.
 2. Aumenta a carga.
@@ -31,6 +31,6 @@ O lançamento dura 3,6 segundos, com dano, números e desaparecimento sincroniza
 
 Imagens criadas com a ferramenta integrada imagegen, preservadas integralmente em `Assets/Resources/PixelArt`: `TyrantThrone.png` (rei normal sentado, referência `NpcRoster`), `TyrantProtect.png`, `TyrantShieldHit.png` e `MeteorAbsorption.png`. Cada efeito tem quatro quadros horizontais. Prompts finais completos em `Docs/ArtInputs/<Nome>.prompt.txt`.
 
-Validação: executar `Tools/Test-Castle.ps1`, `Tools/Test-Combat.ps1` e `Tools/Test-UnityScripts.ps1`. Conferir em Play o tamanho do rei no trono, a ausência de avisos, cinco turnos próprios, pose persistente, crescimento do meteoro, escudo em ataques físicos/mágicos, absorção por cada herói e impacto quando o portador está derrotado ou sem a armadura.
+Validação: executar `Tools/Test-Castle.ps1`, `Tools/Test-Combat.ps1` e `Tools/Test-UnityScripts.ps1`. Conferir em Play o tamanho do rei no trono, a ausência de avisos, cinco turnos próprios, Shield antes da conjuração, pose persistente sem meteoro separado, números únicos de 1 a 5, fonte 44 contra dano 40, escudo em ataques físicos/mágicos, absorção por cada herói e impacto quando o portador está derrotado ou sem a armadura.
 
-Nesta alteração passaram 518 verificações do castelo/Protect/apresentação, a compilação com Unity 6000.6.5f1 e os testes existentes de recuperação/revivência da Fênix, duração/dano do Shield de Titan e estados simultâneos. As artes passaram em 102 verificações de PNG, importadores, transparência, cópia integral e recortes. A prévia técnica das artes e das cinco etapas foi inspecionada; não é captura da Unity. A suíte geral `Test-Combat.ps1` continua falhando no caso anterior de Infusão/Thunder, antes de executar os checks do castelo. A conferência nativa em Play permanece pendente.
+Nesta revisão passaram 605 verificações do castelo/contagem/sequência e a compilação dos scripts com as bibliotecas da Unity. A validação cobre os cinco turnos reais, redução de dano, finais, número único por turno, ausência de repetição entre quadros, reinício em nova batalha e ordem Shield → pose de conjuração/primeiro número. As imagens anteriores são preservadas integralmente. A conferência nativa em Play permanece pendente.

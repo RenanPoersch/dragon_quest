@@ -19,8 +19,9 @@ namespace DragonQuest.Prototype
         private readonly SummonAnimation summonAnimation = new SummonAnimation();
         private readonly BattleStatusIcons statusIcons = new BattleStatusIcons();
         private readonly CastleSpellAnimation castleSpells = new CastleSpellAnimation();
+        private readonly CastleCastCounter castCounter = new CastleCastCounter();
         private Texture2D pixel, hand, dragonPortrait, spiritPortrait, kingPortrait, background;
-        private GUIStyle title, text, small, centered, button, itemButton, number;
+        private GUIStyle title, text, small, centered, button, itemButton, number, castNumber;
         private GUISkin battleSkin;
         private Rect handUv = new Rect(0, 0, 1, 1);
         private float handAspect = 1;
@@ -56,7 +57,7 @@ namespace DragonQuest.Prototype
             if (observedBattle != battle)
             {
                 observedBattle = battle; observedActor = null; seenChanges.Clear(); numbers.Clear();
-                defeatedEnemies.Reset();
+                defeatedEnemies.Reset(); castCounter.Reset();
                 preferredEnemyTarget = null;
                 // Optional map-specific art; the menu and fighter anchors do not depend on the background.
                 background = Resources.Load<Texture2D>("BattleBackgrounds/" + controller.BattleLocationId);
@@ -88,6 +89,9 @@ namespace DragonQuest.Prototype
                 }
             }
             numbers.RemoveAll(n => Time.unscaledTime - n.Started > 1.4f);
+            if (controller.IsCastleEncounter)
+                castCounter.Observe(controller.PresentingActor?.Id, controller.PresentingAbility,
+                    controller.CastleRules.MeteorTurnsElapsed, controller.ActionStartedAt);
         }
 
         private void Update()
@@ -319,8 +323,6 @@ namespace DragonQuest.Prototype
             if (controller.IsCastleEncounter)
             {
                 var rules = controller.CastleRules;
-                if (!meteorAction && CastleMeteorPresentation.HoldCastPose(rules, false))
-                    castleSpells.DrawCharge(rules, Time.unscaledTime);
                 if (controller.IsPresentingAction && controller.PresentingAbility == CastleBattleRules.Protect)
                     castleSpells.DrawProtect(FigureRect(controller.PresentingActor), Time.unscaledTime - controller.ActionStartedAt);
                 if (meteorAction)
@@ -349,6 +351,23 @@ namespace DragonQuest.Prototype
                 GUI.Label(new Rect(rect.x + 2, rect.y + 2, rect.width, rect.height), label, number);
                 number.normal.textColor = color; GUI.Label(rect, label, number);
             }
+            if (controller.IsCastleEncounter && (controller.CastleRules.Ending == GameEnding.None || meteorAction)
+                && castCounter.IsVisible(Time.unscaledTime))
+                foreach (CombatantState member in observedBattle.Combatants)
+                    if (member.Id == CastleBattleRules.TyrantId) { DrawCastNumber(FigureRect(member)); break; }
+        }
+
+        private void DrawCastNumber(Rect figure)
+        {
+            float elapsed = Time.unscaledTime - castCounter.StartedAt;
+            float alpha = Mathf.Clamp01((CastleMeteorPresentation.TurnNumberDuration - elapsed) / .35f);
+            // Mesmo movimento, sombra e fade dos danos; acima deles para nao sobrepor os digitos.
+            Rect rect = new Rect(figure.center.x - 90, figure.y - 56 - elapsed * 40, 180, 54);
+            string label = castCounter.Value.ToString();
+            castNumber.normal.textColor = new Color(0, 0, 0, alpha);
+            GUI.Label(new Rect(rect.x + 2, rect.y + 2, rect.width, rect.height), label, castNumber);
+            castNumber.normal.textColor = new Color(1, 1, 1, alpha);
+            GUI.Label(rect, label, castNumber);
         }
 
         private Rect FigureRect(CombatantState participant)
@@ -441,10 +460,16 @@ namespace DragonQuest.Prototype
             }
             bool meteorPresentation = controller.IsPresentingAction
                 && CastleMeteorPresentation.IsMeteor(controller.PresentingActor.Id, controller.PresentingAbility);
-            if (participant.Id == CastleBattleRules.TyrantId && battleSprites != null
-                && CastleMeteorPresentation.HoldCastPose(controller.CastleRules, meteorPresentation)
-                && battleSprites.Draw(rect, participant.Id, CastleMeteorPresentation.ChargePose(controller.CastleRules),
-                    tint, CastleBattleRules.PrepareMeteor)) return;
+            bool protectPresentation = controller.IsPresentingAction
+                && controller.PresentingAbility == CastleBattleRules.Protect;
+            if (participant.Id == CastleBattleRules.TyrantId && battleSprites != null)
+            {
+                // Shield termina sobre a postura normal; so entao aparece o sprite de conjuracao.
+                if (protectPresentation && battleSprites.Draw(rect, participant.Id, 0, tint)) return;
+                if (CastleMeteorPresentation.HoldCastPose(controller.CastleRules, meteorPresentation, protectPresentation)
+                    && battleSprites.Draw(rect, participant.Id, CastleMeteorPresentation.ChargePose(controller.CastleRules),
+                        tint, CastleBattleRules.PrepareMeteor)) return;
+            }
             // Every action has readable movement, even when it has no dedicated pose sheet.
             if (acting && !HeroCastAnimation.IsCasting(controller.PresentingAbility)
                 && !PrototypeBattleSprites.HasAnimation(participant.Id, controller.PresentingAbility)
@@ -555,6 +580,7 @@ namespace DragonQuest.Prototype
             small = PrototypeTypography.Style(GUI.skin.label, 16); small.wordWrap = true;
             centered = PrototypeTypography.Style(GUI.skin.label, 24); centered.alignment = TextAnchor.MiddleCenter;
             number = PrototypeTypography.Style(centered, 40, true);
+            castNumber = PrototypeTypography.Style(number, number.fontSize + CastleMeteorPresentation.TurnNumberFontIncrease, true);
             button = PrototypeTypography.Style(GUI.skin.label, 24);
             button.alignment = TextAnchor.MiddleLeft; button.padding = new RectOffset(50, 4, 2, 2);
             itemButton = InventoryPixelArt.ButtonStyle(button, 86);

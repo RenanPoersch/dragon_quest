@@ -1,5 +1,4 @@
 using UnityEngine;
-using DragonQuest.Progression;
 
 namespace DragonQuest.Prototype
 {
@@ -14,12 +13,6 @@ namespace DragonQuest.Prototype
             protect = new BattleAnimationSheet("PixelArt/TyrantProtect", 4, 1, false);
             shieldHit = new BattleAnimationSheet("PixelArt/TyrantShieldHit", 4, 1, false);
             absorption = new BattleAnimationSheet("PixelArt/MeteorAbsorption", 4, 1, false);
-        }
-        public void DrawCharge(CastleBattleRules rules, float time)
-        {
-            Load();
-            float height = CastleMeteorPresentation.ChargeHeight(CastleMeteorPresentation.ChargeLevel(rules));
-            meteor.Draw(new Vector2(510, 134 + Mathf.Sin(time * 2) * 3), height, 0, Color.white);
         }
         public void DrawProtect(Rect king, float elapsed)
         {

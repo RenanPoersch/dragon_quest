@@ -30,6 +30,7 @@ namespace DragonQuest.Progression
         public bool ProtectCast {get;private set;}
         public string MeteorAbsorberId {get;private set;}
         public int PreparationsRemaining {get;private set;}
+        public int MeteorTurnsElapsed {get;private set;}
         public GameEnding Ending {get;private set;}
 
         public CastleBattleRules(PartyProgress party)
@@ -76,6 +77,7 @@ namespace DragonQuest.Progression
             if(actor.Id!=TyrantId) return false;
             if(ability==Protect||ability==PrepareMeteor)
             {
+                MeteorTurnsElapsed++;
                 actor.IsCharging=true;
                 if(ability==Protect)
                 {
@@ -87,6 +89,7 @@ namespace DragonQuest.Progression
                 return true;
             }
             if(ability!=Meteor) return false;
+            MeteorTurnsElapsed++;
             CombatantState bearer=LivingArmorBearer(battle);
             actor.IsCharging=false;
             if(bearer!=null)
