@@ -22,6 +22,11 @@ internal static class CastleChecks
         }
         return party;
     }
+    private static BattleSession Create(PartyProgress party)
+    {
+        var original=PrototypeCastleBattleFactory.Create(party);
+        return new BattleSession(()=>1d,original.Rules,original.Inventory,original.Combatants.ToArray());
+    }
     private static void Defend(BattleSession battle)
     {
         var actor=battle.CurrentActor;
@@ -45,36 +50,45 @@ internal static class CastleChecks
         var king=Find(battle,CastleBattleRules.TyrantId);
         king.TakeDamage(king.Hp-120);Rules(battle).AfterAction(battle);
     }
-    private static void TwoPreparations(BattleSession battle)
+    private static void PrepareUntilMeteor(BattleSession battle)
     {
         Threshold(battle);
-        for(int turn=0;turn<2;turn++)
+        for(int turn=0;turn<CastleBattleRules.MeteorCastTurns-1;turn++)
         {
             BeforeKing(battle);
-            Assert(EnemyAI.ChooseAbility(battle)==CastleBattleRules.PrepareMeteor,"Dois turnos inteiros devem ser de preparacao.");
+            Assert(EnemyAI.ChooseAbility(battle)==(turn==0?CastleBattleRules.Protect:CastleBattleRules.PrepareMeteor),"Protect inicia a conjuracao; os turnos seguintes mantem a carga.");
+            if(turn==0) Assert(!battle.TryAct(battle.CurrentActor,CastleBattleRules.PrepareMeteor,battle.CurrentActor,out _),"Preparacao nao pode pular Protect.");
             Assert(!battle.TryAct(battle.CurrentActor,CastleBattleRules.Meteor,battle.CurrentActor,out _),"Lancamento antecipado deve ser recusado.");
-            Assert(EnemyAI.TryTakeTurn(battle,out _)&&Rules(battle).PreparationsRemaining==1-turn&&battle.Outcome==BattleOutcome.None,"Preparar nao pode explodir o castelo.");
+            Assert(EnemyAI.TryTakeTurn(battle,out _)&&Rules(battle).PreparationsRemaining==CastleBattleRules.MeteorCastTurns-2-turn&&battle.Outcome==BattleOutcome.None,"Preparar nao pode explodir o castelo.");
+            Assert(Find(battle,CastleBattleRules.TyrantId).IsCharging,"Pose de cast persiste entre todos os turnos.");
+            Assert(Find(battle,CastleBattleRules.TyrantId).ShieldTurns==CastleBattleRules.MeteorCastTurns-1-turn,"Protect cobre cada turno anterior ao impacto.");
+            int remaining=Rules(battle).PreparationsRemaining;
+            Rules(battle).AfterAction(battle);
+            Assert(Rules(battle).PreparationsRemaining==remaining,"Turnos alheios e verificacoes de estado nao aceleram o meteoro.");
         }
     }
     private static void CheckVisibilityAndThreshold()
     {
         var party=Party(false);var armor=new EquipmentLoadout(DragonProgress.Armor);party.TryAddEquipments(armor);
-        var battle=PrototypeCastleBattleFactory.Create(party);
+        var battle=Create(party);
         Assert(battle.Combatants.Count==4&&!Rules(battle).IsSpiritRevealed,"Armadura guardada nao revela o espirito.");
         var king=Find(battle,CastleBattleRules.TyrantId);
         king.TakeDamage(479);Rules(battle).AfterAction(battle);
         Assert(king.Hp==121&&!Rules(battle).MeteorStarted,"Acima de 20% nao inicia o meteoro.");
         king.TakeDamage(1);Rules(battle).AfterAction(battle);
-        Assert(Rules(battle).MeteorStarted&&Rules(battle).PreparationsRemaining==2&&king.IsCharging,"Em exatamente 20% inicia contagem de dois turnos.");
+        Assert(Rules(battle).MeteorStarted&&Rules(battle).PreparationsRemaining==4&&king.IsCharging,"Em exatamente 20% inicia a conjuracao de cinco turnos.");
         for(int bearer=0;bearer<3;bearer++)
         {
-            battle=PrototypeCastleBattleFactory.Create(Party(true,bearer));
+            battle=Create(Party(true,bearer));
             Assert(battle.Combatants.Count==5&&Find(battle,CastleBattleRules.SpiritId).IsAlive,"Espirito entra desde o inicio com armadura em qualquer classe.");
         }
-        battle=PrototypeCastleBattleFactory.Create(Party(false));king=Find(battle,CastleBattleRules.TyrantId);king.TakeDamage(463);
+        battle=Create(Party(false));king=Find(battle,CastleBattleRules.TyrantId);
+        var crossingAttack=battle.CurrentActor.Definition.Abilities.Single(a=>a.Id=="attack");
+        int crossingDamage=Math.Max(1,battle.CurrentActor.Definition.Attack+crossingAttack.Power-king.Definition.Defense);
+        king.TakeDamage(king.Hp-(119+crossingDamage));
         Assert(battle.TryAct(battle.CurrentActor,battle.CurrentActor.Definition.Abilities.Single(a=>a.Id=="attack"),king,out _)
             &&king.Hp==119&&Rules(battle).MeteorStarted,"Golpe que cruza o limiar precisa ativar a contagem automaticamente.");
-        battle=PrototypeCastleBattleFactory.Create(Party(false));BeforeKing(battle);
+        battle=Create(Party(false));BeforeKing(battle);
         int turns=battle.CurrentActor.TurnsTaken,hp=Find(battle,CastleBattleRules.TyrantId).Hp;
         Assert(!battle.TryAct(battle.CurrentActor,CastleBattleRules.Meteor,battle.CurrentActor,out _)
             &&battle.CurrentActor.TurnsTaken==turns&&battle.CurrentActor.Hp==hp,"Nao pode lancar meteoro antes do limiar nem gastar um turno invalido.");
@@ -83,42 +97,43 @@ internal static class CastleChecks
     }
     private static void CheckMeteor()
     {
-        var battle=PrototypeCastleBattleFactory.Create(Party(false));TwoPreparations(battle);BeforeKing(battle);
-        Assert(EnemyAI.ChooseAbility(battle)==CastleBattleRules.Meteor&&EnemyAI.TryTakeTurn(battle,out _),"Terceiro turno do tirano lanca o meteoro.");
+        var battle=Create(Party(false));PrepareUntilMeteor(battle);BeforeKing(battle);
+        Assert(EnemyAI.ChooseAbility(battle)==CastleBattleRules.Meteor&&EnemyAI.TryTakeTurn(battle,out _),"Quinto turno do tirano lanca o meteoro.");
         Assert(battle.Outcome==BattleOutcome.Completed&&Rules(battle).Ending==GameEnding.CastleDestroyed
             &&battle.Combatants.All(c=>!c.IsAlive),"Meteoro ignora defender e derrota inclusive o tirano, com final de destruicao.");
         Assert(!new BattleRewards(new ExplorationProgress()).TryClaim(battle,out _),"Fim da historia nao pode pagar vitoria comum.");
         for(int bearer=0;bearer<3;bearer++)
         {
-            battle=PrototypeCastleBattleFactory.Create(Party(true,bearer));TwoPreparations(battle);BeforeKing(battle);
+            battle=Create(Party(true,bearer));PrepareUntilMeteor(battle);BeforeKing(battle);
             var hp=battle.Combatants.Select(c=>c.Hp).ToArray();
             Assert(EnemyAI.TryTakeTurn(battle,out _)&&Rules(battle).MeteorAbsorbed&&Rules(battle).Ending==GameEnding.None
                 &&hp.SequenceEqual(battle.Combatants.Select(c=>c.Hp)),"Portador vivo absorve tudo sem dano aos participantes ou ao castelo.");
-            Assert(!Find(battle,CastleBattleRules.TyrantId).IsCharging,"Absorcao retira o aviso de carregamento.");
+            Assert(!Find(battle,CastleBattleRules.TyrantId).IsCharging&&Find(battle,CastleBattleRules.TyrantId).ShieldTurns==0,"Absorcao encerra conjuracao e Protect no quinto turno.");
+            Assert(Rules(battle).MeteorAbsorberId==partyBearerId(bearer),"Animacao de absorcao aponta ao portador real.");
             BeforeKing(battle);
             Assert(EnemyAI.ChooseAbility(battle)!=CastleBattleRules.Meteor&&EnemyAI.ChooseAbility(battle)!=CastleBattleRules.PrepareMeteor,"Meteoro nao reinicia em loop abaixo de 20%.");
         }
-        var party=Party(true);battle=PrototypeCastleBattleFactory.Create(party);Find(battle,"bram").TakeDamage(150);
-        TwoPreparations(battle);BeforeKing(battle);
+        var party=Party(true);battle=Create(party);Find(battle,"bram").TakeDamage(150);
+        PrepareUntilMeteor(battle);BeforeKing(battle);
         Assert(EnemyAI.TryTakeTurn(battle,out _)&&Rules(battle).Ending==GameEnding.CastleDestroyed,"Portador derrotado nao pode absorver o meteoro.");
         party=Party(true);party.Consumables.TryAdd(PrototypePartyFactory.PhoenixFeather,1,out _);
-        battle=PrototypeCastleBattleFactory.Create(party);Find(battle,"bram").TakeDamage(150);
-        TwoPreparations(battle);BeforeKing(battle,true);
+        battle=Create(party);Find(battle,"bram").TakeDamage(150);
+        PrepareUntilMeteor(battle);BeforeKing(battle,true);
         Assert(EnemyAI.TryTakeTurn(battle,out _)&&Rules(battle).MeteorAbsorbed&&party.Consumables.QuantityOf(PrototypePartyFactory.PhoenixFeather)==0,"Reviver antes do lancamento restaura a absorcao e gasta a pluma.");
     }
     private static void CheckEndings()
     {
-        var battle=PrototypeCastleBattleFactory.Create(Party(true));Threshold(battle);
+        var battle=Create(Party(true));Threshold(battle);
         var spirit=Find(battle,CastleBattleRules.SpiritId);spirit.TakeDamage(spirit.Hp-1);
         Assert(battle.TryAct(battle.CurrentActor,battle.CurrentActor.Definition.Abilities.Single(a=>a.Id=="attack"),spirit,out _)
             &&Rules(battle).Ending==GameEnding.KingFreed&&Find(battle,CastleBattleRules.TyrantId).IsAlive
             &&!Find(battle,CastleBattleRules.TyrantId).IsCharging&&Rules(battle).PreparationsRemaining==0,"Matar espirito com rei vivo encerra a luta e cancela o meteoro.");
         Assert(!EnemyAI.TryTakeTurn(battle,out _)&&battle.CurrentActor==null,"Nao deve haver ataques depois do final.");
-        battle=PrototypeCastleBattleFactory.Create(Party(false));var king=Find(battle,CastleBattleRules.TyrantId);king.TakeDamage(king.Hp-1);
+        battle=Create(Party(false));var king=Find(battle,CastleBattleRules.TyrantId);king.TakeDamage(king.Hp-1);
         Assert(battle.TryAct(battle.CurrentActor,battle.CurrentActor.Definition.Abilities.Single(a=>a.Id=="attack"),king,out _)
             &&Rules(battle).Ending==GameEnding.HeroPossessed,"Matar tirano sem armadura deve levar a possessao de Aren.");
         var party=Party(true);var cleave=new MateriaInstance("ending-cleave",PrototypePartyFactory.CleaveMateria);party.TryAddMaterias(cleave);party.TryEquip(party.Members[0],party.Members[0].Armor,2,cleave,out _);
-        battle=PrototypeCastleBattleFactory.Create(party);
+        battle=Create(party);
         foreach(var enemy in battle.Combatants.Where(c=>c.Team==CombatTeam.Enemy)) enemy.TakeDamage(enemy.Hp-1);
         Assert(battle.TryAct(battle.CurrentActor,battle.CurrentActor.Definition.Abilities.Single(a=>a.SourceAbilityId=="cleave"),Find(battle,CastleBattleRules.SpiritId),out _)
             &&Rules(battle).Ending==GameEnding.HeroPossessed,"Area que mata rei e espirito simultaneamente nao pode dar o final bom.");
@@ -143,7 +158,7 @@ internal static class CastleChecks
     {
         var party=Party(true);var ice=new MateriaInstance("castle-ice",PrototypePartyFactory.IceMateria);party.TryAddMaterias(ice);party.TryEquip(party.Members[1],party.Members[1].Armor,2,ice,out _);
         party.Consumables.TryAdd(PrototypePartyFactory.Ether,2,out _);
-        var battle=PrototypeCastleBattleFactory.Create(party);int actions=0;
+        var battle=Create(party);int actions=0;
         while(battle.Outcome==BattleOutcome.None&&actions++<250)
         {
             var actor=battle.CurrentActor;
@@ -159,15 +174,35 @@ internal static class CastleChecks
                 if(wounded.Hp*100<wounded.Definition.MaxHp*65) {ability=actor.Definition.Abilities.Single(a=>a.Effect==AbilityEffect.Heal);target=wounded;}
                 else ability=actor.Definition.Abilities.Single(a=>a.Element==DamageElement.Ice);
             }
-            else if(actor.Id=="aren"&&actor.Mp>=4) ability=actor.Definition.Abilities.Single(a=>a.SourceAbilityId=="heavy-strike");
+            else if(actor.Id=="aren"&&actor.Mp>=4) ability=actor.Definition.Abilities.FirstOrDefault(a=>a.SourceAbilityId=="heavy-strike")??ability;
             Assert(battle.TryAct(actor,ability,target,out _),"Materias, cura e provocar devem funcionar na luta final.");
         }
         Assert(actions<250&&Rules(battle).Ending==GameEnding.KingFreed,"Equipe com armadura, Gelo e dois eteres deve poder libertar o rei.");
-        battle=PrototypeCastleBattleFactory.Create(Party(false));actions=0;
+        battle=Create(Party(false));actions=0;
         while(battle.Outcome==BattleOutcome.None&&actions++<500)
             if(battle.CurrentActor.Team==CombatTeam.Enemy) Assert(EnemyAI.TryTakeTurn(battle,out _),"IA deve permitir uma derrota comum."); else Defend(battle);
         Assert(battle.Outcome==BattleOutcome.Defeat&&Rules(battle).Ending==GameEnding.None&&!Rules(battle).MeteorStarted,"Derrota por golpes normais nao pode virar final nem iniciar meteoro com rei saudavel.");
         Assert(battle.Combatants.Where(c=>c.Team==CombatTeam.Party).Any(c=>c.Limit.Charge>0),"Derrota comum conserva Limit para uma tentativa seguinte.");
     }
-    public static int Run() {CheckVisibilityAndThreshold();CheckMeteor();CheckEndings();CheckSpiritEffects();CheckFullGoodAndDefeat();return checks;}
+    private static string partyBearerId(int index) => new[]{"aren","lia","bram"}[index];
+    private static void CheckProtectDamage()
+    {
+        var physical=new AbilityDefinition("hit","Ataque","",0,1,AbilityEffect.PhysicalDamage,TargetRule.Enemy);
+        var magic=new AbilityDefinition("spell","Magia","",0,11,AbilityEffect.MagicDamage,TargetRule.Enemy);
+        var wait=new AbilityDefinition("wait","Esperar","",0,0,AbilityEffect.Prepare,TargetRule.Self);
+        var hero=new CombatantState("hero",new CombatantDefinition("Heroi","Aliado",500,20,20,0,24,20,physical,magic),CombatTeam.Party);
+        var king=new CombatantState("tyrant",new CombatantDefinition("Rei","Inimigo",500,0,1,10,0,5,wait),CombatTeam.Enemy);
+        king.GrantDamageShield(3,false);
+        var battle=new BattleSession(hero,king);
+        Assert(battle.TryAct(hero,physical,king,out _)&&king.Hp==494,"Protect reduz 11 de dano fisico para 6.");
+        Assert(king.VitalChanges.Last().IsShielded,"Impacto protegido registra o escudo para a animacao.");
+        Assert(battle.TryAct(king,wait,king,out _)&&battle.TryAct(hero,magic,king,out _)&&king.Hp==481,"Protect reduz 25 de dano magico para 13.");
+        king.TakeDamage(int.MaxValue);
+        Assert(!king.IsAlive&&king.ShieldTurns==0&&king.VitalChanges.Last().IsShielded,"Um golpe fatal ainda guarda o evento visual de escudo.");
+        battle=Create(Party(false));
+        PrepareUntilMeteor(battle);BeforeKing(battle);
+        foreach(var member in battle.Combatants) member.GrantDamageShield(5,false);
+        Assert(EnemyAI.TryTakeTurn(battle,out _)&&battle.Combatants.All(c=>!c.IsAlive),"O impacto aniquilador nao deixa sobreviventes por causa de Shield ou Protect.");
+    }
+    public static int Run() {CheckProtectDamage();CheckVisibilityAndThreshold();CheckMeteor();CheckEndings();CheckSpiritEffects();CheckFullGoodAndDefeat();return checks;}
 }

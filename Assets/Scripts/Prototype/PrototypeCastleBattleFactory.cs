@@ -20,7 +20,7 @@ namespace DragonQuest.Prototype
             var participants=new List<CombatantState>();
             foreach(PartyMember member in party.Members) participants.Add(member.CreateCombatant());
             var tyrant=new CombatantDefinition("Tirano dominado","Rei possuido",600,0,28,10,0,7,ElementalAffinities.Neutral,0,250,0,
-                CastleBattleRules.RoyalStrike,CastleBattleRules.RoyalHeavy,CastleBattleRules.PrepareMeteor,CastleBattleRules.Meteor);
+                CastleBattleRules.RoyalStrike,CastleBattleRules.RoyalHeavy,CastleBattleRules.Protect,CastleBattleRules.PrepareMeteor,CastleBattleRules.Meteor);
             participants.Add(new CombatantState(CastleBattleRules.TyrantId,tyrant,CombatTeam.Enemy));
             if(rules.IsSpiritRevealed)
             {

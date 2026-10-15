@@ -543,7 +543,7 @@ namespace DragonQuest.Prototype
         public Transform King(Transform parent) => Show("Rei e coroa",KingData(),parent);
         public Transform PixelPerson(Transform parent, string atlas, int frame = 0, bool animated = false)
         {
-            float height = atlas == "TyrantBattle" || atlas == "NpcRoster" && frame == 11 ? 0.15f : 0.075f;
+            float height = atlas == "TyrantThrone" || atlas == "NpcRoster" && frame == 11 ? 0.15f : 0.075f;
             var shadow = new ObliqueMeshData(); shadow.Shadow(0, 0, 0.34f, 0.22f);
             var shade = Show("Sombra no chao", shadow, parent); shade.localPosition = Vector3.back * (height - 0.035f);
             var visual = PixelSprites.Create(parent, atlas, frame, animated); visual.localPosition = Vector3.back * height;

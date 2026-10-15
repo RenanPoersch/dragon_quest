@@ -273,6 +273,14 @@ namespace DragonQuest.Prototype
                         && weakest.ProtectedBy != null && weakest.ProtectedBy.IsAlive ? weakest.ProtectedBy : weakest);
                 }
             }
+            if (CastleMeteorPresentation.IsMeteor(actor.Id, ability))
+            {
+                // Todos os derrotados esperam o impacto; a absorcao aponta para o portador real.
+                effectTargets.Clear();
+                CombatantState bearer = CastleRules.LivingArmorBearer(Session);
+                if (bearer != null) effectTargets.Add(bearer);
+                else effectTargets.AddRange(Session.Combatants);
+            }
             bool accepted = EnemyAI.TryTakeTurn(Session, out string message);
             ErrorMessage = accepted ? string.Empty : message;
             if (accepted)

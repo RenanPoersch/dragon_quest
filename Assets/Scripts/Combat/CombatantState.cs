@@ -7,9 +7,9 @@ namespace DragonQuest.Combat
     public readonly struct CombatVitalChange
     {
         public readonly int Sequence, Amount;
-        public readonly bool IsCritical, IsMp;
-        public CombatVitalChange(int sequence, int amount, bool critical, bool mp)
-        { Sequence = sequence; Amount = amount; IsCritical = critical; IsMp = mp; }
+        public readonly bool IsCritical, IsMp, IsShielded;
+        public CombatVitalChange(int sequence, int amount, bool critical, bool mp, bool shielded = false)
+        { Sequence = sequence; Amount = amount; IsCritical = critical; IsMp = mp; IsShielded = shielded; }
     }
 
     public sealed class CombatantState
@@ -20,11 +20,11 @@ namespace DragonQuest.Combat
         private readonly System.Collections.Generic.List<CombatVitalChange> vitalChanges = new System.Collections.Generic.List<CombatVitalChange>();
         private int vitalSequence;
         public System.Collections.Generic.IReadOnlyList<CombatVitalChange> VitalChanges => vitalChanges.AsReadOnly();
-        private void RecordVitalChange(int amount, bool critical = false, bool mp = false)
+        private void RecordVitalChange(int amount, bool critical = false, bool mp = false, bool shielded = false)
         {
             if (amount == 0) return;
             if (vitalChanges.Count == 64) vitalChanges.RemoveAt(0);
-            vitalChanges.Add(new CombatVitalChange(++vitalSequence, amount, critical, mp));
+            vitalChanges.Add(new CombatVitalChange(++vitalSequence, amount, critical, mp, shielded));
         }
         public int Hp { get; private set; }
         public int Mp { get; private set; }
@@ -55,10 +55,11 @@ namespace DragonQuest.Combat
         internal void SpendMp(int cost) => Mp -= cost;
         internal void TakeDamage(int amount, bool critical = false)
         {
-            if (ShieldTurns > 0 && amount > 0) amount = (int)(((long)amount + 1) / 2);
+            bool shielded = ShieldTurns > 0 && amount > 0;
+            if (shielded) amount = (int)(((long)amount + 1) / 2);
             int previousHp = Hp;
             Hp = Math.Max(0, Hp - amount);
-            RecordVitalChange(Hp - previousHp, critical);
+            RecordVitalChange(Hp - previousHp, critical, shielded: shielded);
             if (Team == CombatTeam.Party) Limit.AddDamage(previousHp - Hp, Definition.MaxHp);
             if (!IsAlive) ClearConditions();
         }

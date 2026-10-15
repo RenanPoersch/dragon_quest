@@ -38,6 +38,7 @@ namespace DragonQuest.Prototype
                 {
                     case "royal-strike": return "TyrantRoyalStrike";
                     case "royal-heavy": return "TyrantRoyalHeavy";
+                    case "tyrant-protect":
                     case "prepare-meteor": return "TyrantMeteorCharge";
                 }
                 return null;
@@ -50,9 +51,11 @@ namespace DragonQuest.Prototype
         public static bool Sequential(string resource) => resource == "TyrantRoyalStrike" || resource == "TyrantRoyalHeavy"
             || resource == "TyrantMeteorCharge" || resource == "TyrantFlamingMeteor";
         public static float Duration(string id, AbilityDefinition ability) => Family(id) == "tyrant"
-            && ability?.SourceAbilityId == "flaming-meteor" ? 1.6f
-            : Family(id) == "tyrant" && ability?.SourceAbilityId == "prepare-meteor" ? 1.2f : .8f;
-        public static float ImpactDelay(string id, AbilityDefinition ability) => Duration(id, ability) * .5f;
+            && ability?.SourceAbilityId == "flaming-meteor" ? CastleMeteorPresentation.Duration
+            : Family(id) == "tyrant" && (ability?.SourceAbilityId == "prepare-meteor"
+                || ability?.SourceAbilityId == "tyrant-protect") ? CastleMeteorPresentation.ProtectDuration : .8f;
+        public static float ImpactDelay(string id, AbilityDefinition ability) => CastleMeteorPresentation.IsMeteor(id, ability)
+            ? CastleMeteorPresentation.ImpactDelay : Duration(id, ability) * .5f;
         public static int Frame(string resource, float elapsed, float duration)
         {
             float progress = Math.Max(0, Math.Min(1, elapsed / Math.Max(.01f, duration)));

@@ -283,10 +283,14 @@ namespace DragonQuest.Prototype
         {
             Transform castle = Group("Castelo - interior");
             DrawBlocks(PrototypeWorldLayout.CastleBlocks, castle);
+            // O novo sprite inclui o trono; os antigos blocos conservam apenas a colisao.
+            foreach (Transform block in castle)
+                if (block.name == "Trono - encosto" || block.name == "Trono - ouro")
+                    foreach (Renderer renderer in block.GetComponentsInChildren<Renderer>()) renderer.enabled = false;
             CreatePassage("Saida do castelo", PrototypeTravel.Castle, castle, PrototypeTravel.City);
             GameObject king=Entity("Tirano",PrototypeWorldLayout.Throne,castle);
             BoxCollider2D collider=king.AddComponent<BoxCollider2D>();collider.size=new Vector2(0.55f,0.6f);collider.sharedMaterial=frictionless;
-            scenery.PixelPerson(king.transform, "TyrantBattle");
+            scenery.PixelPerson(king.transform, "TyrantThrone");
             GameObject spirit=Entity("Espirito junto ao trono",PrototypeWorldLayout.Throne+Vector2.right*1.8f,castle);
             scenery.PixelPerson(spirit.transform, "SpiritBattle");spirit.SetActive(false);
             TyrantInteraction tyrant=king.AddComponent<TyrantInteraction>();

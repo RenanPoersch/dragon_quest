@@ -18,6 +18,7 @@ namespace DragonQuest.Prototype
         private readonly HeroCastAnimation heroCastAnimation = new HeroCastAnimation();
         private readonly SummonAnimation summonAnimation = new SummonAnimation();
         private readonly BattleStatusIcons statusIcons = new BattleStatusIcons();
+        private readonly CastleSpellAnimation castleSpells = new CastleSpellAnimation();
         private Texture2D pixel, hand, dragonPortrait, spiritPortrait, kingPortrait, background;
         private GUIStyle title, text, small, centered, button, itemButton, number;
         private Rect handUv = new Rect(0, 0, 1, 1);
@@ -58,6 +59,7 @@ namespace DragonQuest.Prototype
                 preferredEnemyTarget = null;
                 // Optional map-specific art; the menu and fighter anchors do not depend on the background.
                 background = Resources.Load<Texture2D>("BattleBackgrounds/" + controller.BattleLocationId);
+                if (controller.IsCastleEncounter) castleSpells.Prepare();
             }
             if (observedActor != battle.CurrentActor)
             {
@@ -231,7 +233,8 @@ namespace DragonQuest.Prototype
             if (controller.IsPresentingAction)
             {
                 GUI.Label(new Rect(40, 512, 570, 30), controller.PresentingActor.Definition.Name, title);
-                GUI.Label(new Rect(40, 556, 570, 55), controller.PresentingAbility.Name, text);
+                if (!controller.IsCastleEncounter || controller.PresentingActor.Team == CombatTeam.Party)
+                    GUI.Label(new Rect(40, 556, 570, 55), controller.PresentingAbility.Name, text);
             }
             else if (observedBattle.Outcome != BattleOutcome.None)
             {
@@ -243,8 +246,6 @@ namespace DragonQuest.Prototype
             else if (observedActor != null && observedActor.Team == CombatTeam.Enemy)
             {
                 GUI.Label(new Rect(40, 512, 570, 30), "Turno de " + observedActor.Definition.Name, title);
-                AbilityDefinition intention = EnemyAI.ChooseAbility(observedBattle);
-                GUI.Label(new Rect(40, 556, 570, 55), "Prepara " + (intention == null ? "sua acao" : intention.Name) + "...", text);
             }
             else if (observedActor != null) DrawActions();
             if (!string.IsNullOrEmpty(controller.ErrorMessage)) GUI.Label(new Rect(40, 668, 560, 25), controller.ErrorMessage, small);
@@ -286,7 +287,6 @@ namespace DragonQuest.Prototype
                     if (group || i == targetIndex) DrawHand(new Rect(figure.x - 60, figure.center.y - 18, 56, 36));
                     if (GUI.Button(figure, GUIContent.none, GUIStyle.none)) { targetIndex = i; ExecuteTarget(participant); }
                 }
-                if (participant.IsCharging) GUI.Label(new Rect(figure.center.x - 140, figure.y - 53, 280, 24), "PREPARANDO ATAQUE!", centered);
             }
             if (controller.IsPresentingAction && controller.IsPresentingSummon)
             {
@@ -307,14 +307,31 @@ namespace DragonQuest.Prototype
                 foreach (CombatantState target in controller.PresentingTargets)
                     spellAnimation.Draw(FigureRect(target), controller.PresentingAbility,
                         Time.unscaledTime - controller.ActionStartedAt);
-            if (controller.IsPresentingAction && controller.PresentingActor.Id == CastleBattleRules.TyrantId
-                && controller.PresentingAbility.SourceAbilityId == "flaming-meteor")
-                battleSprites.DrawMeteor(new Rect(370, 65, 650, 335), Time.unscaledTime - controller.ActionStartedAt, Color.white);
+            bool meteorAction = controller.IsPresentingAction
+                && CastleMeteorPresentation.IsMeteor(controller.PresentingActor.Id, controller.PresentingAbility);
+            if (controller.IsCastleEncounter)
+            {
+                var rules = controller.CastleRules;
+                if (!meteorAction && CastleMeteorPresentation.HoldCastPose(rules, false))
+                    castleSpells.DrawCharge(rules, Time.unscaledTime);
+                if (controller.IsPresentingAction && controller.PresentingAbility == CastleBattleRules.Protect)
+                    castleSpells.DrawProtect(FigureRect(controller.PresentingActor), Time.unscaledTime - controller.ActionStartedAt);
+                if (meteorAction)
+                {
+                    Rect target = new Rect(740, 170, 160, 205);
+                    foreach (CombatantState member in observedBattle.Combatants)
+                        if (member.Id == rules.MeteorAbsorberId) { target = FigureRect(member); break; }
+                    castleSpells.DrawMeteor(target, rules.MeteorAbsorbed, Time.unscaledTime - controller.ActionStartedAt);
+                }
+            }
             foreach (FloatingNumber floating in numbers)
             {
                 Rect figure = FigureRect(floating.Target);
                 float elapsed = Time.unscaledTime - floating.Started;
                 if (elapsed < 0) continue;
+                if (floating.Target.Id == CastleBattleRules.TyrantId && floating.Change.IsShielded
+                    && !floating.Change.IsMp && floating.Change.Amount < 0)
+                    castleSpells.DrawShieldHit(figure, elapsed);
                 Color color = floating.Change.Amount > 0 ? new Color(.30f, 1f, .40f)
                     : floating.Change.IsCritical ? new Color(1f, .88f, .10f) : Color.white;
                 color.a = Mathf.Clamp01((1.4f - elapsed) / .35f);
@@ -325,8 +342,6 @@ namespace DragonQuest.Prototype
                 GUI.Label(new Rect(rect.x + 2, rect.y + 2, rect.width, rect.height), label, number);
                 number.normal.textColor = color; GUI.Label(rect, label, number);
             }
-            if (controller.IsCastleEncounter && observedBattle.Outcome == BattleOutcome.None)
-                GUI.Label(new Rect(40, 379, 1180, 30), controller.CastleRules.Warning(observedBattle), small);
         }
 
         private Rect FigureRect(CombatantState participant)
@@ -420,6 +435,12 @@ namespace DragonQuest.Prototype
                         && controller.PresentingAbility.Effect != AbilityEffect.Prepare)
                     { rect.x += Mathf.Sin(sinceImpact * 75f) * 5f; break; }
             }
+            bool meteorPresentation = controller.IsPresentingAction
+                && CastleMeteorPresentation.IsMeteor(controller.PresentingActor.Id, controller.PresentingAbility);
+            if (participant.Id == CastleBattleRules.TyrantId && battleSprites != null
+                && CastleMeteorPresentation.HoldCastPose(controller.CastleRules, meteorPresentation)
+                && battleSprites.Draw(rect, participant.Id, CastleMeteorPresentation.ChargePose(controller.CastleRules),
+                    tint, CastleBattleRules.PrepareMeteor)) return;
             // Every action has readable movement, even when it has no dedicated pose sheet.
             if (acting && !HeroCastAnimation.IsCasting(controller.PresentingAbility)
                 && !PrototypeBattleSprites.HasAnimation(participant.Id, controller.PresentingAbility)
@@ -483,7 +504,13 @@ namespace DragonQuest.Prototype
 
         private Color FighterTint(CombatantState participant)
         {
-            if (participant.Team == CombatTeam.Party) return participant.IsAlive ? Color.white : new Color(.4f, .4f, .4f);
+            if (participant.Team == CombatTeam.Party)
+            {
+                bool beforeMeteorImpact = controller.IsPresentingAction
+                    && CastleMeteorPresentation.IsMeteor(controller.PresentingActor.Id, controller.PresentingAbility)
+                    && Time.unscaledTime < controller.ActionImpactAt;
+                return participant.IsAlive || beforeMeteorImpact ? Color.white : new Color(.4f, .4f, .4f);
+            }
             Color tint = defeatedEnemies.IsRed(participant, Time.unscaledTime) ? new Color(1, .12f, .12f) : Color.white;
             tint.a = defeatedEnemies.Alpha(participant, Time.unscaledTime);
             return tint;

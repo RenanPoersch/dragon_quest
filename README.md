@@ -64,7 +64,7 @@ A armadura dá **+16 de defesa, resistência a Fogo e quatro encaixes em dois pa
 
 Use E no tirano e conclua a conversa para iniciar o confronto. Com a Armadura dracônica equipada, o espírito aparece desde o início e possui turno próprio, usando **Drenar vida, Correntes e Caos Magic em área**.
 
-O tirano usa golpes físicos fortes sem elemento. Aos **20% de HP**, prepara o meteoro por **dois turnos completos** e o lança no seguinte. Um portador vivo da armadura absorve o meteoro inteiro; revivê-lo antes do lançamento restaura essa proteção.
+O tirano usa golpes físicos fortes sem elemento. Aos **20% de HP**, inicia uma conjuração de **cinco turnos próprios**: Protect no primeiro, carga crescente nos três seguintes e queda no quinto. Protect reduz o dano recebido pela metade, com efeito de escudo ao ser atingido; a pose de conjuração e o meteoro permanecem visíveis entre os turnos. Um portador vivo da armadura absorve o meteoro inteiro; revivê-lo antes do lançamento restaura essa proteção.
 
 - **Final bom:** derrotar o espírito com o tirano vivo. O rei justo é libertado, agradece à equipe e retoma seu governo.
 - **Final ruim:** meteoro lançado sem portador vivo; a equipe e o tirano são aniquilados e o castelo é destruído.
