@@ -7,9 +7,9 @@ namespace DragonQuest.Combat
     public readonly struct CombatVitalChange
     {
         public readonly int Sequence, Amount;
-        public readonly bool IsCritical, IsMp, IsShielded;
-        public CombatVitalChange(int sequence, int amount, bool critical, bool mp, bool shielded = false)
-        { Sequence = sequence; Amount = amount; IsCritical = critical; IsMp = mp; IsShielded = shielded; }
+        public readonly bool IsCritical, IsMp, IsShielded, IsDamageOverTime;
+        public CombatVitalChange(int sequence, int amount, bool critical, bool mp, bool shielded = false, bool damageOverTime = false)
+        { Sequence = sequence; Amount = amount; IsCritical = critical; IsMp = mp; IsShielded = shielded; IsDamageOverTime = damageOverTime; }
     }
 
     public sealed class CombatantState
@@ -20,11 +20,11 @@ namespace DragonQuest.Combat
         private readonly System.Collections.Generic.List<CombatVitalChange> vitalChanges = new System.Collections.Generic.List<CombatVitalChange>();
         private int vitalSequence;
         public System.Collections.Generic.IReadOnlyList<CombatVitalChange> VitalChanges => vitalChanges.AsReadOnly();
-        private void RecordVitalChange(int amount, bool critical = false, bool mp = false, bool shielded = false)
+        private void RecordVitalChange(int amount, bool critical = false, bool mp = false, bool shielded = false, bool damageOverTime = false)
         {
             if (amount == 0) return;
             if (vitalChanges.Count == 64) vitalChanges.RemoveAt(0);
-            vitalChanges.Add(new CombatVitalChange(++vitalSequence, amount, critical, mp, shielded));
+            vitalChanges.Add(new CombatVitalChange(++vitalSequence, amount, critical, mp, shielded, damageOverTime));
         }
         public int Hp { get; private set; }
         public int Mp { get; private set; }
@@ -32,7 +32,9 @@ namespace DragonQuest.Combat
         public bool IsDefending { get; internal set; }
         public bool IsCharging { get; internal set; }
         public int BoundActions { get; internal set; }
+        // Positive means poisoned; poison lasts until cleansed or defeated.
         public int PoisonTurns { get; internal set; }
+        public bool IsPoisoned => PoisonTurns > 0;
         public int ShieldTurns { get; private set; }
         private bool skipShieldTick;
         public int TauntTurns { get; internal set; }
@@ -53,13 +55,13 @@ namespace DragonQuest.Combat
         }
 
         internal void SpendMp(int cost) => Mp -= cost;
-        internal void TakeDamage(int amount, bool critical = false)
+        internal void TakeDamage(int amount, bool critical = false, bool damageOverTime = false)
         {
             bool shielded = ShieldTurns > 0 && amount > 0;
             if (shielded) amount = (int)(((long)amount + 1) / 2);
             int previousHp = Hp;
             Hp = Math.Max(0, Hp - amount);
-            RecordVitalChange(Hp - previousHp, critical, shielded: shielded);
+            RecordVitalChange(Hp - previousHp, critical, shielded: shielded, damageOverTime: damageOverTime);
             if (Team == CombatTeam.Party) Limit.AddDamage(previousHp - Hp, Definition.MaxHp);
             if (!IsAlive) ClearConditions();
         }
@@ -74,6 +76,22 @@ namespace DragonQuest.Combat
             int before = Mp;
             Mp = (int)Math.Min(Definition.MaxMp, (long)Mp + amount);
             RecordVitalChange(Mp - before, mp: true);
+        }
+
+        internal void RestoreVitals(int hp, int mp, bool poisoned, int boundActions)
+        {
+            Hp = Math.Max(0, Math.Min(Definition.MaxHp, hp));
+            Mp = Math.Max(0, Math.Min(Definition.MaxMp, mp));
+            PoisonTurns = IsAlive && poisoned ? 1 : 0;
+            BoundActions = IsAlive ? Math.Max(0, boundActions) : 0;
+        }
+
+        internal int TickPoison()
+        {
+            if (!IsAlive || !IsPoisoned) return 0;
+            int before = Hp;
+            TakeDamage((int)(((long)Definition.MaxHp + 19) / 20), damageOverTime: true);
+            return before - Hp;
         }
 
         internal void ClearConditions()

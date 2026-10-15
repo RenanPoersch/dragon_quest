@@ -41,9 +41,9 @@ namespace DragonQuest.Combat
             bool party = false, enemy = false;
             foreach (CombatantState participant in combatants)
             {
-                if (participant == null || !participant.IsAlive || !ids.Add(participant.Id))
-                    throw new ArgumentException("Participantes devem estar vivos e ter IDs unicos.");
-                party |= participant.Team == CombatTeam.Party;
+                if (participant == null || (participant.Team == CombatTeam.Enemy && !participant.IsAlive) || !ids.Add(participant.Id))
+                    throw new ArgumentException("Inimigos devem estar vivos e participantes devem ter IDs unicos.");
+                party |= participant.Team == CombatTeam.Party && participant.IsAlive;
                 enemy |= participant.Team == CombatTeam.Enemy;
             }
             if (!party || !enemy) throw new ArgumentException("Batalha precisa de aliados e inimigos.");
@@ -275,8 +275,7 @@ namespace DragonQuest.Combat
             if (Outcome == BattleOutcome.None && actor.IsAlive && actor.PoisonTurns > 0)
             {
                 int previousHp = actor.Hp;
-                actor.PoisonTurns--;
-                actor.TakeDamage((int)(((long)actor.Definition.MaxHp + 19) / 20));
+                actor.TickPoison();
                 message += " Veneno: " + actor.Definition.Name + " perdeu " + (previousHp - actor.Hp) + " HP.";
                 if (!actor.IsAlive) message += " Foi derrotado!";
                 RemoveDeadSources();

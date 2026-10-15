@@ -150,7 +150,7 @@ internal static class EquipmentItemChecks
         Assert(inventory.TryAdd(Potion, 1, out _), "Inventario deve permitir adicionar estoque para entregas seguintes.");
         hero.PoisonTurns = 3;
         Use(battle, Potion, ally);
-        Assert(hero.Hp == 95 && hero.PoisonTurns == 2 && hero.Limit.Charge == 35 && ally.Hp == 100,
+        Assert(hero.Hp == 95 && hero.IsPoisoned && hero.Limit.Charge == 35 && ally.Hp == 100,
             "Usar item em outro aliado nao deve evitar veneno nem acumo de Limit ao fim da propria acao.");
 
         inventory = new ItemInventory(new ItemStack(Ether, 1));
@@ -231,6 +231,14 @@ internal static class EquipmentItemChecks
         try { new EquipmentDefinition("bad", 0, 0, 3); } catch (ArgumentException) { rejected++; }
         try { new PartyProgress(new[] { Member(party, "aren") }, new MateriaInstance[0], new[] { Member(party, "aren").Weapon }); } catch (ArgumentException) { rejected++; }
         Assert(rejected == 6, "Definicoes e identidades invalidas devem ser recusadas.");
+    }
+
+    public static int RunItemChecks()
+    {
+        CheckConsumptionAndInvalidActions();
+        CheckItemReviveAndOutcomes();
+        CheckStockPersistenceAndValidation();
+        return checks;
     }
 
     public static int Run()

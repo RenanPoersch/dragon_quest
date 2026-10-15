@@ -42,6 +42,11 @@ namespace DragonQuest.Persistence
         [DataMember(IsRequired = true)] public int Limit;
         // Campo opcional: saves anteriores comecam no nivel 1, sem XP.
         [DataMember(EmitDefaultValue = false)] public int Experience;
+        // Optional for legacy saves; null vitals load at the derived maximum.
+        [DataMember(EmitDefaultValue = false)] public int? Hp;
+        [DataMember(EmitDefaultValue = false)] public int? Mp;
+        [DataMember(EmitDefaultValue = false)] public bool Poisoned;
+        [DataMember(EmitDefaultValue = false)] public int BoundActions;
     }
     [DataContract] public sealed class GearData
     {

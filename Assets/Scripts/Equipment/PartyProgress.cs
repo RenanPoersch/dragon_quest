@@ -18,6 +18,23 @@ namespace DragonQuest.Equipment
         public EquipmentLoadout Armor { get; private set; }
         public LimitGauge Limit { get; } = new LimitGauge();
         public CharacterProgression Progression { get; } = new CharacterProgression();
+        private int? currentHp, currentMp;
+        public int Hp => (currentHp = Math.Min(currentHp ?? MaxHp, MaxHp)).Value;
+        public int Mp => (currentMp = Math.Min(currentMp ?? MaxMp, MaxMp)).Value;
+        public bool IsPoisoned { get; private set; }
+        public int BoundActions { get; private set; }
+        public bool IsAlive => Hp > 0;
+
+        internal void RestoreVitals(int hp, int mp, bool poisoned, int boundActions)
+        {
+            currentHp = Math.Max(0, Math.Min(MaxHp, hp));
+            currentMp = Math.Max(0, Math.Min(MaxMp, mp));
+            IsPoisoned = currentHp > 0 && poisoned;
+            BoundActions = currentHp > 0 ? Math.Max(0, boundActions) : 0;
+        }
+
+        internal void CaptureVitals(CombatantState state) => RestoreVitals(state.Hp, state.Mp, state.IsPoisoned, state.BoundActions);
+
         public int Level => Progression.Level;
         public int Experience => Progression.Experience;
         public int Speed => Grow(BaseStats.Speed, 1);
@@ -80,7 +97,9 @@ namespace DragonQuest.Equipment
             abilities.CopyTo(commands);
             var stats = new CombatantDefinition(Name, BaseStats.Role, MaxHp, MaxMp,
                 Attack, Defense, Magic, Speed, Affinities, BaseStats.GoldReward, BaseStats.ExperienceReward, CriticalChance, commands);
-            return new CombatantState(Id, stats, CombatTeam.Party, Limit);
+            var state = new CombatantState(Id, stats, CombatTeam.Party, Limit);
+            state.RestoreVitals(Hp, Mp, IsPoisoned, BoundActions);
+            return state;
         }
     }
 
@@ -94,6 +113,79 @@ namespace DragonQuest.Equipment
         public IReadOnlyList<EquipmentLoadout> Equipments { get; }
         public ItemInventory Consumables { get; private set; }
         public event Action Changed;
+        public event Action<PartyMember, int> PoisonDamage;
+        public const float PoisonTickSeconds = 3f;
+        private float poisonElapsed;
+        public bool HasLivingMembers
+        {
+            get { foreach (var member in members) if (member.IsAlive) return true; return false; }
+        }
+
+        public void CaptureBattleState(BattleSession battle)
+        {
+            if (battle == null) throw new ArgumentNullException(nameof(battle));
+            foreach (var state in battle.Combatants)
+                if (state.Team == CombatTeam.Party)
+                    foreach (var member in members)
+                        if (member.Id == state.Id) member.CaptureVitals(state);
+            Changed?.Invoke();
+        }
+
+        public void AdvancePoison(float seconds, bool paused = false)
+        {
+            if (paused || float.IsNaN(seconds) || float.IsInfinity(seconds) || seconds <= 0) return;
+            bool poisoned = false;
+            foreach (var member in members) poisoned |= member.IsAlive && member.IsPoisoned;
+            if (!poisoned) { poisonElapsed = 0; return; }
+            poisonElapsed += seconds;
+            while (poisonElapsed >= PoisonTickSeconds && poisoned)
+            {
+                poisonElapsed -= PoisonTickSeconds;
+                poisoned = false;
+                foreach (var member in members)
+                {
+                    if (!member.IsAlive || !member.IsPoisoned) continue;
+                    var state = member.CreateCombatant();
+                    int damage = state.TickPoison();
+                    member.CaptureVitals(state);
+                    PoisonDamage?.Invoke(member, damage);
+                    poisoned |= member.IsPoisoned;
+                }
+                Changed?.Invoke();
+            }
+            if (!poisoned) poisonElapsed = 0;
+        }
+
+        public void RecoverAtInn()
+        {
+            foreach (var member in members) member.RestoreVitals(member.MaxHp, member.MaxMp, false, 0);
+            poisonElapsed = 0;
+            Changed?.Invoke();
+        }
+
+        public bool TryUseItem(ConsumableDefinition item, PartyMember member, out string message)
+        {
+            if (member == null || !members.Contains(member) || item == null || Consumables.QuantityOf(item) == 0)
+            { message = "Item ou personagem indisponivel."; return false; }
+            bool valid = item.Effect == ItemEffect.Revive ? !member.IsAlive : member.IsAlive &&
+                (item.Effect == ItemEffect.RestoreHp ? member.Hp < member.MaxHp :
+                 item.Effect == ItemEffect.RestoreMp ? member.Mp < member.MaxMp : member.IsPoisoned);
+            if (!valid) { message = "Este personagem nao precisa deste item."; return false; }
+            var state = member.CreateCombatant();
+            if (!Consumables.TryConsume(item)) { message = "Item esgotado."; return false; }
+            if (item.Effect == ItemEffect.RestoreHp) state.RecoverHp(item.Power);
+            else if (item.Effect == ItemEffect.RestoreMp) state.RecoverMp(item.Power);
+            else if (item.Effect == ItemEffect.CleansePoison) state.PoisonTurns = 0;
+            else
+            {
+                state.ClearConditions();
+                state.RecoverHp((int)(((long)state.Definition.MaxHp * item.Power + 99) / 100));
+            }
+            member.CaptureVitals(state);
+            message = item.Name + " usado em " + member.Name + ".";
+            Changed?.Invoke();
+            return true;
+        }
 
         // Usado somente depois de validar um snapshot, em uma equipe ainda fora do jogo.
         internal void RestoreInventory(EquipmentLoadout[] gear, MateriaInstance[] materia, ItemInventory items)

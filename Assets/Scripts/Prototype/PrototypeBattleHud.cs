@@ -341,8 +341,7 @@ namespace DragonQuest.Prototype
                 if (floating.Target.Id == CastleBattleRules.TyrantId && floating.Change.IsShielded
                     && !floating.Change.IsMp && floating.Change.Amount < 0)
                     castleSpells.DrawShieldHit(figure, elapsed);
-                Color color = floating.Change.Amount > 0 ? new Color(.30f, 1f, .40f)
-                    : floating.Change.IsCritical ? new Color(1f, .88f, .10f) : Color.white;
+                Color color = BattleStatusColors.VitalChange(floating.Change);
                 color.a = Mathf.Clamp01((1.4f - elapsed) / .35f);
                 string label = (floating.Change.Amount > 0 ? "+" : "") + System.Math.Abs(floating.Change.Amount)
                     + (floating.Change.IsMp ? " MP" : "");
@@ -538,9 +537,9 @@ namespace DragonQuest.Prototype
                 bool beforeMeteorImpact = controller.IsPresentingAction
                     && CastleMeteorPresentation.IsMeteor(controller.PresentingActor.Id, controller.PresentingAbility)
                     && Time.unscaledTime < controller.ActionImpactAt;
-                return participant.IsAlive || beforeMeteorImpact ? Color.white : new Color(.4f, .4f, .4f);
+                return participant.IsAlive ? BattleStatusColors.Tint(participant) : beforeMeteorImpact ? Color.white : new Color(.4f, .4f, .4f);
             }
-            Color tint = defeatedEnemies.IsRed(participant, Time.unscaledTime) ? new Color(1, .12f, .12f) : Color.white;
+            Color tint = defeatedEnemies.IsRed(participant, Time.unscaledTime) ? new Color(1, .12f, .12f) : BattleStatusColors.Tint(participant);
             tint.a = defeatedEnemies.Alpha(participant, Time.unscaledTime);
             return tint;
         }

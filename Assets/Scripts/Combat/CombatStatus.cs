@@ -17,7 +17,7 @@ namespace DragonQuest.Combat
         {
             var result = new List<StatusIndicator>();
             if (!member.IsAlive) { result.Add(new StatusIndicator(CombatStatus.Defeated, "Derrotado")); return result; }
-            if (member.PoisonTurns > 0) result.Add(new StatusIndicator(CombatStatus.Poison, "Veneno", member.PoisonTurns));
+            if (member.PoisonTurns > 0) result.Add(new StatusIndicator(CombatStatus.Poison, "Veneno: 5% do HP maximo por turno ou a cada 3s no mapa; ate curar ou chegar a 0 HP"));
             if (member.ShieldTurns > 0) result.Add(new StatusIndicator(CombatStatus.Shield, "Shield: -50% de todo dano recebido", member.ShieldTurns));
             if (member.IsDefending) result.Add(new StatusIndicator(CombatStatus.Defending, "Defender: -50% de dano de ataques ate o proximo turno"));
             if (member.ProtectedBy != null) result.Add(new StatusIndicator(CombatStatus.Protected, "Protegido por " + member.ProtectedBy.Definition.Name));

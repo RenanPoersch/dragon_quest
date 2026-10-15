@@ -12,6 +12,16 @@ namespace DragonQuest.Prototype
     public sealed class PrototypeBattleController : MonoBehaviour
     {
         private PlayerMovement movement;
+        private SpriteRenderer explorationSprite;
+        private GUIStyle poisonNumber;
+        private readonly System.Collections.Generic.List<MapPoisonNumber> mapPoisonNumbers = new System.Collections.Generic.List<MapPoisonNumber>();
+        private sealed class MapPoisonNumber
+        {
+            public string Name;
+            public int Damage, Lane;
+            public float Started;
+            public Vector3 Position;
+        }
         private CombatantState pendingEnemy;
         private float enemyActionTime;
         private DialogueController dialogue;
@@ -80,7 +90,11 @@ namespace DragonQuest.Prototype
         {
             movement = hero; dialogue = dialogueController;
             otherMenuOpen = externalMenuOpen ?? (() => false);
+            if (Party != null) Party.PoisonDamage -= ShowMapPoison;
             Party = restoredParty ?? PrototypePartyFactory.Create();
+            Party.PoisonDamage += ShowMapPoison;
+            mapPoisonNumbers.Clear();
+            explorationSprite = hero.GetComponentInChildren<PixelCharacter>()?.GetComponent<SpriteRenderer>();
             Rewards = new BattleRewards(progress, Party);
             var postBattleHud = GetComponent<PrototypePostBattleHud>();
             if (postBattleHud == null) postBattleHud = gameObject.AddComponent<PrototypePostBattleHud>();
@@ -105,13 +119,13 @@ namespace DragonQuest.Prototype
 
         public void StartBattle()
         {
-            if (IsBusy) return;
+            if (IsBusy || !Party.HasLivingMembers) return;
             StartEncounter(PrototypeBattleFactory.CreateEncounter(Party),false);
         }
 
         public bool StartRandomBattle()
         {
-            if (IsBusy || dialogue.IsOpen) return false;
+            if (IsBusy || dialogue.IsOpen || !Party.HasLivingMembers) return false;
             RandomEncounterType type = RandomEncounterRules.TypeAt(currentLocation());
             if (type == RandomEncounterType.None) return false;
             StartEncounter(PrototypeBattleFactory.CreateRegionEncounter(Party, type, UnityEngine.Random.Range(1, 4)), false);
@@ -122,6 +136,22 @@ namespace DragonQuest.Prototype
         private void LateUpdate()
         {
             if (movement == null || dialogue == null) return;
+            bool paused = IsBusy || dialogue.IsOpen || !Application.isFocused;
+            Party.AdvancePoison(Time.deltaTime, paused);
+            if (explorationSprite != null && Party.Members.Count > 0)
+            {
+                var leader = Party.Members[0];
+                explorationSprite.color = leader.IsAlive ? BattleStatusColors.Tint(leader.IsPoisoned, leader.BoundActions) : new Color(.4f, .4f, .4f);
+            }
+            if (!paused && !Party.HasLivingMembers)
+            {
+                Party.RecoverAtInn();
+                recoverAtInn?.Invoke();
+                trackingWalk = false;
+                dialogue.Open("Hospedaria", "O veneno venceu a equipe. Voces despertam na hospedaria com HP e MP recuperados.");
+                movement.SetMovementEnabled(false);
+                return;
+            }
             Vector2 position = movement.transform.position;
             bool teleported = !trackingWalk || lastTeleportRevision != movement.TeleportRevision;
             float distance = trackingWalk ? Vector2.Distance(position, lastWalkPosition) : 0;
@@ -130,9 +160,40 @@ namespace DragonQuest.Prototype
             if (randomEncounters.Advance(currentLocation(), distance, blocked, teleported)) StartRandomBattle();
         }
 
+        private void ShowMapPoison(PartyMember member, int damage)
+        {
+            mapPoisonNumbers.Add(new MapPoisonNumber { Name = member.Name, Damage = damage,
+                Lane = mapPoisonNumbers.Count % Party.Members.Count, Started = Time.unscaledTime,
+                Position = movement.transform.position });
+        }
+
+        private void OnGUI()
+        {
+            mapPoisonNumbers.RemoveAll(number => Time.unscaledTime - number.Started > 1.4f);
+            if (IsBusy || dialogue == null || dialogue.IsOpen || Camera.main == null) return;
+            if (poisonNumber == null)
+            {
+                poisonNumber = PrototypeTypography.Style(GUI.skin.label, 24, true);
+                poisonNumber.alignment = TextAnchor.MiddleCenter;
+            }
+            foreach (var number in mapPoisonNumbers)
+            {
+                float elapsed = Time.unscaledTime - number.Started;
+                Vector3 point = Camera.main.WorldToScreenPoint(number.Position);
+                Rect rect = new Rect(point.x - 120, Screen.height - point.y - 75 - elapsed * 40 - number.Lane * 28, 240, 36);
+                Color color = BattleStatusColors.DamageOverTime;
+                color.a = Mathf.Clamp01((1.4f - elapsed) / .35f);
+                string label = number.Name + " -" + number.Damage;
+                poisonNumber.normal.textColor = new Color(0, 0, 0, color.a);
+                GUI.Label(new Rect(rect.x + 2, rect.y + 2, rect.width, rect.height), label, poisonNumber);
+                poisonNumber.normal.textColor = color;
+                GUI.Label(rect, label, poisonNumber);
+            }
+        }
+
         public void StartDragonBattle()
         {
-            if (IsBusy || dialogue.IsOpen || Dragon.IsDefeated || secrets?.PassageOpen != true) return;
+            if (IsBusy || dialogue.IsOpen || !Party.HasLivingMembers || Dragon.IsDefeated || secrets?.PassageOpen != true) return;
             StartEncounter(PrototypeBattleFactory.CreateDragonEncounter(Party),true);
         }
 
@@ -155,7 +216,7 @@ namespace DragonQuest.Prototype
 
         public void StartCastleBattle()
         {
-            if(IsBusy||dialogue.IsOpen) return;
+            if(IsBusy||dialogue.IsOpen||!Party.HasLivingMembers) return;
             StartEncounter(PrototypeCastleBattleFactory.Create(Party),false);
         }
 
@@ -210,6 +271,7 @@ namespace DragonQuest.Prototype
         private void AwardIfComplete()
         {
             if (Session.Outcome == BattleOutcome.None) return;
+            if (!notifiedCompletion) Party.CaptureBattleState(Session);
             if (Session.Outcome == BattleOutcome.Victory)
             {
                 if (IsDragonEncounter) Dragon.TryComplete(Session,Party);
@@ -309,6 +371,7 @@ namespace DragonQuest.Prototype
             pendingEnemy = null;
             if (Session.Outcome == BattleOutcome.Defeat)
             {
+                Party.RecoverAtInn();
                 recoverAtInn?.Invoke();
                 dialogue.Open("Hospedaria","A equipe desperta em seguranca. Seus ferimentos foram tratados e o MP foi recuperado.",
                     "O Limit acumulado permanece. Os consumiveis usados foram gastos; seus segredos, ouro e equipamentos continuam com voce.");

@@ -88,6 +88,42 @@ internal static class SaveChecks
         Invalid(snapshot, d => d.Members[0].Experience = -1, "XP negativo");
         Invalid(snapshot, d => d.Members[0].Experience = CharacterProgression.MaxExperience + 1, "XP acima do limite");
     }
+    private static void CheckConditionPersistence()
+    {
+        var journey = JourneySnapshot.Restore(Initial());
+        journey.Party.Members[0].RestoreVitals(37, 9, true, 1);
+        journey.Party.Members[1].RestoreVitals(0, 0, false, 0);
+        var data = JourneySnapshot.Capture(journey.Party, journey.Progress, journey.Secrets, journey.Dragon,
+            journey.Shops, journey.Quest, PrototypeTravel.World, 0, -7);
+        var restored = RoundTrip(data);
+        var hero = restored.Party.Members[0]; var healer = restored.Party.Members[1];
+        Assert(hero.Hp == 37 && hero.Mp == 9 && hero.IsPoisoned && hero.BoundActions == 1, "HP, MP, veneno e correntes persistem no save.");
+        Assert(healer.Hp == 0 && healer.Mp == 0 && !healer.IsAlive, "Zero HP e MP nao sao confundidos com campos ausentes.");
+        restored.Party.AdvancePoison(3);
+        Assert(hero.Hp == 32 && hero.IsPoisoned && journey.Party.Members[0].Hp == 37, "Veneno continua depois de carregar sem alterar jornada original.");
+        Invalid(data, d => d.Members[0].Hp = -1, "HP negativo");
+        Invalid(data, d => d.Members[0].Hp = 9999, "HP acima do maximo");
+        Invalid(data, d => d.Members[0].Mp = -1, "MP negativo");
+        Invalid(data, d => d.Members[0].Mp = 9999, "MP acima do maximo");
+        Invalid(data, d => d.Members[0].BoundActions = -1, "Correntes negativas");
+        Invalid(data, d => d.Members[0].BoundActions = 2, "Correntes acima do limite");
+        Invalid(data, d => d.Members[1].Poisoned = true, "Veneno em derrotado");
+        string legacy = System.Text.RegularExpressions.Regex.Replace(Encoding.UTF8.GetString(SaveStore.Encode(Initial())),
+            "\"(Hp|Mp)\":\\d+,", "");
+        var old = JourneySnapshot.Restore(SaveStore.Decode(Encoding.UTF8.GetBytes(legacy)));
+        Assert(old.Party.Members.All(m => m.Hp == m.MaxHp && m.Mp == m.MaxMp && !m.IsPoisoned), "Saves antigos sem vitais carregam com recursos cheios.");
+        var member = journey.Party.Members[2];
+        member.Progression.AddExperience(525);
+        var materia = new MateriaInstance("save-hp", PrototypePartyFactory.HpMateria);
+        journey.Party.TryAddMaterias(materia); journey.Party.TryEquip(member, member.Armor, 0, materia, out _);
+        member.RestoreVitals(member.MaxHp, member.MaxMp, true, 0);
+        var grown = JourneySnapshot.Capture(journey.Party, journey.Progress, journey.Secrets, journey.Dragon,
+            journey.Shops, journey.Quest, PrototypeTravel.World, 0, -7);
+        var equipped = RoundTrip(grown).Party.Members[2];
+        Assert(equipped.Hp == member.MaxHp && equipped.Mp == member.MaxMp && equipped.IsPoisoned,
+            "Validacao de vitais considera nivel e materias instaladas antes de restaurar HP/MP.");
+    }
+
     private static void CheckDomain()
     {
         var fresh = RoundTrip(Initial()); Assert(fresh.Progress.Gold == 50 && fresh.Party.Consumables.QuantityOf(PrototypePartyFactory.Potion) == 2, "Kit inicial restaurado.");
@@ -194,7 +230,7 @@ internal static class SaveChecks
         var store = new SaveStore(directory);
         var initial = Initial();
         Assert(!Directory.Exists(directory) && !store.Exists(1), "Preparar slots nao cria arquivos de save.");
-        Assert(store.TryWrite(1, initial, out _), "Primeiro salvamento explicito.");
+        Assert(store.TryWrite(1, initial, out string initialError), "Primeiro salvamento explicito: " + initialError);
         byte[] previous = File.ReadAllBytes(store.SlotPath(1));
         Assert(store.TryRead(1, out var session, out _), "Carregar jornada para alterar na sessao.");
         session.Progress.TryOpenChest("praca-primeiro-bau", 25);
@@ -222,7 +258,7 @@ internal static class SaveChecks
     {
         try
         {
-            CheckDomain(); CheckInventoryEvents(); CheckLevelPersistence();
+            CheckDomain(); CheckInventoryEvents(); CheckLevelPersistence(); CheckConditionPersistence();
             CheckManualPersistence(Path.Combine(args[0], "manual-" + Guid.NewGuid().ToString("N")));
             CheckFiles(Path.Combine(args[0], "saves-" + Guid.NewGuid().ToString("N")));
             Console.WriteLine("Salvamento: " + checks + " verificacoes passaram."); return 0;

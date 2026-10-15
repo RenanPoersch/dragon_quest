@@ -27,7 +27,7 @@ namespace DragonQuest.Prototype
         {
             if (textures.TryGetValue(status, out Texture2D cached)) return cached;
             var texture = new Texture2D(8, 8) { filterMode = FilterMode.Point };
-            Color color = status == CombatStatus.Poison ? new Color(.7f, .35f, 1)
+            Color color = status == CombatStatus.Poison ? BattleStatusColors.Poison
                 : status == CombatStatus.Shield ? new Color(.25f, .9f, 1)
                 : status == CombatStatus.Defeated ? new Color(1, .3f, .25f)
                 : status == CombatStatus.Bound ? new Color(.8f, .8f, .85f) : new Color(1, .85f, .35f);

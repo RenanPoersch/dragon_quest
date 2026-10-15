@@ -72,32 +72,36 @@ internal static class AbilityChecks
         var hero = Fighter("hero", CombatTeam.Party, 10, hp: 101, defense: 0, abilities: new[] { cleanse, Attack, Defend });
         var battle = new BattleSession(enemy, hero);
         Act(battle, poison, hero);
-        Assert(hero.Hp == 91 && hero.PoisonTurns == 3 && enemy.Mp == 56, "Golpe venenoso deve causar dano e aplicar tres turnos.");
+        Assert(hero.Hp == 91 && hero.PoisonTurns == 3 && enemy.Mp == 56, "Golpe venenoso deve causar dano e aplicar veneno persistente.");
         Act(battle, Defend, hero);
-        Assert(hero.Hp == 85 && hero.PoisonTurns == 2, "Veneno arredonda 5% para cima e ignora defesa.");
+        Assert(hero.Hp == 85 && hero.IsPoisoned, "Veneno arredonda 5% para cima e ignora defesa.");
         Act(battle, Defend, enemy);
         Act(battle, Defend, hero);
         Act(battle, Defend, enemy);
         Act(battle, Defend, hero);
-        Assert(hero.Hp == 73 && hero.PoisonTurns == 0, "Veneno deve terminar depois de tres acoes do afetado.");
+        Assert(hero.Hp == 73 && hero.IsPoisoned, "Veneno permanece depois de tres acoes do afetado.");
+        Act(battle, Defend, enemy);
+        Assert(battle.GetValidTargets(cleanse).Count == 1, "Purificar continua disponivel depois de tres turnos.");
+        Act(battle, cleanse, hero);
+        Assert(hero.Hp == 73 && !hero.IsPoisoned && hero.Mp == 56, "Purificar interrompe o veneno persistente.");
         Act(battle, Defend, enemy);
         Assert(battle.GetValidTargets(cleanse).Count == 0, "Purificar nao deve listar aliados saudaveis.");
-        Assert(!battle.TryAct(hero, cleanse, hero, out _) && hero.Mp == 60, "Purificar sem condicao deve falhar sem gasto.");
+        Assert(!battle.TryAct(hero, cleanse, hero, out _) && hero.Mp == 56, "Purificar sem condicao deve falhar sem gasto.");
         Act(battle, Defend, hero);
-        Assert(hero.Hp == 73, "Veneno expirado nao causa dano.");
+        Assert(hero.Hp == 73, "Veneno curado nao causa dano.");
         Act(battle, poison, hero);
         int before = hero.Hp;
         Act(battle, cleanse, hero);
-        Assert(hero.Hp == before && hero.PoisonTurns == 0 && hero.Mp == 56, "Purificar remove veneno antes do dano de fim de turno.");
+        Assert(hero.Hp == before && hero.PoisonTurns == 0 && hero.Mp == 52, "Purificar remove veneno antes do dano de fim de turno.");
 
-        // Reaplicar veneno renova a duracao, sem acumular duas fontes de dano.
+        // Reaplicar veneno preserva a condicao, sem acumular duas fontes de dano.
         Act(battle, poison, hero);
         Act(battle, Defend, hero);
         Act(battle, poison, hero);
-        Assert(hero.PoisonTurns == 3, "Veneno reaplicado deve renovar a duracao.");
+        Assert(hero.PoisonTurns == 3, "Veneno reaplicado permanece ativo.");
         before = hero.Hp;
         Act(battle, Defend, hero);
-        Assert(hero.Hp == before - 6 && hero.PoisonTurns == 2, "Reaplicacao nao duplica o dano por turno.");
+        Assert(hero.Hp == before - 6 && hero.IsPoisoned, "Reaplicacao nao duplica o dano por turno.");
 
         var fragile = Fighter("fragile", CombatTeam.Party, 10, hp: 20, defense: 100);
         var weak = Fighter("weak", CombatTeam.Enemy, 20, attack: 0, abilities: new[] { poison, Defend });
@@ -299,6 +303,12 @@ internal static class AbilityChecks
         try { new AbilityDefinition("bad", "", "", 0, 1, AbilityEffect.Heal, TargetRule.AllEnemies); } catch (ArgumentException) { rejected++; }
         try { new AbilityDefinition("bad", "", "", 0, 1, AbilityEffect.Heal, TargetRule.Ally, 3); } catch (ArgumentException) { rejected++; }
         Assert(rejected == 5, "Definicoes incompatíveis devem falhar antes do combate.");
+    }
+
+    public static int RunPoisonChecks()
+    {
+        CheckPoisonAndCleanse();
+        return checks;
     }
 
     public static int Run()

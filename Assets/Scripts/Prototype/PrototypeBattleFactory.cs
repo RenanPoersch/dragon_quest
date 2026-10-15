@@ -26,7 +26,7 @@ namespace DragonQuest.Prototype
         public static readonly AbilityDefinition Protect = new AbilityDefinition("protect", "Proteger",
             "Recebe o proximo golpe fisico individual dirigido ao aliado. Expira no proximo turno do usuario; area, magia e veneno ja aplicado nao sao interceptados.", 4, 0, AbilityEffect.Protect, TargetRule.Ally);
         public static readonly AbilityDefinition PoisonStrike = new AbilityDefinition("poison-strike", "Golpe venenoso",
-            "Ataque individual que envenena por 3 turnos do afetado.", 4, 0, AbilityEffect.PhysicalDamage, TargetRule.Enemy, 3);
+            "Ataque individual que envenena ate ser curado ou o alvo chegar a 0 HP. Veneno: 5% do HP maximo por turno e a cada 3s no mapa.", 4, 0, AbilityEffect.PhysicalDamage, TargetRule.Enemy, 3);
         public static readonly AbilityDefinition EnemySweep = new AbilityDefinition("enemy-sweep", "Varredura",
             "Ataque contra todos os aliados vivos.", 5, 0, AbilityEffect.PhysicalDamage, TargetRule.AllEnemies);
         public static readonly AbilityDefinition DragonClaw = new AbilityDefinition("dragon-claw", "Garra draconica",

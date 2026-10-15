@@ -40,7 +40,7 @@ namespace DragonQuest.Prototype
             GUI.Label(new Rect(48, 66, 890, 26), page == 0
                 ? "Escolha uma materia, depois um encaixe. Role os encaixes para ver equipamentos com mais pares."
                 : page == 1 ? "Trocar ou remover equipamento devolve suas materias ao inventario. Os novos encaixes ficam vazios."
-                : "Confira seu estoque aqui. Itens sao usados na batalha e suas quantidades permanecem entre encontros.", small);
+                : "Escolha um personagem e um item para usar. HP, MP e condicoes permanecem entre encontros.", small);
             if (GUI.Button(new Rect(1000, 34, 225, 43), "Fechar / I ou Esc", button)) controller.CloseMenu();
 
             for (int i = 0; i < party.Members.Count; i++)
@@ -54,7 +54,7 @@ namespace DragonQuest.Prototype
             Panel(new Rect(30, 168, 1220, 65));
             GUI.Label(new Rect(48, 176, 1140, 25), member.Name + " / " + member.BaseStats.Role + "  |  " + member.AffinityDescription, text);
             GUI.Label(new Rect(48, 204, 1140, 24), "Ataque " + member.Attack + "  |  Defesa " + member.Defense
-                + "  |  HP " + member.MaxHp + "  |  MP " + member.MaxMp + "  |  Magia " + member.Magic + "  |  Limit " + member.Limit.Charge + "%", small);
+                + "  |  HP " + member.Hp + "/" + member.MaxHp + "  |  MP " + member.Mp + "/" + member.MaxMp + "  |  Magia " + member.Magic + "  |  Limit " + member.Limit.Charge + "%", small);
 
             if (page == 0) DrawMaterias(member, party);
             else if (page == 1) DrawGear(member, party);
@@ -182,7 +182,7 @@ namespace DragonQuest.Prototype
                     + stack.Definition.Name + " / Quantidade: " + stack.Quantity, iconButton)) selectedInventoryItem = stack.Definition;
                 InventoryPixelArt.Draw(new Rect(56, 309 + i * 54, 36, 36), InventoryPixelArt.Texture(stack.Definition));
             }
-            GUI.Label(new Rect(48, 595, 560, 67), "O uso acontece na batalha: escolha Itens e depois um alvo. Abrir a lista ou cancelar nao gasta item nem turno.", text);
+            GUI.Label(new Rect(48, 595, 560, 67), "Escolha o personagem no topo e use o item selecionado. Antidoto cura o veneno; Pluma da Fenix revive.", text);
             if(secrets.HasScale)
             {
                 GUI.Label(new Rect(48,540,560,25),"OBJETO DE HISTORIA / Escama ancestral x1",small);
@@ -193,7 +193,11 @@ namespace DragonQuest.Prototype
             GUI.Label(new Rect(690, 310, 432, 135), selectedInventoryItem?.Description
                 ?? "Pocao recupera HP, eter recupera MP, antidoto remove veneno e Pluma da Fenix revive.", text);
             GUI.Label(new Rect(690, 483, 530, 130), "Itens nao recebem bonus de classe ou combos de materia. O estoque nao e restaurado a cada batalha. Compre suprimentos na loja de itens.", text);
-            if(secrets.IsDiscovered) GUI.Label(new Rect(690,635,530,45),secrets.Summary,small);
+            var target = party.Members[memberIndex];
+            if (selectedInventoryItem != null && GUI.Button(new Rect(690, 578, 530, 40), "Usar em " + target.Name, button))
+                party.TryUseItem(selectedInventoryItem, target, out message);
+            GUI.Label(new Rect(690, 622, 530, 28), message, small);
+            if(secrets.IsDiscovered) GUI.Label(new Rect(690,660,530,30),secrets.Summary,small);
         }
 
         private void ResetSocketSelection() { selectedEquipment = null; selectedSlot = -1; socketsScroll = Vector2.zero; }

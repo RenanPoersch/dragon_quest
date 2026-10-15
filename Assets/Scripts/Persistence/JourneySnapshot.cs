@@ -30,7 +30,8 @@ namespace DragonQuest.Persistence
             var members = new List<MemberData>(); var gear = new List<GearData>();
             var materias = new List<MateriaData>(); var items = new List<StackData>(); var stocks = new List<StockData>();
             foreach (var member in party.Members) members.Add(new MemberData
-                {Id = member.Id, Weapon = member.Weapon?.Id, Armor = member.Armor?.Id, Limit = member.Limit.Charge, Experience = member.Experience});
+                {Id = member.Id, Weapon = member.Weapon?.Id, Armor = member.Armor?.Id, Limit = member.Limit.Charge, Experience = member.Experience,
+                    Hp = member.Hp, Mp = member.Mp, Poisoned = member.IsPoisoned, BoundActions = member.BoundActions});
             foreach (var equipment in party.Equipments)
             {
                 var sockets = new string[equipment.Sockets.Count];
@@ -118,6 +119,17 @@ namespace DragonQuest.Persistence
                     Require(usedGear.Contains(g.Id) && materias.ContainsKey(id) && usedMateria.Add(id), "Materia em encaixe invalido ou duplicado.");
                     gear[g.Id].Set(i, materias[id]);
                 }
+            // Gear and materia must be installed before validating derived HP/MP limits.
+            foreach (var saved in data.Members)
+                foreach (var member in party.Members)
+                    if (member.Id == saved.Id)
+                    {
+                        int hp = saved.Hp ?? member.MaxHp, mp = saved.Mp ?? member.MaxMp;
+                        Require(hp >= 0 && hp <= member.MaxHp && mp >= 0 && mp <= member.MaxMp
+                            && saved.BoundActions >= 0 && saved.BoundActions <= 1
+                            && (hp > 0 || !saved.Poisoned && saved.BoundActions == 0), "HP, MP ou condicoes invalidos.");
+                        member.RestoreVitals(hp, mp, saved.Poisoned, saved.BoundActions);
+                    }
             var shops = PrototypeShopFactory.Create(party, progress); var products = new Dictionary<string, ShopProduct>();
             foreach (var shop in shops.Shops) foreach (var product in shop.Products) products.Add(shop.Id + "/" + product.Id, product);
             CheckArray(data.Stocks, products.Count); Require(data.Stocks.Length == products.Count, "Estoque incompleto.");
