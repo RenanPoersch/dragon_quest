@@ -139,22 +139,22 @@ internal static class LevelProgressionChecks
     private static void Rewards()
     {
         var party = PrototypePartyFactory.Create(); var gold = new ExplorationProgress();
-        var rewards = new BattleRewards(gold, party); var battle = RewardBattle(party, 30, 50);
+        var rewards = new BattleRewards(gold, party); var battle = RewardBattle(party, 30, 60);
         Check(!rewards.TryClaim(battle, out _) && party.Members.All(m => m.Experience == 0), "Live battles never grant XP.");
         battle.Combatants[2].TakeDamage(battle.Combatants[2].Hp); Win(battle);
-        Check(rewards.TryClaim(battle, out string message) && party.Members.All(m => m.Experience == 80)
-            && message.Contains("XP") && gold.Gold == 2, "Each participant, including fallen heroes, receives the enemy XP sum.");
+        Check(rewards.TryClaim(battle, out string message) && party.Members.All(m => m.Experience == 30)
+            && message.Contains("XP") && gold.Gold == 2, "Each participant, including fallen heroes, receives an equal share of the enemy XP sum.");
         Check(!rewards.TryClaim(battle, out _) && !rewards.TryClaimExperience(battle, out _)
-            && party.Members.All(m => m.Experience == 80), "Reopening rewards cannot duplicate XP.");
-        battle = RewardBattle(party, 20); Win(battle);
+            && party.Members.All(m => m.Experience == 30), "Reopening rewards cannot duplicate XP.");
+        battle = RewardBattle(party, 210); Win(battle);
         Check(rewards.TryClaim(battle, out message) && party.Members.All(m => m.Level == 2 && m.Experience == 100)
             && message.Contains("nivel 2"), "A later encounter crosses the XP threshold for all participants.");
         var full = new ExplorationProgress(int.MaxValue); rewards = new BattleRewards(full, party);
         battle = RewardBattle(party, 150); Win(battle);
-        Check(!rewards.TryClaim(battle, out _) && party.Members.All(m => m.Experience == 250), "Full gold balance must not block victory XP.");
-        Check(!rewards.TryClaim(battle, out _) && party.Members.All(m => m.Experience == 250), "Retrying pending gold never repeats XP.");
+        Check(!rewards.TryClaim(battle, out _) && party.Members.All(m => m.Experience == 150), "Full gold balance must not block victory XP.");
+        Check(!rewards.TryClaim(battle, out _) && party.Members.All(m => m.Experience == 150), "Retrying pending gold never repeats XP.");
         full.TrySpendGold(1);
-        Check(rewards.TryClaim(battle, out _) && party.Members.All(m => m.Experience == 250), "Pending gold succeeds later without more XP.");
+        Check(rewards.TryClaim(battle, out _) && party.Members.All(m => m.Experience == 150), "Pending gold succeeds later without more XP.");
         battle = RewardBattle(party, int.MaxValue, int.MaxValue); Win(battle);
         Check(rewards.TryClaimExperience(battle, out _) && party.Members.All(m => m.Level == 99), "Combined rewards use wide sums and cap XP.");
         party = PrototypePartyFactory.Create(); rewards = new BattleRewards(new ExplorationProgress(), party);
@@ -172,7 +172,7 @@ internal static class LevelProgressionChecks
         var spirit = battle.Combatants.First(c => c.Id == CastleBattleRules.SpiritId); spirit.TakeDamage(spirit.Hp - 1);
         Check(battle.TryAct(battle.CurrentActor, battle.CurrentActor.Definition.Abilities.First(a => a.Id == "attack"), spirit, out _)
             && battle.Outcome == BattleOutcome.Completed && rewards.TryClaimExperience(battle, out _)
-            && party.Members.All(m => m.Experience == 500), "Freeing the king awards only defeated spirit XP, preserving final-story gold rules.");
+            && party.Members.Select(m => m.Experience).SequenceEqual(new[] { 167, 167, 166 }), "Freeing the king awards only defeated spirit XP, preserving final-story gold rules.");
         party = PrototypePartyFactory.Create(); battle = PrototypeCastleBattleFactory.Create(party);
         var tyrant = battle.Combatants.First(c => c.Id == CastleBattleRules.TyrantId); tyrant.TakeDamage(tyrant.Hp - 1);
         Check(battle.TryAct(battle.CurrentActor, battle.CurrentActor.Definition.Abilities.First(a => a.Id == "attack"), tyrant, out _)

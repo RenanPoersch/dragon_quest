@@ -129,12 +129,16 @@ namespace DragonQuest.Equipment
             var participants = new HashSet<string>();
             foreach (CombatantState combatant in battle.Combatants)
                 if (combatant.Team == CombatTeam.Party) participants.Add(combatant.Id);
+            var recipients = new List<PartyMember>();
+            foreach (PartyMember member in members) if (participants.Contains(member.Id)) recipients.Add(member);
+            if (recipients.Count == 0) return string.Empty;
+            long share = experience / recipients.Count, remainder = experience % recipients.Count;
             var report = new List<string>();
-            foreach (PartyMember member in members)
+            for (int i = 0; i < recipients.Count; i++)
             {
-                if (!participants.Contains(member.Id)) continue;
+                PartyMember member = recipients[i];
                 int before = member.Experience;
-                int levels = member.Progression.AddExperience(experience);
+                int levels = member.Progression.AddExperience(share + (i < remainder ? 1 : 0));
                 if (levels > 0) report.Add(member.Name + " chegou ao nivel " + member.Level + "!");
                 if (member.Experience != before) report.Add(member.Name + " +" + (member.Experience - before) + " XP.");
             }

@@ -4,7 +4,7 @@ Todos os heróis de uma nova jornada começam no nível 1, com 0 XP e 5% de chan
 
 ## XP e níveis
 
-Cada herói que participou de uma vitória recebe a soma inteira do XP dos inimigos derrotados. O valor não é dividido pelo tamanho da equipe, e aliados que terminaram caídos também recebem XP. Uma batalha em andamento ou uma derrota não concede XP, mesmo com inimigos já eliminados. Reabrir o resultado não repete o pagamento.
+O XP dos inimigos derrotados é somado e dividido igualmente entre os heróis participantes, incluindo aliados que terminaram caídos. Sobras inteiras são distribuídas de 1 em 1 XP na ordem da equipe, preservando o total. Heróis fora da batalha não entram no divisor nem recebem XP. Uma batalha em andamento ou uma derrota não concede XP, mesmo com inimigos já eliminados. Reabrir o resultado não repete o pagamento.
 
 | Inimigo | XP por unidade |
 | --- | ---: |
@@ -17,7 +17,7 @@ Cada herói que participou de uma vitória recebe a soma inteira do XP dos inimi
 | Tirano dominado | 250 |
 | Espírito maligno | 500 |
 
-A patrulha rende 85 XP para cada herói; três piratas rendem 90. Libertar o rei concede os 500 XP do espírito derrotado, com o tirano vivo. Os finais de possessão e destruição não são vitórias e não concedem XP. A regra anterior de ouro dos finais é preservada.
+A patrulha rende 85 XP no total: 29 para o primeiro herói e 28 para cada um dos outros dois. Três piratas rendem 90 XP no total: 30 por herói. Libertar o rei divide os 500 XP do espírito derrotado entre os participantes, com o tirano vivo. Os finais de possessão e destruição não são vitórias e não concedem XP. A regra anterior de ouro dos finais é preservada.
 
 Os valores ficam em `CombatantDefinition.ExperienceReward`; mudar uma formação altera sua recompensa conforme os inimigos presentes. O saldo de ouro cheio não impede ganhar XP. Se o pagamento de ouro for tentado novamente, o XP não se repete.
 

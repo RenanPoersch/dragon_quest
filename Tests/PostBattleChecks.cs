@@ -11,9 +11,9 @@ internal static class PostBattleChecks
     private static int checks;
     private static void Check(bool value, string message)
     { checks++; if (!value) throw new Exception(message); }
-    private static BattleSession Encounter(PartyProgress party, int experience, bool solo = false)
+    private static BattleSession Encounter(PartyProgress party, int experience, int participantCount = 3)
     {
-        var actors = party.Members.Take(solo ? 1 : party.Members.Count).Select(m => m.CreateCombatant()).ToList();
+        var actors = party.Members.Take(participantCount).Select(m => m.CreateCombatant()).ToList();
         actors.Add(new CombatantState("reward-enemy", new CombatantDefinition("Enemy", "", 1, 0, 1, 0, 0, 0,
             ElementalAffinities.Neutral, 7, experience, 0, PrototypeBattleFactory.Attack), CombatTeam.Enemy));
         return new BattleSession(() => 1, null, party.Consumables, actors.ToArray());
@@ -41,6 +41,9 @@ internal static class PostBattleChecks
         for (int i = 0; i < result.Members.Count; i++)
         {
             var row = result.Members[i];
+            int expectedShare = Math.Min(CharacterProgression.MaxExperience - before[i],
+                experience / result.Members.Count + (i < experience % result.Members.Count ? 1 : 0));
+            Check(row.GainedExperience == expectedShare, "Every row shows only that hero's share of the total enemy XP.");
             Check(row.BeforeExperience == before[i] && row.At(-1).Total == before[i] && row.At(0).Total == before[i], "Counting starts from the captured XP.");
             var middle = row.At(.6);
             Check(middle.Total >= before[i] && middle.Total <= row.Experience && middle.Progress >= 0 && middle.Progress <= 1, "Animation stays within the awarded range.");
@@ -53,14 +56,38 @@ internal static class PostBattleChecks
         Check(!result.Complete(party, true) && !rewards.TryClaim(battle, out _) && party.Members.Select(m => m.Experience).SequenceEqual(after),
             "Reopening results cannot duplicate XP or gold.");
     }
+    private static void SharedExperience()
+    {
+        for (int count = 1; count <= 3; count++)
+        foreach (int total in new[] { 0, 1, 2, 20, 85, 90, 101 })
+        {
+            var party = PrototypePartyFactory.Create();
+            var battle = Encounter(party, total, count);
+            var result = new PostBattleResults(party, battle);
+            if (count == 3) battle.Combatants[2].TakeDamage(battle.Combatants[2].Hp);
+            Win(battle);
+            var rewards = new BattleRewards(new ExplorationProgress(), party);
+            Check(rewards.TryClaim(battle, out _) && result.Complete(party, true), "A shared reward completes once.");
+            var shares = party.Members.Take(count).Select(m => m.Experience).ToArray();
+            Check(shares.Sum() == total && shares.Max() - shares.Min() <= 1,
+                "Equal integer shares conserve XP, including zero XP and totals smaller than the party.");
+            Check(party.Members.Skip(count).All(m => m.Experience == 0), "Absent heroes do not receive XP or enter the divisor.");
+            Check(result.Members.Select(m => m.GainedExperience).SequenceEqual(shares), "Result rows match actual shares, including fallen heroes.");
+            var expected = Enumerable.Range(0, count).Select(i => total / count + (i < total % count ? 1 : 0));
+            Check(shares.SequenceEqual(expected), "Remainders are assigned deterministically in party order.");
+            Check(!rewards.TryClaim(battle, out _) && party.Members.Take(count).Select(m => m.Experience).SequenceEqual(shares),
+                "Reopening the result cannot duplicate a shared reward.");
+        }
+    }
     private static int Main()
     {
         try
         {
+            SharedExperience();
             var party = PrototypePartyFactory.Create();
             Victory(party, 80, false);
             Victory(party, 400, true);
-            var solo = Encounter(party, 20, true);
+            var solo = Encounter(party, 20, 1);
             var soloResult = new PostBattleResults(party, solo);
             Win(solo);
             var fullGold = new BattleRewards(new ExplorationProgress(int.MaxValue), party);

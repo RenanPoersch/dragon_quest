@@ -36,7 +36,7 @@ namespace DragonQuest.Prototype
             Panel(new Rect(110, 28, 1060, 54));
             GUI.Label(new Rect(140, 39, 990, 36), "Experiencia recebida!", title);
             Panel(new Rect(110, 82, 530, 54)); Panel(new Rect(640, 82, 530, 54));
-            GUI.Label(new Rect(144, 93, 150, 32), "XP", text);
+            GUI.Label(new Rect(144, 93, 150, 32), "XP TOTAL", text);
             GUI.Label(new Rect(304, 93, 300, 32), "+" + result.EnemyExperience, right);
             GUI.Label(new Rect(674, 93, 150, 32), "OURO", text);
             GUI.Label(new Rect(834, 93, 300, 32), "+" + result.Gold, right);
