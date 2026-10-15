@@ -37,6 +37,7 @@ namespace DragonQuest.Prototype
         private string message;
         private float messageUntil;
         private int overwriteSlot;
+        private PrototypeIntroPresentation intro;
         public bool IsMenuVisible { get; private set; } = true;
         public int ActiveSlot { get; private set; }
 
@@ -48,6 +49,7 @@ namespace DragonQuest.Prototype
             progress = exploration; secrets = ancient; dragon = dragonProgress; install = installJourney;
             store = new SaveStore(System.IO.Path.Combine(Application.persistentDataPath, "Saves"));
             RefreshSlots(); player.SetMovementEnabled(false);
+            intro = new PrototypeIntroPresentation();
         }
         private void RefreshSlots()
         {
@@ -94,6 +96,8 @@ namespace DragonQuest.Prototype
         }
         private void Update()
         {
+            if (store == null) return;
+            intro?.Update(Time.unscaledDeltaTime);
             if (IsMenuVisible) return;
             if (!IsMenuVisible && !dialogue.IsOpen && !battle.IsBusy && Application.isFocused
                 && Keyboard.current?.f5Key.wasPressedThisFrame == true) SaveManual();
@@ -151,6 +155,10 @@ namespace DragonQuest.Prototype
         {
             // Save notices belong to the journey selection menu, never to the game maps.
             if (store == null || !IsMenuVisible) return;
+            if (intro != null && intro.IsPlaying) { intro.Draw(); return; }
+            // A held skip key or click cannot activate a menu option after the fade.
+            if (intro != null && intro.BlocksMenuInput && (Event.current.isKey || Event.current.isMouse))
+                Event.current.Use();
             // Consume menu keys before drawing controls so a focused IMGUI button cannot activate twice.
             if (Event.current.type == EventType.KeyDown && (Event.current.keyCode == KeyCode.Return
                 || Event.current.keyCode == KeyCode.KeypadEnter || Event.current.keyCode == KeyCode.Space
@@ -290,6 +298,6 @@ namespace DragonQuest.Prototype
             titleButtonStyle.active.textColor = new Color(0.96f, 0.8f, 0.48f);
             titleButtonStyle.focused.textColor = Color.white;
         }
-        private void OnDestroy() { if (pixel != null) Destroy(pixel); }
+        private void OnDestroy() { intro?.Dispose(); if (pixel != null) Destroy(pixel); }
     }
 }
