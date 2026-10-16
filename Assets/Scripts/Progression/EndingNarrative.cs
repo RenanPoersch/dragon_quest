@@ -2,6 +2,14 @@ namespace DragonQuest.Progression
 {
     public static class EndingNarrative
     {
+        public const string HeroPossessedEpilogue =
+            "O tirano caiu.\nPor um instante,\na ilha pareceu livre.\n\n"
+            + "Mas a sombra deixou\no corpo do velho rei.\nE encontrou Aren.\n\n"
+            + "Agora, seus passos\njá não lhe pertencem.\nO tapete conduz\nao mesmo trono.\n\n"
+            + "Do alto do trono,\nos olhos guardam\num brilho violeta.\n\n"
+            + "Lia e Bram chamam.\nNenhuma resposta.\nSó o silêncio\nocupa o salão.\n\n"
+            + "Um relâmpago revela\na presença que reina\npor trás do novo rosto.\n\n"
+            + "O trono tem outro rei.\nA ilha, o mesmo senhor.";
         public const string CastleDestroyedEpilogue =
             "O meteoro rompeu o céu.\nNenhuma armadura deteve\na sua queda.\n\n"
             + "O fogo consumiu o trono,\no tirano e os heróis.\nAs torres desabaram.\n\n"

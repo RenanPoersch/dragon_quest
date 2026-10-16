@@ -71,7 +71,7 @@ O tirano usa golpes físicos fortes sem elemento. Aos **20% de HP**, inicia uma 
 - **Final ruim:** meteoro lançado sem portador vivo; a equipe e o tirano são aniquilados e o castelo é destruído.
 - **Terceiro final:** matar o tirano primeiro; o espírito possui Aren. Matar os dois simultaneamente em área também leva a esse desfecho.
 
-Os finais têm cenas e três páginas de texto, com opção de voltar ao menu inicial. Derrota comum volta à hospedaria e permite outra tentativa. Veja `Docs/PARTE_8.md` para as regras e o roteiro em Play. Arte, áudio, acabamento e executável ainda estão pendentes.
+O final bom conserva sua cena com três páginas de texto. Os finais das cinzas e de possessão usam animações automáticas com narrativa lateral e fade preto antes de voltar ao menu; veja `Docs/FINAL_ONE.md` e `Docs/HERO_POSSESSED_ENDING.md`. Derrota comum volta à hospedaria e permite outra tentativa. Veja `Docs/PARTE_8.md` para as regras e o roteiro em Play. Arte, áudio, acabamento e executável ainda estão pendentes.
 
 ### Salvamento — parte 9
 

@@ -117,3 +117,9 @@ WorldGroundMap.png foi recriado inteiro em uma geração com image_gen: terreno,
 Onze PNGs originais em `Assets/Resources/PixelArt/DialoguePortraits`, gerados separadamente com o `image_gen` integrado: Aren, aldeão, camponesa, jardineiro, exploradora, guardião da pedreira, viajante, hospedeira, tirano, dragão corrompido e essência liberta. Pixel art com proporções mais realistas; roupas e cabelos preservam a identidade de `NpcRoster`, `ArenWalk` e `Dragon`. Cada personagem tem direção própria de fisionomia, idade, expressão, silhueta e pose; as referências visuais fornecem apenas identidade e traje. Sem imagens extraídas de outros jogos ou bancos externos.
 
 Os arquivos gerados são copiados integralmente, mantendo RGBA e transparência. Importação Point/Clamp, sem mipmap, compressão, redução ou cópia legível em CPU. `DialoguePortraitCatalog` faz a associação de personagens e `DialoguePresentation` desenha os PNGs inteiros. Prompts completos, referências e SHA-256 de cada original em `Docs/ArtInputs/DialoguePortraits/prompts.json`; documentação em `Docs/DIALOGUE_PORTRAITS.md`.
+
+## Final de possessão — 16 de outubro de 2026
+
+`Assets/Resources/PixelArt/Endings/PossessedThrone.png` foi gerado pelo `imagegen` integrado para o epílogo de Aren possuído, usando seu retrato de conversa e a sala do trono como referências de identidade, estilo e arquitetura. PNG original de 1024 × 1536 copiado integralmente, Point/Clamp, sem mipmaps, compressão ou redimensionamento. SHA-256: `59329F8C215BBE4639153521D088ED21C4E6F4EF0B0CD6AB47291709AD689855`. Prompt completo em `ArtInputs/PossessedThrone.prompt.txt`.
+
+A silhueta reutiliza `PixelArt/SpiritBattle`, já escolhido pelo usuário, com composição e iluminação feitas pelo shader original `PossessedThroneComposite`. O fundo, os pixels de Aren e os arquivos aprovados não são editados. Detalhes e roteiro em `HERO_POSSESSED_ENDING.md`.

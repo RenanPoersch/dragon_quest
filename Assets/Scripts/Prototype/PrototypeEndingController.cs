@@ -20,6 +20,7 @@ namespace DragonQuest.Prototype
         private Texture2D pixel;
         private GUIStyle titleStyle,textStyle,smallStyle,buttonStyle;
         private CastleDestroyedPresentation aftermath;
+        private HeroPossessedPresentation possession;
 
         public void Initialize(Dictionary<string,GameObject> roots,PlayerMovement hero,Camera camera,CameraFollow cameraFollow,ObliqueScenery models)
         {maps=roots;player=hero;view=camera;follow=cameraFollow;scenery=models;}
@@ -34,6 +35,11 @@ namespace DragonQuest.Prototype
                 aftermath=new CastleDestroyedPresentation();
                 return;
             }
+            if(result==GameEnding.HeroPossessed)
+            {
+                possession=new HeroPossessedPresentation();
+                return;
+            }
             scenery.Show("Cena final / "+result,ObliqueScenery.EndingSceneData(result),transform);
             view.orthographic=true;view.rect=new Rect(0,0,1,1);view.ResetAspect();
             view.transform.rotation=Quaternion.AngleAxis(ObliqueProjection.YawDegrees,Vector3.forward)
@@ -44,6 +50,12 @@ namespace DragonQuest.Prototype
         }
         private void Update()
         {
+            if(possession!=null)
+            {
+                possession.Update(Time.unscaledDeltaTime);
+                if(possession.Sequence.IsComplete) SceneManager.LoadScene(SceneManager.GetActiveScene().path);
+                return;
+            }
             if(aftermath!=null)
             {
                 aftermath.Update(Time.unscaledDeltaTime);
@@ -58,6 +70,7 @@ namespace DragonQuest.Prototype
         {
             if(pages==null) return;
             if(aftermath!=null) {aftermath.Draw();return;}
+            if(possession!=null) {possession.Draw();return;}
             EnsureStyles();
             float scale=Mathf.Min(Screen.width/1280f,Screen.height/720f);
             Matrix4x4 previous=GUI.matrix;
@@ -85,6 +98,6 @@ namespace DragonQuest.Prototype
             textStyle=PrototypeTypography.Style(GUI.skin.label,24);textStyle.wordWrap=true;textStyle.normal.textColor=Color.white;
             smallStyle=PrototypeTypography.Style(textStyle,16);buttonStyle=PrototypeTypography.Style(GUI.skin.button,20);
         }
-        private void OnDestroy() {aftermath?.Dispose();if(pixel!=null) Destroy(pixel);}
+        private void OnDestroy() {aftermath?.Dispose();possession?.Dispose();if(pixel!=null) Destroy(pixel);}
     }
 }

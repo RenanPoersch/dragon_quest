@@ -1,0 +1,135 @@
+using System;
+using DragonQuest.Progression;
+using UnityEngine;
+
+namespace DragonQuest.Prototype
+{
+    public sealed class HeroPossessedPresentation : IDisposable
+    {
+        public const string ThroneResource = "PixelArt/Endings/PossessedThrone";
+        public const string SpiritResource = "PixelArt/SpiritBattle";
+        public const string CompositeResource = "PixelArt/Endings/PossessedThroneComposite";
+        private readonly string[] lines = EndingNarrative.HeroPossessedEpilogue.Split('\n');
+        private readonly Texture2D throne, shade;
+        private readonly Material composite;
+        private readonly RenderTexture illuminatedThrone;
+        private GUIStyle story, caption;
+        private bool hasDrawn;
+        private float previousLightning = -1;
+        public HeroPossessedSequence Sequence { get; }
+
+        public HeroPossessedPresentation()
+        {
+            Sequence = new HeroPossessedSequence(lines.Length);
+            throne = Load(ThroneResource);
+            var spirit = Load(SpiritResource);
+            Shader shader = Resources.Load<Shader>(CompositeResource);
+            if (shader == null || !shader.isSupported) throw new InvalidOperationException("Shader do final de possessão indisponível.");
+            composite = new Material(shader) { name = "Possession / lightning behind the throne", hideFlags = HideFlags.HideAndDontSave };
+            composite.SetTexture("_SpiritTex", spirit);
+            illuminatedThrone = new RenderTexture(throne.width, throne.height, 0, RenderTextureFormat.ARGB32)
+            { name = "Possession / illuminated throne", filterMode = FilterMode.Point, wrapMode = TextureWrapMode.Clamp };
+            shade = new Texture2D(128, 1, TextureFormat.RGBA32, false)
+            { name = "Possession / narrative shade", wrapMode = TextureWrapMode.Clamp };
+            var colors = new Color[128];
+            for (int x = 0; x < colors.Length; x++)
+                colors[x] = new Color(.035f, .025f, .03f, .82f * (1 - Mathf.SmoothStep(0, 1, x / 127f)));
+            shade.SetPixels(colors); shade.Apply(false, true);
+        }
+
+        public void Update(float unscaledDeltaTime)
+        { if (hasDrawn) Sequence.Advance(unscaledDeltaTime); }
+        public void Draw() => Draw(new Rect(0, 0, Screen.width, Screen.height));
+        public void Draw(Rect viewport)
+        {
+            if (Event.current.isKey || Event.current.isMouse) Event.current.Use();
+            if (Event.current.type != EventType.Repaint) return;
+            hasDrawn = true;
+            EnsureStyles();
+            RefreshLightning();
+            Matrix4x4 previousMatrix = GUI.matrix;
+            Color previousColor = GUI.color;
+            int previousDepth = GUI.depth;
+            try
+            {
+                GUI.depth = -150; GUI.matrix = Matrix4x4.identity;
+                Fill(viewport, Color.black);
+                float scale = Mathf.Min(viewport.width / 1280, viewport.height / 720);
+                GUI.matrix = Matrix4x4.TRS(new Vector3(viewport.x + (viewport.width - 1280 * scale) / 2,
+                    viewport.y + (viewport.height - 720 * scale) / 2, 0), Quaternion.identity, new Vector3(scale, scale, 1));
+                GUI.BeginGroup(new Rect(0, 30, 1280, 660));
+                Rect camera = CameraBounds(Sequence, throne.width / (float)throne.height);
+                GUI.color = Color.white;
+                GUI.DrawTexture(camera, illuminatedThrone);
+                DrawNarrative();
+                GUI.EndGroup();
+                GUI.matrix = Matrix4x4.identity;
+                Fill(viewport, new Color(0, 0, 0, Sequence.BlackOpacity));
+            }
+            finally { GUI.matrix = previousMatrix; GUI.color = previousColor; GUI.depth = previousDepth; }
+        }
+        public static Rect CameraBounds(HeroPossessedSequence sequence, float artAspect)
+        {
+            float width = sequence.CameraImageWidth, height = width / artAspect;
+            return new Rect(640 - width / 2, 330 - sequence.CameraFocusY * height, width, height);
+        }
+        private void RefreshLightning()
+        {
+            float flash = Sequence.Lightning;
+            if (Mathf.Approximately(flash, previousLightning) && illuminatedThrone.IsCreated()) return;
+            composite.SetFloat("_Lightning", flash);
+            RenderTexture previous = RenderTexture.active;
+            try { Graphics.Blit(throne, illuminatedThrone, composite); }
+            finally { RenderTexture.active = previous; }
+            previousLightning = flash;
+        }
+        private void DrawNarrative()
+        {
+            float opacity = Mathf.Clamp01((Sequence.Elapsed - HeroPossessedSequence.TextStart) / 1.4f)
+                * (1 - Mathf.Clamp01((Sequence.Elapsed - Sequence.TextEndAt) / 1.2f));
+            if (opacity <= 0) return;
+            GUI.color = new Color(1, 1, 1, opacity);
+            GUI.DrawTexture(new Rect(0, 40, 470, 410), shade);
+            GUI.color = new Color(.96f, .76f, .47f, opacity);
+            GUI.Label(new Rect(60, 60, 350, 30), "O NOVO HOSPEDEIRO", caption);
+            GUI.BeginGroup(new Rect(60, 104, 350, HeroPossessedSequence.TextWindowHeight));
+            for (int i = 0; i < lines.Length; i++)
+            {
+                float y = Sequence.TextOffset + i * HeroPossessedSequence.LineHeight;
+                if (y < -34 || y > HeroPossessedSequence.TextWindowHeight) continue;
+                float edge = Mathf.Clamp01(y / 24) * Mathf.Clamp01((HeroPossessedSequence.TextWindowHeight - y - 20) / 24);
+                GUI.color = new Color(0, 0, 0, opacity * edge);
+                GUI.Label(new Rect(2, y + 2, 350, 34), lines[i], story);
+                GUI.color = new Color(1, .94f, .83f, opacity * edge);
+                GUI.Label(new Rect(0, y, 350, 34), lines[i], story);
+            }
+            GUI.EndGroup();
+        }
+        private void EnsureStyles()
+        {
+            if (story != null) return;
+            story = PrototypeTypography.Style(GUI.skin.label, 28);
+            caption = PrototypeTypography.Style(GUI.skin.label, 20, true);
+            foreach (GUIStyle style in new[] { story, caption })
+            { style.normal.textColor = Color.white; style.padding = new RectOffset(); style.wordWrap = false; }
+        }
+        private static Texture2D Load(string resource)
+        {
+            var texture = Resources.Load<Texture2D>(resource);
+            if (texture == null) throw new InvalidOperationException("Arte do final de possessão ausente: " + resource);
+            return texture;
+        }
+        private static void Fill(Rect area, Color color)
+        { GUI.color = color; GUI.DrawTexture(area, Texture2D.whiteTexture); }
+        public void Dispose()
+        {
+            illuminatedThrone.Release(); DestroyOwned(illuminatedThrone);
+            DestroyOwned(composite); DestroyOwned(shade);
+        }
+        private static void DestroyOwned(UnityEngine.Object asset)
+        {
+            if (Application.isPlaying) UnityEngine.Object.Destroy(asset);
+            else UnityEngine.Object.DestroyImmediate(asset);
+        }
+    }
+}
