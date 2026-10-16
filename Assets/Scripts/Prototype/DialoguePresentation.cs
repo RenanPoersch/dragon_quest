@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using DragonQuest.Exploration;
 using DragonQuest.Interactions;
 using UnityEngine;
 
@@ -9,8 +8,11 @@ namespace DragonQuest.Prototype
     // Every conversation, including choices and narrated discoveries, uses this layout.
     public sealed class DialoguePresentation : IDisposable
     {
+        public const float ReferencePanelHeight = 272f;
+        public const float PortraitOverhang = .20f;
+
         private readonly Texture2D gradient;
-        private readonly Dictionary<string, PixelSpriteAtlas> portraits = new Dictionary<string, PixelSpriteAtlas>();
+        private readonly Dictionary<string, Texture2D> portraits = new Dictionary<string, Texture2D>();
         private GUIStyle title, body, choice;
         private Vector2 scroll;
         private string lastText, lastTitle;
@@ -29,18 +31,32 @@ namespace DragonQuest.Prototype
             gradient.Apply();
         }
 
+        public static Rect PanelBounds(float width, float height)
+        {
+            float panelHeight = Mathf.Min(ReferencePanelHeight, height - 32);
+            return new Rect(16, height - 16 - panelHeight, width - 32, panelHeight);
+        }
+
+        public static Rect PortraitBounds(float width, float height)
+        {
+            Rect panel = PanelBounds(width, height);
+            float size = Mathf.Clamp(width * .30f, 96, panel.height / (1 - PortraitOverhang));
+            return new Rect(panel.x + 20, panel.y - size * PortraitOverhang, size, size);
+        }
+
         public void Draw(DialogueController dialogue, float width, float height)
         {
             EnsureStyles();
             if (lastText != dialogue.Text || lastTitle != dialogue.Title)
             { scroll = Vector2.zero; lastText = dialogue.Text; lastTitle = dialogue.Title; }
-            float faceSize = Mathf.Clamp(width * .13f, 80, 152);
-            float left = 36 + faceSize + 20;
+            Rect panel = PanelBounds(width, height);
+            Rect face = PortraitBounds(width, height);
+            float left = face.xMax + 20;
             float textWidth = Mathf.Max(80, width - left - 36);
             // Reserve scrollbar width before measuring, so wrapping stays stable when it appears.
             float contentWidth = textWidth - 20;
             float titleHeight = title.CalcHeight(new GUIContent(dialogue.Title), contentWidth);
-            float bodyHeight = Mathf.Max(64, body.CalcHeight(new GUIContent(dialogue.Text), contentWidth));
+            float bodyHeight = Mathf.Max(body.lineHeight, body.CalcHeight(new GUIContent(dialogue.Text), contentWidth));
             float bodyTop = titleHeight + 8, choicesTop = bodyTop + bodyHeight + 12;
             float contentHeight = bodyTop + bodyHeight;
             var options = dialogue.Choices;
@@ -50,12 +66,8 @@ namespace DragonQuest.Prototype
                 for (int i = 0; i < options.Count; i++)
                     contentHeight += ChoiceHeight(options[i], i, contentWidth) + (i > 0 ? 6 : 0);
             }
-            float panelHeight = Mathf.Min(height - 32, Mathf.Max(faceSize, contentHeight) + 40);
-            Rect panel = new Rect(16, height - 16 - panelHeight, width - 32, panelHeight);
             Panel(panel);
-            Rect face = new Rect(36, panel.y + 20, faceSize, faceSize);
-            Panel(face);
-            DrawPortrait(Inset(face, 10), dialogue.Title);
+            DrawPortrait(face, dialogue.Title);
 
             Rect viewport = new Rect(left, panel.y + 20, textWidth, panel.height - 40);
             scroll = GUI.BeginScrollView(viewport, scroll, new Rect(0, 0, contentWidth, contentHeight), false, false);
@@ -86,23 +98,14 @@ namespace DragonQuest.Prototype
 
         private void DrawPortrait(Rect area, string speaker)
         {
-            bool dragon = speaker == "Dragao corrompido" || speaker == "Essencia liberta" || speaker == "Essencia do dragao";
-            string npc = speaker == "Guardiao da pedreira" ? "Lenhador" : speaker == "Hospedaria" ? "Hospedeira" : speaker;
-            int frame = PixelSpriteLibrary.NpcFrame(npc);
-            bool isNpc = frame != 0 || npc == "Aldeao";
-            string resource = dragon ? "Dragon" : isNpc ? "NpcRoster" : "ArenWalk";
-            if (!portraits.TryGetValue(resource, out var atlas))
+            string resource = DialoguePortraitCatalog.ResourceFor(speaker);
+            if (!portraits.TryGetValue(resource, out var portrait))
             {
-                atlas = new PixelSpriteAtlas(resource);
-                portraits.Add(resource, atlas);
+                portrait = Resources.Load<Texture2D>(resource);
+                if (portrait == null) throw new InvalidOperationException("Retrato de conversa ausente: " + resource);
+                portraits.Add(resource, portrait);
             }
-            if (dragon) { atlas.Draw(area, 0, Color.white); return; }
-            Rect source = atlas.Sprites[isNpc ? frame : 0].rect;
-            // Crop a square bust from the existing sprite, without stretching or changing its PNG.
-            float side = Mathf.Min(source.width, source.height * .64f);
-            Rect uv = new Rect((source.center.x - side / 2) / atlas.Texture.width,
-                (source.yMax - side) / atlas.Texture.height, side / atlas.Texture.width, side / atlas.Texture.height);
-            GUI.DrawTextureWithTexCoords(area, atlas.Texture, uv, true);
+            GUI.DrawTexture(area, portrait, ScaleMode.ScaleToFit, true);
         }
 
         private void EnsureStyles()
@@ -145,7 +148,7 @@ namespace DragonQuest.Prototype
         }
         public void Dispose()
         {
-            foreach (var portrait in portraits.Values) portrait.Dispose();
+            portraits.Clear();
             UnityEngine.Object.Destroy(gradient);
         }
     }

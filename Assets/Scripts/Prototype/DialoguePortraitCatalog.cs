@@ -1,0 +1,36 @@
+using System;
+using System.Collections.Generic;
+
+namespace DragonQuest.Prototype
+{
+    public static class DialoguePortraitCatalog
+    {
+        private const string Root = "PixelArt/DialoguePortraits/";
+        public static IReadOnlyList<string> Characters { get; } = Array.AsReadOnly(new[]
+        {
+            "aren", "villager", "peasant", "gardener", "explorer", "quarry-keeper",
+            "traveler", "innkeeper", "tyrant", "dragon", "dragon-essence"
+        });
+
+        public static string CharacterFor(string speaker)
+        {
+            switch (speaker)
+            {
+                case "Aldeao": return "villager";
+                case "Camponesa": return "peasant";
+                case "Jardineiro": return "gardener";
+                case "Exploradora": return "explorer";
+                case "Guardiao da pedreira": case "Lenhador": return "quarry-keeper";
+                case "Viajante": return "traveler";
+                case "Hospedeira": case "Hospedaria": return "innkeeper";
+                case "Tirano": return "tyrant";
+                case "Dragao corrompido": return "dragon";
+                case "Essencia liberta": case "Essencia do dragao": return "dragon-essence";
+                default: return "aren";
+            }
+        }
+
+        public static string ResourceFor(string speaker) => Resource(CharacterFor(speaker));
+        public static string Resource(string character) => Root + character;
+    }
+}

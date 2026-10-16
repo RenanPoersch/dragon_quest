@@ -111,3 +111,9 @@ WorldGroundMap.png foi recriado inteiro em uma geração com image_gen: terreno,
 ## Aparência escolhida do espírito
 
 `Assets/Resources/PixelArt/SpiritBattle.png` usa o modelo 3 de `ArtInputs/SpiritVariants/03-espectro-glacial.png`, gerado pela ferramenta integrada `image_gen` e escolhido pelo usuário. O PNG foi copiado sem edição, redimensionamento ou mudança de alpha. Prompts completos em `ArtInputs/SpiritVariants/prompts.json`. O jogo usa essa mesma imagem inteira no castelo, no combate e no retrato de fallback; o antigo `SpiritPortrait.png` derivado de malha permanece apenas como asset histórico. A paleta azul não muda elementos, afinidades ou habilidades.
+
+## Retratos ilustrados de conversa — 16 de outubro de 2026
+
+Onze PNGs originais em `Assets/Resources/PixelArt/DialoguePortraits`, gerados separadamente com o `image_gen` integrado: Aren, aldeão, camponesa, jardineiro, exploradora, guardião da pedreira, viajante, hospedeira, tirano, dragão corrompido e essência liberta. Pixel art com proporções mais realistas; roupas e cabelos preservam a identidade de `NpcRoster`, `ArenWalk` e `Dragon`. Cada personagem tem direção própria de fisionomia, idade, expressão, silhueta e pose; as referências visuais fornecem apenas identidade e traje. Sem imagens extraídas de outros jogos ou bancos externos.
+
+Os arquivos gerados são copiados integralmente, mantendo RGBA e transparência. Importação Point/Clamp, sem mipmap, compressão, redução ou cópia legível em CPU. `DialoguePortraitCatalog` faz a associação de personagens e `DialoguePresentation` desenha os PNGs inteiros. Prompts completos, referências e SHA-256 de cada original em `Docs/ArtInputs/DialoguePortraits/prompts.json`; documentação em `Docs/DIALOGUE_PORTRAITS.md`.
