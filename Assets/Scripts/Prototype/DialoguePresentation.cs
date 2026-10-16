@@ -43,7 +43,7 @@ namespace DragonQuest.Prototype
         {
             Rect panel = PanelBounds(width, height);
             float size = Mathf.Clamp(width * .30f, 96, panel.height / (1 - PortraitOverhang));
-            return new Rect(panel.x + 20, panel.yMax - PortraitBottomInset - size, size, size);
+            return new Rect(panel.x + 8, panel.yMax - PortraitBottomInset - size, size, size);
         }
 
         public void Draw(DialogueController dialogue, float width, float height)
