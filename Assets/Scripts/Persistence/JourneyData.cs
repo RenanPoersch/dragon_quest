@@ -10,6 +10,8 @@ namespace DragonQuest.Persistence
         public const int CurrentVersion = 1;
         [DataMember(IsRequired = true)] public int Version;
         [DataMember(IsRequired = true)] public string SavedUtc;
+        // Optional: legacy saves have no recorded duration.
+        [DataMember(EmitDefaultValue = false)] public long? PlaySeconds;
         [DataMember(IsRequired = true)] public string Map;
         [DataMember(IsRequired = true)] public float X;
         [DataMember(IsRequired = true)] public float Y;

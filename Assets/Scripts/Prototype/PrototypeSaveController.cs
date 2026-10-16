@@ -37,6 +37,8 @@ namespace DragonQuest.Prototype
         private string message;
         private float messageUntil;
         private int overwriteSlot;
+        private double playSeconds;
+        private SaveSelectionPresentation saveScreen;
         private PrototypeIntroPresentation intro;
         private const float MenuFadeInDuration = 1.2f;
         private float menuFadeInElapsed;
@@ -67,8 +69,10 @@ namespace DragonQuest.Prototype
         private JourneyData Capture()
         {
             Vector3 position = player.transform.position;
-            return JourneySnapshot.Capture(battle.Party, progress, secrets, dragon, shops.Service, shops.Quest,
+            JourneyData snapshot = JourneySnapshot.Capture(battle.Party, progress, secrets, dragon, shops.Service, shops.Quest,
                 locations.LocationId, position.x, position.y, battle.CastleRules?.Ending ?? GameEnding.None);
+            snapshot.PlaySeconds = (long)playSeconds;
+            return snapshot;
         }
         private bool Write(string success)
         {
@@ -82,12 +86,14 @@ namespace DragonQuest.Prototype
         private void NewGame(int slot)
         {
             ActiveSlot = slot;
+            playSeconds = 0;
             overwriteSlot = 0; IsMenuVisible = false; player.SetMovementEnabled(true);
         }
         private void Continue(int slot)
         {
             if (!store.TryRead(slot, out var journey, out string warning)) { ShowMessage(warning); RefreshSlots(); return; }
             install(journey); progress = journey.Progress; ActiveSlot = slot; IsMenuVisible = false;
+            playSeconds = journey.Data.PlaySeconds ?? 0;
             player.SetMovementEnabled(true);
             ShowMessage(warning ?? "Jornada carregada / slot " + slot);
             battle.RestoreEnding((GameEnding)journey.Data.Ending);
@@ -110,6 +116,7 @@ namespace DragonQuest.Prototype
             }
             if (!IsMenuVisible && !dialogue.IsOpen && !battle.IsBusy && Application.isFocused
                 && Keyboard.current?.f5Key.wasPressedThisFrame == true) SaveManual();
+            if (Application.isFocused && !battle.HasEnded) playSeconds += Time.unscaledDeltaTime;
         }
         private void OpenPage(MenuPage next)
         {
@@ -202,25 +209,24 @@ namespace DragonQuest.Prototype
             else
             {
                 bool loading = page == MenuPage.Continue;
-                GUI.Label(new Rect(110, 55, 1060, 60), loading ? "Continue" : "New game", titleStyle);
-                GUI.Label(new Rect(110, 120, 1060, 48), loading
-                    ? "Escolha um dos tres saves para continuar sua jornada."
-                    : "Escolha um slot para sua nova jornada.", textStyle);
-                bool previousEnabled = GUI.enabled; GUI.enabled = overwriteSlot == 0;
+                saveScreen.DrawHeader(loading, selectedOption);
+                bool previousEnabled = GUI.enabled;
                 for (int i = 0; i < SaveStore.SlotCount; i++)
                 {
-                    float top = 196 + i * 126; var preview = previews[i];
-                    GUI.Label(new Rect(110, top, 640, 35), "SLOT " + (i + 1) + " / " + (preview == null ? occupied[i] ? "Indisponivel" : "Vazio" : LocationTitle(preview)), textStyle);
-                    GUI.Label(new Rect(110, top + 37, 650, 50), preview == null ? slotMessages[i] : Summary(preview), smallStyle);
+                    var preview = previews[i];
+                    saveScreen.DrawSlot(i, preview, occupied[i], slotMessages[i], preview == null ? null : LocationTitle(preview));
                     GUI.enabled = previousEnabled && overwriteSlot == 0 && (!loading || preview != null);
-                    if (MenuButton(new Rect(950, top, 210, 45), loading ? "Continue" : "New game", i, buttonStyle)) SelectSlot(i + 1);
-                    GUI.enabled = previousEnabled && overwriteSlot == 0;
+                    if (MenuButton(SaveSelectionPresentation.SlotRect(i), "", i, GUIStyle.none)) SelectSlot(i + 1);
+                    GUI.enabled = previousEnabled;
                 }
-                if (MenuButton(new Rect(110, 585, 200, 45), "Back", SaveStore.SlotCount, buttonStyle)) OpenPage(MenuPage.Title);
+                GUI.enabled = previousEnabled && overwriteSlot == 0;
+                if (MenuButton(SaveSelectionPresentation.BackRect, "Back", SaveStore.SlotCount, saveScreen.BackStyle)) OpenPage(MenuPage.Title);
                 GUI.enabled = previousEnabled;
                 if (overwriteSlot != 0)
                 {
-                    Panel(new Rect(280, 245, 720, 205));
+                    Color overlayColor = GUI.color; GUI.color = new Color(0, 0, 0, .6f);
+                    GUI.DrawTexture(new Rect(0, 0, 1280, 720), pixel); GUI.color = overlayColor;
+                    saveScreen.Panel(new Rect(280, 245, 720, 205));
                     GUI.Label(new Rect(310, 265, 660, 74), "Ao salvar esta nova jornada no slot " + overwriteSlot + ", o progresso anterior sera substituido.", textStyle);
                     if (MenuButton(new Rect(310, 365, 320, 48), "Comecar nova jornada", 0, buttonStyle)) NewGame(overwriteSlot);
                     if (MenuButton(new Rect(650, 365, 320, 48), "Cancelar", 1, buttonStyle)) overwriteSlot = 0;
@@ -260,12 +266,13 @@ namespace DragonQuest.Prototype
             Rect option;
             if (overwriteSlot != 0) option = new Rect(selectedOption == 0 ? 310 : 650, 365, 320, 48);
             else if (page == MenuPage.Title) option = new Rect(490, selectedOption == 0 ? 562 : 620, 300, 48);
-            else option = selectedOption == SaveStore.SlotCount ? new Rect(110, 585, 200, 45)
-                : new Rect(950, 196 + selectedOption * 126, 210, 45);
+            else option = selectedOption == SaveStore.SlotCount ? SaveSelectionPresentation.BackRect
+                : SaveSelectionPresentation.SlotRect(selectedOption);
+            bool row = page != MenuPage.Title && overwriteSlot == 0 && selectedOption < SaveStore.SlotCount;
             float left = page == MenuPage.Title
                 ? option.center.x - titleButtonStyle.CalcSize(new GUIContent(selectedOption == 0 ? "New game" : "Continue")).x / 2
-                : option.x;
-            float width = Mathf.Min(44, 30 * handAspect), height = width / handAspect;
+                : row ? 92 : option.x;
+            float width = Mathf.Min(row ? 72 : 44, (row ? 40 : 30) * handAspect), height = width / handAspect;
             Color previous = GUI.color; GUI.color = Color.white;
             GUI.DrawTextureWithTexCoords(new Rect(left - width - 12, option.center.y - height / 2, width, height), hand, handUv, true);
             GUI.color = previous;
@@ -294,9 +301,6 @@ namespace DragonQuest.Prototype
             var navigation = new PrototypeTravel(journey.Secrets);
             navigation.TryRestore(journey.Data.Map, new Vector2(journey.Data.X, journey.Data.Y)); return navigation.Current.Name;
         }
-        private static string Summary(RestoredJourney journey) => DateTimeOffset.Parse(journey.Data.SavedUtc).ToLocalTime().ToString("dd/MM/yyyy HH:mm")
-            + " / " + journey.Progress.Gold + " moedas / " + journey.Secrets.CompletedCount + " de 3 segredos"
-            + (journey.Dragon.IsDefeated ? " / Dragao libertado" : "");
         private void Panel(Rect rect)
         {
             Color previous = GUI.color; GUI.color = new Color(0.04f, 0.065f, 0.1f, 0.99f); GUI.DrawTexture(rect, pixel); GUI.color = previous;
@@ -306,6 +310,7 @@ namespace DragonQuest.Prototype
             if (pixel != null) return;
             pixel = new Texture2D(1, 1); pixel.SetPixel(0, 0, Color.white); pixel.Apply();
             scaleSprite = Resources.Load<Texture2D>("PixelArt/DragonScale");
+            saveScreen = new SaveSelectionPresentation();
             LoadHandSprite();
             titleStyle = PrototypeTypography.Style(GUI.skin.label, 48, true); titleStyle.normal.textColor = new Color(0.96f, 0.8f, 0.48f);
             textStyle = PrototypeTypography.Style(GUI.skin.label, 24); textStyle.wordWrap = true; textStyle.normal.textColor = Color.white;
@@ -316,6 +321,6 @@ namespace DragonQuest.Prototype
             titleButtonStyle.active.textColor = new Color(0.96f, 0.8f, 0.48f);
             titleButtonStyle.focused.textColor = Color.white;
         }
-        private void OnDestroy() { intro?.Dispose(); if (pixel != null) Destroy(pixel); }
+        private void OnDestroy() { intro?.Dispose(); saveScreen?.Dispose(); if (pixel != null) Destroy(pixel); }
     }
 }

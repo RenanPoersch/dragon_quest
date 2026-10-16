@@ -60,6 +60,7 @@ namespace DragonQuest.Persistence
         {
             Require(data != null && data.Version == JourneyData.CurrentVersion, "Versao de save nao suportada.");
             Require(DateTimeOffset.TryParseExact(data.SavedUtc, "O", CultureInfo.InvariantCulture, DateTimeStyles.None, out _), "Data de save invalida.");
+            Require(!data.PlaySeconds.HasValue || data.PlaySeconds.Value >= 0, "Tempo de jogo invalido.");
             Require(data.Gold >= 0 && Enum.IsDefined(typeof(GameEnding), data.Ending), "Ouro ou final invalido.");
             Require(data.Secrets != null, "Segredos ausentes."); var s = data.Secrets;
             Require(s.MonolithStep >= 0 && s.MonolithStep <= 3 && (!s.AltarSolved || s.KnowsPoem)

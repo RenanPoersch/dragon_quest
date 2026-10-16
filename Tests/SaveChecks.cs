@@ -34,8 +34,20 @@ internal static class SaveChecks
         var recaptured = JourneySnapshot.Capture(restored.Party, restored.Progress, restored.Secrets, restored.Dragon,
             restored.Shops, restored.Quest, data.Map, data.X, data.Y, (GameEnding)data.Ending);
         recaptured.SavedUtc = data.SavedUtc;
+        recaptured.PlaySeconds = data.PlaySeconds;
         Assert(Encoding.UTF8.GetString(SaveStore.Encode(data)) == Encoding.UTF8.GetString(SaveStore.Encode(recaptured)), "Roundtrip deve preservar todo o snapshot, incluindo IDs e encaixes.");
         return restored;
+    }
+    private static void CheckPlayTime()
+    {
+        var data = Initial(); data.PlaySeconds = 7 * 3600 + 2 * 60;
+        Assert(RoundTrip(data).Data.PlaySeconds == data.PlaySeconds, "Tempo de jogo persiste no save.");
+        string legacy = Encoding.UTF8.GetString(SaveStore.Encode(Initial()));
+        Assert(!legacy.Contains("PlaySeconds") && SaveStore.Decode(Encoding.UTF8.GetBytes(legacy)).PlaySeconds == null,
+            "Saves anteriores carregam sem inventar um tempo de jogo.");
+        data.PlaySeconds = 0;
+        Assert(RoundTrip(data).Data.PlaySeconds == 0, "Jornada recem-salva conserva zero segundos.");
+        Invalid(data, d => d.PlaySeconds = -1, "Tempo de jogo negativo");
     }
     private static void CheckCheatPersistence()
     {
@@ -274,7 +286,7 @@ internal static class SaveChecks
     {
         try
         {
-            CheckDomain(); CheckInventoryEvents(); CheckLevelPersistence(); CheckConditionPersistence(); CheckCheatPersistence();
+            CheckDomain(); CheckInventoryEvents(); CheckLevelPersistence(); CheckConditionPersistence(); CheckCheatPersistence(); CheckPlayTime();
             CheckManualPersistence(Path.Combine(args[0], "manual-" + Guid.NewGuid().ToString("N")));
             CheckFiles(Path.Combine(args[0], "saves-" + Guid.NewGuid().ToString("N")));
             Console.WriteLine("Salvamento: " + checks + " verificacoes passaram."); return 0;
