@@ -53,6 +53,26 @@ public static class InnValidation
             interaction.Interact(new InteractionContext(dialogue,new ExplorationProgress(),_=>{}));
             Assert(dialogue.HasChoices,"keeper opens save conversation from the counter");
             dialogue.Choose(0); Assert(saves == 1,"keeper save callback remains functional");
+            var saveObject=new GameObject("Cristal de salvamento / validacao");saveObject.transform.SetParent(root.transform,false);
+            saveObject.transform.localPosition=PrototypeInnLayout.SavePoint;
+            var savePoint=saveObject.AddComponent<InnSavePoint>();savePoint.Initialize(()=>saves++);
+            Assert(savePoint.Source.filterMode==FilterMode.Point&&savePoint.Source.mipmapCount==1&&savePoint.Frames.Count==8,"save crystal has eight sharp animation frames");
+            Assert(saveObject.GetComponents<Collider2D>().Length==0&&PrototypeInnLayout.IsWalkable(PrototypeInnLayout.SavePoint),"save crystal does not block the floor");
+            Assert(Vector2.Distance(PrototypeInnLayout.SavePoint,PrototypeInnLayout.SaveApproach)<1.6f,"save crystal can be reached within interaction range");
+            var pixels=savePoint.Source.GetPixels32();var signatures=new HashSet<uint>();float spriteScale=savePoint.Frames[0].pixelsPerUnit;
+            for(int i=0;i<InnSavePoint.FrameCount;i++)
+            {
+                savePoint.ShowAt((i+.25f)/InnSavePoint.FramesPerSecond);
+                Assert(savePoint.CurrentFrame==i&&savePoint.Frames[i].pixelsPerUnit==spriteScale,"animation advances with one stable pixel scale");
+                Assert(savePoint.Frames[i].pivot.x>0&&savePoint.Frames[i].pivot.x<savePoint.Frames[i].rect.width
+                    &&savePoint.Frames[i].pivot.y>0&&savePoint.Frames[i].pivot.y<savePoint.Frames[i].rect.height,"save crystal has registered floor anchor");
+                signatures.Add(FrameSignature(savePoint.Frames[i],pixels,savePoint.Source.width));
+            }
+            Assert(signatures.Count==8&&saves==1,"all eight frames are distinct and animation never saves automatically");
+            savePoint.ShowAt(InnSavePoint.FrameCount/InnSavePoint.FramesPerSecond);Assert(savePoint.CurrentFrame==0,"animation wraps to its first frame");
+            savePoint.Interact(new InteractionContext(null,new ExplorationProgress(),_=>{}));
+            Assert(saves==2&&savePoint.Prompt=="Salvar jornada","save crystal invokes manual save exactly once per interaction");
+            savePoint.ShowAt(0);
 
             foreach (Vector2Int resolution in new[] { new Vector2Int(1280,720),new Vector2Int(1280,800),new Vector2Int(960,720) })
             {
@@ -75,12 +95,19 @@ public static class InnValidation
                             hero.localPosition = place.Item2; camera.Render(); Save(target,Path.Combine(output,"inn-"+place.Item1+".png"));
                         }
                         hero.localPosition = PrototypeInnLayout.Spawn;
+                        hero.localPosition = PrototypeInnLayout.SaveApproach;
+                        for(int i=0;i<InnSavePoint.FrameCount;i++)
+                        {
+                            savePoint.ShowAt((i+.25f)/InnSavePoint.FramesPerSecond);camera.Render();
+                            Save(target,Path.Combine(output,"inn-save-frame-"+i.ToString("D2")+".png"));
+                        }
+                        savePoint.ShowAt(0);hero.localPosition = PrototypeInnLayout.Spawn;
                     }
                 }
                 finally { camera.targetTexture = null; target.Release(); UnityEngine.Object.DestroyImmediate(target); }
             }
-            File.WriteAllText(Path.Combine(output,"result.txt"),"INN_VALIDATION_OK: full painting, depth contours, navigation, movement limits, saves, travel and complete framing at 16:9, 16:10 and 4:3.");
-            Debug.Log("INN_VALIDATION_OK: complete painted inn, navigation, depth, save interaction and three display aspects.");
+            File.WriteAllText(Path.Combine(output,"result.txt"),"INN_VALIDATION_OK: full painting, depth contours, navigation, movement limits, animated save crystal, direct manual-save interaction, travel and complete framing at 16:9, 16:10 and 4:3.");
+            Debug.Log("INN_VALIDATION_OK: complete painted inn, eight-frame save crystal, navigation, depth, save interactions and three display aspects.");
         }
         finally
         {
@@ -113,7 +140,7 @@ public static class InnValidation
             }
         }
         foreach (Vector2 target in new[] { PrototypeInnLayout.Exit,PrototypeInnLayout.Reception,PrototypeInnLayout.Ground(.38f,.55f),
-            PrototypeInnLayout.Ground(.27f,.62f),PrototypeInnLayout.Ground(.78f,.70f) })
+            PrototypeInnLayout.Ground(.27f,.62f),PrototypeInnLayout.Ground(.78f,.70f),PrototypeInnLayout.SavePoint,PrototypeInnLayout.SaveApproach })
         {
             Vector2 uv = PrototypeInnLayout.ImagePoint(target);
             Assert(reached.Any(p=>Vector2.Distance(new Vector2(p.x/200f,p.y/200f),uv)<.009f),"connected walking route: "+uv);
@@ -141,6 +168,19 @@ public static class InnValidation
         Transform visual = people.Create(anchor.transform,atlas,frame); visual.GetComponent<PixelCharacter>().enabled = false;
         visual.localRotation = Quaternion.LookRotation(new Vector3(-ObliqueProjection.YawSin,ObliqueProjection.YawCos,0),PixelSpriteLayout.UprightUp);
         visual.localScale = new Vector3(1,PixelSpriteLayout.UprightScaleY,1); return anchor.transform;
+    }
+    private static uint FrameSignature(Sprite sprite,Color32[] pixels,int stride)
+    {
+        Rect rect=sprite.rect;uint hash=2166136261;
+        unchecked
+        {
+            for(int y=(int)rect.yMin;y<(int)rect.yMax;y++)for(int x=(int)rect.xMin;x<(int)rect.xMax;x++)
+            {
+                Color32 p=pixels[y*stride+x];
+                uint value=p.a<128?0u:(uint)(p.r|(p.g<<8)|(p.b<<16));hash=(hash^value)*16777619;
+            }
+        }
+        return hash;
     }
     private static void Assert(bool ok,string reason) { if (!ok) throw new Exception("Inn validation: "+reason); }
     private static void Save(RenderTexture target,string path)

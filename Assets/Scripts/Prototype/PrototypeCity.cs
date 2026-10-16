@@ -340,6 +340,9 @@ namespace DragonQuest.Prototype
             InnInteraction reception=Entity("Recepcao / falar com a hospedeira",PrototypeInnLayout.Reception,inn).AddComponent<InnInteraction>();
             reception.Initialize(() => saves.SaveManual());
             interactions.Add(reception);
+            InnSavePoint savePoint=Entity("Cristal de salvamento",PrototypeInnLayout.SavePoint,inn).AddComponent<InnSavePoint>();
+            savePoint.Initialize(() => saves.SaveManual());
+            interactions.Add(savePoint);
             return inn;
         }
 
