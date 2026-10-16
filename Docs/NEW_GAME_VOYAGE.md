@@ -2,26 +2,26 @@
 
 `New game` agora apresenta uma cena lateral antes de liberar o mapa global. `Continue` mantém o carregamento direto do save. A abertura do título permanece independente.
 
-- A nau entra pela direita e desacelera até a proa parar um pouco antes do centro, deixando a coluna esquerda livre para a narrativa.
-- Aren, Lia e Bram caminham em sequência pelo convés, voltados para a proa à esquerda. São os atlas de caminhada do jogo, com passos durante o deslocamento e pose parada ao chegar. A amurada fica à frente dos pés.
-- O panorama do mar e das montanhas é o mesmo das ruínas, amostrado com filtro Point. Há balanço leve da nau, movimento lento do fundo, reflexos e esteira.
-- A história sobe automaticamente na coluna esquerda. A partida espera a última linha sair por completo. O texto apresenta a ilha sob a tirania e a busca dos três pela lenda, sem revelar soluções ou finais.
-- Ao terminar, a nau parte para a esquerda, sai inteiramente do quadro e a cena escurece. Após um breve intervalo preto, o mapa aparece por fade-in. A sequência dura aproximadamente 53 segundos.
+- A nau entra pela direita e desacelera até a proa parar um pouco antes do centro. O enquadramento próximo usa largura de 1560 na composição de 1280: aproximadamente 47% da nau fica visível, com a popa fora da tela. Velas e parte inferior do casco também continuam além do quadro.
+- Aren, Lia e Bram caminham em sequência pelo convés, voltados para a proa à esquerda. Os heróis têm 96 de altura na composição. `VoyageShipLayers` divide a mesma arte em duas camadas complementares, seguindo a curva da amurada: velas e lado distante atrás dos heróis, lado próximo e casco à frente. Os pés acompanham o contorno do convés; a amurada encobre a parte inferior das pernas. Não há recorte retangular atravessando os personagens.
+- O panorama do mar e das montanhas é o mesmo das ruínas, amostrado com filtro Point. Fundo e reflexos passam para a direita, em sentido coerente com a navegação para a esquerda. A velocidade aumenta durante o deslocamento da embarcação e mantém uma deriva durante a leitura.
+- A área completa da narrativa — sombra, cabeçalho e história — só começa a aparecer 0,4 s depois de a nau chegar. O tratamento preto usa a mesma cor, força de 82%, queda horizontal suave e tempos de entrada/saída do texto do FinalOne. A história sobe automaticamente na coluna esquerda e some antes da partida. O texto apresenta a ilha sob a tirania e a busca dos três pela lenda, sem revelar soluções ou finais.
+- Ao terminar, há uma pausa de 1,8 s, e a nau parte para a esquerda. O fade para preto usa a mesma curva suave e duração de 3 s do FinalOne, seguido por 1 s de preto. A nau sai inteiramente do quadro antes de o mapa aparecer por fade-in. A sequência dura aproximadamente 62 segundos.
 - Movimento, interações, batalha, inventário, cheats e salvamento ficam bloqueados até terminar a transição. O tempo usa `Time.unscaledDeltaTime`, começa após o primeiro desenho e pausa quando o jogo perde o foco. A cena não cria nem substitui saves.
 
 ## Arquivos
 
-`NewGameVoyageSequence` concentra tempos e posições. `NewGameVoyagePresentation` desenha os planos e restaura o estado do IMGUI. `PrototypeSaveController` mantém o bloqueio existente enquanto a travessia está ativa e libera o jogador ao final.
+`NewGameVoyageSequence` concentra tempos, posições, deriva e opacidade da narrativa. `NewGameVoyagePresentation` desenha os planos e restaura o estado do IMGUI. `VoyageShipLayers` produz as camadas traseira e dianteira em memória, com o mesmo registro e sem redesenhar o PNG. `PrototypeSaveController` mantém o bloqueio existente enquanto a travessia está ativa e libera o jogador ao final.
 
-Arte nova: `Assets/Resources/PixelArt/Intro/VoyageCarrack.png`, gerada com **imagegen integrado**, RGBA 1536 × 1024. O original permanece intacto; a apresentação amostra uma textura temporária de 384 × 256 com vizinho mais próximo. Todos os recursos temporários são descartados ao terminar.
+Arte: `Assets/Resources/PixelArt/Intro/VoyageCarrack.png`, gerada com **imagegen integrado**, RGBA 1536 × 1024. Esta revisão reutiliza o original sem alterar o PNG; a apresentação amostra as duas camadas temporárias de 384 × 256 com vizinho mais próximo. Todos os recursos temporários são descartados ao terminar.
 
 ## Validação
 
-`Tools/Test-NewGameVoyage.ps1` verifica chegada, parada, caminhada em sequência, rolagem completa, partida para a esquerda e ambos os fades. Execute também `Tools/Test-Intro.ps1`, `Tools/Test-Saves.ps1` e `Tools/Test-UnityScripts.ps1`.
+`Tools/Test-NewGameVoyage.ps1` verifica enquadramento da metade dianteira, tamanho e posição dos heróis, ausência da narrativa durante a chegada, movimento do fundo para a direita, caminhada, rolagem completa, partida e fades com os tempos do final. A validação da Unity reconstrói o PNG pelas duas camadas e confere ausência de sobreposição/perda de pixels, oclusão dos pés e largura das linhas de texto. Execute também `Tools/Test-Intro.ps1`, `Tools/Test-Saves.ps1` e `Tools/Test-UnityScripts.ps1`.
 
 Na Unity, `Tools > Dragon Quest > Preview New Game Voyage` abre a mesma apresentação com pontos de conferência e reprodução. No jogo, selecione `New game`, aguarde a história e confirme que só é possível mover e salvar após o fade-in do mapa. `Continue` deve carregar diretamente e os slots existentes devem permanecer intactos.
 
-Validação desta entrega: 1.049 verificações da sequência, 29 da abertura existente, 145 de salvamento e compilação dos scripts passaram. Uma cópia isolada do projeto na Unity 6000.6.5f1 confirmou New Game, bloqueio de save, relógio não escalado/foco, descarte da apresentação, liberação do mapa, salvamento manual posterior e Continue direto. Oito capturas cobriram chegada, caminhada, leitura, partida, preto e revelação do mapa; os enquadramentos foram inspecionados. As capturas locais ficam em `Temp/VoyagePreview`, fora do Git.
+Validação da revisão do enquadramento: 1.910 verificações da sequência, 29 da abertura existente, 1.000 do FinalOne e compilação dos scripts passaram. Uma cópia isolada do projeto na Unity 6000.6.5f1 validou a reconstrução da arte nas duas camadas, a oclusão das pernas, o panorama sem emendas e a largura do texto. O teste de integração confirmou New Game, bloqueio de save, relógio não escalado/foco, descarte da apresentação, liberação do mapa, salvamento manual posterior e Continue direto. Dez capturas cobriram chegada sem narrativa, close do convés, leitura, partida sem sombra de texto, fade, preto e revelação do mapa; os enquadramentos foram inspecionados. As capturas locais desta revisão ficam em `Temp/VoyagePreview/CloseForedeck`, fora do Git.
 
 ## Prompt final da nau — imagegen integrado
 

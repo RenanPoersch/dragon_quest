@@ -29,7 +29,50 @@ public static class NewGameVoyageValidation
         foreach (var pixel in pixels) { if (pixel.a < 8) transparent++; if (pixel.a > 240) solid++; }
         if (transparent < pixels.Length / 5 || solid < pixels.Length / 5)
             throw new Exception("The carrack must contain both a visible vessel and a transparent background.");
-        Debug.Log("NEW_GAME_VOYAGE_ASSETS_OK: ruins panorama, transparent carrack, three walk atlases.");
+        using (var layers = new VoyageShipLayers(ship))
+        {
+            Color32[] rear = layers.BehindParty.GetPixels32(), front = layers.InFrontOfParty.GetPixels32();
+            int frontCount = 0, rearCount = 0;
+            for (int i = 0; i < pixels.Length; i++)
+            {
+                if (front[i].a > 0) frontCount++;
+                if (rear[i].a > 0) rearCount++;
+                if (front[i].a > 0 && rear[i].a > 0) throw new Exception("Voyage layers overlap at " + i);
+                if (pixels[i].a == 0) continue;
+                Color32 reconstructed = front[i].a > 0 ? front[i] : rear[i];
+                if (reconstructed.r != pixels[i].r || reconstructed.g != pixels[i].g || reconstructed.b != pixels[i].b
+                    || reconstructed.a != pixels[i].a) throw new Exception("Voyage layers lost source artwork at " + i);
+            }
+            if (frontCount == 0 || rearCount == 0) throw new Exception("Both sides of the ship must contain artwork.");
+        }
+        var arrived = new NewGameVoyageSequence(); arrived.Advance(12);
+        var complete = new NewGameVoyageSequence(); complete.Advance(NewGameVoyageSequence.CompleteAt);
+        var panorama = Resources.Load<Texture2D>("PixelArt/RuinsPaintedPanorama");
+        if (complete.BackgroundOffset >= panorama.width * 720f / panorama.height - 1280)
+            throw new Exception("Panorama must cover the entire rightward drift without tiling or exposed edges.");
+        float shipHeight = NewGameVoyageSequence.ShipWidth * ship.height / ship.width;
+        for (int hero = 0; hero < 3; hero++)
+        {
+            float localX = arrived.HeroLocalX(hero);
+            float occlusion = shipHeight * (VoyageShipLayers.DeckHeightAt(localX) - VoyageShipLayers.RailHeightAt(localX));
+            if (occlusion < 12 || occlusion > NewGameVoyageSequence.HeroSize / 3)
+                throw new Exception("Near gunwale should cover only the lower legs of hero " + hero);
+        }
+        var font = Resources.Load<Font>("Fonts/PixelOperator");
+        for (int i = 0; i < NewGameVoyageSequence.LineCount; i++)
+        {
+            string line = NewGameVoyageSequence.Line(i);
+            font.RequestCharactersInTexture(line, 26, FontStyle.Normal);
+            int width = 0;
+            foreach (char letter in line)
+            {
+                if (!font.GetCharacterInfo(letter, out CharacterInfo info, 26, FontStyle.Normal))
+                    throw new Exception("Voyage font missing character: " + letter);
+                width += info.advance;
+            }
+            if (width >= 404) throw new Exception("Voyage line exceeds the narrative column: " + line);
+        }
+        Debug.Log("NEW_GAME_VOYAGE_ASSETS_OK: close foredeck, rear/front reconstruction, hero occlusion, narrative font and three walk atlases.");
     }
 }
 
@@ -58,9 +101,10 @@ public sealed class NewGameVoyagePreview : EditorWindow
         GUILayout.BeginHorizontal(EditorStyles.toolbar);
         if (GUILayout.Button(playing ? "Pausar" : "Animar", EditorStyles.toolbarButton)) playing = !playing;
         if (GUILayout.Button("Início", EditorStyles.toolbarButton)) Jump(0);
+        if (GUILayout.Button("Chegada", EditorStyles.toolbarButton)) Jump(NewGameVoyageSequence.ArrivalStart + NewGameVoyageSequence.ArrivalDuration - .2f);
         if (GUILayout.Button("Convés", EditorStyles.toolbarButton)) Jump(12);
         if (GUILayout.Button("Partida", EditorStyles.toolbarButton)) Jump(NewGameVoyageSequence.DepartureAt);
-        if (GUILayout.Button("Fade", EditorStyles.toolbarButton)) Jump(NewGameVoyageSequence.BlackAt - 2.5f);
+        if (GUILayout.Button("Fade", EditorStyles.toolbarButton)) Jump(NewGameVoyageSequence.FadeOutAt + 1.5f);
         GUILayout.Label(presentation.Sequence.Elapsed.ToString("0.0") + " s", EditorStyles.miniLabel);
         GUILayout.EndHorizontal();
         presentation.Draw(new Rect(0, 24, position.width, position.height - 24));

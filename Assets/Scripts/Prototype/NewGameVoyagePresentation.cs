@@ -7,7 +7,8 @@ namespace DragonQuest.Prototype
     public sealed class NewGameVoyagePresentation : IDisposable
     {
         public readonly NewGameVoyageSequence Sequence = new NewGameVoyageSequence();
-        private readonly Texture2D panorama, ship, shade;
+        private readonly Texture2D panorama, shade;
+        private readonly VoyageShipLayers ship;
         private readonly PixelSpriteAtlas[] heroes = new PixelSpriteAtlas[3];
         private GUIStyle heading, chapter, story;
         private bool hasDrawn;
@@ -16,16 +17,18 @@ namespace DragonQuest.Prototype
         public NewGameVoyagePresentation()
         {
             panorama = PixelTexture("PixelArt/RuinsPaintedPanorama", 193);
-            ship = PixelTexture("PixelArt/Intro/VoyageCarrack", 256);
+            Texture2D shipSource = PixelTexture("PixelArt/Intro/VoyageCarrack", 256, true);
+            ship = new VoyageShipLayers(shipSource);
+            DestroyOwned(shipSource);
             heroes[0] = new PixelSpriteAtlas("ArenWalk");
             heroes[1] = new PixelSpriteAtlas("LiaWalk");
             heroes[2] = new PixelSpriteAtlas("BramWalk");
-            shade = new Texture2D(256, 1, TextureFormat.RGBA32, false)
+            shade = new Texture2D(128, 1, TextureFormat.RGBA32, false)
                 { name = "Voyage / narrative shade", wrapMode = TextureWrapMode.Clamp };
             var colors = new Color[shade.width];
             for (int x = 0; x < colors.Length; x++)
-                colors[x] = new Color(.018f, .045f, .075f,
-                    .93f * (1 - Mathf.SmoothStep(0, 1, Mathf.InverseLerp(.68f, 1, x / 255f))));
+                // Same color, strength and smooth horizontal falloff as the ending.
+                colors[x] = new Color(.035f, .025f, .03f, .82f * (1 - Mathf.SmoothStep(0, 1, x / 127f)));
             shade.SetPixels(colors); shade.Apply(false, true);
         }
 
@@ -78,15 +81,15 @@ namespace DragonQuest.Prototype
             float t = Sequence.Elapsed;
             // Preserve the ruins panorama's proportions; its very slow drift adds depth.
             float width = panorama.width * 720f / panorama.height;
-            float drift = Mathf.Repeat(t * 2.2f, width);
+            // Use the panorama's spare width rather than wrapping unmatched mountain edges.
+            float left = Mathf.Min(0, 1280 - width + Sequence.BackgroundOffset);
             GUI.color = Color.white;
-            GUI.DrawTexture(new Rect(-drift, 0, width, 720), panorama);
-            GUI.DrawTexture(new Rect(width - drift, 0, width, 720), panorama);
+            GUI.DrawTexture(new Rect(left, 0, width, 720), panorama);
             // Small irregular wave glints at three speeds, all on a crisp pixel grid.
             for (int row = 0; row < 6; row++)
                 for (int i = 0; i < 12; i++)
                 {
-                    float x = Mathf.Repeat(i * 117 + row * 49 + t * (9 + row * 4), 1380) - 50;
+                    float x = Mathf.Repeat(i * 117 + row * 49 + Sequence.SailingDistance * (.75f + row * .3f), 1380) - 50;
                     float y = 502 + row * 31 + Mathf.Sin(i * 1.7f + t * 1.2f) * 2;
                     float alpha = .13f + .12f * Mathf.Sin(t * 2 + i * 2.3f + row);
                     Fill(new Rect(Mathf.Round(x / 2) * 2, Mathf.Round(y / 2) * 2, 8 + i % 4 * 4, 2),
@@ -97,27 +100,27 @@ namespace DragonQuest.Prototype
         private void DrawShipAndParty()
         {
             float t = Sequence.Elapsed;
-            float height = NewGameVoyageSequence.ShipWidth * ship.height / ship.width;
-            var bounds = new Rect(Sequence.ShipX, 193 + Mathf.Sin(t * 1.25f) * 2.5f,
+            float height = NewGameVoyageSequence.ShipWidth * ship.Height / ship.Width;
+            // Close view of the bow and foredeck; stern, mast tops and keel continue beyond the frame.
+            var bounds = new Rect(Sequence.ShipX, -245 + Mathf.Sin(t * 1.25f) * 3,
                 NewGameVoyageSequence.ShipWidth, height);
             Matrix4x4 previous = GUI.matrix;
-            GUIUtility.RotateAroundPivot(Mathf.Sin(t * .8f) * .35f, new Vector2(bounds.center.x, bounds.yMax - 24));
+            GUIUtility.RotateAroundPivot(Mathf.Sin(t * .8f) * .22f, new Vector2(bounds.x + bounds.width * .34f, 550));
             GUI.color = Color.white;
-            GUI.DrawTexture(bounds, ship);
+            GUI.DrawTexture(bounds, ship.BehindParty);
             for (int i = 2; i >= 0; i--)
             {
                 float progress = Sequence.HeroWalkProgress(i);
-                float localX = Mathf.Lerp(.64f + i * .055f, .26f + i * .083f, progress);
+                float localX = Sequence.HeroLocalX(i);
                 bool walking = progress > 0 && progress < 1;
                 int frame = PixelSpriteLayout.WalkFrame(PixelDirection.Left, progress * 6.4f, walking);
-                float foot = bounds.y + bounds.height * .768f;
-                heroes[i].Draw(new Rect(bounds.x + localX * bounds.width - 23, foot - 48, 46, 48), frame, Color.white);
+                float foot = bounds.y + bounds.height * VoyageShipLayers.DeckHeightAt(localX);
+                float size = NewGameVoyageSequence.HeroSize;
+                heroes[i].Draw(new Rect(bounds.x + localX * bounds.width - size / 2, foot - size, size, size), frame, Color.white);
             }
-            // Foreground gunwale conceals their feet, anchoring the party inside the deck.
-            const float rail = .752f;
+            // The curved near side covers their lower legs instead of a flat rectangular strip.
             GUI.color = Color.white;
-            GUI.DrawTextureWithTexCoords(new Rect(bounds.x, bounds.y + bounds.height * rail,
-                bounds.width, bounds.height * (1 - rail)), ship, new Rect(0, 0, 1, 1 - rail), true);
+            GUI.DrawTexture(bounds, ship.InFrontOfParty);
             GUI.matrix = previous;
             float speed = Sequence.IsDeparting ? Mathf.Clamp01((t - NewGameVoyageSequence.DepartureAt) / 2) : 1 - Mathf.Clamp01(t / 7);
             for (int i = 0; i < 5; i++)
@@ -127,22 +130,24 @@ namespace DragonQuest.Prototype
 
         private void DrawNarrative()
         {
-            GUI.color = Color.white;
-            GUI.DrawTexture(new Rect(0, 24, 580, 672), shade);
-            GUI.color = new Color(.88f, .74f, .45f);
+            float opacity = Sequence.NarrativeOpacity;
+            if (opacity <= 0) return;
+            GUI.color = new Color(1, 1, 1, opacity);
+            GUI.DrawTexture(new Rect(0, 64, 600, 540), shade);
+            GUI.color = new Color(.88f, .74f, .45f, opacity);
             GUI.Label(new Rect(72, 81, 400, 26), "PRÓLOGO", chapter);
-            GUI.color = new Color(1, .94f, .78f);
+            GUI.color = new Color(1, .94f, .78f, opacity);
             GUI.Label(new Rect(72, 113, 420, 48), "A TRAVESSIA", heading);
-            Fill(new Rect(72, 172, 56, 2), new Color(.86f, .71f, .43f, .8f));
+            Fill(new Rect(72, 172, 56, 2), new Color(.86f, .71f, .43f, .8f * opacity));
             GUI.BeginGroup(new Rect(72, 198, 404, NewGameVoyageSequence.TextWindowHeight));
             for (int i = 0; i < NewGameVoyageSequence.LineCount; i++)
             {
                 float y = Sequence.TextOffset + i * NewGameVoyageSequence.LineHeight;
                 float edgeAlpha = Mathf.Clamp01(y / 24) * Mathf.Clamp01((NewGameVoyageSequence.TextWindowHeight - y - 16) / 24);
                 if (y < -32 || y > NewGameVoyageSequence.TextWindowHeight) continue;
-                GUI.color = new Color(0, 0, 0, edgeAlpha * .65f);
+                GUI.color = new Color(0, 0, 0, edgeAlpha * opacity);
                 GUI.Label(new Rect(1, y + 2, 404, 34), NewGameVoyageSequence.Line(i), story);
-                GUI.color = new Color(.98f, .94f, .83f, edgeAlpha);
+                GUI.color = new Color(.98f, .94f, .83f, edgeAlpha * opacity);
                 GUI.Label(new Rect(0, y, 404, 34), NewGameVoyageSequence.Line(i), story);
             }
             GUI.EndGroup();
@@ -161,7 +166,7 @@ namespace DragonQuest.Prototype
         private static void Fill(Rect area, Color color)
         { GUI.color = color; GUI.DrawTexture(area, Texture2D.whiteTexture); }
 
-        private static Texture2D PixelTexture(string resource, int height)
+        private static Texture2D PixelTexture(string resource, int height, bool readable = false)
         {
             Texture2D source = Resources.Load<Texture2D>(resource);
             if (source == null) throw new InvalidOperationException("Arte da travessia ausente: " + resource);
@@ -172,14 +177,14 @@ namespace DragonQuest.Prototype
             for (int y = 0; y < height; y++) for (int x = 0; x < width; x++)
                 pixels[y * width + x] = original[Mathf.Min(source.height - 1, (int)((y + .5f) * source.height / height)) * source.width
                     + Mathf.Min(source.width - 1, (int)((x + .5f) * source.width / width))];
-            texture.SetPixels32(pixels); texture.Apply(false, true); return texture;
+            texture.SetPixels32(pixels); texture.Apply(false, !readable); return texture;
         }
 
         public void Dispose()
         {
             foreach (var hero in heroes)
                 if (hero != null) foreach (var frame in hero.Sprites) DestroyOwned(frame);
-            DestroyOwned(panorama); DestroyOwned(ship); DestroyOwned(shade);
+            DestroyOwned(panorama); ship.Dispose(); DestroyOwned(shade);
         }
 
         private static void DestroyOwned(UnityEngine.Object asset)
