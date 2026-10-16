@@ -15,6 +15,7 @@ namespace DragonQuest.Interactions
         public string Text => session.Text;
         public string VisibleText => reveal.VisibleText;
         public int ContentVersion { get; private set; }
+        public int SelectedChoice { get; private set; }
         public int PageNumber => session.PageNumber;
         public int PageCount => session.PageCount;
         public System.Collections.Generic.IReadOnlyList<string> Choices => session.Choices;
@@ -41,6 +42,20 @@ namespace DragonQuest.Interactions
             session.OpenChoices(title, text, choices, selected);
             BeginPage();
         }
+
+        public void SelectChoice(int index)
+        {
+            if (ChoicesReady && index >= 0 && index < Choices.Count) SelectedChoice = index;
+        }
+
+        public void MoveChoice(int direction)
+        {
+            if (!ChoicesReady || direction == 0) return;
+            int count = Choices.Count;
+            SelectChoice((SelectedChoice + (direction > 0 ? 1 : count - 1)) % count);
+        }
+
+        public bool ConfirmChoice() => ChoicesReady && Choose(SelectedChoice);
 
         public bool Choose(int index)
         {
@@ -75,6 +90,7 @@ namespace DragonQuest.Interactions
         private void BeginPage()
         {
             reveal.Begin(session.Text);
+            SelectedChoice = 0;
             ContentVersion++;
         }
     }

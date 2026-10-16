@@ -14,7 +14,14 @@ namespace DragonQuest.Prototype
 
         private readonly Texture2D gradient;
         private readonly Dictionary<string, Texture2D> portraits = new Dictionary<string, Texture2D>();
+        private const float ChoiceTextInset = 48;
+        private Texture2D hand;
+        private Rect handUv = new Rect(0, 0, 1, 1);
+        private float handAspect = 1;
         private GUIStyle title, body, choice;
+        private Vector2 lastPointer;
+        private bool hasPointer;
+        private int lastSelectedChoice = -1;
         private float followLine, measuredWidth = -1;
         private Vector2 scroll;
         private int lastContentVersion = -1, lastVisibleLength = -1;
@@ -54,6 +61,8 @@ namespace DragonQuest.Prototype
                 scroll = Vector2.zero;
                 lastContentVersion = dialogue.ContentVersion;
                 lastVisibleLength = -1;
+                lastSelectedChoice = -1;
+                hasPointer = false;
             }
             Rect panel = PanelBounds(width, height);
             Rect face = PortraitBounds(width, height);
@@ -67,11 +76,17 @@ namespace DragonQuest.Prototype
             float choicesTop = bodyHeight + 12;
             float contentHeight = bodyHeight;
             var options = dialogue.Choices;
+            Rect selectedRow = default;
             if (dialogue.ChoicesReady)
             {
                 contentHeight = choicesTop;
                 for (int i = 0; i < options.Count; i++)
-                    contentHeight += ChoiceHeight(options[i], i, contentWidth) + (i > 0 ? 4 : 0);
+                {
+                    if (i > 0) contentHeight += 4;
+                    float rowHeight = ChoiceHeight(options[i], contentWidth);
+                    if (i == dialogue.SelectedChoice) selectedRow = new Rect(0, contentHeight, contentWidth, rowHeight);
+                    contentHeight += rowHeight;
+                }
             }
             Panel(panel);
             DrawPortrait(face, dialogue.Title);
@@ -93,6 +108,19 @@ namespace DragonQuest.Prototype
                 scroll.y = Mathf.Clamp(followLine, 0, Mathf.Max(0, contentHeight - viewport.height));
                 lastVisibleLength = visibleText.Length;
             }
+            if (dialogue.ChoicesReady && lastSelectedChoice != dialogue.SelectedChoice)
+            {
+                if (selectedRow.y < scroll.y) scroll.y = selectedRow.y;
+                else if (selectedRow.yMax > scroll.y + viewport.height) scroll.y = selectedRow.yMax - viewport.height;
+                scroll.y = Mathf.Clamp(scroll.y, 0, Mathf.Max(0, contentHeight - viewport.height));
+                lastSelectedChoice = dialogue.SelectedChoice;
+            }
+            // An idle mouse must not pull selection away from arrow-key navigation.
+            Vector2 pointer = Event.current.mousePosition;
+            bool pointerMoved = Event.current.type == EventType.Repaint && hasPointer
+                && (pointer - lastPointer).sqrMagnitude > .01f;
+            if (Event.current.type == EventType.Repaint) { lastPointer = pointer; hasPointer = true; }
+            bool pointerInViewport = viewport.Contains(pointer);
             scroll = GUI.BeginScrollView(viewport, scroll, new Rect(0, 0, contentWidth, contentHeight), false, false);
             try
             {
@@ -100,14 +128,31 @@ namespace DragonQuest.Prototype
                 float y = choicesTop;
                 if (dialogue.ChoicesReady)
                 {
+                    if (pointerMoved && pointerInViewport)
+                    {
+                        float hoverY = choicesTop;
+                        for (int i = 0; i < options.Count; i++)
+                        {
+                            float hoverHeight = ChoiceHeight(options[i], contentWidth);
+                            if (new Rect(0, hoverY, contentWidth, hoverHeight).Contains(Event.current.mousePosition))
+                            { dialogue.SelectChoice(i); break; }
+                            hoverY += hoverHeight + 4;
+                        }
+                    }
                     // Callbacks may replace or close the conversation. Finish this GUI pass immediately.
                     for (int i = 0; i < options.Count; i++)
                     {
-                        float optionHeight = ChoiceHeight(options[i], i, contentWidth);
-                        Rect button = new Rect(0, y, contentWidth, optionHeight);
-                        Fill(button, new Color(.52f, .60f, .79f));
-                        Fill(Inset(button, 1), new Color(.035f, .09f, .30f));
-                        if (GUI.Button(button, (i + 1) + ". " + options[i], choice)) { dialogue.Choose(i); break; }
+                        float optionHeight = ChoiceHeight(options[i], contentWidth);
+                        Rect row = new Rect(0, y, contentWidth, optionHeight);
+
+                        bool selected = i == dialogue.SelectedChoice;
+                        Color previous = GUI.color;
+                        if (selected) GUI.color = new Color(1, .94f, .66f);
+                        ShadowLabel(new Rect(ChoiceTextInset, y, Mathf.Max(20, contentWidth - ChoiceTextInset), optionHeight), options[i], choice);
+                        GUI.color = previous;
+                        if (selected) DrawChoiceHand(row);
+                        // Invisible hit area preserves clicking without a button background or border.
+                        if (GUI.Button(row, GUIContent.none, GUIStyle.none)) { dialogue.Choose(i); break; }
                         y += optionHeight + 4;
                     }
                 }
@@ -130,8 +175,34 @@ namespace DragonQuest.Prototype
             return Mathf.Max(0, body.GetCursorPixelPosition(area, text, left).y);
         }
 
-        private float ChoiceHeight(string text, int index, float width)
-            => Mathf.Max(32, choice.CalcHeight(new GUIContent((index + 1) + ". " + text), width));
+        private float ChoiceHeight(string text, float width)
+            => Mathf.Max(32, choice.CalcHeight(new GUIContent(text), Mathf.Max(20, width - ChoiceTextInset)));
+
+        private void LoadChoiceHand()
+        {
+            hand = Resources.Load<Texture2D>("PixelArt/BattleGloveCursor");
+            if (hand == null) throw new InvalidOperationException("Cursor de conversa ausente: BattleGloveCursor");
+            // Use the existing menu artwork; transparent margins are trimmed only by drawing UVs.
+            Color32[] pixels = hand.GetPixels32();
+            int left = hand.width, right = -1, bottom = hand.height, top = -1;
+            for (int y = 0; y < hand.height; y++) for (int x = 0; x < hand.width; x++)
+            {
+                if (pixels[y * hand.width + x].a <= 16) continue;
+                left = Mathf.Min(left, x); right = Mathf.Max(right, x);
+                bottom = Mathf.Min(bottom, y); top = Mathf.Max(top, y);
+            }
+            if (right < left || top < bottom) return;
+            int width = right - left + 1, height = top - bottom + 1;
+            handUv = new Rect((float)left / hand.width, (float)bottom / hand.height,
+                (float)width / hand.width, (float)height / hand.height);
+            handAspect = (float)width / height;
+        }
+
+        private void DrawChoiceHand(Rect row)
+        {
+            float width = Mathf.Min(36, 26 * handAspect), height = width / handAspect;
+            GUI.DrawTextureWithTexCoords(new Rect(0, row.center.y - height / 2, width, height), hand, handUv, true);
+        }
 
         private void DrawPortrait(Rect area, string speaker)
         {
@@ -162,9 +233,10 @@ namespace DragonQuest.Prototype
                 style.normal.textColor = style.hover.textColor = style.active.textColor = Color.white;
             }
 
-            choice.padding = new RectOffset(10, 10, 3, 3);
+            choice.padding = new RectOffset(0, 0, 3, 3);
             choice.alignment = TextAnchor.MiddleLeft;
             choice.hover.textColor = choice.active.textColor = new Color(1, .94f, .66f);
+            LoadChoiceHand();
         }
 
         private void Panel(Rect area)

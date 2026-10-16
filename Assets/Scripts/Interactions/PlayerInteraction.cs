@@ -39,9 +39,14 @@ namespace DragonQuest.Interactions
                 if (hasInput && keyboard.escapeKey.wasPressedThisFrame) context.Dialogue.Close();
                 else if (hasInput && context.Dialogue.ChoicesReady)
                 {
+                    if (keyboard.downArrowKey.wasPressedThisFrame) context.Dialogue.MoveChoice(1);
+                    else if (keyboard.upArrowKey.wasPressedThisFrame) context.Dialogue.MoveChoice(-1);
                     if (keyboard.digit1Key.wasPressedThisFrame || keyboard.numpad1Key.wasPressedThisFrame) context.Dialogue.Choose(0);
                     else if (keyboard.digit2Key.wasPressedThisFrame || keyboard.numpad2Key.wasPressedThisFrame) context.Dialogue.Choose(1);
                     else if (keyboard.digit3Key.wasPressedThisFrame || keyboard.numpad3Key.wasPressedThisFrame) context.Dialogue.Choose(2);
+                    else if (keyboard.enterKey.wasPressedThisFrame || keyboard.numpadEnterKey.wasPressedThisFrame
+                        || keyboard.spaceKey.wasPressedThisFrame || keyboard.eKey.wasPressedThisFrame)
+                        context.Dialogue.ConfirmChoice();
                 }
                 else if (hasInput && (keyboard.eKey.wasPressedThisFrame || keyboard.spaceKey.wasPressedThisFrame || keyboard.enterKey.wasPressedThisFrame))
                     context.Dialogue.Continue();
