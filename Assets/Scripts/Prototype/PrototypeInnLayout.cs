@@ -13,7 +13,7 @@ namespace DragonQuest.Prototype
         public static readonly Rect LegacyBounds = GroundBounds(new Rect(0,0,1,1),5f,1672f/941f);
         public static readonly Vector2 Spawn = Ground(.50f,.75f), Exit = Ground(.50f,.94f);
         public static readonly Vector2 Keeper = Ground(0.735f,0.365f), Reception = Ground(0.735f,0.56f);
-        public static readonly Vector2 SavePoint = Ground(.73f,.70f), SaveApproach = Ground(.66f,.72f);
+        public static readonly Vector2 SavePoint = Ground(.18f,.63f), SaveApproach = Ground(.28f,.65f);
         public static readonly Vector2[] Floor = new[] { new Vector2(0.21f,0.5f),new Vector2(0.55f,0.5f),new Vector2(0.55f,0.515f),new Vector2(0.88f,0.515f),new Vector2(0.88f,0.66f),new Vector2(0.85f,0.775f),new Vector2(0.61f,0.775f),new Vector2(0.61f,0.99f),new Vector2(0.39f,0.99f),new Vector2(0.39f,0.775f),new Vector2(0.19f,0.775f),new Vector2(0.19f,0.68f),new Vector2(0.13f,0.68f),new Vector2(0.13f,0.59f),new Vector2(0.21f,0.59f) };
         public static readonly Vector2[][] Fixtures = {
             new[] { new Vector2(0.57f,0.37f),new Vector2(0.89f,0.37f),new Vector2(0.89f,0.49f),new Vector2(0.57f,0.49f) },

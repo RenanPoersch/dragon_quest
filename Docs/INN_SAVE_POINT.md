@@ -1,6 +1,6 @@
 # Cristal de salvamento animado da Pousada
 
-A Pousada tem um cristal azul-turquesa flutuante sobre um círculo luminoso, no lado direito da sala, perto da recepção. O jogador se aproxima e pressiona **E — Salvar jornada** para gravar o slot atual. A ação usa `PrototypeSaveController.SaveManual`, com a mesma validação e mensagem de resultado do salvamento existente. A hospedeira e a recepção conservam suas conversas de salvamento.
+A Pousada tem um cristal azul-turquesa flutuante sobre um círculo luminoso, bem à esquerda da sala, alinhado à faixa central do piso. O jogador se aproxima e pressiona **E** para gravar o slot atual. A ação usa `PrototypeSaveController.SaveManual`, com a mesma validação e mensagem de resultado do salvamento existente. A hospedeira e a recepção conservam suas conversas de salvamento.
 
 O cristal é um sprite independente da pintura do ambiente. Tem oito quadros de rotação, brilhos e partículas, reproduzidos a 6 quadros por segundo, em loop. Todos compartilham a mesma escala. A base é registrada pelo círculo inferior, para a animação ficar plantada no chão. Não há colisor: o ponto luminoso pode ser atravessado e fica fora da passagem central. O salvamento ocorre na interação, e não ao andar sobre ele ou durante a animação.
 
@@ -16,4 +16,4 @@ PNG preservado byte a byte, com transparência, Point/Clamp, leitura habilitada,
 
 ## Verificação
 
-Scripts do jogo compilaram e passaram 145 verificações de salvamento. `Tools > Dragon Quest > Validate Inn` concluiu com código 0: oito quadros com conteúdo diferente, ordem temporal, retorno ao primeiro quadro, escala e pivôs estáveis, ausência de salvamentos automáticos, uma chamada de save por interação, alcance do ponto luminoso, caminhos livres e três formatos de tela. As cenas renderizadas e os oito quadros em uso ficam em `Temp/InnSavePreview` nesta revisão, ou na pasta indicada por `DQ_INN_OUTPUT`.
+Scripts do jogo compilaram e passaram 145 verificações de salvamento. `Tools > Dragon Quest > Validate Inn` concluiu com código 0: oito quadros com conteúdo diferente, ordem temporal, retorno ao primeiro quadro, escala e pivôs estáveis, ausência de salvamentos automáticos, uma chamada de save por interação, alcance do ponto luminoso, caminhos livres e três formatos de tela. As cenas renderizadas e os oito quadros em uso ficam em `Temp/InnSaveLeftPreview` nesta revisão, ou na pasta indicada por `DQ_INN_OUTPUT`.
