@@ -9,9 +9,11 @@ namespace DragonQuest.Prototype
     {
         public const string BackgroundResource = "PixelArt/Endings/CastleAftermath";
         public const string ForegroundResource = "PixelArt/Endings/ScorchedEarth";
+        public const string ElderResource = "PixelArt/Endings/ElderEndingWalk";
         private readonly string[] lines = EndingNarrative.CastleDestroyedEpilogue.Split('\n');
-        private readonly Texture2D background, foreground, shade;
-        private readonly PixelSpriteAtlas elder;
+        private readonly Texture2D background, foreground, shade, elder;
+        private readonly PixelFrame[] elderFrames;
+        private readonly float elderScale;
         private GUIStyle story, caption;
         private bool hasDrawn;
         public CastleDestroyedSequence Sequence { get; }
@@ -21,7 +23,15 @@ namespace DragonQuest.Prototype
             Sequence = new CastleDestroyedSequence(lines.Length);
             background = Load(BackgroundResource);
             foreground = Load(ForegroundResource);
-            elder = new PixelSpriteAtlas("NpcRoster");
+            elder = Load(ElderResource);
+            Color32[] elderPixels = elder.GetPixels32();
+            var alpha = new byte[elderPixels.Length];
+            for (int i = 0; i < alpha.Length; i++) alpha[i] = elderPixels[i].a;
+            elderFrames = PixelSpriteLayout.Read(elder.width, elder.height, alpha, true);
+            int tallest = 1;
+            foreach (PixelFrame frame in elderFrames) tallest = Math.Max(tallest, frame.Height);
+            // One scale for every pose keeps the body size and grounded feet stable while walking.
+            elderScale = 116f / tallest;
             shade = new Texture2D(128, 1, TextureFormat.RGBA32, false)
                 { name = "FinalOne / narrative shade", wrapMode = TextureWrapMode.Clamp };
             var colors = new Color[128];
@@ -55,7 +65,9 @@ namespace DragonQuest.Prototype
                     viewport.y + (viewport.height - 720 * scale) / 2, 0), Quaternion.identity, new Vector3(scale, scale, 1));
                 GUI.BeginGroup(new Rect(0, 30, 1280, 660));
                 GUI.color = Color.white;
-                GUI.DrawTexture(new Rect(0, 0, 1280, 660), background, ScaleMode.ScaleAndCrop);
+                float panoramaHeight = 1376f * background.height / background.width;
+                GUI.DrawTexture(new Rect(-12 + Sequence.BackgroundX, (660 - panoramaHeight) / 2,
+                    1376, panoramaHeight), background);
                 DrawWaterAndAsh();
                 DrawForeground();
                 DrawNarrative();
@@ -68,14 +80,20 @@ namespace DragonQuest.Prototype
 
         private void DrawForeground()
         {
-            // Both layers share the same displacement; the old man never slides off his ledge.
-            float x = Mathf.Round(Sequence.LandX);
+            float x = Sequence.LandX;
             float height = CastleDestroyedSequence.LandWidth * foreground.height / foreground.width;
-            var bounds = new Rect(x, 452, CastleDestroyedSequence.LandWidth, height);
+            // The sheer rock face extends below the frame, anchoring the ledge to a tall cliff.
+            var bounds = new Rect(x, 430, CastleDestroyedSequence.LandWidth, height);
             GUI.color = Color.white; GUI.DrawTexture(bounds, foreground);
-            // Use the existing grey-bearded villager, with his feet on the near soil lip.
-            elder.Draw(new Rect(x + 635, bounds.y + height * .29f - 116, 90, 116),
-                PixelSpriteLibrary.NpcFrame("Loja de equipamentos"), new Color(.9f, .78f, .66f));
+            if (!Sequence.ElderVisible) return;
+            PixelFrame frame = elderFrames[Sequence.ElderFrame];
+            float foot = bounds.y + height * .21f;
+            var destination = new Rect(Sequence.ElderX - frame.FootX * frame.Width * elderScale,
+                foot - (frame.Height - 1) * elderScale, frame.Width * elderScale, frame.Height * elderScale);
+            var uv = new Rect(frame.X / (float)elder.width, frame.Y / (float)elder.height,
+                frame.Width / (float)elder.width, frame.Height / (float)elder.height);
+            GUI.color = new Color(.94f, .85f, .76f);
+            GUI.DrawTextureWithTexCoords(destination, elder, uv, true);
         }
 
         private void DrawWaterAndAsh()
@@ -85,13 +103,14 @@ namespace DragonQuest.Prototype
             {
                 float x = Mathf.Repeat(i * 157 + row * 43 + t * (4 + row * 2), 1320) - 20;
                 float alpha = .05f + .06f * (.5f + .5f * Mathf.Sin(t * 1.2f + i + row));
-                Fill(new Rect(Mathf.Round(x / 2) * 2, 502 + row * 35, 10 + i % 4 * 6, 2), new Color(.5f, .7f, .67f, alpha));
+                Fill(new Rect(Mathf.Round(x / 2) * 2 + Sequence.BackgroundX, 502 + row * 35,
+                    10 + i % 4 * 6, 2), new Color(.5f, .7f, .67f, alpha));
             }
             for (int i = 0; i < 18; i++)
             {
                 float x = 720 + Mathf.Repeat(i * 73 - t * (3 + i % 3), 560);
                 float y = 448 - Mathf.Repeat(i * 41 + t * (9 + i % 4), 360);
-                Fill(new Rect(Mathf.Round(x / 2) * 2, Mathf.Round(y / 2) * 2, 2, 2),
+                Fill(new Rect(Mathf.Round(x / 2) * 2 + Sequence.BackgroundX, Mathf.Round(y / 2) * 2, 2, 2),
                     new Color(.94f, .48f, .2f, .18f + .16f * Mathf.Sin(i + t)));
             }
         }
@@ -138,7 +157,6 @@ namespace DragonQuest.Prototype
         { GUI.color = color; GUI.DrawTexture(area, Texture2D.whiteTexture); }
         public void Dispose()
         {
-            foreach (Sprite sprite in elder.Sprites) DestroyOwned(sprite);
             DestroyOwned(shade);
         }
         private static void DestroyOwned(UnityEngine.Object asset)

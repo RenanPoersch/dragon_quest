@@ -10,7 +10,8 @@ public static class FinalOneValidation
     [MenuItem("Tools/Dragon Quest/Validate FinalOne")]
     public static void Run()
     {
-        foreach (string resource in new[] { CastleDestroyedPresentation.BackgroundResource, CastleDestroyedPresentation.ForegroundResource })
+        foreach (string resource in new[] { CastleDestroyedPresentation.BackgroundResource,
+            CastleDestroyedPresentation.ForegroundResource, CastleDestroyedPresentation.ElderResource })
         {
             var texture = Resources.Load<Texture2D>(resource);
             Assert(texture != null, "artwork exists: " + resource);
@@ -28,8 +29,12 @@ public static class FinalOneValidation
             int clear = 0, solid = 0;
             foreach (Color32 pixel in source.GetPixels32())
             { if (pixel.a < 8) clear++; if (pixel.a > 240) solid++; }
-            Assert(clear > source.width * source.height / 3 && solid > source.width * source.height / 10,
-                "the foreground has real transparency and a substantial ledge");
+            Assert(clear > source.width * source.height / 10 && solid > source.width * source.height / 2,
+                "the tall cliff has real transparency and a substantial rock face");
+            int grounded = 0;
+            for (int x = 0; x < source.width; x++) if (source.GetPixel(x, 0).a > .9f) grounded++;
+            Assert(grounded > source.width / 2, "the cliff extends through the bottom instead of floating above it");
+            Assert(source.height / (float)source.width > .6f, "the new cliff is substantially taller than the old platform");
         }
         finally { UnityEngine.Object.DestroyImmediate(source); }
         var font = Resources.Load<Font>("Fonts/PixelOperator");
@@ -47,15 +52,20 @@ public static class FinalOneValidation
         using (var presentation = new CastleDestroyedPresentation())
         {
             var sequence = presentation.Sequence;
-            sequence.Advance(sequence.TextEndAt);
+            sequence.Advance(CastleDestroyedSequence.ElderAtCastleAt);
+            Assert(sequence.ElderFacingCastle && sequence.ElderFrame >= 4 && sequence.ElderFrame < 8,
+                "the watching pose uses the rear-facing row");
+            sequence.Advance(sequence.TextEndAt - sequence.Elapsed);
             Assert(sequence.BlackOpacity == 0 && !sequence.IsComplete, "the entire narrative finishes before fading");
+            sequence.Advance(sequence.ElderExitEnd - sequence.Elapsed);
+            Assert(!sequence.ElderVisible && sequence.BlackOpacity == 0, "the old man leaves before fading");
             sequence.Advance(sequence.CompleteAt);
             Assert(sequence.BlackOpacity == 1 && sequence.IsComplete, "the ending finishes at black");
         }
         Assert(EndingNarrative.Pages(GameEnding.CastleDestroyed).Length == 3
             && EndingNarrative.Pages(GameEnding.KingFreed).Length == 3
             && EndingNarrative.Pages(GameEnding.HeroPossessed).Length == 3, "the other endings retain their pages");
-        Debug.Log("FINAL_ONE_VALIDATION_OK: artwork, transparent foreground, villager atlas, narrative and fade.");
+        Debug.Log("FINAL_ONE_VALIDATION_OK: tall grounded cliff, walking/rear atlas, opposing drift, narrative, departure and fade.");
     }
 
     [MenuItem("Tools/Dragon Quest/Preview FinalOne")]
@@ -87,12 +97,14 @@ public sealed class FinalOnePreview : EditorWindow
     { presentation?.Dispose(); presentation = new CastleDestroyedPresentation(); presentation.Sequence.Advance(seconds); playing = false; }
     private void OnGUI()
     {
-        if (presentation == null) Jump(12);
+        if (presentation == null) Jump(CastleDestroyedSequence.TextStart + 9);
         GUILayout.BeginHorizontal(EditorStyles.toolbar);
         if (GUILayout.Button(playing ? "Pausar" : "Animar", EditorStyles.toolbarButton)) playing = !playing;
         if (GUILayout.Button("Início", EditorStyles.toolbarButton)) Jump(0);
-        if (GUILayout.Button("Chegada", EditorStyles.toolbarButton)) Jump(3);
-        if (GUILayout.Button("Texto", EditorStyles.toolbarButton)) Jump(15);
+        if (GUILayout.Button("Barranco", EditorStyles.toolbarButton)) Jump(CastleDestroyedSequence.ArrivalEnd);
+        if (GUILayout.Button("Entrada", EditorStyles.toolbarButton)) Jump(CastleDestroyedSequence.ElderEntranceStart + 6);
+        if (GUILayout.Button("Castelo", EditorStyles.toolbarButton)) Jump(CastleDestroyedSequence.TextStart + 9);
+        if (GUILayout.Button("Saída", EditorStyles.toolbarButton)) Jump(presentation.Sequence.ElderExitAt + 6);
         if (GUILayout.Button("Fade", EditorStyles.toolbarButton)) Jump(presentation.Sequence.FadeOutAt + 1.5f);
         if (GUILayout.Button("Preto", EditorStyles.toolbarButton)) Jump(presentation.Sequence.BlackAt);
         GUILayout.Label(presentation.Sequence.Elapsed.ToString("0.0") + " s", EditorStyles.miniLabel);
