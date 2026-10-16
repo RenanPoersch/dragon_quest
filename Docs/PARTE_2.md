@@ -5,7 +5,7 @@
 1. Saia de Play e aguarde a importação dos scripts.
 2. Abra `Assets/Scenes/CidadePrototipo.unity`.
 3. Clique em Play e depois dentro da janela Game.
-4. Ande com WASD ou setas. A tecla E interage com o objeto próximo; a faixa inferior informa a ação disponível.
+4. Ande com WASD ou setas. A tecla E interage com o objeto próximo.
 
 ## Roteiro
 
