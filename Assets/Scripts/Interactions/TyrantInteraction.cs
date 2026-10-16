@@ -11,7 +11,6 @@ namespace DragonQuest.Interactions
         private Action startBattle;
         private Action<DialogueController> presentParty;
         private GameObject spirit;
-        public override string Prompt => "Enfrentar o tirano";
         public void Initialize(Func<PartyProgress> party,Action start,GameObject spiritModel,Action<DialogueController> partyPresentation=null)
         {getParty=party;startBattle=start;spirit=spiritModel;presentParty=partyPresentation;}
         private bool Revealed()

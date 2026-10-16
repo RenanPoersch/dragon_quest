@@ -11,7 +11,7 @@ namespace DragonQuest.Prototype
     {
         private readonly Texture2D gradient;
         private readonly Dictionary<string, PixelSpriteAtlas> portraits = new Dictionary<string, PixelSpriteAtlas>();
-        private GUIStyle title, body, choice, hint;
+        private GUIStyle title, body, choice;
         private Vector2 scroll;
         private string lastText, lastTitle;
 
@@ -42,14 +42,14 @@ namespace DragonQuest.Prototype
             float titleHeight = title.CalcHeight(new GUIContent(dialogue.Title), contentWidth);
             float bodyHeight = Mathf.Max(64, body.CalcHeight(new GUIContent(dialogue.Text), contentWidth));
             float bodyTop = titleHeight + 8, choicesTop = bodyTop + bodyHeight + 12;
-            float hintTop = choicesTop;
+            float contentHeight = bodyTop + bodyHeight;
             var options = dialogue.Choices;
             if (dialogue.HasChoices)
-                for (int i = 0; i < options.Count; i++) hintTop += ChoiceHeight(options[i], i, contentWidth) + 6;
-            string controls = dialogue.HasChoices ? "1 / 2 / 3 ou clique: escolher  |  Esc: cancelar"
-                : "E / Espaco / Enter: continuar  |  Esc: fechar  (" + dialogue.PageNumber + "/" + dialogue.PageCount + ")";
-            float hintHeight = hint.CalcHeight(new GUIContent(controls), contentWidth);
-            float contentHeight = hintTop + 8 + hintHeight;
+            {
+                contentHeight = choicesTop;
+                for (int i = 0; i < options.Count; i++)
+                    contentHeight += ChoiceHeight(options[i], i, contentWidth) + (i > 0 ? 6 : 0);
+            }
             float panelHeight = Mathf.Min(height - 32, Mathf.Max(faceSize, contentHeight) + 40);
             Rect panel = new Rect(16, height - 16 - panelHeight, width - 32, panelHeight);
             Panel(panel);
@@ -77,20 +77,8 @@ namespace DragonQuest.Prototype
                         y += optionHeight + 6;
                     }
                 }
-                ShadowLabel(new Rect(0, hintTop + 8, contentWidth, hintHeight), controls, hint);
             }
             finally { GUI.EndScrollView(); }
-        }
-
-        public void DrawPrompt(string prompt, float width, float height)
-        {
-            if (string.IsNullOrEmpty(prompt)) return;
-            EnsureStyles();
-            float promptWidth = Mathf.Min(400, width - 32);
-            float promptHeight = Mathf.Max(48, body.CalcHeight(new GUIContent(prompt), promptWidth - 32) + 32);
-            Rect area = new Rect((width - promptWidth) / 2, height - 16 - promptHeight, promptWidth, promptHeight);
-            Panel(area);
-            ShadowLabel(Inset(area, 16), prompt, body);
         }
 
         private float ChoiceHeight(string text, int index, float width)
@@ -122,9 +110,8 @@ namespace DragonQuest.Prototype
             if (title != null) return;
             title = PrototypeTypography.Style(GUI.skin.label, 28, true);
             body = PrototypeTypography.Style(GUI.skin.label, 24);
-            hint = PrototypeTypography.Style(GUI.skin.label, 18);
             choice = PrototypeTypography.Style(GUI.skin.label, 24);
-            foreach (GUIStyle style in new[] { title, body, hint, choice })
+            foreach (GUIStyle style in new[] { title, body, choice })
             {
                 style.wordWrap = true;
                 style.padding = new RectOffset(0, 0, 0, 0);
@@ -133,7 +120,6 @@ namespace DragonQuest.Prototype
             choice.padding = new RectOffset(12, 12, 7, 7);
             choice.alignment = TextAnchor.MiddleLeft;
             choice.hover.textColor = choice.active.textColor = new Color(1, .94f, .66f);
-            hint.normal.textColor = new Color(.78f, .84f, 1);
         }
 
         private void Panel(Rect area)

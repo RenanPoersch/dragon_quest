@@ -13,9 +13,6 @@ namespace DragonQuest.Interactions
         private PlayerMovement movement;
         private Interactable[] candidates;
         private InteractionContext context;
-        private Interactable current;
-
-        public string CurrentPrompt => current != null ? "E - " + current.Prompt : string.Empty;
 
         public void Initialize(InteractionContext interactionContext, Interactable[] targets)
         {
@@ -29,7 +26,6 @@ namespace DragonQuest.Interactions
             if (context == null) return;
             if (context.IsBusy())
             {
-                current = null;
                 movement.SetMovementEnabled(false);
                 return;
             }
@@ -39,7 +35,6 @@ namespace DragonQuest.Interactions
             // A mesma tecla que fecha uma conversa não abre outra neste frame.
             if (context.Dialogue.IsOpen)
             {
-                current = null;
                 movement.SetMovementEnabled(false);
                 if (hasInput && keyboard.escapeKey.wasPressedThisFrame) context.Dialogue.Close();
                 else if (hasInput && context.Dialogue.HasChoices)
@@ -58,13 +53,11 @@ namespace DragonQuest.Interactions
             if(hasInput && context.Secrets != null && context.Secrets.KnowsPoem && keyboard.pKey.wasPressedThisFrame)
             {
                 context.Dialogue.Open("Poema da lenda",LegendPoem.ExplainedPages());
-                current=null;movement.SetMovementEnabled(false);return;
+                movement.SetMovementEnabled(false);return;
             }
-            current = FindNearest();
-            if (hasInput && current != null && keyboard.eKey.wasPressedThisFrame)
+            if (hasInput && keyboard.eKey.wasPressedThisFrame)
             {
-                current.Interact(context);
-                current = null;
+                FindNearest()?.Interact(context);
                 movement.SetMovementEnabled(!context.Dialogue.IsOpen && !context.IsBusy());
             }
         }
@@ -86,7 +79,6 @@ namespace DragonQuest.Interactions
 
         private void OnDisable()
         {
-            current = null;
             if (movement != null) movement.SetMovementEnabled(true);
         }
     }

@@ -19,7 +19,6 @@ namespace DragonQuest.Prototype
         public Texture2D Source { get; private set; }
         public int CurrentFrame { get; private set; }
         public IReadOnlyList<Sprite> Frames => frames;
-        public override string Prompt => "Salvar jornada";
 
         public void Initialize(Action manualSave)
         {

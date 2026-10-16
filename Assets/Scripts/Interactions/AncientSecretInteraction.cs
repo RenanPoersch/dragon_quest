@@ -13,11 +13,6 @@ namespace DragonQuest.Interactions
         private GameObject light;
         public void Initialize(SecretObject type, AncientSecrets progress, MonolithSymbol rune = MonolithSymbol.Sun, GameObject glow = null)
         { kind=type; secrets=progress; symbol=rune; light=glow; RefreshLight(); }
-        public override string Prompt => kind == SecretObject.Peasant ? "Conversar com a camponesa"
-            : kind == SecretObject.Altar ? "Examinar altar antigo"
-            : kind == SecretObject.Inscription ? "Ler inscricao desgastada"
-            : kind == SecretObject.Monolith ? "Tocar monolito / " + SymbolName(symbol)
-            : kind == SecretObject.ClawStone ? "Examinar marcas na pedra" : "Examinar raizes antigas";
 
         private void OnEnable() => RefreshLight();
         private void Update() => RefreshLight();

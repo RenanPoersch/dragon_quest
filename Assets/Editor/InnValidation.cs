@@ -71,7 +71,7 @@ public static class InnValidation
             Assert(signatures.Count==8&&saves==1,"all eight frames are distinct and animation never saves automatically");
             savePoint.ShowAt(InnSavePoint.FrameCount/InnSavePoint.FramesPerSecond);Assert(savePoint.CurrentFrame==0,"animation wraps to its first frame");
             savePoint.Interact(new InteractionContext(null,new ExplorationProgress(),_=>{}));
-            Assert(saves==2&&savePoint.Prompt=="Salvar jornada","save crystal invokes manual save exactly once per interaction");
+            Assert(saves==2,"save crystal invokes manual save exactly once per interaction");
             savePoint.ShowAt(0);
 
             foreach (Vector2Int resolution in new[] { new Vector2Int(1280,720),new Vector2Int(1280,800),new Vector2Int(960,720) })

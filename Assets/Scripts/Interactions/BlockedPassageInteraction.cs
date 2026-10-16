@@ -4,7 +4,6 @@ namespace DragonQuest.Interactions
 {
     public sealed class BlockedPassageInteraction : Interactable
     {
-        public override string Prompt => secrets?.PassageOpen == true ? "Examinar passagem aberta" : "Examinar barreira magica";
         private GameObject barrier;
         private float openingTime;
         private bool opening;

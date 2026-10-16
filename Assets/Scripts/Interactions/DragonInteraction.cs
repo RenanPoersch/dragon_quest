@@ -11,8 +11,6 @@ namespace DragonQuest.Interactions
         private Action startBattle;
         private GameObject body, essence;
         private DragonLairAnimation restingDragon;
-        public override string Prompt => progress?.IsDefeated == true ? "Ouvir a essencia liberta"
-            : restingDragon?.State == DragonRestState.Sleeping ? "Acordar o dragao" : "Enfrentar o dragao corrompido";
 
         public void Initialize(DragonProgress dragon, Action start, GameObject model, GameObject glow)
         {

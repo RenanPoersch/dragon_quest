@@ -3,7 +3,6 @@ namespace DragonQuest.Interactions
     public sealed class InnInteraction : Interactable
     {
         private System.Action save;
-        public override string Prompt => "Conversar / salvar na hospedaria";
         public void Initialize(System.Action manualSave) => save = manualSave;
         public override void Interact(InteractionContext context)
         {

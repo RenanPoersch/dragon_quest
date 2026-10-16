@@ -127,7 +127,7 @@ namespace DragonQuest.Prototype
             interaction.Initialize(new InteractionContext(dialogue, progress, locations.TravelTo,
                 battle.StartBattle, () => battle.IsBusy, shops.Open, secrets), interactables.ToArray());
             PrototypeHud hud = gameObject.AddComponent<PrototypeHud>();
-            hud.Initialize(interaction, dialogue, battle);
+            hud.Initialize(dialogue, battle);
             saves.Initialize(player.GetComponent<PlayerMovement>(), battle, shops, locations, dialogue, progress, secrets, dragon, journey =>
             {
                 progress = journey.Progress;
@@ -139,7 +139,7 @@ namespace DragonQuest.Prototype
                 shops.Initialize(player.GetComponent<PlayerMovement>(), dialogue, battle, progress, journey.Shops, journey.Quest);
                 interaction.Initialize(new InteractionContext(dialogue, progress, locations.TravelTo,
                     battle.StartBattle, () => battle.IsBusy, shops.Open, secrets), interactables.ToArray());
-                hud.Initialize(interaction, dialogue, battle);
+                hud.Initialize(dialogue, battle);
                 cheats.Initialize(player.GetComponent<PlayerMovement>(), battle, saves, progress);
                 locations.Restore(journey.Data.Map, new Vector2(journey.Data.X, journey.Data.Y));
             });
@@ -367,9 +367,9 @@ namespace DragonQuest.Prototype
             }
             else throw new System.ArgumentException("Loja sem cenario: "+shopId);
             MerchantInteraction merchant=CreateNpcFigure(shopName,merchantPoint,displayColor,shop).AddComponent<MerchantInteraction>();
-            merchant.Initialize(shopId,shopName); interactions.Add(merchant);
+            merchant.Initialize(shopId); interactions.Add(merchant);
             MerchantInteraction counter=Entity("Balcao / negociar",counterPoint,shop).AddComponent<MerchantInteraction>();
-            counter.Initialize(shopId,shopName); interactions.Add(counter);
+            counter.Initialize(shopId); interactions.Add(counter);
             CreatePassage("Saida da loja",shopId,shop,PrototypeTravel.City);
         }
 

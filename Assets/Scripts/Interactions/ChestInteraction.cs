@@ -10,7 +10,6 @@ namespace DragonQuest.Interactions
         private bool opened;
         private System.Func<bool> wasOpened;
 
-        public override string Prompt => opened ? "Examinar bau aberto" : "Abrir bau";
 
         public void Initialize(string id, int reward, System.Action<bool> setVisualState, System.Func<bool> isOpened = null)
         {

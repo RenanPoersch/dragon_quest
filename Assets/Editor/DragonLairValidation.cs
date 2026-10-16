@@ -35,7 +35,7 @@ public static class DragonLairValidation
             interaction.Initialize(progress, () => battles++, animation.gameObject, essence);
             var dialogue = root.AddComponent<DialogueController>();
             var context = new InteractionContext(dialogue, new ExplorationProgress(), _ => { });
-            Assert(animation.State == DragonRestState.Sleeping && interaction.Prompt.Contains("Acordar"), "dragon starts asleep with wake prompt");
+            Assert(animation.State == DragonRestState.Sleeping, "dragon starts asleep before interaction");
             animation.Advance(10);
             Assert(animation.State == DragonRestState.Sleeping && !essence.activeSelf, "time alone cannot wake dragon or reveal essence");
 
