@@ -20,14 +20,14 @@ public static class DialoguePortraitValidation
             Rect portrait = DialoguePresentation.PortraitBounds(width,height);
             Assert(Mathf.Approximately(panel.height,DialoguePresentation.ReferencePanelHeight),
                 "dialogue height is fixed independently of text: " + resolution);
-            Assert(Mathf.Approximately(portrait.yMax,panel.yMax),
-                "portrait bottom stays attached to the panel: " + resolution);
+            Assert(Mathf.Approximately(portrait.yMax,panel.yMax-DialoguePresentation.PortraitBottomInset),
+                "portrait bottom clears the panel border: " + resolution);
             float maximumPortraitHeight = panel.height / (1-DialoguePresentation.PortraitOverhang);
             Assert(portrait.height <= maximumPortraitHeight+.001f,
-                "portrait overhang never exceeds 20 percent: " + resolution);
+                "portrait size preserves the 20 percent overhang before border offset: " + resolution);
             if (Mathf.Approximately(portrait.height,maximumPortraitHeight))
-                Assert(Mathf.Abs(panel.y-portrait.y-portrait.height*.20f)<.001f,
-                    "wide layout keeps the 20 percent overhang: " + resolution);
+                Assert(Mathf.Abs(panel.y-DialoguePresentation.PortraitBottomInset-portrait.y-portrait.height*.20f)<.001f,
+                    "wide layout keeps the 20 percent overhang plus border offset: " + resolution);
             Assert(portrait.xMax+20 < panel.xMax-60 && portrait.y >= 0,
                 "overlapping portrait leaves readable text space and stays on screen: " + resolution);
         }
@@ -68,7 +68,7 @@ public static class DialoguePortraitValidation
         Assert(DialoguePortraitCatalog.ResourceFor("Altar antigo") == DialoguePortraitCatalog.ResourceFor("Aren"),
             "narrated discoveries use Aren's illustrated portrait");
         string result = "DIALOGUE_PORTRAITS_VALIDATION_OK: " + DialoguePortraitCatalog.Characters.Count
-            + " original portraits; compact fixed panel, bottom-aligned portraits, up to 20% overhang, reveal/continue/choices/callbacks, native resolution, transparent alpha, Point/Clamp, no compression/mipmaps/readable copy; "
+            + " original portraits; compact fixed panel, portraits above the bottom border, 20% sizing plus border offset, reveal/continue/choices/callbacks, native resolution, transparent alpha, Point/Clamp, no compression/mipmaps/readable copy; "
             + checkedPixels + " source pixels checked.";
         File.WriteAllText(Path.Combine(output, "result.txt"), result);
         Debug.Log(result);

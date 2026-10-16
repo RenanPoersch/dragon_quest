@@ -8,7 +8,7 @@ A altura é fixa em 180 unidades na referência de 720, cerca de 34% menor que a
 
 E, Espaço ou Enter completa a fala em andamento; uma nova pressão avança para a próxima página. As respostas aparecem ao terminar a fala e aceitam clique ou as teclas 1/2/3. Esc cancela a conversa. A escrita preserva letras com acentos combinantes e pares de caracteres Unicode.
 
-O retrato não tem fundo nem borda próprios e sua base fica alinhada ao fundo do painel. Em telas largas, sua área avança 20% acima da caixa; em formatos estreitos, diminui para reservar espaço ao texto, mantendo o alinhamento inferior e as proporções da imagem. Páginas e callbacks de batalha/salvamento conservam o fluxo existente.
+O retrato não tem fundo nem borda próprios e sua base fica 8 unidades acima do fundo do painel, liberando a moldura inferior. Esse deslocamento sobe a imagem inteira, preservando o tamanho e as proporções. Em telas largas, soma-se à sobreposição de 20%; em formatos estreitos, o retrato diminui para reservar espaço ao texto. Páginas e callbacks de batalha/salvamento conservam o fluxo existente.
 
 O alvo de interação é procurado somente ao pressionar E, preservando alcance e bloqueio por menus. `PrototypeHud` desenha a interface apenas enquanto uma conversa estiver aberta.
 

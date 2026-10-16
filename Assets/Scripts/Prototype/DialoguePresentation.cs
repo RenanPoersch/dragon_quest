@@ -10,6 +10,7 @@ namespace DragonQuest.Prototype
     {
         public const float ReferencePanelHeight = 180f;
         public const float PortraitOverhang = .20f;
+        public const float PortraitBottomInset = 8f;
 
         private readonly Texture2D gradient;
         private readonly Dictionary<string, Texture2D> portraits = new Dictionary<string, Texture2D>();
@@ -42,7 +43,7 @@ namespace DragonQuest.Prototype
         {
             Rect panel = PanelBounds(width, height);
             float size = Mathf.Clamp(width * .30f, 96, panel.height / (1 - PortraitOverhang));
-            return new Rect(panel.x + 20, panel.yMax - size, size, size);
+            return new Rect(panel.x + 20, panel.yMax - PortraitBottomInset - size, size, size);
         }
 
         public void Draw(DialogueController dialogue, float width, float height)
