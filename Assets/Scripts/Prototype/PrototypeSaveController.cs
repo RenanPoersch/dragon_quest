@@ -41,6 +41,7 @@ namespace DragonQuest.Prototype
         private double playSeconds;
         private SaveSelectionPresentation saveScreen;
         private PrototypeIntroPresentation intro;
+        private NewGameVoyagePresentation voyage;
         private const float MenuFadeInDuration = 1.2f;
         private float menuFadeInElapsed;
         private bool menuHasDrawn;
@@ -86,12 +87,16 @@ namespace DragonQuest.Prototype
         }
         private void NewGame()
         {
+            if (voyage != null) return;
+            voyage = new NewGameVoyagePresentation();
             ActiveSlot = 0;
             for (int slot = 1; slot <= SaveStore.SlotCount; slot++)
                 if (!store.Exists(slot)) { ActiveSlot = slot; break; }
             awaitingFirstSave = true;
             playSeconds = 0;
-            overwriteSlot = 0; IsMenuVisible = false; player.SetMovementEnabled(true);
+            overwriteSlot = 0;
+            // Keep every existing menu/busy gate active through the voyage and map reveal.
+            player.SetMovementEnabled(false);
         }
         private void Continue(int slot)
         {
@@ -142,6 +147,17 @@ namespace DragonQuest.Prototype
         {
             if (store == null) return;
             intro?.Update(Time.unscaledDeltaTime);
+            if (voyage != null)
+            {
+                if (Application.isFocused) voyage.Update(Time.unscaledDeltaTime);
+                if (!voyage.IsPlaying)
+                {
+                    voyage.Dispose(); voyage = null;
+                    IsMenuVisible = false;
+                    player.SetMovementEnabled(!dialogue.IsOpen && !battle.IsBusy);
+                }
+                return;
+            }
             if (IsMenuVisible)
             {
                 if ((intro == null || !intro.IsPlaying) && menuHasDrawn)
@@ -210,6 +226,7 @@ namespace DragonQuest.Prototype
             // Save notices belong to the journey selection menu, never to the game maps.
             if (store == null || !IsMenuVisible) return;
             if (intro != null && intro.IsPlaying) { intro.Draw(); return; }
+            if (voyage != null) { voyage.Draw(); return; }
             // Wait for the reveal and release of the skip input before allowing menu selection.
             if ((IsMenuFadingIn || intro != null && intro.BlocksMenuInput)
                 && (Event.current.isKey || Event.current.isMouse))
@@ -224,6 +241,7 @@ namespace DragonQuest.Prototype
                 UpdateMenuInput(Event.current.keyCode);
                 Event.current.Use();
                 if (!IsMenuVisible) return;
+                if (voyage != null) { voyage.Draw(); return; }
             }
             EnsureStyles();
             Matrix4x4 previousMatrix = GUI.matrix; int previousDepth = GUI.depth;
@@ -359,6 +377,6 @@ namespace DragonQuest.Prototype
             titleButtonStyle.active.textColor = new Color(0.96f, 0.8f, 0.48f);
             titleButtonStyle.focused.textColor = Color.white;
         }
-        private void OnDestroy() { intro?.Dispose(); saveScreen?.Dispose(); if (pixel != null) Destroy(pixel); }
+        private void OnDestroy() { voyage?.Dispose(); intro?.Dispose(); saveScreen?.Dispose(); if (pixel != null) Destroy(pixel); }
     }
 }
