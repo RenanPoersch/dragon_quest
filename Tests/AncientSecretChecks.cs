@@ -112,6 +112,36 @@ internal static class AncientSecretChecks
         Assert(!session.IsOpen&&session.PageNumber==0&&session.PageCount==0,"Avancar/fechar dialogo fechado deve ser seguro.");
     }
 
+    private static void CheckTextReveal()
+    {
+        var reveal = new DialogueTextReveal();
+        reveal.Begin(null);
+        Assert(reveal.IsComplete && reveal.VisibleText == "", "Texto vazio termina sem esperar.");
+        reveal.Begin("A\u0301\U0001F31FB");
+        Assert(!reveal.IsComplete && reveal.VisibleText == "", "Nova fala inicia sem texto revelado.");
+        reveal.Tick(1f/DialogueTextReveal.CharactersPerSecond);
+        Assert(reveal.VisibleText == "A\u0301", "Acento combinante aparece com a letra inteira.");
+        reveal.Tick(1f/DialogueTextReveal.CharactersPerSecond);
+        Assert(reveal.VisibleText == "A\u0301\U0001F31F", "Par substituto aparece inteiro.");
+        foreach (float invalid in new[]{-1f,0f,float.NaN,float.PositiveInfinity}) reveal.Tick(invalid);
+        Assert(reveal.VisibleText == "A\u0301\U0001F31F", "Tempos invalidos nao alteram a escrita.");
+        reveal.Finish();
+        Assert(reveal.IsComplete && reveal.VisibleText == "A\u0301\U0001F31FB", "Concluir revela o restante da fala.");
+        reveal.Tick(10);
+        Assert(reveal.IsComplete && reveal.VisibleText == "A\u0301\U0001F31FB", "Fala concluida nao reinicia pelo tempo.");
+        string longText = new string('x',200);
+        var split = new DialogueTextReveal();
+        reveal.Begin(longText); split.Begin(longText);
+        reveal.Tick(1);
+        for(int i=0;i<60;i++) split.Tick(1f/60);
+        Assert(reveal.VisibleText == split.VisibleText && reveal.VisibleText.Length == 48,
+            "Escrita independe da quantidade de frames.");
+        reveal.Begin(longText);
+        Assert(reveal.VisibleText == "" && !reveal.IsComplete, "Texto identico em outra pagina reinicia a escrita.");
+        reveal.Tick(1000);
+        Assert(reveal.IsComplete && reveal.VisibleText == longText, "Frame longo termina no limite exato da fala.");
+    }
+
     public static void Main()
-    {CheckAltar();CheckMonoliths();CheckOrders();CheckDialogues();Console.WriteLine(checks+" verificacoes de segredos e escolhas passaram.");}
+    {CheckAltar();CheckMonoliths();CheckOrders();CheckDialogues();CheckTextReveal();Console.WriteLine(checks+" verificacoes de segredos, escolhas e escrita passaram.");}
 }

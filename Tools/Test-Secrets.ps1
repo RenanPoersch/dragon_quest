@@ -18,6 +18,7 @@ $secretArguments += Get-ChildItem -LiteralPath $secretRefs.FullName -Filter '*.d
 $secretArguments += Join-Path $secretRoot 'Assets/Scripts/Progression/AncientSecrets.cs'
 $secretArguments += Join-Path $secretRoot 'Assets/Scripts/Progression/LegendPoem.cs'
 $secretArguments += Join-Path $secretRoot 'Assets/Scripts/Interactions/DialogueSession.cs'
+$secretArguments += Join-Path $secretRoot 'Assets/Scripts/Interactions/DialogueTextReveal.cs'
 $secretArguments += Join-Path $secretRoot 'Tests/AncientSecretChecks.cs'
 & $secretDotnet $secretCsc.FullName @secretArguments
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

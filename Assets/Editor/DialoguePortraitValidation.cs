@@ -20,11 +20,18 @@ public static class DialoguePortraitValidation
             Rect portrait = DialoguePresentation.PortraitBounds(width,height);
             Assert(Mathf.Approximately(panel.height,DialoguePresentation.ReferencePanelHeight),
                 "dialogue height is fixed independently of text: " + resolution);
-            Assert(Mathf.Abs(panel.y-portrait.y-portrait.height*.20f)<.001f,
-                "portrait extends exactly 20 percent above dialogue: " + resolution);
+            Assert(Mathf.Approximately(portrait.yMax,panel.yMax),
+                "portrait bottom stays attached to the panel: " + resolution);
+            float maximumPortraitHeight = panel.height / (1-DialoguePresentation.PortraitOverhang);
+            Assert(portrait.height <= maximumPortraitHeight+.001f,
+                "portrait overhang never exceeds 20 percent: " + resolution);
+            if (Mathf.Approximately(portrait.height,maximumPortraitHeight))
+                Assert(Mathf.Abs(panel.y-portrait.y-portrait.height*.20f)<.001f,
+                    "wide layout keeps the 20 percent overhang: " + resolution);
             Assert(portrait.xMax+20 < panel.xMax-60 && portrait.y >= 0,
                 "overlapping portrait leaves readable text space and stays on screen: " + resolution);
         }
+        ValidateDialogueFlow();
         int checkedPixels = 0;
         foreach (string character in DialoguePortraitCatalog.Characters)
         {
@@ -61,10 +68,47 @@ public static class DialoguePortraitValidation
         Assert(DialoguePortraitCatalog.ResourceFor("Altar antigo") == DialoguePortraitCatalog.ResourceFor("Aren"),
             "narrated discoveries use Aren's illustrated portrait");
         string result = "DIALOGUE_PORTRAITS_VALIDATION_OK: " + DialoguePortraitCatalog.Characters.Count
-            + " original portraits; fixed panel height, exact 20% portrait overhang, native resolution, transparent alpha, Point/Clamp, no compression/mipmaps/readable copy; "
+            + " original portraits; compact fixed panel, bottom-aligned portraits, up to 20% overhang, reveal/continue/choices/callbacks, native resolution, transparent alpha, Point/Clamp, no compression/mipmaps/readable copy; "
             + checkedPixels + " source pixels checked.";
         File.WriteAllText(Path.Combine(output, "result.txt"), result);
         Debug.Log(result);
+    }
+
+    private static void ValidateDialogueFlow()
+    {
+        var root = new GameObject("Dialogue / flow validation");
+        try
+        {
+            var dialogue = root.AddComponent<DragonQuest.Interactions.DialogueController>();
+            int completed = 0;
+            dialogue.OpenWithCompletion("Aldeao",()=>completed++,"Igual","Igual");
+            int version = dialogue.ContentVersion;
+            Assert(dialogue.IsTyping && dialogue.VisibleText == "", "speech starts with progressive writing");
+            dialogue.Continue();
+            Assert(dialogue.VisibleText == "Igual" && dialogue.PageNumber == 1 && completed == 0,
+                "first continue reveals the page without advancing or calling completion");
+            dialogue.Continue();
+            Assert(dialogue.PageNumber == 2 && dialogue.IsTyping && dialogue.VisibleText == "" && dialogue.ContentVersion != version,
+                "identical consecutive pages restart writing and scroll identity");
+            dialogue.Continue(); dialogue.Continue(); dialogue.Continue();
+            Assert(!dialogue.IsOpen && completed == 1, "completion runs exactly once after a separate continue");
+            dialogue.OpenWithCompletion("Aldeao",()=>completed++,"Cancelado");
+            dialogue.Close();
+            Assert(!dialogue.IsTyping && dialogue.VisibleText == "" && completed == 1,
+                "cancel clears writing without invoking completion");
+            int selected = 0;
+            dialogue.OpenChoices("Hospedeira","Sua jornada",new[]{"Salvar","Voltar"},i=>
+            {
+                selected++;
+                dialogue.Open("Hospedeira","Resposta");
+            });
+            Assert(dialogue.HasChoices && !dialogue.ChoicesReady, "choices wait for the speech");
+            dialogue.Continue(); dialogue.Continue();
+            Assert(dialogue.ChoicesReady && selected == 0, "continuation reveals choices without selecting them");
+            Assert(dialogue.Choose(0) && selected == 1 && dialogue.IsTyping && dialogue.Text == "Resposta",
+                "choice callback can open a new progressively written conversation");
+        }
+        finally { UnityEngine.Object.DestroyImmediate(root); }
     }
 
     private static void Assert(bool condition, string message)
