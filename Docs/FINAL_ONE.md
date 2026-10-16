@@ -1,0 +1,21 @@
+# FinalOne — Cinzas do castelo
+
+O desfecho `GameEnding.CastleDestroyed` mantém a queda e o impacto do meteoro apresentados na batalha. Ao entrar no final, mostra um panorama lateral com o castelo destruído ao fundo, mar, montanhas e céu alaranjado, inspirado na referência fornecida pelo usuário.
+
+Um bloco de terra entra da esquerda em primeiro plano durante 5,5 segundos, carregando o morador de barba grisalha do atlas existente `NpcRoster` (quadro da loja de equipamentos). Ele permanece no mesmo ponto do terreno. O texto começa após a chegada, rola automaticamente de baixo para cima e descreve a destruição do castelo e da equipe; o velho observa a distância. A narrativa fica em `EndingNarrative.CastleDestroyedEpilogue`.
+
+Depois que a última linha sai da janela de texto, há 1,8 s de pausa, fade out de 3 s e 1 s de preto antes de retornar ao menu. O relógio usa tempo não escalado e só começa após a primeira renderização. Não exige avançar páginas. Os outros dois finais mantêm sua apresentação atual.
+
+Validação: `Tools/Test-FinalOne.ps1`, `Tools/Test-Castle.ps1` e `Tools/Test-UnityScripts.ps1`. Na Unity: `Tools > Dragon Quest > Validate FinalOne` e `Preview FinalOne`, com controles para chegada, texto, fade e preto.
+
+## Arte
+
+Criada pela ferramenta integrada `imagegen`; os PNGs originais foram copiados para `Assets/Resources/PixelArt/Endings/`, com Point/Clamp, sem mipmaps e sem compressão. A transparência de `ScorchedEarth.png` é preservada. O panorama e o terreno são recursos compartilhados; a apresentação só descarta os sprites temporários e a textura de sombra que cria.
+
+### Prompt do panorama
+
+Use case: illustration-story. Asset type: game ending background plate for a Unity 2D pixel art JRPG, widescreen 16:9. Create an original post-meteor ruined castle landscape inspired by the user's reference composition: dramatic amber orange sunset, huge dark smoke clouds, distant muted green mountains, cold teal water covering the lower third. On the RIGHT half beyond the water is a collapsed medieval stone castle, visibly destroyed by a meteor: jagged broken cylindrical towers, collapsed keep, shattered curtain walls, exposed arches, immense rubble and small dying orange embers. Only stumps and shattered fragments remain, no intact tall roofs. Castle occupies x=55-97% and y=25-73%. Long damaged stone bridge behind the sea extends from left toward castle, partly submerged. LEFT half stays open with atmospheric sky and sea, readable as a landscape (we will overlay scrolling white narrative text in left half at runtime). No foreground island or foreground ground, no characters; these are separate animated layers. Mood: mournful quiet aftermath of total destruction, sunset light on cracked ash-gray stones, warm sky against dark teal flooded ruins. Style: high quality handcrafted 1990s 32-bit console pixel art scenic backdrop, crisp visible pixel clusters and subtle dithering, atmospheric depth, richly textured surfaces, no smooth vector illustration, no photorealism. No text, logo, UI or black letterbox baked in. Fill entire wide image. Prefer 1536x864 landscape.
+
+### Prompt do terreno
+
+Use case: stylized-concept. Asset type: isolated foreground terrain sprite for a side-view 2D 1990s 32-bit pixel art JRPG ending. A single long detached chunk of scorched earth and rock, horizontal 3.2:1 silhouette, flat walkable top, jagged crumbling sides and a thick tapering broken rocky underside. Orthographic SIDE view, only a VERY thin visible top surface (no isometric view). Flat upper ledge runs horizontally across at around 18% of asset height, broad enough for one human character. Dark chocolate brown soil, charcoal basalt, a few burnt moss flecks, rusty orange sunset rim light along upper LEFT lip, deeply shadowed lower front face. Handcrafted crisp visible pixel clusters, subtle dithering, textured cracked earth and strata, matches a dramatic orange sunset over teal sea and destroyed medieval castle. Center the full chunk inside image with 4% transparent margin on every side. Actual fully transparent background alpha, no shadow beyond object, no water, sky, background, floating particles, vegetation, characters, text, UI, logos, or frame. ONLY ONE terrain chunk, not a sprite sheet. Wider than tall.

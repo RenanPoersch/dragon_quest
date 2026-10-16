@@ -19,6 +19,7 @@ namespace DragonQuest.Prototype
         private GameEnding ending;
         private Texture2D pixel;
         private GUIStyle titleStyle,textStyle,smallStyle,buttonStyle;
+        private CastleDestroyedPresentation aftermath;
 
         public void Initialize(Dictionary<string,GameObject> roots,PlayerMovement hero,Camera camera,CameraFollow cameraFollow,ObliqueScenery models)
         {maps=roots;player=hero;view=camera;follow=cameraFollow;scenery=models;}
@@ -28,6 +29,11 @@ namespace DragonQuest.Prototype
             ending=result;pages=EndingNarrative.Pages(result);page=0;shownFrame=Time.frameCount;
             foreach(GameObject map in maps.Values) map.SetActive(false);
             player.SetMovementEnabled(false);player.gameObject.SetActive(false);follow.enabled=false;
+            if(result==GameEnding.CastleDestroyed)
+            {
+                aftermath=new CastleDestroyedPresentation();
+                return;
+            }
             scenery.Show("Cena final / "+result,ObliqueScenery.EndingSceneData(result),transform);
             view.orthographic=true;view.rect=new Rect(0,0,1,1);view.ResetAspect();
             view.transform.rotation=Quaternion.AngleAxis(ObliqueProjection.YawDegrees,Vector3.forward)
@@ -38,6 +44,12 @@ namespace DragonQuest.Prototype
         }
         private void Update()
         {
+            if(aftermath!=null)
+            {
+                aftermath.Update(Time.unscaledDeltaTime);
+                if(aftermath.Sequence.IsComplete) SceneManager.LoadScene(SceneManager.GetActiveScene().path);
+                return;
+            }
             if(pages==null||page>=pages.Length-1||Time.frameCount<=shownFrame||!Application.isFocused) return;
             Keyboard keyboard=Keyboard.current;
             if(keyboard!=null&&(keyboard.eKey.wasPressedThisFrame||keyboard.spaceKey.wasPressedThisFrame||keyboard.enterKey.wasPressedThisFrame)) page++;
@@ -45,6 +57,7 @@ namespace DragonQuest.Prototype
         private void OnGUI()
         {
             if(pages==null) return;
+            if(aftermath!=null) {aftermath.Draw();return;}
             EnsureStyles();
             float scale=Mathf.Min(Screen.width/1280f,Screen.height/720f);
             Matrix4x4 previous=GUI.matrix;
@@ -72,6 +85,6 @@ namespace DragonQuest.Prototype
             textStyle=PrototypeTypography.Style(GUI.skin.label,24);textStyle.wordWrap=true;textStyle.normal.textColor=Color.white;
             smallStyle=PrototypeTypography.Style(textStyle,16);buttonStyle=PrototypeTypography.Style(GUI.skin.button,20);
         }
-        private void OnDestroy() {if(pixel!=null) Destroy(pixel);}
+        private void OnDestroy() {aftermath?.Dispose();if(pixel!=null) Destroy(pixel);}
     }
 }
