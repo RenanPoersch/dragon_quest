@@ -57,15 +57,19 @@ namespace DragonQuest.Prototype
                 {
                     Fill(viewport, Color.black);
                     float scale = Mathf.Min(viewport.width / 1280f, viewport.height / 720f);
-                    GUI.matrix = Matrix4x4.TRS(new Vector3(viewport.x + (viewport.width - 1280 * scale) / 2,
-                        viewport.y + (viewport.height - 720 * scale) / 2, 0), Quaternion.identity, new Vector3(scale, scale, 1));
+                    var frame = new Rect(viewport.x + (viewport.width - 1280 * scale) / 2,
+                        viewport.y + (viewport.height - 720 * scale) / 2, 1280 * scale, 720 * scale);
+                    GUI.matrix = Matrix4x4.TRS(new Vector3(frame.x, frame.y, 0),
+                        Quaternion.identity, new Vector3(scale, scale, 1));
                     GUI.BeginGroup(new Rect(0, 0, 1280, 720));
                     DrawSea();
                     DrawShipAndParty();
                     DrawNarrative();
-                    Fill(new Rect(0, 0, 1280, 24), new Color(.015f, .025f, .04f));
-                    Fill(new Rect(0, 696, 1280, 24), new Color(.015f, .025f, .04f));
                     GUI.EndGroup();
+                    // Rotation and fractional scaling can leak a hull pixel past an IMGUI clip.
+                    // Mask the complete letterbox last, outside that clip, in screen coordinates.
+                    GUI.matrix = Matrix4x4.identity;
+                    MaskFrame(viewport, new Rect(frame.x, frame.y + 24 * scale, frame.width, 672 * scale));
                 }
                 GUI.matrix = Matrix4x4.identity;
                 Fill(viewport, new Color(0, 0, 0, Sequence.BlackOpacity));
@@ -165,6 +169,19 @@ namespace DragonQuest.Prototype
 
         private static void Fill(Rect area, Color color)
         { GUI.color = color; GUI.DrawTexture(area, Texture2D.whiteTexture); }
+
+        private static void MaskFrame(Rect viewport, Rect picture)
+        {
+            // Round inward so even a fractional edge cannot leave an uncovered pixel row.
+            float left = Mathf.Ceil(picture.xMin), right = Mathf.Floor(picture.xMax);
+            float top = Mathf.Ceil(picture.yMin), bottom = Mathf.Floor(picture.yMax);
+            Fill(new Rect(viewport.xMin, viewport.yMin, viewport.width, top - viewport.yMin), Color.black);
+            Fill(new Rect(viewport.xMin, bottom, viewport.width, viewport.yMax - bottom), Color.black);
+            if (left > viewport.xMin)
+                Fill(new Rect(viewport.xMin, top, left - viewport.xMin, bottom - top), Color.black);
+            if (right < viewport.xMax)
+                Fill(new Rect(right, top, viewport.xMax - right, bottom - top), Color.black);
+        }
 
         private static Texture2D PixelTexture(string resource, int height, bool readable = false)
         {
