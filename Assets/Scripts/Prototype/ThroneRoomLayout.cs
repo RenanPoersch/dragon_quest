@@ -11,7 +11,7 @@ namespace DragonQuest.Prototype
         public static Quaternion CameraRotation => new Quaternion((float)Math.Sin(PitchDegrees*Math.PI/360),0,0,(float)Math.Cos(PitchDegrees*Math.PI/360));
         public static readonly Rect Bounds=new Rect(-10,-8,20,16);
         public static readonly Vector2 Spawn=new Vector2(0,-4.6f), Exit=new Vector2(0,-5.65f);
-        public static readonly Vector2 King=new Vector2(0,5), Spirit=new Vector2(2.1f,4.8f), Audience=new Vector2(0,4);
+        public static readonly Vector2 King=new Vector2(0,5), Spirit=new Vector2(-2.1f,4.8f), Audience=new Vector2(0,4);
         public static readonly Vector2[] Floor={ new Vector2(.04f,.99f),new Vector2(.14f,.71f),new Vector2(.35f,.71f),
             new Vector2(.39f,.55f),new Vector2(.61f,.55f),new Vector2(.65f,.71f),new Vector2(.86f,.71f),new Vector2(.96f,.99f) };
         private static readonly Vector2[] Footprint={ new Vector2(-.31f,-.34f),new Vector2(.31f,-.34f),
