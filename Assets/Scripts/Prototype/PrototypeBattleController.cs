@@ -54,6 +54,8 @@ namespace DragonQuest.Prototype
         private System.Func<string> currentLocation = () => PrototypeTravel.World;
         public string BattleLocationId { get; private set; } = PrototypeTravel.World;
         public void SetLocationProvider(System.Func<string> provider) => currentLocation = provider ?? (() => PrototypeTravel.World);
+        public bool AreRandomEncountersEnabled => randomEncounters.IsEnabled;
+        public void SetRandomEncountersEnabled(bool enabled) => randomEncounters.SetEnabled(enabled, currentLocation());
         public bool IsActive { get; private set; }
         public bool IsMenuOpen { get; private set; }
         public bool IsBusy => HasEnded || IsActive || IsMenuOpen || otherMenuOpen();
@@ -106,6 +108,7 @@ namespace DragonQuest.Prototype
             showEnding=endingPresentation;
             trackingWalk = false;
             randomEncounters.Reset(currentLocation());
+            randomEncounters.SetEnabled(true, currentLocation());
         }
 
         public void RestoreEnding(GameEnding ending)
@@ -128,7 +131,7 @@ namespace DragonQuest.Prototype
 
         public bool StartRandomBattle()
         {
-            if (IsBusy || dialogue.IsOpen || !Party.HasLivingMembers) return false;
+            if (!AreRandomEncountersEnabled || IsBusy || dialogue.IsOpen || !Party.HasLivingMembers) return false;
             RandomEncounterType type = RandomEncounterRules.TypeAt(currentLocation());
             if (type == RandomEncounterType.None) return false;
             StartEncounter(PrototypeBattleFactory.CreateRegionEncounter(Party, type, UnityEngine.Random.Range(1, 4)), false);

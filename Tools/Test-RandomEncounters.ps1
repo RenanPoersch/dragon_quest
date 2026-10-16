@@ -29,6 +29,7 @@ $testArguments += Join-Path $testProjectRoot 'Assets/Scripts/Prototype/Prototype
 $testArguments += Join-Path $testProjectRoot 'Assets/Scripts/Prototype/PrototypeShopFactory.cs'
 $testArguments += Join-Path $testProjectRoot 'Tests/RandomEncounterChecks.cs'
 $testArguments += Join-Path $testProjectRoot 'Assets/Scripts/Prototype/BattleAnimationCatalog.cs'
+$testArguments += Join-Path $testProjectRoot 'Assets/Scripts/Prototype/CastleMeteorPresentation.cs'
 & $testDotnet $testCsc.FullName @testArguments
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 $testRuntimeConfig = @{ runtimeOptions = @{ tfm = $testReferenceDirectory.Name; framework = @{ name = 'Microsoft.NETCore.App'; version = $testRuntimeFolder.Name } } }

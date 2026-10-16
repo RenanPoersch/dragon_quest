@@ -26,7 +26,7 @@ internal static class CheatChecks
         Check(!party.HasInfiniteLimit && !actors[0].Limit.IsReady, "Cheats start disabled.");
         party.SetInfiniteLimit(true);
         Check(actors.All(a => a.Limit.IsReady) && !enemy.Limit.IsReady, "Existing party actors share unlimited LIMIT; enemies do not.");
-        Check(BattleCommandMenu.Root(actors[0])[0].Label == "Limit", "Ready LIMIT replaces Attack in the command menu immediately.");
+        Check(BattleCommandMenu.Root(actors[0])[0].Ability?.UsesLimit == true, "Ready LIMIT replaces Attack in the command menu immediately.");
         int casts = 0;
         for (int turn = 0; turn < 8; turn++)
         {

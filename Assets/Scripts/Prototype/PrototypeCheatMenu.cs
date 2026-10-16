@@ -9,6 +9,7 @@ namespace DragonQuest.Prototype
     public sealed class PrototypeCheatMenu : MonoBehaviour
     {
         private const int WindowId = 781399;
+        private const int OptionCount = 5;
         private PlayerMovement player;
         private PrototypeBattleController battle;
         private PrototypeSaveController saves;
@@ -64,6 +65,12 @@ namespace DragonQuest.Prototype
                 battle.Party.SetMaxLevel(battle.IsActive ? battle.Session : null);
                 message = "Toda a equipe esta no nivel 99. Salve a jornada para manter os niveis.";
             }
+            else if (option == 3)
+            {
+                battle.SetRandomEncountersEnabled(!battle.AreRandomEncountersEnabled);
+                message = battle.AreRandomEncountersEnabled ? "Encontros aleatorios reativados."
+                    : "Sem encontros aleatorios. Batalhas por interacao continuam disponiveis.";
+            }
             else Close();
         }
 
@@ -82,7 +89,7 @@ namespace DragonQuest.Prototype
             float scale = Mathf.Min(Screen.width / 1280f, Screen.height / 720f);
             GUI.matrix = Matrix4x4.TRS(new Vector3((Screen.width - 1280 * scale) / 2,
                 (Screen.height - 720 * scale) / 2, 0), Quaternion.identity, new Vector3(scale, scale, 1));
-            GUI.ModalWindow(WindowId, new Rect(310, 104, 660, 512), DrawMenu, "", window);
+            GUI.ModalWindow(WindowId, new Rect(310, 72, 660, 576), DrawMenu, "", window);
             GUI.matrix = previousMatrix; GUI.depth = previousDepth; GUI.color = previousColor;
         }
 
@@ -93,20 +100,21 @@ namespace DragonQuest.Prototype
             {
                 KeyCode key = current.keyCode;
                 current.Use();
-                if (key == KeyCode.UpArrow || key == KeyCode.W) selected = (selected + 3) % 4;
-                else if (key == KeyCode.DownArrow || key == KeyCode.S) selected = (selected + 1) % 4;
+                if (key == KeyCode.UpArrow || key == KeyCode.W) selected = (selected + OptionCount - 1) % OptionCount;
+                else if (key == KeyCode.DownArrow || key == KeyCode.S) selected = (selected + 1) % OptionCount;
                 else if (key == KeyCode.Return || key == KeyCode.KeypadEnter || key == KeyCode.Space) Activate(selected);
                 if (!IsOpen) return;
             }
             GUI.color = new Color(.04f, .07f, .14f);
-            GUI.DrawTexture(new Rect(0, 0, 660, 512), Texture2D.whiteTexture);
+            GUI.DrawTexture(new Rect(0, 0, 660, 576), Texture2D.whiteTexture);
             GUI.color = Color.white;
             GUI.Label(new Rect(30, 20, 600, 42), "CHEAT ENGINE", title);
             GUI.Label(new Rect(30, 65, 600, 28), "` abre/fecha  |  Esc fecha  |  Setas + Enter ou clique", small);
             string[] labels = {
                 "LIMIT infinito: " + (battle.Party.HasInfiniteLimit ? "LIGADO" : "DESLIGADO"),
                 "Gold infinito: " + (progress.HasInfiniteGold ? "LIGADO" : "DESLIGADO"),
-                "Nivel 99 / toda a equipe", "Fechar" };
+                "Nivel 99 / toda a equipe",
+                "Encontros aleatorios: " + (battle.AreRandomEncountersEnabled ? "ATIVADOS" : "DESATIVADOS"), "Fechar" };
             for (int i = 0; i < labels.Length; i++)
             {
                 Rect rect = new Rect(30, 111 + i * 64, 600, 52);
@@ -116,9 +124,9 @@ namespace DragonQuest.Prototype
                 if (GUI.Button(rect, (selected == i ? "> " : "") + labels[i], button)) Activate(i);
             }
             GUI.color = Color.white;
-            GUI.Label(new Rect(30, 377, 600, 58), message, text);
-            GUI.Label(new Rect(30, 450, 600, 48),
-                "LIMIT e gold valem nesta sessao. Desligar restaura carga e saldo originais. Nivel 99 permanece ao salvar.", small);
+            GUI.Label(new Rect(30, 441, 600, 58), message, text);
+            GUI.Label(new Rect(30, 514, 600, 48),
+                "LIMIT, gold e encontros valem nesta sessao. Nivel 99 permanece ao salvar.", small);
         }
 
         private void EnsureStyles()

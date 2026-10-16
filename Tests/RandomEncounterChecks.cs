@@ -39,6 +39,36 @@ internal static class RandomEncounterChecks
         for (int i = 0; i < 29; i++) Check(!maximum.Advance("world", 1, false, false), "Random maximum ignored");
         Check(maximum.Advance("world", 1, false, false), "Random maximum encounter missing");
     }
+    private static void DisabledEncounters()
+    {
+        int rolls = 0;
+        var meter = new RandomEncounterRules(() => { rolls++; return 0; });
+        Check(meter.IsEnabled, "New sessions enable random encounters.");
+        meter.Reset("world");
+        for (int i = 0; i < 17; i++) Check(!meter.Advance("world", 1, false, false), "Fixture approaches an encounter.");
+        meter.SetEnabled(false, "world");
+        int before = rolls;
+        foreach (string map in new[] { "world", "west-forest", "east-forest", "city" })
+        {
+            meter.Reset(map);
+            Check(!meter.IsEnabled, "Changing maps does not enable encounters.");
+            Check(!meter.Advance(map, 1, false, true), "Disabled teleport cannot encounter.");
+            for (int i = 0; i < 60; i++)
+                Check(!meter.Advance(map, 1, false, false), "Disabled walking cannot encounter or build up a pending encounter.");
+        }
+        Check(rolls == before, "Disabled movement, map changes and resets do not roll random distances.");
+        meter.SetEnabled(true, "east-forest");
+        Check(meter.IsEnabled && rolls == before + 1, "Re-enabling starts a fresh meter for the current map.");
+        for (int i = 0; i < 8; i++) Check(!meter.Advance("east-forest", 1, false, false), "Re-enabling gives the full walking grace period.");
+        meter.SetEnabled(true, "east-forest");
+        Check(rolls == before + 1, "Applying the same setting does not reset the meter.");
+        Check(meter.Advance("east-forest", 1, false, false), "Encounters resume after the grace period.");
+        meter.SetEnabled(false, "east-forest");
+        meter.SetEnabled(true, "world");
+        for (int i = 0; i < 17; i++) Check(!meter.Advance("world", 1, false, false), "World grace resumes at the world distance.");
+        Check(meter.Advance("world", 1, false, false), "World encounters also resume.");
+    }
+
     private static void Encounters()
     {
         foreach (RandomEncounterType type in new[] { RandomEncounterType.Pirate, RandomEncounterType.Golem, RandomEncounterType.Wolf })
@@ -90,7 +120,7 @@ internal static class RandomEncounterChecks
         Check(BattleAnimationCatalog.Resource("tyrant", CastleBattleRules.RoyalStrike) == "TyrantRoyalStrike", "Royal strike registration");
         Check(BattleAnimationCatalog.Resource("tyrant", CastleBattleRules.RoyalHeavy) == "TyrantRoyalHeavy", "Heavy registration");
         Check(BattleAnimationCatalog.Resource("tyrant", CastleBattleRules.PrepareMeteor) == "TyrantMeteorCharge", "Charge registration");
-        Check(BattleAnimationCatalog.Duration("tyrant", CastleBattleRules.Meteor) == 1.6f, "Meteor duration");
+        Check(BattleAnimationCatalog.Duration("tyrant", CastleBattleRules.Meteor) == CastleMeteorPresentation.Duration, "Meteor duration follows its presentation timing");
         Check(BattleAnimationCatalog.Resource("evil-spirit", PrototypeCastleBattleFactory.DrainLife) == "SpiritBattle", "Spirit cast registration");
         foreach (string id in new[] { "aren", "lia", "bram", "guard", "soldier", "pirate-1", "golem-2", "wolf-3", "tyrant", "evil-spirit" })
             Check(BattleAnimationCatalog.Idle(id) != null, "Missing fighter " + id);
@@ -102,5 +132,5 @@ internal static class RandomEncounterChecks
             Check(BattleAnimationCatalog.Frame(resource, 5, 1) == 3, "Animation overrun");
         }
     }
-    private static void Main() { Meter(); Encounters(); Animations(); Console.WriteLine(checks + " verificacoes de encontros e animacoes passaram."); }
+    private static void Main() { Meter(); DisabledEncounters(); Encounters(); Animations(); Console.WriteLine(checks + " verificacoes de encontros e animacoes passaram."); }
 }
