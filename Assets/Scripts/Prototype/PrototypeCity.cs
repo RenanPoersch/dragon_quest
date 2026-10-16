@@ -15,6 +15,7 @@ namespace DragonQuest.Prototype
         private readonly AncientSecrets secrets = new AncientSecrets();
         private PrototypeTravel navigation;
         private PrototypeBattleController battle;
+        private TyrantAudience audience;
         private PrototypeSaveController saves;
         private ExplorationProgress progress;
         private readonly DragonProgress dragon = new DragonProgress();
@@ -112,6 +113,9 @@ namespace DragonQuest.Prototype
             battle = gameObject.AddComponent<PrototypeBattleController>();
             var cheats = gameObject.AddComponent<PrototypeCheatMenu>();
             battle.Initialize(player.GetComponent<PlayerMovement>(), dialogue, progress, () => shops.IsOpen || saves.IsMenuVisible || cheats.BlocksInput,dragon,secrets,locations.RecoverAtInn,endings.Show);
+            audience = new GameObject("Party diante do tirano").AddComponent<TyrantAudience>();
+            audience.transform.SetParent(transform, false);
+            audience.Initialize(player.GetComponent<PlayerMovement>(), () => battle.Party, scenery);
             shops.Initialize(player.GetComponent<PlayerMovement>(), dialogue, battle, progress);
             locations.Initialize(mapRoots, player.GetComponent<PlayerMovement>(), cameraFollow, navigation,
                 () => dialogue.IsOpen || battle.IsBusy);
@@ -295,7 +299,8 @@ namespace DragonQuest.Prototype
             scenery.PixelPerson(spirit.transform, "SpiritBattle");
             spirit.AddComponent<ThroneRoomDepth>();spirit.SetActive(false);
             TyrantInteraction tyrant=king.AddComponent<TyrantInteraction>();
-            tyrant.Initialize(()=>battle?.Party,()=>battle.StartCastleBattle(),spirit);
+            tyrant.Initialize(()=>battle?.Party,()=>battle.StartCastleBattle(),spirit,
+                conversation=>audience.Begin(king.transform,conversation));
             interactions.Add(tyrant);
             return castle;
         }

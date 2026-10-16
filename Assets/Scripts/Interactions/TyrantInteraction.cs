@@ -9,10 +9,11 @@ namespace DragonQuest.Interactions
     {
         private Func<PartyProgress> getParty;
         private Action startBattle;
+        private Action<DialogueController> presentParty;
         private GameObject spirit;
         public override string Prompt => "Enfrentar o tirano";
-        public void Initialize(Func<PartyProgress> party,Action start,GameObject spiritModel)
-        {getParty=party;startBattle=start;spirit=spiritModel;}
+        public void Initialize(Func<PartyProgress> party,Action start,GameObject spiritModel,Action<DialogueController> partyPresentation=null)
+        {getParty=party;startBattle=start;spirit=spiritModel;presentParty=partyPresentation;}
         private bool Revealed()
         {
             PartyProgress party=getParty?.Invoke();
@@ -29,6 +30,7 @@ namespace DragonQuest.Interactions
             context.Dialogue.OpenWithCompletion("Tirano",startBattle,"Todo caminho nesta ilha termina diante do meu trono. Curvem-se, ou o proprio ceu caira sobre voces!",
                 Revealed()?"A Armadura draconica revela o espirito ao lado do rei. Derrote a sombra e preserve seu hospedeiro. Matar o rei apenas dara a ela um novo corpo."
                     :"Por um instante, uma segunda voz se mistura a dele. Ha algo alem de um homem no trono, mas voces ainda nao conseguem alcanca-lo.");
+            presentParty?.Invoke(context.Dialogue);
         }
     }
 }

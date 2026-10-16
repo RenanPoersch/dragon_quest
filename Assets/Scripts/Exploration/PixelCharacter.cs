@@ -30,12 +30,17 @@ namespace DragonQuest.Exploration
             bool teleported = teleportRevision != movement.TeleportRevision;
             teleportRevision = movement.TeleportRevision;
             walk.Advance(distance, Time.deltaTime, movement.HasMovementInput, teleported);
-            var facing = movement.IsSideView
-                ? movement.FacingDirection.x < 0 ? PixelDirection.Left : PixelDirection.Right
-                : PixelSpriteLayout.Facing(movement.IsFrontalView ? ObliqueProjection.GroundDirection(movement.FacingDirection)
-                    : movement.FacingDirection, diagonalAtlas != null);
+            Present(movement.FacingDirection, walk.Distance, walk.Walking, movement.IsFrontalView, movement.IsSideView);
+        }
+
+        public void Present(Vector2 direction, float distance, bool walking, bool frontalView = false, bool sideView = false)
+        {
+            var facing = sideView
+                ? direction.x < 0 ? PixelDirection.Left : PixelDirection.Right
+                : PixelSpriteLayout.Facing(frontalView ? ObliqueProjection.GroundDirection(direction)
+                    : direction, diagonalAtlas != null);
             var source = PixelSpriteLayout.IsDiagonal(facing) ? diagonalAtlas : atlas;
-            int pose = PixelSpriteLayout.WalkFrame(facing, walk.Distance, walk.Walking);
+            int pose = PixelSpriteLayout.WalkFrame(facing, distance, walking);
             var next = source.Sprites[pose];
             if (sprite.sprite != next) sprite.sprite = next;
         }

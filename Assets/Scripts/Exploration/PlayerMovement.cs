@@ -36,6 +36,12 @@ namespace DragonQuest.Exploration
         public bool HasMovementInput => movement.sqrMagnitude > 0;
         public int TeleportRevision { get; private set; }
 
+        public void FaceTowards(Vector2 target)
+        {
+            Vector2 direction = target - (Vector2)transform.position;
+            if (direction.sqrMagnitude > 0.0001f) FacingDirection = direction.normalized;
+        }
+
         private void Awake()
         {
             body = GetComponent<Rigidbody2D>();
