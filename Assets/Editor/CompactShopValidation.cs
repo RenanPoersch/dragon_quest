@@ -41,7 +41,7 @@ public static class CompactShopValidation
             Assert(painting.filterMode == FilterMode.Point && painting.mipmapCount == 1,"sharp pixels: "+layout.MapId);
             float relativeArea = CompactShopLayout.CameraSize*CompactShopLayout.CameraSize*CompactShopLayout.ArtAspect
                 /(WeaponShopLayout.CameraSize*WeaponShopLayout.CameraSize*WeaponShopLayout.ArtAspect);
-            Assert(relativeArea < .4f,"shop occupies less than 40 percent of weapon shop area");
+            Assert(Math.Abs(relativeArea-1f)<.0001f && PrototypeInnLayout.CameraSize == CompactShopLayout.CameraSize && PrototypeInnLayout.ArtAspect == CompactShopLayout.ArtAspect,"all shops and inn share compact dimensions");
             Assert(root.GetComponentsInChildren<SpriteRenderer>().Length == 0 && root.GetComponentsInChildren<MeshRenderer>().Length == 2,"room is one full painting with counter depth");
             Assert(root.GetComponentsInChildren<PolygonCollider2D>().Length == 1,"painted counter has a physical footprint");
             foreach (Vector2[] outline in layout.Foregrounds)

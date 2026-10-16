@@ -24,13 +24,14 @@ public static class WeaponShopValidation
             UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(root,scene);
             root.AddComponent<WeaponShopPixelScenery>().Build();
             var painting = Resources.Load<Texture2D>("PixelArt/WeaponShopInterior");
-            Assert(painting != null && painting.width == 1672 && painting.height == 941,"complete weapon shop artwork is available");
+            Assert(painting != null && painting.width == 1447 && painting.height == 1087,"complete weapon shop artwork is available");
             Assert(painting.filterMode == FilterMode.Point && painting.mipmapCount == 1,"painting keeps sharp pixels");
             Assert(root.GetComponentsInChildren<SpriteRenderer>().Length == 0,"room uses the complete painting");
             Assert(root.GetComponentsInChildren<MeshRenderer>().Length == 4,"painting and three depth contours are present");
             Assert(root.GetComponentsInChildren<PolygonCollider2D>().Length == 3,"counter, anvil and chest footprints match the painting");
             foreach (Vector2[] outline in WeaponShopPixelScenery.Foregrounds)
                 Assert(PaintedInteriorScenery.Triangulate(outline).Length == (outline.Length-2)*3,"all depth contours triangulate");
+            Assert(WeaponShopLayout.CameraSize == CompactShopLayout.CameraSize && WeaponShopLayout.ArtAspect == CompactShopLayout.ArtAspect,"weapon shop matches compact shop dimensions");
             CheckNavigation(); CheckTravel(); CheckTrade();
 
             var cameraObject = new GameObject("Loja de armas / camera de validacao");
@@ -63,7 +64,7 @@ public static class WeaponShopValidation
                     camera.Render(); camera.Render(); Save(target,Path.Combine(output,"weapon-shop-"+resolution.x+"x"+resolution.y+".png"));
                     if (resolution.x == 1280 && resolution.y == 720)
                     {
-                        foreach (var place in new[] { ("counter",WeaponShopLayout.Counter),("forge",WeaponShopLayout.Ground(.30f,.45f)),("displays",WeaponShopLayout.Ground(.77f,.70f)) })
+                        foreach (var place in new[] { ("counter",WeaponShopLayout.Counter),("forge",WeaponShopLayout.Ground(.29f,.59f)),("displays",WeaponShopLayout.Ground(.79f,.68f)) })
                         {
                             Assert(WeaponShopLayout.IsWalkable(place.Item2),"preview position is walkable: "+place.Item1);
                             hero.localPosition = place.Item2; camera.Render(); Save(target,Path.Combine(output,"weapon-shop-"+place.Item1+".png"));
@@ -93,11 +94,11 @@ public static class WeaponShopValidation
     private static void CheckNavigation()
     {
         Assert(WeaponShopLayout.IsWalkable(WeaponShopLayout.Spawn) && WeaponShopLayout.IsWalkable(WeaponShopLayout.Exit),"entrance and exit are clear");
-        Assert(WeaponShopLayout.SafeSavedPosition(WeaponShopLayout.Ground(.56f,.48f)) == WeaponShopLayout.Spawn,"old saves inside the counter recover at entrance");
+        Assert(WeaponShopLayout.SafeSavedPosition(WeaponShopLayout.Ground(.56f,.47f)) == WeaponShopLayout.Spawn,"old saves inside the counter recover at entrance");
         Assert(WeaponShopLayout.SafeSavedPosition(WeaponShopLayout.Spawn) == WeaponShopLayout.Spawn,"valid save position is retained");
-        Assert(!WeaponShopLayout.IsWalkable(WeaponShopLayout.Ground(.19f,.44f)) && !WeaponShopLayout.IsWalkable(WeaponShopLayout.Ground(.87f,.50f)),"anvil and weapon racks block movement");
+        Assert(!WeaponShopLayout.IsWalkable(WeaponShopLayout.Ground(.19f,.46f)) && !WeaponShopLayout.IsWalkable(WeaponShopLayout.Ground(.87f,.50f)),"anvil and weapon racks block movement");
         var reached = new HashSet<Vector2Int>(); var queue = new Queue<Vector2Int>();
-        var start = new Vector2Int(107,160); reached.Add(start); queue.Enqueue(start);
+        var start = new Vector2Int(100,150); reached.Add(start); queue.Enqueue(start);
         var directions = new[] { Vector2Int.up,Vector2Int.down,Vector2Int.left,Vector2Int.right };
         while (queue.Count > 0)
         {
@@ -109,12 +110,12 @@ public static class WeaponShopValidation
                 reached.Add(n); queue.Enqueue(n);
             }
         }
-        foreach (Vector2 target in new[] { WeaponShopLayout.Exit,WeaponShopLayout.Counter,WeaponShopLayout.Ground(.30f,.45f),WeaponShopLayout.Ground(.30f,.70f),WeaponShopLayout.Ground(.77f,.70f) })
+        foreach (Vector2 target in new[] { WeaponShopLayout.Exit,WeaponShopLayout.Counter,WeaponShopLayout.Ground(.29f,.59f),WeaponShopLayout.Ground(.30f,.70f),WeaponShopLayout.Ground(.79f,.68f) })
         {
             Vector2 uv = WeaponShopLayout.ImagePoint(target);
             Assert(reached.Any(p=>Vector2.Distance(new Vector2(p.x/200f,p.y/200f),uv)<.009f),"entrance has connected route to "+uv);
         }
-        foreach (Vector2 uv in new[] { new Vector2(.535f,.70f),new Vector2(.30f,.58f),new Vector2(.70f,.65f) })
+        foreach (Vector2 uv in new[] { new Vector2(.50f,.70f),new Vector2(.30f,.60f),new Vector2(.70f,.65f) })
             foreach (Vector2 delta in new[] { new Vector2(8,0),new Vector2(-8,0),new Vector2(0,8),new Vector2(0,-8) })
                 Assert(WeaponShopLayout.IsWalkable(WeaponShopLayout.ConstrainMove(WeaponShopLayout.Ground(uv.x,uv.y),delta)),"large movement stays on walkable floor");
     }
@@ -124,6 +125,7 @@ public static class WeaponShopValidation
         Assert(travel.TryTravel(PrototypeTravel.City,out _) && travel.TryTravel(WeaponShopLayout.MapId,out arrival) && arrival == WeaponShopLayout.Spawn,"city door leads to new weapon shop entrance");
         Assert(!travel.TryEnter(arrival,false,out _),"arrival does not immediately exit");
         Assert(travel.TryRestore(WeaponShopLayout.MapId,new Vector2(0,-1.89f)),"legacy shop saves still load");
+        Assert(!WeaponShopLayout.Bounds.Contains(new Vector2(9,0)) && travel.TryRestore(WeaponShopLayout.MapId,new Vector2(9,0)) && WeaponShopLayout.SafeSavedPosition(new Vector2(9,0)) == WeaponShopLayout.Spawn,"saves from the former wide painting recover at compact entrance");
         Assert(travel.TryEnter(WeaponShopLayout.Exit,false,out _) && travel.Current.Id == PrototypeTravel.City,"painted threshold returns to city");
     }
     private static void CheckTrade()

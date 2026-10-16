@@ -25,13 +25,14 @@ public static class InnValidation
             UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(root,scene);
             root.AddComponent<InnPixelScenery>().Build();
             Texture2D painting = Resources.Load<Texture2D>("PixelArt/InnInterior");
-            Assert(painting != null && painting.width == 1672 && painting.height == 941,"complete panorama is available");
+            Assert(painting != null && painting.width == 1447 && painting.height == 1087,"complete panorama is available");
             Assert(painting.filterMode == FilterMode.Point && painting.mipmapCount == 1,"painting keeps sharp pixels");
             Assert(root.GetComponentsInChildren<SpriteRenderer>().Length == 0,"room is a single painting without the old prop sprites");
-            Assert(root.GetComponentsInChildren<MeshRenderer>().Length == 5,"painting includes registered depth contours");
-            Assert(root.GetComponentsInChildren<PolygonCollider2D>().Length == 2,"table and counter footprints use the painted plan");
+            Assert(root.GetComponentsInChildren<MeshRenderer>().Length == 2,"painting includes registered depth contours");
+            Assert(root.GetComponentsInChildren<PolygonCollider2D>().Length == 3,"two beds and counter footprints use the painted plan");
             foreach (Vector2[] outline in InnPixelScenery.Foregrounds)
                 Assert(InnPixelScenery.Triangulate(outline).Length == (outline.Length-2)*3,"concave occlusion outlines triangulate completely");
+            Assert(PrototypeInnLayout.CameraSize == CompactShopLayout.CameraSize && PrototypeInnLayout.ArtAspect == CompactShopLayout.ArtAspect,"inn matches compact shop dimensions");
             CheckNavigation();
             CheckTravel();
 
@@ -68,7 +69,7 @@ public static class InnValidation
                     camera.Render(); camera.Render(); Save(target,Path.Combine(output,"inn-"+resolution.x+"x"+resolution.y+".png"));
                     if (resolution.y == 720 && resolution.x == 1280)
                     {
-                        foreach (var place in new[] { ("reception",PrototypeInnLayout.Reception),("beds",PrototypeInnLayout.Ground(.73f,.383f)),("behind-table",PrototypeInnLayout.Ground(.21f,.53f)) })
+                        foreach (var place in new[] { ("reception",PrototypeInnLayout.Reception),("beds",PrototypeInnLayout.Ground(.38f,.55f)),("hearth",PrototypeInnLayout.Ground(.27f,.62f)) })
                         {
                             Assert(PrototypeInnLayout.IsWalkable(place.Item2),"preview position is reachable: "+place.Item1);
                             hero.localPosition = place.Item2; camera.Render(); Save(target,Path.Combine(output,"inn-"+place.Item1+".png"));
@@ -95,11 +96,11 @@ public static class InnValidation
     private static void CheckNavigation()
     {
         Assert(PrototypeInnLayout.IsWalkable(PrototypeInnLayout.Spawn) && PrototypeInnLayout.IsWalkable(PrototypeInnLayout.Exit),"entrance and exit are clear");
-        Assert(PrototypeInnLayout.SafeSavedPosition(PrototypeInnLayout.Ground(.75f,.71f)) == PrototypeInnLayout.Spawn,"saves inside the new counter return to entrance");
+        Assert(PrototypeInnLayout.SafeSavedPosition(PrototypeInnLayout.Ground(.75f,.43f)) == PrototypeInnLayout.Spawn,"saves inside the new counter return to entrance");
         Assert(PrototypeInnLayout.SafeSavedPosition(PrototypeInnLayout.Spawn) == PrototypeInnLayout.Spawn,"valid saved positions stay intact");
         Assert(!PrototypeInnLayout.IsWalkable(PrototypeInnLayout.Ground(.15f,.2f)) && !PrototypeInnLayout.IsWalkable(PrototypeInnLayout.Ground(.60f,.24f)),"walls and beds cannot be walked through");
         var reached = new HashSet<Vector2Int>(); var queue = new Queue<Vector2Int>();
-        var start = new Vector2Int(94,160); reached.Add(start); queue.Enqueue(start);
+        var start = new Vector2Int(100,150); reached.Add(start); queue.Enqueue(start);
         var directions = new[] { Vector2Int.up,Vector2Int.down,Vector2Int.left,Vector2Int.right };
         while (queue.Count > 0)
         {
@@ -111,13 +112,13 @@ public static class InnValidation
                 reached.Add(n); queue.Enqueue(n);
             }
         }
-        foreach (Vector2 target in new[] { PrototypeInnLayout.Exit,PrototypeInnLayout.Reception,PrototypeInnLayout.Ground(.60f,.383f),
-            PrototypeInnLayout.Ground(.73f,.383f),PrototypeInnLayout.Ground(.87f,.383f),PrototypeInnLayout.Ground(.10f,.77f),PrototypeInnLayout.Ground(.2f,.42f) })
+        foreach (Vector2 target in new[] { PrototypeInnLayout.Exit,PrototypeInnLayout.Reception,PrototypeInnLayout.Ground(.38f,.55f),
+            PrototypeInnLayout.Ground(.27f,.62f),PrototypeInnLayout.Ground(.78f,.70f) })
         {
             Vector2 uv = PrototypeInnLayout.ImagePoint(target);
             Assert(reached.Any(p=>Vector2.Distance(new Vector2(p.x/200f,p.y/200f),uv)<.009f),"connected walking route: "+uv);
         }
-        foreach (Vector2 startUV in new[] { new Vector2(.55f,.55f),new Vector2(.46f,.65f),new Vector2(.73f,.5f) })
+        foreach (Vector2 startUV in new[] { new Vector2(.50f,.70f),new Vector2(.30f,.65f),new Vector2(.73f,.61f) })
         {
             Vector2 p = PrototypeInnLayout.Ground(startUV.x,startUV.y);
             foreach (Vector2 delta in new[] { new Vector2(8,0),new Vector2(-8,0),new Vector2(0,8),new Vector2(0,-8) })
@@ -131,6 +132,7 @@ public static class InnValidation
         Vector2 arrival = default;
         Assert(travel.TryTravel(PrototypeTravel.City,out _) && travel.TryTravel(PrototypeTravel.Inn,out arrival) && arrival == PrototypeInnLayout.Spawn,"city door reaches painted inn entrance");
         Assert(!travel.TryEnter(arrival,false,out _),"arrival does not immediately exit");
+        Assert(!PrototypeInnLayout.Bounds.Contains(new Vector2(9,0)) && travel.TryRestore(PrototypeTravel.Inn,new Vector2(9,0)) && PrototypeInnLayout.SafeSavedPosition(new Vector2(9,0)) == PrototypeInnLayout.Spawn,"saves from the former wide inn recover at compact entrance");
         Assert(travel.TryEnter(PrototypeInnLayout.Exit,false,out _) && travel.Current.Id == PrototypeTravel.City,"painted threshold returns to city");
     }
     private static Transform Person(Transform root,PixelSpriteLibrary people,string name,Vector2 ground,string atlas,int frame)

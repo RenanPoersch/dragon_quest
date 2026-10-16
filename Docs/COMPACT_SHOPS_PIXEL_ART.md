@@ -2,7 +2,7 @@
 
 As duas lojas têm cenários completos em pixel art: piso, paredes, iluminação, balcão, prateleiras e mercadorias fazem parte da pintura. A loja de itens usa madeira clara, verde e frascos de poções, éteres e ervas. A loja de matérias usa violeta, madeira escura e orbes coloridos. O corredor central conecta a entrada ao atendimento sem espalhar objetos pela passagem.
 
-As plantas 4:3 usam altura de câmera de 3,6 unidades, contra 5 na loja de armas. A área projetada corresponde a aproximadamente 39% da área da loja de armas. Personagens mantêm o tamanho físico do jogo; as lojas são menores. A câmera contém a pintura inteira em telas 16:9, 16:10 e 4:3, com margens quando necessário.
+As plantas 4:3 usam altura de câmera de 3,6 unidades. A [loja de armas](WEAPON_SHOP_PIXEL_ART.md) e a [Pousada](INN_PIXEL_ART.md) foram depois redesenhadas com a mesma metragem compacta. Todas mantêm a mesma escala física dos personagens. A área de cada sala corresponde a aproximadamente 39% das antigas versões largas de armas e Pousada. A câmera contém a pintura inteira em telas 16:9, 16:10 e 4:3, com margens quando necessário.
 
 Imagens criadas com o imagegen integrado, em modo de geração, e preservadas nos PNGs originais de 1448×1086, sem edição ou redimensionamento:
 

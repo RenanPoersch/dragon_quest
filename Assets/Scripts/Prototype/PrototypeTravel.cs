@@ -116,6 +116,8 @@ namespace DragonQuest.Prototype
                 || float.IsInfinity(position.x) || float.IsInfinity(position.y)
                 || !map.Bounds.Contains(position) && (mapId != City || !PrototypeCityLayout.LegacyBounds.Contains(position))
                 && (!map.IsShop || !LegacyShopBounds.Contains(position))
+                && (mapId != Inn || !PrototypeInnLayout.LegacyBounds.Contains(position))
+                && (mapId != WeaponShopLayout.MapId || !WeaponShopLayout.LegacyBounds.Contains(position))
                 && (mapId != Ruins || !PrototypeRuinsLayout.LegacyBounds.Contains(position))
                 && (mapId != Volcano || !PrototypeVolcanoLayout.LegacyBounds.Contains(position))
                 || mapId == Volcano && !CanEnterVolcano) return false;
