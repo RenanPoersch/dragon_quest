@@ -538,6 +538,7 @@ namespace DragonQuest.Prototype
             var shadow = new ObliqueMeshData(); shadow.Shadow(0, 0, 0.34f, 0.22f);
             var shade = Show("Sombra no chao", shadow, parent); shade.localPosition = Vector3.back * (height - 0.035f);
             var visual = PixelSprites.Create(parent, atlas, frame, animated); visual.localPosition = Vector3.back * height;
+            if (atlas == "SpiritBattle") SpiritFloatAnimation.Attach(visual);
             return visual;
         }
         public Transform Spirit(Transform parent) => Show("Espirito maligno",SpiritData(),parent);

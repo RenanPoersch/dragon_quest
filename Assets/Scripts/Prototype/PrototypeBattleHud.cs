@@ -51,6 +51,7 @@ namespace DragonQuest.Prototype
         public void Initialize(PrototypeBattleController battleController, PixelSpriteLibrary sprites = null)
         { controller = battleController; pixelSprites = sprites; }
 
+        private float spiritFloatStartedAt;
         private CombatantDefinition observedDefinition;
         private bool observedLimitReady;
 
@@ -61,6 +62,7 @@ namespace DragonQuest.Prototype
             {
                 observedBattle = battle; observedActor = null; seenChanges.Clear(); numbers.Clear();
                 defeatedEnemies.Reset(); castCounter.Reset();
+                spiritFloatStartedAt = Time.unscaledTime;
                 preferredEnemyTarget = null;
                 // Optional map-specific art; the menu and fighter anchors do not depend on the background.
                 background = Resources.Load<Texture2D>("BattleBackgrounds/" + controller.BattleLocationId);
@@ -289,11 +291,12 @@ namespace DragonQuest.Prototype
             foreach (CombatantState participant in observedBattle.Combatants)
             {
                 if (!defeatedEnemies.IsVisible(participant, Time.unscaledTime)) continue;
+                Rect groundFigure = FigureRect(participant, false);
                 Rect figure = FigureRect(participant);
                 float castStep = controller.IsPresentingAction && controller.PresentingActor == participant
                     && HeroCastAnimation.IsCasting(controller.PresentingAbility)
                     ? HeroCastAnimation.Step(Time.unscaledTime - controller.ActionStartedAt, controller.ActionDuration) : 0;
-                RectBox(new Rect(figure.x + castStep - 8, figure.yMax - 8, figure.width + 16, 10),
+                RectBox(new Rect(figure.x + castStep - 8, groundFigure.yMax - 8, figure.width + 16, 10),
                     new Color(0, 0, 0, .25f * defeatedEnemies.Alpha(participant, Time.unscaledTime)));
                 DrawFighter(figure, participant);
                 if (participant.IsAlive && participant == (controller.IsPresentingAction ? controller.PresentingActor : observedActor))
@@ -376,7 +379,7 @@ namespace DragonQuest.Prototype
             GUI.Label(rect, label, castNumber);
         }
 
-        private Rect FigureRect(CombatantState participant)
+        private Rect FigureRect(CombatantState participant, bool floating = true)
         {
             int index = 0;
             foreach (CombatantState other in observedBattle.Combatants)
@@ -384,7 +387,11 @@ namespace DragonQuest.Prototype
             if (participant.Team == CombatTeam.Party) return new Rect(925 + (index % 2) * 60,
                 background != null ? 125 + index * 78 : 103 + index * 83, 64, 90);
             if (participant.Id == DragonProgress.EnemyId) return new Rect(160, 110, 350, 250);
-            if (participant.Id == CastleBattleRules.SpiritId) return new Rect(215, 90, 170, 175);
+            if (participant.Id == CastleBattleRules.SpiritId)
+            {
+                float lift = floating ? 175 * SpiritFloatAnimation.HeightAt(Time.unscaledTime - spiritFloatStartedAt) : 0;
+                return new Rect(215, 90 - lift, 170, 175);
+            }
             if (participant.Id == CastleBattleRules.TyrantId) return new Rect(410, 169, 80, 110);
             return new Rect(260 + index * 145, 155 + index * 72, 80, 110);
         }
