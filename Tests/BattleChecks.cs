@@ -199,7 +199,7 @@ internal static class BattleChecks
         Assert(BattleCommandMenu.Root(bare)[0].Ability == MateriaResolver.Attack, "Limit incompleto deve manter Ataque.");
         bare.Limit.Restore(100);
         root = BattleCommandMenu.Root(bare);
-        Assert(root.Count == 3 && root[0].Label == "Limit" && root[0].Ability == MateriaResolver.LimitBreak,
+        Assert(root.Count == 3 && root[0].Label == "LIMIT" && root[0].Ability == MateriaResolver.LimitBreak,
             "Limit pronto deve substituir Ataque, sem acrescentar outra linha.");
         foreach (var command in root) Assert(command.Ability != MateriaResolver.Attack, "Ataque nao pode aparecer junto de Limit pronto.");
         bare.Limit.Spend();

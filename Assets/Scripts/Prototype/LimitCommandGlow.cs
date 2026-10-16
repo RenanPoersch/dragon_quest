@@ -3,33 +3,22 @@ using UnityEngine;
 
 namespace DragonQuest.Prototype
 {
-    // Shared by battle names and the inventory's character selector.
-    public static class LimitNameGlow
+    // Animated rainbow and pulsing halo for the ready LIMIT battle command.
+    public static class LimitCommandGlow
     {
-        public static void Label(Rect rect, string name, bool ready, GUIStyle style)
-            => Draw(rect, name, ready, style, false);
-
-        public static bool Button(Rect rect, string name, bool ready, GUIStyle style)
-            => Draw(rect, name, ready, style, true);
-
-        private static bool Draw(Rect rect, string name, bool ready, GUIStyle style, bool button)
+        public static bool Button(Rect rect, string text, bool ready, GUIStyle style)
         {
-            if (!ready)
-            {
-                if (button) return GUI.Button(rect, name, style);
-                GUI.Label(rect, name, style);
-                return false;
-            }
+            if (!ready) return GUI.Button(rect, text, style);
 
             float time = Time.unscaledTime;
             float pulse = .5f + .5f * Mathf.Sin(time * 3f);
-            var rainbow = new StringBuilder(name.Length * 26);
-            for (int i = 0; i < name.Length; i++)
+            var rainbow = new StringBuilder(text.Length * 26);
+            for (int i = 0; i < text.Length; i++)
             {
-                float hue = Mathf.Repeat(time * .18f + i * .85f / name.Length, 1f);
+                float hue = Mathf.Repeat(time * .18f + i * .85f / text.Length, 1f);
                 Color color = Color.Lerp(Color.HSVToRGB(hue, .8f, 1f), Color.white, .08f + pulse * .16f);
                 rainbow.Append("<color=#").Append(ColorUtility.ToHtmlStringRGB(color)).Append('>')
-                    .Append(name[i]).Append("</color>");
+                    .Append(text[i]).Append("</color>");
             }
             string label = rainbow.ToString();
             bool previousRichText = style.richText;
@@ -38,7 +27,7 @@ namespace DragonQuest.Prototype
             style.richText = true;
             try
             {
-                bool clicked = button && GUI.Button(rect, GUIContent.none, style);
+                bool clicked = GUI.Button(rect, GUIContent.none, style);
                 GUI.backgroundColor = Color.clear;
                 // A small halo breathes without flashing or changing the name's layout.
                 if (Event.current.type == EventType.Repaint)
@@ -56,7 +45,6 @@ namespace DragonQuest.Prototype
                         }
                 }
                 GUI.color = previousColor;
-
                 GUI.Label(rect, label, style);
                 return clicked;
             }

@@ -249,7 +249,7 @@ namespace DragonQuest.Prototype
             DrawPartyStatus();
             if (controller.IsPresentingAction)
             {
-                DrawCombatantName(new Rect(40, 512, 570, 30), controller.PresentingActor, title);
+                GUI.Label(new Rect(40, 512, 570, 30), controller.PresentingActor.Definition.Name, title);
                 if (!controller.IsCastleEncounter || controller.PresentingActor.Team == CombatTeam.Party)
                     GUI.Label(new Rect(40, 556, 570, 55), controller.PresentingAbility.Name, text);
             }
@@ -392,13 +392,14 @@ namespace DragonQuest.Prototype
         private void DrawActions()
         {
             bool targeting = selected != null || selectedItem != null;
-            DrawCombatantName(new Rect(40, 506, 555, 30), observedActor, title);
+            GUI.Label(new Rect(40, 506, 555, 30), observedActor.Definition.Name, title);
             actionsScroll = GUI.BeginScrollView(new Rect(38, 542, 280, 120), actionsScroll, new Rect(0, 0, 253, CommandCount() * 36));
             for (int i = 0; i < CommandCount(); i++)
             {
                 if (CommandButton(new Rect(0, i * 36, 253, 34), CommandLabel(i), !targeting && i == commandIndex,
                     CommandEnabled(i) && !targeting, itemMode && i < observedBattle.Inventory.Items.Count
-                        ? InventoryPixelArt.Texture(observedBattle.Inventory.Items[i].Definition) : null)) { ChooseCommand(i); break; }
+                        ? InventoryPixelArt.Texture(observedBattle.Inventory.Items[i].Definition) : null,
+                    limitReady: !itemMode && CommandAbility(i)?.UsesLimit == true && observedActor.Limit.IsReady)) { ChooseCommand(i); break; }
             }
             GUI.EndScrollView();
             if (!targeting) return;
@@ -408,14 +409,10 @@ namespace DragonQuest.Prototype
             targetsScroll = GUI.BeginScrollView(new Rect(333, 542, 280, 88), targetsScroll, new Rect(0, 0, 253, (group ? 1 : targets.Count) * 36));
             for (int i = 0; i < (group ? Mathf.Min(1, targets.Count) : targets.Count); i++)
                 if (CommandButton(new Rect(0, i * 36, 253, 34), group ? "Todos os alvos (" + targets.Count + ")" : targets[i].Definition.Name,
-                    group || targetIndex == i, true, nameOwner: group ? null : targets[i])) { targetIndex = i; ExecuteTarget(targets[i]); break; }
+                    group || targetIndex == i, true)) { targetIndex = i; ExecuteTarget(targets[i]); break; }
             GUI.EndScrollView();
             if (targets.Count == 0) GUI.Label(new Rect(337, 546, 270, 78), "Nenhum alvo valido para esta acao.", small);
         }
-
-        private static void DrawCombatantName(Rect rect, CombatantState participant, GUIStyle style)
-            => LimitNameGlow.Label(rect, participant.Definition.Name,
-                participant.Team == CombatTeam.Party && participant.Limit.IsReady, style);
 
         private void DrawPartyStatus()
         {
@@ -428,7 +425,7 @@ namespace DragonQuest.Prototype
                 if (participant.Team != CombatTeam.Party) continue;
                 float y = 544 + i++ * 48;
                 if (participant == observedActor) RectBox(new Rect(650, y - 2, 600, 45), new Color(.16f, .29f, .65f));
-                DrawCombatantName(new Rect(665, y, 95, 25), participant, text);
+                GUI.Label(new Rect(665, y, 95, 25), participant.Definition.Name, text);
                 statusIcons.Draw(770, y + 2, participant);
                 DrawBar(new Rect(850, y + 4, 170, 25), participant.Hp, participant.Definition.MaxHp, new Color(.18f, .60f, .47f));
                 DrawBar(new Rect(1030, y + 4, 120, 25), participant.Mp, participant.Definition.MaxMp, new Color(.20f, .45f, .82f));
@@ -442,11 +439,11 @@ namespace DragonQuest.Prototype
             RectBox(new Rect(rect.x, rect.y, rect.width * (maximum == 0 ? 0 : Mathf.Clamp01((float)value / maximum)), rect.height), color);
             GUI.Label(rect, value + "/" + maximum, centered);
         }
-        private bool CommandButton(Rect rect, string label, bool focused, bool enabled, Texture2D icon = null, CombatantState nameOwner = null)
+        private bool CommandButton(Rect rect, string label, bool focused, bool enabled, Texture2D icon = null, bool limitReady = false)
         {
             bool previous = GUI.enabled; GUI.enabled = previous && enabled;
-            bool clicked = LimitNameGlow.Button(rect, label,
-                nameOwner != null && nameOwner.Team == CombatTeam.Party && nameOwner.Limit.IsReady,
+            bool clicked = LimitCommandGlow.Button(rect, label,
+                limitReady,
                 icon == null ? button : itemButton);
             InventoryPixelArt.Draw(new Rect(rect.x + 50, rect.center.y - 14, 28, 28), icon);
             GUI.enabled = previous;

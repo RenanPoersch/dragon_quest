@@ -44,8 +44,7 @@ namespace DragonQuest.Prototype
             if (GUI.Button(new Rect(1000, 34, 225, 43), "Fechar / I ou Esc", button)) controller.CloseMenu();
 
             for (int i = 0; i < party.Members.Count; i++)
-                if (LimitNameGlow.Button(new Rect(30 + i * 220, 115, 205, 40),
-                    (memberIndex == i ? "> " : "") + party.Members[i].Name, party.Members[i].Limit.IsReady, button))
+                if (GUI.Button(new Rect(30 + i * 220, 115, 205, 40), (memberIndex == i ? "> " : "") + party.Members[i].Name, button))
                 { memberIndex = i; ResetSocketSelection(); commandsScroll = Vector2.zero; }
             string[] tabs = { "Materias", "Equipamentos", "Itens" };
             for (int i = 0; i < tabs.Length; i++)

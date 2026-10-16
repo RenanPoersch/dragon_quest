@@ -48,7 +48,7 @@ namespace DragonQuest.Combat
                 if (ability.UsesLimit && limit == null) limit = ability;
                 if (!ability.UsesLimit) { magic |= ability.MenuGroup == AbilityMenuGroup.Magic; summon |= ability.MenuGroup == AbilityMenuGroup.Summon; }
             }
-            if (actor.Limit.IsReady && limit != null) result.Add(new BattleMenuCommand(BattleCommandKind.Ability, "Limit", limit.Description, limit));
+            if (actor.Limit.IsReady && limit != null) result.Add(new BattleMenuCommand(BattleCommandKind.Ability, "LIMIT", limit.Description, limit));
             else if (attack != null) result.Add(new BattleMenuCommand(BattleCommandKind.Ability, attack.Name, attack.Description, attack));
             if (magic) result.Add(new BattleMenuCommand(BattleCommandKind.Magic, "Magic", "Escolha uma magia equipada."));
             if (summon) result.Add(new BattleMenuCommand(BattleCommandKind.Summon, "Summon", "Escolha uma invocacao equipada."));
