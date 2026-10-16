@@ -21,7 +21,7 @@ Use essa versão do Editor para evitar migrações involuntárias.
 2. No Unity Hub, abra **Projects → Add → Add project from disk** e selecione a raiz deste repositório (a pasta que contém `Assets`, `Packages` e `ProjectSettings`).
 3. Abra com o Editor **6000.6.5f1** e aguarde a importação dos pacotes e assets.
 4. Abra `Assets/Scenes/CidadePrototipo.unity`.
-5. Clique em **Play**: a tela inicial preta mostra a escama ancestral centralizada e as opções **New game** e **Continue**. Escolha uma opção e depois um dos três slots; **Back** ou **Esc** retorna à tela inicial.
+5. Clique em **Play**: a tela inicial preta mostra a escama ancestral centralizada e as opções **New game** e **Continue**. **New game** inicia a jornada diretamente; **Continue** abre os três slots, onde **Back** ou **Esc** retorna à tela inicial.
 6. Clique dentro da janela **Game** e use **WASD ou as setas** para andar; **E** interage com objetos próximos, **I** abre o inventário e **F5** salva no mapa global ou na hospedaria.
 7. Durante a jornada, a tecla **`** (backquote) abre e fecha o **Cheat Engine**. Use clique ou setas + Enter: **LIMIT infinito** mantém o Limit pronto para todos; **Gold infinito** permite comprar e descansar sem gastar; **Nível 99** eleva toda a equipe e atualiza os atributos, inclusive no combate atual. **Encontros aleatórios** permite desativar ou reativar as batalhas ao caminhar; batalhas por interação e chefes continuam disponíveis, e um combate em andamento continua normalmente. Ao reativar, a contagem de distância reinicia para evitar um encontro imediato. **Esc** fecha o menu. LIMIT, gold e encontros valem nesta sessão; ao desligar LIMIT e gold, a carga e o saldo originais retornam. O nível 99 permanece se você salvar a jornada normalmente. O menu bloqueia movimento, interações e ações de combate enquanto está aberto.
 
@@ -75,7 +75,7 @@ Os finais têm cenas e três páginas de texto, com opção de voltar ao menu in
 
 ### Salvamento — parte 9
 
-A tela inicial oferece New game e Continue; cada opção abre sua própria seleção dos três slots. O salvamento é somente manual: fale com a hospedeira ou use F5 no mapa global ou na hospedaria. Novo jogo começa sem gravar; num slot ocupado, a jornada anterior só é substituída ao salvar manualmente a nova. Vitórias, segredos, baús, inventário e finais não salvam. Carregar recupera mapa, posição livre do último save, equipamentos, encaixes, Limit, estoques e progresso. Se uma posição da periferia antiga estiver fora ou bloqueada na planta compacta, a equipe reaparece na rua central. Combates em andamento não são gravados.
+A tela inicial oferece New game, que inicia a jornada diretamente, e Continue, que abre a seleção dos três slots. O salvamento é somente manual: fale com a hospedeira ou use F5 no mapa global ou na hospedaria. Novo jogo começa sem gravar e usa o primeiro slot livre; se os três estiverem ocupados, a escolha de destino e a confirmação de substituição aparecem ao salvar manualmente. Vitórias, segredos, baús, inventário e finais não salvam. Carregar recupera mapa, posição livre do último save, equipamentos, encaixes, Limit, estoques e progresso. Se uma posição da periferia antiga estiver fora ou bloqueada na planta compacta, a equipe reaparece na rua central. Combates em andamento não são gravados.
 
 Os saves ficam em `Application.persistentDataPath/Saves`, fora do Git, com backup da revisão anterior válida. Jornadas concluídas reabrem seu final. Veja `Docs/PARTE_9.md` para os detalhes e a conferência em Play.
 

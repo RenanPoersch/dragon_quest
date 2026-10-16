@@ -64,10 +64,10 @@ namespace DragonQuest.Prototype
             EnsureStyles();
             if (selected >= 0 && selected < SaveStore.SlotCount) lastSlot = selected;
             Panel(new Rect(0, 0, 674, 72)); Panel(new Rect(674, 0, 286, 72)); Panel(new Rect(960, 0, 320, 72));
-            ShadowLabel(new Rect(16, 10, 650, 52), loading ? "Select a save game." : "Select a new game.", heading);
+            ShadowLabel(new Rect(16, 10, 650, 52), loading ? "Select a save game." : "Select a save slot.", heading);
             ShadowLabel(new Rect(690, 10, 140, 52), "GAME", empty);
             ShadowLabel(new Rect(830, 10, 120, 52), (lastSlot + 1).ToString("00"), heading);
-            ShadowLabel(new Rect(988, 10, 146, 52), loading ? "Load" : "New", heading);
+            ShadowLabel(new Rect(988, 10, 146, 52), loading ? "Load" : "Save", heading);
         }
 
         public void DrawSlot(int index, RestoredJourney journey, bool occupied, string warning, string location)

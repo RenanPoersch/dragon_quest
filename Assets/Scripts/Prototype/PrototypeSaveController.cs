@@ -10,7 +10,7 @@ namespace DragonQuest.Prototype
 {
     public sealed class PrototypeSaveController : MonoBehaviour
     {
-        private enum MenuPage { Title, NewGame, Continue }
+        private enum MenuPage { Title, Save, Continue }
         private MenuPage page = MenuPage.Title;
         private int selectedOption;
         private SaveStore store;
@@ -37,6 +37,7 @@ namespace DragonQuest.Prototype
         private string message;
         private float messageUntil;
         private int overwriteSlot;
+        private bool awaitingFirstSave;
         private double playSeconds;
         private SaveSelectionPresentation saveScreen;
         private PrototypeIntroPresentation intro;
@@ -83,9 +84,12 @@ namespace DragonQuest.Prototype
             }
             catch (Exception ex) { ShowMessage("Nao foi possivel salvar: " + ex.Message); return false; }
         }
-        private void NewGame(int slot)
+        private void NewGame()
         {
-            ActiveSlot = slot;
+            ActiveSlot = 0;
+            for (int slot = 1; slot <= SaveStore.SlotCount; slot++)
+                if (!store.Exists(slot)) { ActiveSlot = slot; break; }
+            awaitingFirstSave = true;
             playSeconds = 0;
             overwriteSlot = 0; IsMenuVisible = false; player.SetMovementEnabled(true);
         }
@@ -93,6 +97,7 @@ namespace DragonQuest.Prototype
         {
             if (!store.TryRead(slot, out var journey, out string warning)) { ShowMessage(warning); RefreshSlots(); return; }
             install(journey); progress = journey.Progress; ActiveSlot = slot; IsMenuVisible = false;
+            awaitingFirstSave = false;
             playSeconds = journey.Data.PlaySeconds ?? 0;
             player.SetMovementEnabled(true);
             ShowMessage(warning ?? "Jornada carregada / slot " + slot);
@@ -102,7 +107,36 @@ namespace DragonQuest.Prototype
         {
             if (IsMenuVisible || battle.IsActive || battle.HasEnded || (locations.LocationId != PrototypeTravel.Inn && locations.LocationId != PrototypeTravel.World))
             { ShowMessage("O salvamento manual fica disponivel no mapa global ou na hospedaria, fora de combate."); return; }
-            Write("Jornada salva");
+            if (ActiveSlot == 0 || awaitingFirstSave && store.Exists(ActiveSlot))
+            {
+                IsMenuVisible = true;
+                player.SetMovementEnabled(false);
+                OpenPage(MenuPage.Save);
+                return;
+            }
+            if (Write("Jornada salva")) awaitingFirstSave = false;
+        }
+        private void SaveToSlot(int slot)
+        {
+            int previousSlot = ActiveSlot;
+            ActiveSlot = slot;
+            if (Write("Jornada salva"))
+            {
+                awaitingFirstSave = false;
+                CloseSaveMenu();
+            }
+            else ActiveSlot = previousSlot;
+        }
+        private void CloseSaveMenu()
+        {
+            overwriteSlot = 0;
+            IsMenuVisible = false;
+            player.SetMovementEnabled(!dialogue.IsOpen && !battle.IsBusy);
+        }
+        private void Back()
+        {
+            if (page == MenuPage.Save) CloseSaveMenu();
+            else OpenPage(MenuPage.Title);
         }
         private void Update()
         {
@@ -130,14 +164,14 @@ namespace DragonQuest.Prototype
                 if (previews[slot - 1] != null) Continue(slot);
             }
             else if (occupied[slot - 1]) { overwriteSlot = slot; selectedOption = 0; }
-            else NewGame(slot);
+            else SaveToSlot(slot);
         }
         private void UpdateMenuInput(KeyCode key)
         {
             if (key == KeyCode.Escape)
             {
                 if (overwriteSlot != 0) overwriteSlot = 0;
-                else if (page != MenuPage.Title) OpenPage(MenuPage.Title);
+                else if (page != MenuPage.Title) Back();
                 return;
             }
             if (key == KeyCode.UpArrow || key == KeyCode.W)
@@ -147,11 +181,15 @@ namespace DragonQuest.Prototype
             if (key != KeyCode.Return && key != KeyCode.KeypadEnter && key != KeyCode.Space) return;
             if (overwriteSlot != 0)
             {
-                if (selectedOption == 0) NewGame(overwriteSlot);
+                if (selectedOption == 0) SaveToSlot(overwriteSlot);
                 else overwriteSlot = 0;
             }
-            else if (page == MenuPage.Title) OpenPage(selectedOption == 0 ? MenuPage.NewGame : MenuPage.Continue);
-            else if (selectedOption == SaveStore.SlotCount) OpenPage(MenuPage.Title);
+            else if (page == MenuPage.Title)
+            {
+                if (selectedOption == 0) NewGame();
+                else OpenPage(MenuPage.Continue);
+            }
+            else if (selectedOption == SaveStore.SlotCount) Back();
             else SelectSlot(selectedOption + 1);
         }
         private bool OptionEnabled(int option) => page != MenuPage.Continue || overwriteSlot != 0
@@ -203,7 +241,7 @@ namespace DragonQuest.Prototype
             {
                 if (scaleSprite != null)
                     GUI.DrawTexture(new Rect(440, 160, 400, 400), scaleSprite, ScaleMode.ScaleToFit, true);
-                if (MenuButton(new Rect(490, 562, 300, 48), "New game", 0, titleButtonStyle)) OpenPage(MenuPage.NewGame);
+                if (MenuButton(new Rect(490, 562, 300, 48), "New game", 0, titleButtonStyle)) NewGame();
                 if (MenuButton(new Rect(490, 620, 300, 48), "Continue", 1, titleButtonStyle)) OpenPage(MenuPage.Continue);
             }
             else
@@ -220,15 +258,15 @@ namespace DragonQuest.Prototype
                     GUI.enabled = previousEnabled;
                 }
                 GUI.enabled = previousEnabled && overwriteSlot == 0;
-                if (MenuButton(SaveSelectionPresentation.BackRect, "Back", SaveStore.SlotCount, saveScreen.BackStyle)) OpenPage(MenuPage.Title);
+                if (MenuButton(SaveSelectionPresentation.BackRect, "Back", SaveStore.SlotCount, saveScreen.BackStyle)) Back();
                 GUI.enabled = previousEnabled;
                 if (overwriteSlot != 0)
                 {
                     Color overlayColor = GUI.color; GUI.color = new Color(0, 0, 0, .6f);
                     GUI.DrawTexture(new Rect(0, 0, 1280, 720), pixel); GUI.color = overlayColor;
                     saveScreen.Panel(new Rect(280, 245, 720, 205));
-                    GUI.Label(new Rect(310, 265, 660, 74), "Ao salvar esta nova jornada no slot " + overwriteSlot + ", o progresso anterior sera substituido.", textStyle);
-                    if (MenuButton(new Rect(310, 365, 320, 48), "Comecar nova jornada", 0, buttonStyle)) NewGame(overwriteSlot);
+                    GUI.Label(new Rect(310, 265, 660, 74), "Salvar a jornada no slot " + overwriteSlot + " e substituir o progresso anterior?", textStyle);
+                    if (MenuButton(new Rect(310, 365, 320, 48), "Salvar jornada", 0, buttonStyle)) SaveToSlot(overwriteSlot);
                     if (MenuButton(new Rect(650, 365, 320, 48), "Cancelar", 1, buttonStyle)) overwriteSlot = 0;
                 }
             }
