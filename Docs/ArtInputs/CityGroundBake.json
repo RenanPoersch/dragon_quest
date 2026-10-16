@@ -7,10 +7,76 @@
     "width": 965,
     "height": 1629
   },
-  "seed": 1201026,
-  "sourceSha256": "d3891297c6be19ae12ed00fa933d169f29a643f8b949d1ed8446c00a7f2d878a",
-  "sha256": "201d011f7714f87500c06853ecbe240ad613d3cc601656b8adec0950d94cdb74",
-  "resizedCore": false,
-  "corePixelSha256": "2cb52183744dc8b6b27d8a0d01de3c96c998f6395c04381059e97641be383a20",
-  "layout": "wider-streets-open-weapons-courtyard-full-width-moat"
+  "source": "Docs/ArtInputs/CityGroundNatural.png",
+  "sourceSize": [
+    1104,
+    1425
+  ],
+  "sourceSha256": "d847343ea690586c9525710e977b13f8bc94f0b1d0560cff026d6c900c50577b",
+  "sha256": "5304bbb3d38ce29e0d0bad6950c0c46063a9ba9c83dc27c61ddaffd402dc0a7c",
+  "sampling": "nearest-neighbour with continuous landmark registration",
+  "corePixelSha256": "642b808ebae6abe3a6e8acc612282c2ff644a1077cc119ca280432c435ecb6ac",
+  "layout": "organic-dusk-paths-final-building-positions-baked-shop-lights",
+  "lights": [
+    {
+      "building": "Loja de materias",
+      "door": [
+        5.0,
+        0.6649999999999999
+      ],
+      "lightCentre": [
+        1338.076923076923,
+        1496.200340909091
+      ],
+      "sourceCentre": [
+        665,
+        716
+      ]
+    },
+    {
+      "building": "Loja de itens",
+      "door": [
+        -4.9,
+        -7.9350000000000005
+      ],
+      "lightCentre": [
+        970.6346153846154,
+        1814.5957954545456
+      ],
+      "sourceCentre": [
+        423,
+        835
+      ]
+    },
+    {
+      "building": "Loja de equipamentos",
+      "door": [
+        5.1,
+        -11.735
+      ],
+      "lightCentre": [
+        1341.7884615384614,
+        1955.282159090909
+      ],
+      "sourceCentre": [
+        650,
+        943
+      ]
+    },
+    {
+      "building": "Hospedaria",
+      "door": [
+        -5.1,
+        -15.835
+      ],
+      "lightCentre": [
+        963.2115384615385,
+        2107.0753409090908
+      ],
+      "sourceCentre": [
+        432,
+        1035
+      ]
+    }
+  ]
 }
