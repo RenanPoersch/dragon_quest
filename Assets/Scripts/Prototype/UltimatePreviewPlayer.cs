@@ -11,7 +11,7 @@ namespace DragonQuest.Prototype
         private readonly HeroCastAnimation cast = new HeroCastAnimation();
         private PrototypeBattleSprites sprites;
         private Texture2D background;
-        private GUIStyle text, number;
+        private GUIStyle text, number, centered;
         private AbilityDefinition observed;
         private CombatantState[] party, enemies;
         private CombatantState actor;
@@ -28,6 +28,7 @@ namespace DragonQuest.Prototype
             if(text==null)
             {
                 text=PrototypeTypography.Style(GUI.skin.label,22,true);
+                centered=new GUIStyle(text) { alignment=TextAnchor.MiddleCenter };
                 number=PrototypeTypography.Style(GUI.skin.label,28,true); number.alignment=TextAnchor.MiddleCenter;
             }
             if(observed==ability) return;
@@ -83,8 +84,7 @@ namespace DragonQuest.Prototype
             foreach(var target in party) DrawNumbers(target,Homes[System.Array.IndexOf(party,target)],ability,elapsed);
             GUI.EndGroup();
             Box(new Rect(20,426,1240,60),new Color(.025f,.06f,.17f));
-            GUI.Label(new Rect(40,441,1200,36),actor.Definition.Name+"  /  "+ability.Name+"     "+
-                (ability==HeroUltimates.Omnislash?"13 cortes em um alvo  /  final aereo":ability==HeroUltimates.Salvation?"80% HP + purificacao + ressurreicao":"Shield -50% + golpe em area"),text);
+            GUI.Label(new Rect(40,426,1200,60),ability.Name,centered);
             Box(new Rect(20,496,1240,204),new Color(.025f,.06f,.17f));
             GUI.Label(new Rect(45,515,540,36),"ULTIMATE  /  "+ability.Name.ToUpperInvariant(),text);
             GUI.Label(new Rect(45,560,540,85),ability.Description,text);

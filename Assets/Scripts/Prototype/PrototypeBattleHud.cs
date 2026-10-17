@@ -261,7 +261,10 @@ namespace DragonQuest.Prototype
             DrawArena();
             GUI.matrix = arenaMatrix;
             Panel(new Rect(20, 426, 1240, 60));
-            GUI.Label(new Rect(40, 438, 1200, 40), controller.PresentedMessage, text);
+            if (controller.IsPresentingAction && controller.IsPresentingUltimate)
+                GUI.Label(new Rect(40, 426, 1200, 60), controller.PresentingAbility.Name, centered);
+            else
+                GUI.Label(new Rect(40, 438, 1200, 40), controller.PresentedMessage, text);
             // Equal halves: all commands/target choices stay on the left, party status stays on the right.
             Panel(new Rect(20, 496, 620, 204)); Panel(new Rect(640, 496, 620, 204));
             DrawPartyStatus();

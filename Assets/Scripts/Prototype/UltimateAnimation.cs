@@ -12,9 +12,9 @@ namespace DragonQuest.Prototype
         { this.drawFrame=drawFrame; this.drawText=drawText; }
         private readonly Dictionary<string,UltimateSpriteSheet> sheets=new Dictionary<string,UltimateSpriteSheet>();
         private readonly Dictionary<string,BattleAnimationSheet> blessings=new Dictionary<string,BattleAnimationSheet>();
-        private GUIStyle banner,caption;
+        private GUIStyle caption;
         private Color bramTint=Color.white;
-        private static readonly Color Gold=new Color(1,.8f,.4f), Mint=new Color(.6f,1,.85f), Blue=new Color(.5f,.85f,1);
+        private static readonly Color Mint=new Color(.6f,1,.85f), Blue=new Color(.5f,.85f,1);
         private UltimateSpriteSheet Sheet(string name)
         {
             if(!sheets.TryGetValue(name,out var sheet)) { sheet=new UltimateSpriteSheet(name,drawFrame); sheets.Add(name,sheet); }
@@ -25,12 +25,9 @@ namespace DragonQuest.Prototype
             foreach(string name in UltimateSpriteTimeline.Atlases) Sheet(name);
         }
         private static Color Fade(Color color,float alpha) { color.a*=Mathf.Clamp01(alpha); return color; }
-        private static void Box(Rect rect,Color color)
-        { Color previous=GUI.color; GUI.color=color; GUI.DrawTexture(rect,Texture2D.whiteTexture); GUI.color=previous; }
         private void Styles()
         {
-            if(banner!=null) return;
-            banner=PrototypeTypography.Style(GUI.skin.label,30,true); banner.alignment=TextAnchor.MiddleCenter;
+            if(caption!=null) return;
             caption=PrototypeTypography.Style(GUI.skin.label,17,true); caption.alignment=TextAnchor.MiddleCenter;
         }
         private void Label(Rect rect,string value,GUIStyle style,Color color)
@@ -120,14 +117,6 @@ namespace DragonQuest.Prototype
         {
             if(elapsed<0 || elapsed>=UltimateTimeline.Duration(ability)) return;
             if(drawText) Styles();
-            Color color=UltimateTimeline.IsOmnislash(ability)?Gold:ability.SourceAbilityId=="lia-salvation"?Mint:Blue;
-            float bannerAlpha=Mathf.Clamp01(elapsed/.12f)*Mathf.Clamp01((.94f-elapsed)/.2f);
-            if(drawText && bannerAlpha>0)
-            {
-                Box(new Rect(210,27,860,62),new Color(.02f,.04f,.09f,bannerAlpha*.9f));
-                Label(new Rect(220,28,840,42),ability.Name.ToUpperInvariant(),banner,Fade(color,bannerAlpha));
-                Label(new Rect(220,66,840,22),"L I M I T   B R E A K",caption,Fade(Color.white,bannerAlpha));
-            }
             if(UltimateTimeline.IsOmnislash(ability)) DrawOmnislash(elapsed,focus);
             else if(ability.SourceAbilityId=="lia-salvation")
             {
