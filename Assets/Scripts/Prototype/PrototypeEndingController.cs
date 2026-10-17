@@ -54,24 +54,29 @@ namespace DragonQuest.Prototype
             view.transform.position=-view.transform.forward*ObliqueProjection.Distance;
             view.backgroundColor=result==GameEnding.KingFreed?new Color(0.22f,0.33f,0.3f):new Color(0.13f,0.1f,0.17f);
         }
+        private void ReturnToMenu()
+        {
+            PrototypeAchievements.Complete(ending);
+            SceneManager.LoadScene(SceneManager.GetActiveScene().path);
+        }
         private void Update()
         {
             if(liberation!=null)
             {
                 liberation.Update(Time.unscaledDeltaTime);
-                if(liberation.Sequence.IsComplete) SceneManager.LoadScene(SceneManager.GetActiveScene().path);
+                if(liberation.Sequence.IsComplete) ReturnToMenu();
                 return;
             }
             if(possession!=null)
             {
                 possession.Update(Time.unscaledDeltaTime);
-                if(possession.Sequence.IsComplete) SceneManager.LoadScene(SceneManager.GetActiveScene().path);
+                if(possession.Sequence.IsComplete) ReturnToMenu();
                 return;
             }
             if(aftermath!=null)
             {
                 aftermath.Update(Time.unscaledDeltaTime);
-                if(aftermath.Sequence.IsComplete) SceneManager.LoadScene(SceneManager.GetActiveScene().path);
+                if(aftermath.Sequence.IsComplete) ReturnToMenu();
                 return;
             }
             if(pages==null||Time.frameCount<=shownFrame||!GameInput.IsFocused) return;
@@ -79,7 +84,7 @@ namespace DragonQuest.Prototype
             {
                 GameInput.ConsumeGamepadFrame();
                 if(page<pages.Length-1) page++;
-                else SceneManager.LoadScene(SceneManager.GetActiveScene().path);
+                else ReturnToMenu();
             }
         }
         private void OnGUI()
@@ -99,7 +104,7 @@ namespace DragonQuest.Prototype
             if(GUI.Button(new Rect(1058,645,174,35),page<pages.Length-1?"Continuar":"Voltar ao menu",buttonStyle))
             {
                 if(page<pages.Length-1) page++;
-                else SceneManager.LoadScene(SceneManager.GetActiveScene().path);
+                else ReturnToMenu();
             }
             GUI.enabled=enabled;GUI.matrix=previous;
         }

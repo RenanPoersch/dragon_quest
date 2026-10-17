@@ -40,6 +40,7 @@ namespace DragonQuest.Prototype
         private bool awaitingFirstSave;
         private double playSeconds;
         private SaveSelectionPresentation saveScreen;
+        private readonly EndingAchievementPresentation achievementScreen = new EndingAchievementPresentation();
         private PrototypeIntroPresentation intro;
         private NewGameVoyagePresentation voyage;
         private const float MenuFadeInDuration = 1.2f;
@@ -276,6 +277,7 @@ namespace DragonQuest.Prototype
             lastMousePosition = Event.current.mousePosition;
             if (page == MenuPage.Title)
             {
+                achievementScreen.Draw(PrototypeAchievements.Progress, PrototypeAchievements.LastError);
                 if (scaleSprite != null)
                     GUI.DrawTexture(new Rect(440, 160, 400, 400), scaleSprite, ScaleMode.ScaleToFit, true);
                 if (MenuButton(new Rect(490, 562, 300, 48), "New game", 0, titleButtonStyle)) NewGame();
