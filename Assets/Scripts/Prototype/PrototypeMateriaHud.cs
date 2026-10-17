@@ -354,7 +354,7 @@ namespace DragonQuest.Prototype
         {
             if (controller != null && controller.TryCancelInventorySelection == ReturnFromInventoryMenu)
                 controller.TryCancelInventorySelection = null;
-            materiaScreen.Dispose(); statusScreen.Dispose(); presentation?.Dispose(); if (pixel != null) Destroy(pixel);
+            presentation?.Dispose(); if (pixel != null) Destroy(pixel);
         }
     }
 }

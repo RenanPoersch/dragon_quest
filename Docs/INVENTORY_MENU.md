@@ -22,7 +22,7 @@ Conferencia adicional em projeto Unity isolado: Enter mudou da lista aos retrato
 
 ## Tela de Materia
 
-A tela aberta por **Magic** reutiliza a composicao de Item: comandos e descricao no topo, os tres retratos a esquerda e a lista rolavel a direita. Ao lado de cada retrato aparecem o nome do personagem, arma e armadura, com ate seis slots por equipamento. Os slots mostram as materias pelas suas cores e as ligacoes dos pares. Sem equipamento, o nome e `--` e a barra fica vazia. Os campos de nivel e HP/MP nao aparecem nesta tela.
+A tela aberta por **Magic** reutiliza a composicao de Item: comandos e descricao no topo, os tres retratos a esquerda e a lista rolavel a direita. Ao lado de cada retrato aparecem o nome do personagem, arma e armadura, com ate seis slots por equipamento. Os slots mostram as materias pelas suas cores e as ligacoes dos pares. Sem equipamento, o nome e `--` e nao aparecem slots. Os campos de nivel e HP/MP nao aparecem nesta tela.
 
 Clique ou confirme uma materia para transferir a luva da lista para os slots. Esquerda/direita percorre os encaixes; cima/baixo troca entre as linhas de arma e armadura dos personagens, conservando a coluna quando possivel. Confirmar o slot equipa a instancia selecionada e retorna a lista. A lista mostra onde cada materia esta equipada; trocar entre dois slots ocupados conserva a troca atomica do dominio, sem duplicar materias.
 
@@ -32,11 +32,15 @@ Clique ou confirme uma materia para transferir a luva da lista para os slots. Es
 
 Validacao adicional: scripts compilados com as bibliotecas da Unity, 26 verificacoes de regressao de Item e 13 verificacoes de integracao com teclado e controle. A previa Unity isolada foi renderizada em 1280x720 e 960x720, incluindo selecao de slot, materia equipada, remocao e personagens sem equipamento. Cada desenho conservou o estado da equipe. A partida aberta no Editor principal foi preservada.
 
+O atlas `Assets/Resources/PixelArt/Inventory/MateriaSockets.png` contem um encaixe individual e um par ligado, com metal prateado e fundo transparente. `MateriaSocketArt` compartilha essa arte entre Materia e Status, conservando o formato circular dos aneis ao ajustar somente a largura da ponte. As esferas usam os quatro sprites `materia-green`, `materia-blue`, `materia-red` e `materia-purple` que ja existiam, sem modificar os arquivos: o recorte da margem transparente melhora a leitura nos slots e na lista. O prompt do atlas esta em `Docs/ArtInputs/MateriaSockets.prompts.json`.
+
+Validacao dos sprites: compilacao Unity e 46 verificacoes do menu passaram. Importacao com alpha, filtro Point e os quatro sprites originais conferida em projeto Unity isolado; capturas de Materia e Status em 1280x720 e 960x720, mais uma previa dos encaixes individual/ligado vazios e preenchidos. A renderizacao conservou o estado da equipe.
+
 ## Tela de Status
 
 A ficha segue a composicao da referencia: painel azul com borda prateada, titulo no canto superior direito, retrato, nome, nivel e condicao; HP/MP, EXP total, progresso no nivel, EXP restante e barra de Limit. Os atributos usam os valores reais de `PartyMember`: valores base sem equipamento, velocidade, chance critica, classe, ataque/defesa/magia finais e HP/MP maximos. `Magic def` usa a defesa compartilhada pelos danos fisicos e magicos no combate atual. O jogo tem um nivel de Limit; a carga e mostrada pela barra.
 
-A caixa central mostra os comandos de batalha do personagem, incluindo Magic, Summon e LIMIT quando disponiveis. Comandos longos cabem na celula e a caixa permite rolar quando necessario. Arma e armadura mostram os nomes equipados, ate seis encaixes, cores das materias atuais e ligacoes dos pares. Sem equipamento, o nome e `--` e a barra fica vazia. `Acc: --` corresponde a ausencia de um sistema de acessorios. As afinidades aparecem abaixo dos equipamentos.
+A caixa central mostra os comandos de batalha do personagem, incluindo Magic, Summon e LIMIT quando disponiveis. Comandos longos cabem na celula e a caixa permite rolar quando necessario. Arma e armadura mostram os nomes equipados, ate seis encaixes, cores das materias atuais e ligacoes dos pares. Sem equipamento, o nome e `--` e nao aparecem slots. `Acc: --` corresponde a ausencia de um sistema de acessorios. As afinidades aparecem abaixo dos equipamentos.
 
 Use **A/D**, setas, direcional/analogico ou as setas clicaveis no rodape para trocar entre os tres personagens. **Esc/B/Circulo** retorna ao resumo da equipe; **I** fecha diretamente. O titulo **Status** tambem retorna ao resumo pelo mouse. A ficha e somente leitura e conserva HP, MP, EXP, Limit, equipamentos e materias ao navegar.
 

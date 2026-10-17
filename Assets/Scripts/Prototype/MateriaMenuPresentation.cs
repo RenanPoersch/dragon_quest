@@ -4,15 +4,14 @@ using UnityEngine;
 
 namespace DragonQuest.Prototype
 {
-    public sealed class MateriaMenuPresentation : IDisposable
+    public sealed class MateriaMenuPresentation
     {
-        public static Rect SocketRect(int member, EquipmentSlot equipment, int socket) => new Rect(286 + socket * 44,
-            234 + member * 180 + (equipment == EquipmentSlot.Armor ? 64 : 0), 28, 28);
+        public static Rect SocketRect(int member, EquipmentSlot equipment, int socket) => new Rect(282 + socket * 44,
+            234 + member * 180 + (equipment == EquipmentSlot.Armor ? 64 : 0), 36, 36);
         private const float RowHeight = 60;
         private Vector2 scroll, pointer = new Vector2(-1, -1);
         private int revealedIndex = -1, activatedFrame = -1;
         private GUIStyle text, heading, small, cyan;
-        private Texture2D ring;
         public void Reset() { scroll = Vector2.zero; pointer = new Vector2(-1, -1); revealedIndex = -1; }
         private void EnsureStyles()
         {
@@ -22,15 +21,6 @@ namespace DragonQuest.Prototype
             heading = new GUIStyle(text) { fontSize = 38 };
             small = new GUIStyle(text) { fontSize = 22 };
             cyan = new GUIStyle(small); cyan.normal.textColor = new Color(.1f, 1, .91f);
-            ring = new Texture2D(32, 32, TextureFormat.RGBA32, false) { filterMode = FilterMode.Point };
-            for (int y = 0; y < 32; y++) for (int x = 0; x < 32; x++)
-            {
-                float distance = Vector2.Distance(new Vector2(x, y), new Vector2(15.5f, 15.5f));
-                ring.SetPixel(x, y, distance > 15 ? Color.clear : distance > 13 ? new Color(.27f, .29f, .35f)
-                    : distance > 10 ? (y > x ? new Color(.85f, .85f, .79f) : new Color(.48f, .49f, .54f))
-                    : new Color(.025f, .025f, .065f));
-            }
-            ring.Apply();
         }
         public void Draw(InventoryMenuPresentation theme, MateriaMenuSession session, PartyProgress party, bool canInteract, Action back)
         {
@@ -78,7 +68,7 @@ namespace DragonQuest.Prototype
                 var materia = session.Materias[i]; Rect row = new Rect(64, i * RowHeight, 556, RowHeight - 2);
                 if (canInteract && moved && !session.ChoosingSocket && row.Contains(localMouse)) session.SelectMateria(i);
                 if (Click(row, canInteract)) { session.SelectMateria(i); session.BeginEquip(party); }
-                InventoryPixelArt.Draw(new Rect(72, row.y + 7, 44, 44), InventoryPixelArt.Texture(materia.Definition));
+                MateriaSocketArt.DrawMateria(new Rect(72, row.y + 10, 40, 40), materia.Definition);
                 FitLabel(new Rect(130, row.y, 476, 34), materia.Definition.Name, text);
                 FitLabel(new Rect(130, row.y + 32, 476, 24), party.LocationOf(materia), cyan);
             }
@@ -91,18 +81,18 @@ namespace DragonQuest.Prototype
         {
             Label(new Rect(250, y, 58, 24), kind == EquipmentSlot.Weapon ? "Wpn:" : "Arm:", cyan);
             FitLabel(new Rect(310, y, 260, 24), gear?.Definition.Name ?? "--", small);
-            Rect bar = new Rect(278, y + 22, 284, 32); Fill(bar, new Color(.17f, .17f, .25f));
             if (gear == null) return;
-            for (int i = 0; i < gear.Sockets.Count; i += 2)
+            for (int i = 0; i < gear.Sockets.Count; i++)
             {
                 Rect socket = SocketRect(member, kind, i);
-                Fill(new Rect(socket.x + 14, socket.y + 11, 44, 6), new Color(.54f, .55f, .58f));
-                Fill(new Rect(socket.x + 14, socket.y + 12, 44, 2), new Color(.83f, .84f, .79f));
+                int pair = gear.LinkedSocket(i);
+                if (pair < 0 || pair >= gear.Sockets.Count) MateriaSocketArt.DrawSingle(socket);
+                else if (pair > i) MateriaSocketArt.DrawLinked(socket, SocketRect(member, kind, pair));
             }
             for (int i = 0; i < gear.Sockets.Count; i++)
             {
-                Rect rect = SocketRect(member, kind, i); GUI.DrawTexture(rect, ring);
-                InventoryPixelArt.Draw(rect, InventoryPixelArt.Texture(gear.Sockets[i]?.Definition));
+                Rect rect = SocketRect(member, kind, i);
+                MateriaSocketArt.DrawEquippedMateria(rect, gear.Sockets[i]);
                 if (!session.ChoosingSocket) continue;
                 int target = -1;
                 for (int j = 0; j < session.Sockets.Count; j++)
@@ -133,8 +123,5 @@ namespace DragonQuest.Prototype
             GUI.Label(new Rect(rect.x + 2, rect.y + 2, rect.width, rect.height), value, style);
             GUI.color = previous; GUI.Label(rect, value, style);
         }
-        private static void Fill(Rect rect, Color color)
-        { Color previous = GUI.color; GUI.color = color; GUI.DrawTexture(rect, Texture2D.whiteTexture); GUI.color = previous; }
-        public void Dispose() { if (ring != null) UnityEngine.Object.Destroy(ring); }
     }
 }

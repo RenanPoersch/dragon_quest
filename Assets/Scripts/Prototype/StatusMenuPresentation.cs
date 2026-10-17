@@ -96,44 +96,17 @@ namespace DragonQuest.Prototype
         {
             Label(new Rect(644, y, 132, 40), title, cyan);
             FitLabel(new Rect(784, y, 428, 40), equipment?.Definition.Name ?? "--", text);
-            Rect bar = new Rect(756, y + 46, 460, 32);
-            Fill(bar, new Color(.17f, .17f, .25f));
             if (equipment == null) return;
-            for (int i = 0; i < equipment.Sockets.Count; i += 2)
-            {
-                float x = bar.x + 12 + i * 54;
-                Fill(new Rect(x + 18, bar.y + 13, 54, 7), new Color(.54f, .55f, .58f));
-                Fill(new Rect(x + 18, bar.y + 14, 54, 2), new Color(.83f, .84f, .79f));
-            }
             for (int i = 0; i < equipment.Sockets.Count; i++)
             {
-                Rect socket = new Rect(bar.x + 12 + i * 54, bar.y, 32, 32);
-                GUI.DrawTexture(socket, SocketRing);
-                var materia = equipment.Sockets[i];
-                if (materia != null) InventoryPixelArt.Draw(socket, InventoryPixelArt.Texture(materia.Definition));
+                Rect socket = new Rect(768 + i * 54, y + 44, 40, 40);
+                int pair = equipment.LinkedSocket(i);
+                if (pair < 0 || pair >= equipment.Sockets.Count) MateriaSocketArt.DrawSingle(socket);
+                else if (pair > i) MateriaSocketArt.DrawLinked(socket, new Rect(768 + pair * 54, y + 44, 40, 40));
             }
+            for (int i = 0; i < equipment.Sockets.Count; i++)
+                MateriaSocketArt.DrawEquippedMateria(new Rect(768 + i * 54, y + 44, 40, 40), equipment.Sockets[i]);
         }
-
-        private Texture2D socketRing;
-        private Texture2D SocketRing
-        {
-            get
-            {
-                if (socketRing != null) return socketRing;
-                socketRing = new Texture2D(32, 32, TextureFormat.RGBA32, false) { filterMode = FilterMode.Point };
-                for (int y = 0; y < 32; y++) for (int x = 0; x < 32; x++)
-                {
-                    float distance = Vector2.Distance(new Vector2(x, y), new Vector2(15.5f, 15.5f));
-                    Color color = distance > 15 ? Color.clear : distance > 13 ? new Color(.27f, .29f, .35f)
-                        : distance > 10 ? (y > x ? new Color(.85f, .85f, .79f) : new Color(.48f, .49f, .54f))
-                        : new Color(.025f, .025f, .065f);
-                    socketRing.SetPixel(x, y, color);
-                }
-                socketRing.Apply(); return socketRing;
-            }
-        }
-
-        public void Dispose() { if (socketRing != null) UnityEngine.Object.Destroy(socketRing); }
 
         private void Vital(Rect rect, string label, int current, int maximum, Color color)
         {
