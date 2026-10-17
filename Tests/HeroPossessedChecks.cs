@@ -7,8 +7,8 @@ public static class HeroPossessedChecks
     private static void Check(bool value, string message)
     { checks++; if (!value) throw new Exception(message); }
     private static bool Near(float a, float b) => Math.Abs(a-b)<.003f;
-    private static HeroPossessedSequence At(float time, int lines = 31)
-    { var sequence = new HeroPossessedSequence(lines); sequence.Advance(time); return sequence; }
+    private static HeroPossessedSequence At(float time, int lines = 31, int seed = HeroPossessedSequence.DefaultStormSeed)
+    { var sequence = new HeroPossessedSequence(lines,seed); sequence.Advance(time); return sequence; }
     public static int Main()
     {
         Check(Near(At(0).BlackOpacity,1), "The carpet starts under the standard black fade.");
@@ -26,22 +26,15 @@ public static class HeroPossessedChecks
             else Check(frame.Lightning == 0, "The apparition waits for the stopped camera.");
             Check(frame.BlackOpacity >= 0 && frame.BlackOpacity <= 1 && frame.Lightning >= 0 && frame.Lightning <= 1,
                 "Fade and lightning remain bounded.");
-            Check(frame.Lightning > 0 ? frame.LightningFrame >= 0 && frame.LightningFrame < 2 : frame.LightningFrame == -1,
-                "Only a visible flash selects one of the two sprite frames.");
+            Check(frame.Lightning > 0 ? frame.LightningFrame >= 0 && frame.LightningFrame < HeroPossessedSequence.LightningFrameCount : frame.LightningFrame == -1,
+                "Only a visible flash selects one of the four sprite frames.");
             previous = frame.CameraFocusY;
         }
-        float strike = HeroPossessedSequence.FirstLightningAt;
-        Check(At(strike+.08f).Lightning>.99f, "Lightning reveals the spirit after the camera stops.");
-        Check(At(strike+.08f).LightningFrame==0 && At(strike+.48f).LightningFrame==1
-            && At(strike+.48f).Lightning>.64f, "Each double flash alternates sprite A then sprite B.");
-        Check(At(strike+5.58f).LightningFrame==0 && At(strike+5.98f).LightningFrame==1,
-            "The following strike repeats A/B without depending on a frame counter.");
-        Check(At(strike+.40f).LightningFrame==-1 && At(strike+1).LightningFrame==-1,
-            "Both the internal flicker gap and the pause between strikes hide the ray.");
+        float strike = At(0).StormFlashPeakAt(0);
+        Check(At(strike).Lightning>.99f, "Lightning reveals the naturally colored spirit after the camera stops.");
+        VerifyStorm();
         Check(HeroPossessedSequence.FinalCameraFocusY < .322f-.1f,
             "The final camera rises well above the previous throne framing to show the ghost.");
-        Check(At(strike+1).Lightning==0 && At(strike+5.58f).Lightning>.99f,
-            "The apparition disappears between intermittent strikes.");
         var finalText = At(At(0).TextEndAt-.2f);
         Check(finalText.TextOffset+finalText.LineCount*HeroPossessedSequence.LineHeight>0 && finalText.BlackOpacity==0,
             "The last line is visible before the final fade.");
@@ -68,7 +61,66 @@ public static class HeroPossessedChecks
             try { At(0).Advance(invalid); } catch(ArgumentOutOfRangeException) { rejected=true; }
             Check(rejected,"Invalid time steps are rejected.");
         }
-        Console.WriteLine("HERO_POSSESSED_OK: "+checks+" camera, narration, apparition, fade and menu-return checks.");
+        Console.WriteLine("HERO_POSSESSED_OK: "+checks+" storm timing, seeded positions, four frames, camera, narrative and fade checks.");
         return 0;
+    }
+
+    private static void VerifyStorm()
+    {
+        int frames=0,burstFlashes=0;
+        bool left=false,right=false,mirrored=false,normal=false;
+        var schedule=At(0,80);
+        HeroPossessedSequence.StormLight previous=HeroPossessedSequence.StormLight.Dark;
+        Check(schedule.StormFlashCount>12,"The storm contains varied bursts through a longer narrative.");
+        for(int i=0;i<schedule.StormFlashCount;i++)
+        {
+            float peak=schedule.StormFlashPeakAt(i);
+            var sample=At(peak,80).LightningState;
+            Check(sample.Intensity>=.54f && sample.Frame>=0 && sample.Frame<4,"Every scheduled flash is visible at its peak.");
+            Check(schedule.StormFlashEndAt(i)-peak<.075f,"Storm flashes decay in tens of milliseconds, not the previous 300 ms.");
+            float radians=sample.Angle*(float)Math.PI/180;
+            float extentX=(Math.Abs((float)Math.Cos(radians))*sample.Width+Math.Abs((float)Math.Sin(radians))*sample.Height/(2f/3))/2;
+            float extentY=(Math.Abs((float)Math.Sin(radians))*sample.Width*(2f/3)+Math.Abs((float)Math.Cos(radians))*sample.Height)/2;
+            Check(sample.X-extentX>=.1799f && sample.X+extentX<=.8401f
+                && sample.Y-extentY>=.7799f && sample.Y+extentY<=1.0451f,
+                "The entire tilted bolt fits inside the visible black recess.");
+            if(sample.Burst==previous.Burst)
+            {
+                Check(peak-schedule.StormFlashPeakAt(i-1)<.15f,"Successive flashes form rapid storm flickers.");
+                Check(sample.Frame==(previous.Frame+1)%4,"The four shapes alternate within a burst.");
+                Check(sample.X==previous.X && sample.Y==previous.Y,"A physical strike stays in place while its shape flickers.");
+                burstFlashes++;
+            }
+            else
+            {
+                if(i>0)
+                {
+                    Check(burstFlashes>=3 && burstFlashes<=5,"Bursts have three to five irregular flashes.");
+                    Check(sample.X!=previous.X || sample.Y!=previous.Y,"The next storm strike appears at a new random position.");
+                }
+                burstFlashes=1;
+            }
+            if(i+1<schedule.StormFlashCount)
+            {
+                float gap=(schedule.StormFlashEndAt(i)+schedule.StormFlashPeakAt(i+1)-.006f)/2;
+                Check(At(gap,80).Lightning==0 && At(gap,80).LightningFrame==-1,
+                    "Dark gaps hide both the spirit and the ray, including inside rapid bursts.");
+            }
+            frames|=1<<sample.Frame; left|=sample.X<.45f;right|=sample.X>.55f;
+            mirrored|=sample.Mirrored; normal|=!sample.Mirrored; previous=sample;
+        }
+        Check(frames==15 && left && right && mirrored && normal,
+            "The storm uses all four shapes, both sides of the black recess and mirrored variants.");
+        var same=At(schedule.StormFlashPeakAt(0),80).LightningState;
+        var different=At(schedule.StormFlashPeakAt(0),80,27).LightningState;
+        Check(same.X!=different.X || same.Y!=different.Y,"Different seeds change each presentation's storm.");
+        float target=schedule.StormFlashPeakAt(0);
+        var stepped=At(0,80);
+        while(stepped.Elapsed<target-.01f) stepped.Advance(.01f);
+        stepped.Advance(target-stepped.Elapsed);
+        Check(stepped.LightningFrame==same.Frame && Near(stepped.LightningState.X,same.X)
+            && Near(stepped.Lightning,same.Intensity),"Positions, forms and timing depend on elapsed time, not FPS.");
+        foreach(int seed in new[]{0,-1,int.MinValue})
+            Check(At(At(0,31,seed).StormFlashPeakAt(0),31,seed).Lightning>.99f,"All signed seeds produce a working storm.");
     }
 }

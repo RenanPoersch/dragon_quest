@@ -10,8 +10,11 @@ namespace DragonQuest.Prototype
         public const string SpiritResource = "PixelArt/Endings/PossessedSpiritFront";
         public const string LightningAResource = "PixelArt/Endings/PossessionLightningA";
         public const string LightningBResource = "PixelArt/Endings/PossessionLightningB";
+        public const string LightningCResource = "PixelArt/Endings/PossessionLightningC";
+        public const string LightningDResource = "PixelArt/Endings/PossessionLightningD";
         public const string CompositeResource = "PixelArt/Endings/PossessedThroneComposite";
         public const float SkyPadding = .18f;
+        public const float SpiritOpacity = .76f;
         public static readonly Vector4 SpiritRect = new Vector4(.22f, .49f, .56f, .56f);
         private readonly string[] lines = EndingNarrative.HeroPossessedEpilogue.Split('\n');
         private readonly Texture2D throne, shade;
@@ -21,15 +24,15 @@ namespace DragonQuest.Prototype
         private GUIStyle story, caption;
         private bool hasDrawn;
         private float previousLightning = -1;
-        private int previousLightningFrame = -2;
+        private int previousLightningIndex = -2;
         public HeroPossessedSequence Sequence { get; }
 
-        public HeroPossessedPresentation()
+        public HeroPossessedPresentation(int? stormSeed = null)
         {
-            Sequence = new HeroPossessedSequence(lines.Length);
+            Sequence = new HeroPossessedSequence(lines.Length, stormSeed ?? Guid.NewGuid().GetHashCode());
             throne = Load(ThroneResource);
             var spirit = Load(SpiritResource);
-            lightning = new[] { Load(LightningAResource), Load(LightningBResource) };
+            lightning = new[] { Load(LightningAResource), Load(LightningBResource), Load(LightningCResource), Load(LightningDResource) };
             Shader shader = Resources.Load<Shader>(CompositeResource);
             if (shader == null || !shader.isSupported) throw new InvalidOperationException("Shader do final de possessão indisponível.");
             composite = new Material(shader) { name = "Possession / lightning behind the throne", hideFlags = HideFlags.HideAndDontSave };
@@ -37,6 +40,8 @@ namespace DragonQuest.Prototype
             composite.SetTexture("_LightningTex", lightning[0]);
             composite.SetFloat("_SkyPadding", SkyPadding);
             composite.SetVector("_SpiritRect", SpiritRect);
+            composite.SetFloat("_SpiritOpacity", SpiritOpacity);
+            composite.SetFloat("_RoomAspect", throne.width/(float)throne.height);
             illuminatedThrone = new RenderTexture(throne.width, Mathf.RoundToInt(throne.height * (1 + SkyPadding)), 0, RenderTextureFormat.ARGB32)
             { name = "Possession / illuminated throne", filterMode = FilterMode.Point, wrapMode = TextureWrapMode.Clamp };
             shade = new Texture2D(128, 1, TextureFormat.RGBA32, false)
@@ -87,16 +92,22 @@ namespace DragonQuest.Prototype
             => new Rect(room.x, room.y - room.height * SkyPadding, room.width, room.height * (1 + SkyPadding));
         private void RefreshLightning()
         {
-            float flash = Sequence.Lightning;
-            int frame = Sequence.LightningFrame;
-            if (frame == previousLightningFrame && Mathf.Approximately(flash, previousLightning) && illuminatedThrone.IsCreated()) return;
+            var light = Sequence.LightningState;
+            float flash = light.Intensity;
+            if (light.FlashIndex == previousLightningIndex && Mathf.Approximately(flash, previousLightning) && illuminatedThrone.IsCreated()) return;
             composite.SetFloat("_Lightning", flash);
-            if (frame >= 0) composite.SetTexture("_LightningTex", lightning[frame]);
+            if (light.Frame >= 0)
+            {
+                composite.SetTexture("_LightningTex", lightning[light.Frame]);
+                composite.SetVector("_LightningRect",new Vector4(light.X,light.Y,light.Width,light.Height));
+                composite.SetFloat("_LightningAngle",light.Angle*Mathf.Deg2Rad);
+                composite.SetFloat("_LightningMirror",light.Mirrored?-1:1);
+            }
             RenderTexture previous = RenderTexture.active;
             try { Graphics.Blit(throne, illuminatedThrone, composite); }
             finally { RenderTexture.active = previous; }
             previousLightning = flash;
-            previousLightningFrame = frame;
+            previousLightningIndex = light.FlashIndex;
         }
         private void DrawNarrative()
         {

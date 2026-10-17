@@ -8,6 +8,11 @@ Shader "Hidden/DragonQuest/PossessedThroneComposite"
         _Lightning ("Lightning", Float) = 0
         _SkyPadding ("Black space above the painting", Float) = .18
         _SpiritRect ("Frontal spirit in room coordinates", Vector) = (.22,.49,.56,.56)
+        _SpiritOpacity ("Natural spirit opacity", Range(0,1)) = .76
+        _LightningRect ("Lightning center and size", Vector) = (.74,.92,.20,.24)
+        _LightningAngle ("Lightning angle in radians", Float) = 0
+        _LightningMirror ("Lightning horizontal direction", Float) = 1
+        _RoomAspect ("Source art aspect", Float) = .6666667
     }
     SubShader
     {
@@ -19,8 +24,8 @@ Shader "Hidden/DragonQuest/PossessedThroneComposite"
             #pragma fragment frag
             #include "UnityCG.cginc"
             sampler2D _MainTex, _SpiritTex, _LightningTex;
-            float _Lightning, _SkyPadding;
-            float4 _SpiritRect;
+            float _Lightning, _SkyPadding, _SpiritOpacity, _LightningAngle, _LightningMirror, _RoomAspect;
+            float4 _SpiritRect, _LightningRect;
             fixed4 frag(v2f_img i) : SV_Target
             {
                 // Extend the black recess above the original art without changing its pixels.
@@ -37,17 +42,21 @@ Shader "Hidden/DragonQuest/PossessedThroneComposite"
                 float foregroundHalfWidth = fromTop < .27 ? .085 : .13;
                 float foreground = step(.195,fromTop)*step(fromTop,.55)*step(abs(roomUV.x-.5),foregroundHalfWidth);
                 recess *= 1-foreground;
-                float2 spiritUV = (roomUV-_SpiritRect.xy)/_SpiritRect.zw;
-                float inside = step(0,spiritUV.x)*step(spiritUV.x,1)*step(0,spiritUV.y)*step(spiritUV.y,1);
-                fixed4 spirit = tex2D(_SpiritTex, saturate(spiritUV));
-                float silhouette = pow(spirit.a,1.6) * inside * recess;
-                float detail = dot(spirit.rgb,float3(.2,.4,.4));
-                room.rgb += _Lightning * (silhouette * lerp(float3(.065,.08,.12),float3(.28,.32,.44),detail)
-                    + recess * float3(.012,.016,.028));
-                float2 boltUV = (roomUV-float2(.64,.78))/float2(.20,.28);
+                float2 offset=(roomUV-_LightningRect.xy)*float2(_RoomAspect,1);
+                float sine=sin(_LightningAngle),cosine=cos(_LightningAngle);
+                float2 rotated=float2(cosine*offset.x+sine*offset.y,-sine*offset.x+cosine*offset.y);
+                float2 boltUV = rotated/(_LightningRect.zw*float2(_RoomAspect,1))+.5;
+                boltUV.x=.5+(boltUV.x-.5)*_LightningMirror;
                 float boltInside = step(0,boltUV.x)*step(boltUV.x,1)*step(0,boltUV.y)*step(boltUV.y,1);
                 fixed4 bolt = tex2D(_LightningTex,saturate(boltUV));
                 room.rgb += recess * _Lightning * boltInside * pow(bolt.a,1.5) * bolt.rgb * .85;
+                float2 spiritUV = (roomUV-_SpiritRect.xy)/_SpiritRect.zw;
+                float inside = step(0,spiritUV.x)*step(spiritUV.x,1)*step(0,spiritUV.y)*step(spiritUV.y,1);
+                fixed4 spirit = tex2D(_SpiritTex, saturate(spiritUV));
+                // Preserve the original ivory/cyan/cobalt RGB, with only a slight
+                // transparency. Composite over the ray so it stays behind the spirit.
+                float opacity=spirit.a*inside*recess*_SpiritOpacity*_Lightning;
+                room.rgb=lerp(room.rgb,spirit.rgb,saturate(opacity));
                 return room;
             }
             ENDCG

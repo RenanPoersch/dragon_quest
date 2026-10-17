@@ -1,0 +1,26 @@
+{
+  "generator": "imagegen built-in",
+  "date": "2026-10-16",
+  "transparent_background": true,
+  "preserve_original_rgba": true,
+  "assets": [
+    {
+      "file": "Assets/Resources/PixelArt/Endings/PossessionLightningC.png",
+      "original": "C:/Users/renan/.codex/generated_images/01a14711-f3b3-7180-91f0-11f78360edaf/exec-f1530f4f-1e86-46b3-94d3-d2d2d1c7a8a1.png",
+      "prompt": "Use case: stylized-concept. Asset type: a NEW standalone transparent lightning animation sprite, variant C, for a serious pixel-art dark fantasy game. The attached image is a STYLE reference only for ivory-white/electric-blue lightning colors and crisp pixelated luminous channels.\nCreate a new DISTINCT organic lightning configuration: one full-length main jagged channel starting at x=48%, y=7%, abruptly forking in the upper middle into TWO near-parallel unequal lightning paths. The left fork is thinner, terminating near x=29%,y=72%; the brighter main right channel travels through x=65%,y=45% and returns to x=54%,y=93%. Add several short thin natural side branches. Unequal angular bends, realistic storm fork, no repeated sawtooth and no geometric diamond. The visible channel pattern must clearly differ from the existing single winding reference. Narrow ivory-white core with compact pale blue/violet luminous edge. Serious detailed pixel art with crisp stepped pixels. One bolt system only, NOT a sheet or multiple separate frames.\nCanvas portrait 1024x1536; at least 6% truly transparent padding on all four edges; ALL branches fully inside the middle 70% of canvas width. Preserve the transparent alpha around channels, no dark or colored rectangle, no opaque haze, no clouds, rain, landscape, ghosts, text, labels, watermark or UI. Real transparent background, no checkerboard baked in.",
+      "references": [
+        "Assets/Resources/PixelArt/Endings/PossessionLightningA.png"
+      ],
+      "sha256": "34DBA3A3EBBC8815FB21527741174ABBA06C88EB7E306E02CAB78856656A6BBB"
+    },
+    {
+      "file": "Assets/Resources/PixelArt/Endings/PossessionLightningD.png",
+      "original": "C:/Users/renan/.codex/generated_images/01a14711-f3b3-7180-91f0-11f78360edaf/exec-2f4d6045-8b35-4c91-b7fb-90e43f02d5c0.png",
+      "prompt": "Use case: stylized-concept. Asset type: a NEW standalone transparent lightning animation sprite, variant D, for a serious pixel-art dark fantasy game. The attached image is a STYLE reference only for the ivory-white/electric-blue lightning colors and crisp pixelated luminous channels.\nCreate a new DISTINCT storm-lightning configuration: a sharp crooked primary bolt starts at x=52%,y=7%, zigzags narrowly to x=38%,y=32%, then kinks back toward x=58%,y=61%, with a narrow bright lower tail ending at x=46%,y=93%. A very prominent diagonal branch forks from x=41%,y=38% toward the LOWER LEFT around x=19%,y=69%, with two short subsidiary forks. A few very fine right side filaments high in the bolt. Angular irregular natural lengths, asymmetric jagged contour, no smooth curves, no geometric diamond or periodic zigzag. The configuration should look like a new instant of the same thunderstorm, clearly distinct from the attached winding bolt and from a twin parallel fork. White-hot slender main channel with tight electric-blue and pale violet luminous edge, detailed serious crisp pixel art.\nOne full-length complete bolt system centered in a 1024x1536 portrait image, with 6% empty transparent margin on all sides and ALL branches inside the middle 70% of width. One effect frame, not a sprite sheet. Genuinely transparent alpha, no opaque background, baked checkerboard, wide haze, clouds, rain, people, ghosts, scene, ground, text, logo, border or UI.",
+      "references": [
+        "Assets/Resources/PixelArt/Endings/PossessionLightningA.png"
+      ],
+      "sha256": "0BBDD0DC29319FD5DC5C7E40A9111C7340D05EC91130A77F1EBC13FC46A52389"
+    }
+  ]
+}

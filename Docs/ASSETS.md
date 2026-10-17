@@ -129,3 +129,9 @@ A silhueta reutiliza `PixelArt/SpiritBattle`, já escolhido pelo usuário, com c
 `Assets/Resources/PixelArt/Endings/PossessedSpiritFront.png`, `PossessionLightningA.png` e `PossessionLightningB.png` são três gerações separadas do `imagegen` integrado, com transparência real. Os PNGs de 1024 × 1536 foram copiados integralmente, sem editar pixels, alpha ou resolução; Point/Clamp, sem compressão ou mipmaps. O novo fantasma conserva a máscara e as chamas azuis do espírito, em pose reta de frente e com o acabamento sério dos retratos. Os dois raios têm ramificações diferentes e alternam A/B nos pulsos de cada clarão.
 
 Prompts completos, referências e hashes SHA-256 em `Docs/ArtInputs/PossessionSprites.prompts.json`. O quadro final sobe para mostrar o rosto inteiro acima do trono e amplia o fundo preto por composição. O PNG `SpiritBattle.png` não foi alterado. Ver `Docs/HERO_POSSESSED_ENDING.md`.
+
+## Tempestade e cores naturais do espírito — 16 de outubro de 2026
+
+`PossessionLightningC.png` e `PossessionLightningD.png`, em `Assets/Resources/PixelArt/Endings`, acrescentam os canais duplo e diagonal aos quadros A/B existentes. Foram gerados separadamente com o `imagegen` integrado e copiados integralmente, com alpha real e resolução nativa de 1024 × 1536. Importação Point/Clamp, sem compressão, redução ou mipmaps. Prompts, referências e SHA-256 em `Docs/ArtInputs/PossessionStorm.prompts.json`.
+
+A animação agora sorteia posições, tamanhos, inclinações, espelhamento e rajadas de 3–5 piscadas rápidas, usando as quatro formas no fundo preto. O shader preserva o RGB original de `PossessedSpiritFront.png`, com opacidade máxima de 76%; o PNG do espírito não foi editado. Detalhes em `Docs/HERO_POSSESSED_ENDING.md`.

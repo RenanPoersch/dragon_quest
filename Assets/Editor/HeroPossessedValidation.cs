@@ -11,7 +11,8 @@ public static class HeroPossessedValidation
     public static void Run()
     {
         foreach (string resource in new[] { HeroPossessedPresentation.ThroneResource, HeroPossessedPresentation.SpiritResource,
-            HeroPossessedPresentation.LightningAResource, HeroPossessedPresentation.LightningBResource })
+            HeroPossessedPresentation.LightningAResource, HeroPossessedPresentation.LightningBResource,
+            HeroPossessedPresentation.LightningCResource, HeroPossessedPresentation.LightningDResource })
         {
             var texture = Resources.Load<Texture2D>(resource);
             Assert(texture != null, "artwork exists: " + resource);
@@ -63,7 +64,7 @@ public static class HeroPossessedValidation
         Assert(EndingNarrative.Pages(GameEnding.KingFreed).Length == 3
             && EndingNarrative.Pages(GameEnding.CastleDestroyed).Length == 3
             && EndingNarrative.Pages(GameEnding.HeroPossessed).Length == 3, "ending/save compatibility remains intact");
-        Debug.Log("HERO_POSSESSED_VALIDATION_OK: frontal transparent ghost, two alternating ray sprites, expanded sky, higher locked composition, foreground protection, narrative and fade.");
+        Debug.Log("HERO_POSSESSED_VALIDATION_OK: four storm sprites, natural spirit RGB with slight transparency, expanded sky, locked composition, foreground protection, narrative and fade.");
     }
     [MenuItem("Tools/Dragon Quest/Preview Possessed Ending")]
     public static void Preview()
@@ -98,6 +99,8 @@ public static class HeroPossessedValidation
         material.SetTexture("_SpiritTex",Resources.Load<Texture2D>(HeroPossessedPresentation.SpiritResource));
         material.SetFloat("_SkyPadding",HeroPossessedPresentation.SkyPadding);
         material.SetVector("_SpiritRect",HeroPossessedPresentation.SpiritRect);
+        material.SetFloat("_SpiritOpacity",HeroPossessedPresentation.SpiritOpacity);
+        material.SetFloat("_RoomAspect",throne.width/(float)throne.height);
         material.SetTexture("_LightningTex",Resources.Load<Texture2D>(HeroPossessedPresentation.LightningAResource));
         int height=Mathf.RoundToInt(throne.height*(1+HeroPossessedPresentation.SkyPadding));
         var target=new RenderTexture(throne.width,height,0,RenderTextureFormat.ARGB32);
@@ -108,36 +111,61 @@ public static class HeroPossessedValidation
             material.SetFloat("_Lightning",0); Graphics.Blit(throne,target,material);
             RenderTexture.active=target; readback.ReadPixels(new Rect(0,0,target.width,target.height),0,0); readback.Apply();
             Color32[] dark=readback.GetPixels32();
-            material.SetFloat("_Lightning",1); Graphics.Blit(throne,target,material);
-            RenderTexture.active=target; readback.ReadPixels(new Rect(0,0,target.width,target.height),0,0); readback.Apply();
-            Color32[] lit=readback.GetPixels32();
-            material.SetTexture("_LightningTex",Resources.Load<Texture2D>(HeroPossessedPresentation.LightningBResource));
-            Graphics.Blit(throne,target,material);
-            RenderTexture.active=target; readback.ReadPixels(new Rect(0,0,target.width,target.height),0,0); readback.Apply();
-            Color32[] second=readback.GetPixels32();
-            int changed=0,alternate=0,visibleFace=0,visibleSky=0;
-            for(int y=0;y<target.height;y++) for(int x=0;x<target.width;x++)
+            Color32[] first=null;
+            foreach(string resource in new[]{HeroPossessedPresentation.LightningAResource,HeroPossessedPresentation.LightningBResource,
+                HeroPossessedPresentation.LightningCResource,HeroPossessedPresentation.LightningDResource})
             {
-                int i=y*target.width+x;
-                bool same=dark[i].Equals(lit[i]);
-                if(!same) changed++;
-                if(!lit[i].Equals(second[i])) alternate++;
-                bool face=x>target.width*.435f && x<target.width*.565f && y>throne.height*.72f && y<throne.height*.79f;
-                bool torso=x>target.width*.38f && x<target.width*.62f && y>throne.height*.52f && y<throne.height*.70f;
-                if(face || torso)
-                    Assert(same && dark[i].Equals(second[i]),"both lightning frames remain behind Aren's face and clothing");
-                if(!same && x>target.width*.45f && x<target.width*.55f && y>throne.height*.89f && y<throne.height*.97f) visibleFace++;
-                if(!same && y>throne.height) visibleSky++;
+                material.SetTexture("_LightningTex",Resources.Load<Texture2D>(resource));
+                material.SetFloat("_Lightning",1); Graphics.Blit(throne,target,material);
+                RenderTexture.active=target; readback.ReadPixels(new Rect(0,0,target.width,target.height),0,0); readback.Apply();
+                Color32[] lit=readback.GetPixels32();
+                int changed=0,alternate=0,visibleFace=0,visibleSky=0;
+                for(int y=0;y<target.height;y++) for(int x=0;x<target.width;x++)
+                {
+                    int i=y*target.width+x;
+                    bool same=dark[i].Equals(lit[i]);
+                    if(!same) changed++;
+                    if(first!=null && !lit[i].Equals(first[i])) alternate++;
+                    bool face=x>target.width*.435f && x<target.width*.565f && y>throne.height*.72f && y<throne.height*.79f;
+                    bool torso=x>target.width*.38f && x<target.width*.62f && y>throne.height*.52f && y<throne.height*.70f;
+                    if(face || torso) Assert(same,"all four lightning forms remain behind Aren's face and clothing");
+                    if(!same && x>target.width*.45f && x<target.width*.55f && y>throne.height*.89f && y<throne.height*.97f) visibleFace++;
+                    if(!same && y>throne.height) visibleSky++;
+                }
+                Assert(changed>1000,"lightning reveals the naturally colored spirit");
+                Assert(first==null || alternate>100,"each new lightning shape produces a distinct rendered frame");
+                Assert(visibleFace>500 && visibleSky>100,"the frontal face and upper horns appear in the expanded black recess");
+                if(first==null) first=lit;
             }
-            Assert(changed>1000,"lightning reveals a substantial spirit silhouette in the black recess");
-            Assert(alternate>100,"the two lightning sprites produce distinct rendered frames");
-            Assert(visibleFace>500 && visibleSky>100,"the frontal face and upper horns appear in the expanded black recess");
+            ValidateNaturalColor(material,throne,target,readback);
         }
         finally
         {
             RenderTexture.active=previous; target.Release();
             UnityEngine.Object.DestroyImmediate(target); UnityEngine.Object.DestroyImmediate(readback); UnityEngine.Object.DestroyImmediate(material);
         }
+    }
+    private static void ValidateNaturalColor(Material material,Texture2D room,RenderTexture target,Texture2D readback)
+    {
+        var color=new Texture2D(1,1,TextureFormat.RGBA32,false);
+        try
+        {
+            color.SetPixel(0,0,new Color(.12f,.42f,.90f,1)); color.Apply();
+            material.SetTexture("_SpiritTex",color); material.SetTexture("_LightningTex",Texture2D.blackTexture);
+            int x=target.width/2,y=Mathf.RoundToInt(room.height*1.02f);
+            material.SetFloat("_SpiritOpacity",1);
+            Color opaque=SampleColor(material,room,target,readback,x,y);
+            material.SetFloat("_SpiritOpacity",HeroPossessedPresentation.SpiritOpacity);
+            Color translucent=SampleColor(material,room,target,readback,x,y);
+            Assert(opaque.b>opaque.r*3 && opaque.g>opaque.r*2,"the compositor keeps the original RGB instead of replacing it with grey");
+            Assert(translucent.b<opaque.b*.95f && translucent.b>opaque.b*.55f,"the spirit is slightly transparent, not opaque or almost invisible");
+        }
+        finally { UnityEngine.Object.DestroyImmediate(color); }
+    }
+    private static Color SampleColor(Material material,Texture2D room,RenderTexture target,Texture2D readback,int x,int y)
+    {
+        Graphics.Blit(room,target,material); RenderTexture.active=target;
+        readback.ReadPixels(new Rect(x,y,1,1),x,y); readback.Apply(); return readback.GetPixel(x,y);
     }
 }
 
@@ -155,7 +183,7 @@ public sealed class HeroPossessedPreview : EditorWindow
         previousTime=now; Repaint();
     }
     private void Jump(float seconds)
-    { presentation?.Dispose(); presentation=new HeroPossessedPresentation(); presentation.Sequence.Advance(seconds); playing=false; }
+    { presentation?.Dispose(); presentation=new HeroPossessedPresentation(HeroPossessedSequence.DefaultStormSeed); presentation.Sequence.Advance(seconds); playing=false; }
     private void OnGUI()
     {
         if (presentation==null) Jump(HeroPossessedSequence.CameraStopAt);
@@ -164,8 +192,8 @@ public sealed class HeroPossessedPreview : EditorWindow
         if (GUILayout.Button("Tapete",EditorStyles.toolbarButton)) Jump(1.4f);
         if (GUILayout.Button("Escadas",EditorStyles.toolbarButton)) Jump(15);
         if (GUILayout.Button("Trono",EditorStyles.toolbarButton)) Jump(HeroPossessedSequence.CameraStopAt);
-        if (GUILayout.Button("Raio A",EditorStyles.toolbarButton)) Jump(HeroPossessedSequence.FirstLightningAt+.08f);
-        if (GUILayout.Button("Raio B",EditorStyles.toolbarButton)) Jump(HeroPossessedSequence.FirstLightningAt+.48f);
+        if (GUILayout.Button("Rajada",EditorStyles.toolbarButton)) Jump(presentation.Sequence.StormFlashPeakAt(0));
+        if (GUILayout.Button("Outro local",EditorStyles.toolbarButton)) Jump(presentation.Sequence.StormFlashPeakAt(Math.Min(5,presentation.Sequence.StormFlashCount-1)));
         if (GUILayout.Button("Fade",EditorStyles.toolbarButton)) Jump(presentation.Sequence.FadeOutAt+1.5f);
         if (GUILayout.Button("Preto",EditorStyles.toolbarButton)) Jump(presentation.Sequence.BlackAt);
         GUILayout.Label(presentation.Sequence.Elapsed.ToString("0.0")+" s",EditorStyles.miniLabel);
