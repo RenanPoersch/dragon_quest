@@ -58,6 +58,7 @@ namespace DragonQuest.Prototype
         public void SetRandomEncountersEnabled(bool enabled) => randomEncounters.SetEnabled(enabled, currentLocation());
         public bool IsActive { get; private set; }
         public bool IsMenuOpen { get; private set; }
+        public System.Func<bool> TryCancelInventorySelection { get; set; }
         public bool IsBusy => HasEnded || IsActive || IsMenuOpen || otherMenuOpen();
         public PartyProgress Party { get; private set; }
         public BattleSession Session { get; private set; }
@@ -359,7 +360,7 @@ namespace DragonQuest.Prototype
             }
             if (!HasEnded && !IsActive && !otherMenuOpen() && !dialogue.IsOpen && GameInput.IsFocused)
             {
-                if (IsMenuOpen && GameInput.CancelPressed) { CloseMenu(); GameInput.ConsumeGamepadFrame(); }
+                if (IsMenuOpen && GameInput.CancelPressed) { if (TryCancelInventorySelection?.Invoke() != true) CloseMenu(); GameInput.ConsumeGamepadFrame(); }
                 else if (GameInput.InventoryPressed)
                 {
                     if (IsMenuOpen) CloseMenu();

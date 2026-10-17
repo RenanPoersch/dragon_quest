@@ -130,6 +130,20 @@ namespace DragonQuest.Prototype
             GUI.color = previous;
         }
 
+        public void DrawItemMember(Rect rect, PartyMember member)
+        {
+            EnsureStyles();
+            DrawPortrait(new Rect(rect.x, rect.y, 154, 154), member);
+            float x = rect.x + 186;
+            Text(new Rect(x, rect.y, 310, 42), member.Name, name);
+            Text(new Rect(x, rect.y + 42, 58, 34), "LV", cyan);
+            Text(new Rect(x + 62, rect.y + 42, 80, 34), member.Level.ToString(), value);
+            DrawVital(new Rect(x, rect.y + 78, 310, 34), "HP", member.Hp, member.MaxHp, new Color(.08f, .68f, .92f));
+            DrawVital(new Rect(x, rect.y + 114, 310, 34), "MP", member.Mp, member.MaxMp, new Color(.15f, .85f, .60f));
+            string status = !member.IsAlive ? "KO" : member.IsPoisoned ? "Veneno" : member.BoundActions > 0 ? "Preso" : "";
+            if (status.Length > 0) Text(new Rect(x + 156, rect.y + 47, 150, 28), status, condition);
+        }
+
         private void DrawVital(Rect rect, string title, int current, int maximum, Color color)
         {
             Text(new Rect(rect.x, rect.y, 56, rect.height), title, cyan);
@@ -146,8 +160,10 @@ namespace DragonQuest.Prototype
         }
 
         public void DrawHand(int selected)
+            => DrawHand(CommandRect(selected));
+
+        public void DrawHand(Rect rect)
         {
-            Rect rect = CommandRect(selected);
             if (hand == null) { Text(new Rect(rect.x - 40, rect.y, 40, rect.height), ">", CommandStyle); return; }
             float width = Mathf.Min(58, 34 * handAspect), height = width / handAspect;
             GUI.DrawTextureWithTexCoords(new Rect(rect.x - width - 7, rect.center.y - height / 2, width, height), hand, handUv, true);
