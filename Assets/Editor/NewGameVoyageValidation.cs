@@ -44,20 +44,26 @@ public static class NewGameVoyageValidation
                     || reconstructed.a != pixels[i].a) throw new Exception("Voyage layers lost source artwork at " + i);
             }
             if (frontCount == 0 || rearCount == 0) throw new Exception("Both sides of the ship must contain artwork.");
+            float height = NewGameVoyageSequence.ShipWidth * ship.height / ship.width;
+            for (int hero = 0; hero < 3; hero++) for (int step = 0; step <= 40; step++)
+            {
+                var walk = new NewGameVoyageSequence();
+                walk.Advance(NewGameVoyageSequence.WalkStart + hero * NewGameVoyageSequence.HeroDelay
+                    + step / 40f * NewGameVoyageSequence.WalkDuration);
+                float x = walk.HeroLocalX(hero), y = VoyageShipLayers.DeckHeightAt(x);
+                int px = Mathf.Clamp((int)(x * ship.width), 0, ship.width - 1);
+                int py = Mathf.Clamp((int)((1 - y) * ship.height), 0, ship.height - 1);
+                if (front[py * ship.width + px].a < 220)
+                    throw new Exception("Hero " + hero + " has no opaque deck below the feet at walk sample " + step);
+                float occlusion = height * (y - VoyageShipLayers.RailHeightAt(x));
+                if (occlusion < 12 || occlusion > NewGameVoyageSequence.HeroSize * .55f)
+                    throw new Exception("Deck should conceal the lower body without sinking hero " + hero);
+            }
         }
-        var arrived = new NewGameVoyageSequence(); arrived.Advance(12);
         var complete = new NewGameVoyageSequence(); complete.Advance(NewGameVoyageSequence.CompleteAt);
         var panorama = Resources.Load<Texture2D>("PixelArt/RuinsPaintedPanorama");
         if (complete.BackgroundOffset >= panorama.width * 720f / panorama.height - 1280)
             throw new Exception("Panorama must cover the entire rightward drift without tiling or exposed edges.");
-        float shipHeight = NewGameVoyageSequence.ShipWidth * ship.height / ship.width;
-        for (int hero = 0; hero < 3; hero++)
-        {
-            float localX = arrived.HeroLocalX(hero);
-            float occlusion = shipHeight * (VoyageShipLayers.DeckHeightAt(localX) - VoyageShipLayers.RailHeightAt(localX));
-            if (occlusion < 12 || occlusion > NewGameVoyageSequence.HeroSize / 3)
-                throw new Exception("Near gunwale should cover only the lower legs of hero " + hero);
-        }
         var font = Resources.Load<Font>("Fonts/PixelOperator");
         for (int i = 0; i < NewGameVoyageSequence.LineCount; i++)
         {

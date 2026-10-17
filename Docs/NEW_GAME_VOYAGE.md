@@ -3,7 +3,7 @@
 `New game` agora apresenta uma cena lateral antes de liberar o mapa global. `Continue` mantém o carregamento direto do save. A abertura do título permanece independente.
 
 - A nau entra pela direita e desacelera até a proa parar um pouco antes do centro. O enquadramento próximo usa largura de 1560 na composição de 1280: aproximadamente 47% da nau fica visível, com a popa fora da tela. Velas e parte inferior do casco também continuam além do quadro.
-- Aren, Lia e Bram caminham em sequência pelo convés, voltados para a proa à esquerda. Os heróis têm 96 de altura na composição. `VoyageShipLayers` divide a mesma arte em duas camadas complementares, seguindo a curva da amurada: velas e lado distante atrás dos heróis, lado próximo e casco à frente. Os pés acompanham o contorno do convés; a amurada encobre a parte inferior das pernas. Não há recorte retangular atravessando os personagens.
+- Aren, Lia e Bram caminham em sequência pelo convés, voltados para a proa à esquerda. Cada herói usa uma escala fixa, com a maior pose lateral ajustada a 96 de altura na composição. `VoyageShipLayers` divide a mesma arte em duas camadas complementares, seguindo a curva da amurada: velas e lado distante atrás dos heróis, lado próximo e casco à frente. Os pés seguem um contorno próprio do piso de madeira, mais baixo que a amurada, especialmente nas posições de Lia e Bram. A amurada encobre as pernas. Não há recorte retangular atravessando os personagens.
 - O panorama do mar e das montanhas é o mesmo das ruínas, amostrado com filtro Point. Fundo e reflexos passam para a direita, em sentido coerente com a navegação para a esquerda. A velocidade aumenta durante o deslocamento da embarcação e mantém uma deriva durante a leitura.
 - A área completa da narrativa — sombra, cabeçalho e história — só começa a aparecer 0,4 s depois de a nau chegar. O tratamento preto usa a mesma cor, força de 82%, queda horizontal suave e tempos de entrada/saída do texto do FinalOne. A história sobe automaticamente na coluna esquerda e some antes da partida. O texto apresenta a ilha sob a tirania e a busca dos três pela lenda, sem revelar soluções ou finais.
 - Ao terminar, há uma pausa de 1,8 s, e a nau parte para a esquerda. O fade para preto usa a mesma curva suave e duração de 3 s do FinalOne, seguido por 1 s de preto. A nau sai inteiramente do quadro antes de o mapa aparecer por fade-in. A sequência dura aproximadamente 62 segundos.
@@ -28,6 +28,12 @@ Validação da revisão do enquadramento: 1.910 verificações da sequência, 29
 O casco ampliado e rotacionado podia deixar um risco de pixels após a faixa inferior, sobretudo com escala fracionária e espaço preto abaixo da composição. A máscara das faixas agora é aplicada por último, fora do recorte IMGUI e em coordenadas da tela; as bordas são arredondadas para dentro. Isso cobre integralmente o espaço preto, inclusive durante o balanço.
 
 Validação: compilação dos scripts e teste de integração passaram. A falha foi reproduzida em 1003 × 831; 22 capturas após a correção, distribuídas entre balanço, leitura e partida, tiveram zero pixels fora da área da cena. Evidências locais em `Temp/VoyagePreview/BorderFix`.
+
+### Apoio dos personagens no convés
+
+O piso tem um perfil separado do corrimão, calibrado na faixa contínua de madeira abaixo dos vãos. A apresentação posiciona o pivô dos pés de cada sprite nesse piso e preserva a mesma escala entre as poses da caminhada. Assim, os recortes diferentes dos atlas de Lia e Bram não alteram o apoio nem o tamanho do corpo a cada passo. O grupo continua compartilhando a translação e a rotação da nau.
+
+Validação desta correção: compilação dos scripts e verificações de tempo passaram. A Unity conferiu contato com pixels opacos da camada dianteira em 123 posições ao longo das três caminhadas. Quatorze capturas do renderizador real foram inspecionadas, cobrindo caminhada, parada, diferentes fases do balanço e partida. Evidências e projeto isolado em `Builds/VoyagePreview`, fora do Git.
 
 ## Prompt final da nau — imagegen integrado
 

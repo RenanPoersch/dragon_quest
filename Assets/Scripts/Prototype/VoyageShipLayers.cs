@@ -18,6 +18,15 @@ namespace DragonQuest.Prototype
             new Vector2(.56f, .752f), new Vector2(.7f, .75f), new Vector2(.76f, .735f),
             new Vector2(.8f, .68f), new Vector2(.88f, .62f), new Vector2(1, .59f)
         };
+        // Measured from the continuous timber below the railing openings. The floor
+        // slopes down behind the bow; it is not a fixed offset from the handrail.
+        private static readonly Vector2[] Deck =
+        {
+            new Vector2(0, .66f), new Vector2(.2f, .75f), new Vector2(.245f, .762f),
+            new Vector2(.28f, .771f), new Vector2(.31f, .774f), new Vector2(.375f, .779f),
+            new Vector2(.45f, .783f), new Vector2(.64f, .786f), new Vector2(.7f, .786f),
+            new Vector2(.75f, .762f), new Vector2(.8f, .72f), new Vector2(1, .65f)
+        };
 
         public VoyageShipLayers(Texture2D source)
         {
@@ -39,15 +48,17 @@ namespace DragonQuest.Prototype
             InFrontOfParty = Layer("Voyage / near gunwale and hull", source.width, source.height, front);
         }
 
-        public static float RailHeightAt(float x)
-        {
-            for (int i = 1; i < Rail.Length; i++)
-                if (x <= Rail[i].x)
-                    return Mathf.Lerp(Rail[i - 1].y, Rail[i].y, Mathf.InverseLerp(Rail[i - 1].x, Rail[i].x, x));
-            return Rail[Rail.Length - 1].y;
-        }
+        public static float RailHeightAt(float x) => HeightAt(Rail, x);
+        public static float DeckHeightAt(float x) => HeightAt(Deck, x);
 
-        public static float DeckHeightAt(float x) => RailHeightAt(x) + .018f;
+        private static float HeightAt(Vector2[] contour, float x)
+        {
+            for (int i = 1; i < contour.Length; i++)
+                if (x <= contour[i].x)
+                    return Mathf.Lerp(contour[i - 1].y, contour[i].y,
+                        Mathf.InverseLerp(contour[i - 1].x, contour[i].x, x));
+            return contour[contour.Length - 1].y;
+        }
 
         private static Texture2D Layer(string name, int width, int height, Color32[] pixels)
         {

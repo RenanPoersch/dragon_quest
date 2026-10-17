@@ -10,6 +10,7 @@ namespace DragonQuest.Prototype
         private readonly Texture2D panorama, shade;
         private readonly VoyageShipLayers ship;
         private readonly PixelSpriteAtlas[] heroes = new PixelSpriteAtlas[3];
+        private readonly float[] heroScales = new float[3];
         private GUIStyle heading, chapter, story;
         private bool hasDrawn;
         public bool IsPlaying => Sequence.IsPlaying;
@@ -23,6 +24,13 @@ namespace DragonQuest.Prototype
             heroes[0] = new PixelSpriteAtlas("ArenWalk");
             heroes[1] = new PixelSpriteAtlas("LiaWalk");
             heroes[2] = new PixelSpriteAtlas("BramWalk");
+            for (int hero = 0; hero < heroes.Length; hero++)
+            {
+                float tallest = 1;
+                for (int row = 0; row < 3; row++)
+                    tallest = Mathf.Max(tallest, heroes[hero].Sprites[row * 4 + (int)PixelDirection.Left].rect.height);
+                heroScales[hero] = NewGameVoyageSequence.HeroSize / tallest;
+            }
             shade = new Texture2D(128, 1, TextureFormat.RGBA32, false)
                 { name = "Voyage / narrative shade", wrapMode = TextureWrapMode.Clamp };
             var colors = new Color[shade.width];
@@ -119,8 +127,7 @@ namespace DragonQuest.Prototype
                 bool walking = progress > 0 && progress < 1;
                 int frame = PixelSpriteLayout.WalkFrame(PixelDirection.Left, progress * 6.4f, walking);
                 float foot = bounds.y + bounds.height * VoyageShipLayers.DeckHeightAt(localX);
-                float size = NewGameVoyageSequence.HeroSize;
-                heroes[i].Draw(new Rect(bounds.x + localX * bounds.width - size / 2, foot - size, size, size), frame, Color.white);
+                DrawGroundedHero(i, frame, new Vector2(bounds.x + localX * bounds.width, foot));
             }
             // The curved near side covers their lower legs instead of a flat rectangular strip.
             GUI.color = Color.white;
@@ -130,6 +137,22 @@ namespace DragonQuest.Prototype
             for (int i = 0; i < 5; i++)
                 Fill(new Rect(Mathf.Round(bounds.xMax - 78 + i * 23 + Mathf.Sin(t * 3 + i) * 3),
                     Mathf.Round(bounds.yMax - 15 + i * 3), 24 - i * 3, 2), new Color(.8f, .94f, 1, .32f * speed));
+        }
+
+        private void DrawGroundedHero(int hero, int frame, Vector2 foot)
+        {
+            var atlas = heroes[hero];
+            Sprite pose = atlas.Sprites[frame];
+            Rect source = pose.rect;
+            float scale = heroScales[hero];
+            // Preserve the pose's foot pivot and one scale throughout the walk cycle.
+            // Resizing and centering each crop separately makes the party slide above the deck.
+            var destination = new Rect(foot.x - pose.pivot.x * scale,
+                foot.y - (source.height - pose.pivot.y) * scale, source.width * scale, source.height * scale);
+            var uv = new Rect(source.x / atlas.Texture.width, source.y / atlas.Texture.height,
+                source.width / atlas.Texture.width, source.height / atlas.Texture.height);
+            GUI.color = Color.white;
+            GUI.DrawTextureWithTexCoords(destination, atlas.Texture, uv, true);
         }
 
         private void DrawNarrative()
