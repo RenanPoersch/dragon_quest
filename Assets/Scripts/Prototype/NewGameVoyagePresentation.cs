@@ -90,7 +90,7 @@ namespace DragonQuest.Prototype
 
         private void DrawSea()
         {
-            float t = Sequence.Elapsed;
+            float t = Sequence.AnimationElapsed;
             // Preserve the ruins panorama's proportions; its very slow drift adds depth.
             float width = panorama.width * 720f / panorama.height;
             // Use the panorama's spare width rather than wrapping unmatched mountain edges.
@@ -111,7 +111,7 @@ namespace DragonQuest.Prototype
 
         private void DrawShipAndParty()
         {
-            float t = Sequence.Elapsed;
+            float t = Sequence.AnimationElapsed;
             float height = NewGameVoyageSequence.ShipWidth * ship.Height / ship.Width;
             // Close view of the bow and foredeck; stern, mast tops and keel continue beyond the frame.
             var bounds = new Rect(Sequence.ShipX, -245 + Mathf.Sin(t * 1.25f) * 3,
@@ -133,7 +133,7 @@ namespace DragonQuest.Prototype
             GUI.color = Color.white;
             GUI.DrawTexture(bounds, ship.InFrontOfParty);
             GUI.matrix = previous;
-            float speed = Sequence.IsDeparting ? Mathf.Clamp01((t - NewGameVoyageSequence.DepartureAt) / 2) : 1 - Mathf.Clamp01(t / 7);
+            float speed = Sequence.IsDeparting ? Mathf.Clamp01((Sequence.Elapsed - NewGameVoyageSequence.DepartureAt) / 2) : 1 - Mathf.Clamp01(t / 7);
             for (int i = 0; i < 5; i++)
                 Fill(new Rect(Mathf.Round(bounds.xMax - 78 + i * 23 + Mathf.Sin(t * 3 + i) * 3),
                     Mathf.Round(bounds.yMax - 15 + i * 3), 24 - i * 3, 2), new Color(.8f, .94f, 1, .32f * speed));
