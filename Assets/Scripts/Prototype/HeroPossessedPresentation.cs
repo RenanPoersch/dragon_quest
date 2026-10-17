@@ -15,6 +15,7 @@ namespace DragonQuest.Prototype
         public const string CompositeResource = "PixelArt/Endings/PossessedThroneComposite";
         public const float SkyPadding = .18f;
         public const float SpiritOpacity = .76f;
+        public const float RainOpacity = .72f, RainFramesPerSecond = 24;
         public static readonly Vector4 SpiritRect = new Vector4(.22f, .49f, .56f, .56f);
         private readonly string[] lines = EndingNarrative.HeroPossessedEpilogue.Split('\n');
         private readonly Texture2D throne, shade;
@@ -24,6 +25,7 @@ namespace DragonQuest.Prototype
         private GUIStyle story, caption;
         private bool hasDrawn;
         private float previousLightning = -1;
+        private float previousRainTime = -1;
         private int previousLightningIndex = -2;
         public HeroPossessedSequence Sequence { get; }
 
@@ -42,6 +44,7 @@ namespace DragonQuest.Prototype
             composite.SetVector("_SpiritRect", SpiritRect);
             composite.SetFloat("_SpiritOpacity", SpiritOpacity);
             composite.SetFloat("_RoomAspect", throne.width/(float)throne.height);
+            composite.SetFloat("_RainOpacity", RainOpacity);
             illuminatedThrone = new RenderTexture(throne.width, Mathf.RoundToInt(throne.height * (1 + SkyPadding)), 0, RenderTextureFormat.ARGB32)
             { name = "Possession / illuminated throne", filterMode = FilterMode.Point, wrapMode = TextureWrapMode.Clamp };
             shade = new Texture2D(128, 1, TextureFormat.RGBA32, false)
@@ -61,7 +64,7 @@ namespace DragonQuest.Prototype
             if (Event.current.type != EventType.Repaint) return;
             hasDrawn = true;
             EnsureStyles();
-            RefreshLightning();
+            RefreshComposite();
             Matrix4x4 previousMatrix = GUI.matrix;
             Color previousColor = GUI.color;
             int previousDepth = GUI.depth;
@@ -96,12 +99,16 @@ namespace DragonQuest.Prototype
         }
         public static Rect CompositeBounds(Rect room)
             => new Rect(room.x, room.y - room.height * SkyPadding, room.width, room.height * (1 + SkyPadding));
-        private void RefreshLightning()
+        private void RefreshComposite()
         {
             var light = Sequence.LightningState;
             float flash = light.Intensity;
-            if (light.FlashIndex == previousLightningIndex && Mathf.Approximately(flash, previousLightning) && illuminatedThrone.IsCreated()) return;
+            // The rain keeps moving through dark intervals, even with timeScale at zero.
+            float rainTime = Mathf.Floor(Sequence.Elapsed * RainFramesPerSecond) / RainFramesPerSecond;
+            if (light.FlashIndex == previousLightningIndex && Mathf.Approximately(flash, previousLightning)
+                && rainTime == previousRainTime && illuminatedThrone.IsCreated()) return;
             composite.SetFloat("_Lightning", flash);
+            composite.SetFloat("_RainTime", rainTime);
             if (light.Frame >= 0)
             {
                 composite.SetTexture("_LightningTex", lightning[light.Frame]);
@@ -114,6 +121,7 @@ namespace DragonQuest.Prototype
             finally { RenderTexture.active = previous; }
             previousLightning = flash;
             previousLightningIndex = light.FlashIndex;
+            previousRainTime = rainTime;
         }
         private void DrawNarrative()
         {

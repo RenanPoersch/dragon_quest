@@ -26,6 +26,7 @@ public static class HeroPossessedValidation
         var shader = Resources.Load<Shader>(HeroPossessedPresentation.CompositeResource);
         Assert(shader != null && shader.isSupported && !ShaderUtil.ShaderHasError(shader), "the lightning compositor compiles");
         ValidateLightning(shader);
+        ValidateRain(shader);
         var font = Resources.Load<Font>("Fonts/PixelOperator");
         font.RequestCharactersInTexture(EndingNarrative.HeroPossessedEpilogue, 28, FontStyle.Normal);
         foreach (string line in EndingNarrative.HeroPossessedEpilogue.Split('\n'))
@@ -64,7 +65,7 @@ public static class HeroPossessedValidation
         Assert(EndingNarrative.Pages(GameEnding.KingFreed).Length == 3
             && EndingNarrative.Pages(GameEnding.CastleDestroyed).Length == 3
             && EndingNarrative.Pages(GameEnding.HeroPossessed).Length == 3, "ending/save compatibility remains intact");
-        Debug.Log("HERO_POSSESSED_VALIDATION_OK: four storm sprites, natural spirit RGB with slight transparency, expanded sky, locked composition, foreground protection, narrative and fade.");
+        Debug.Log("HERO_POSSESSED_VALIDATION_OK: animated background rain, four storm sprites, natural spirit RGB with slight transparency, expanded sky, locked composition, foreground protection, narrative and fade.");
     }
     [MenuItem("Tools/Dragon Quest/Preview Possessed Ending")]
     public static void Preview()
@@ -151,6 +152,66 @@ public static class HeroPossessedValidation
             RenderTexture.active=previous; target.Release();
             UnityEngine.Object.DestroyImmediate(target); UnityEngine.Object.DestroyImmediate(readback); UnityEngine.Object.DestroyImmediate(material);
         }
+    }
+    private static void ValidateRain(Shader shader)
+    {
+        var throne=Resources.Load<Texture2D>(HeroPossessedPresentation.ThroneResource);
+        var material=new Material(shader);
+        material.SetFloat("_SkyPadding",HeroPossessedPresentation.SkyPadding);
+        material.SetFloat("_SpiritOpacity",0);
+        material.SetTexture("_LightningTex",Texture2D.blackTexture);
+        int height=Mathf.RoundToInt(throne.height*(1+HeroPossessedPresentation.SkyPadding));
+        var target=new RenderTexture(throne.width,height,0,RenderTextureFormat.ARGB32);
+        var readback=new Texture2D(throne.width,height,TextureFormat.RGBA32,false);
+        RenderTexture previous=RenderTexture.active;
+        try
+        {
+            material.SetFloat("_RainOpacity",0);
+            Color32[] dry=ReadComposite(material,throne,target,readback);
+            material.SetFloat("_RainOpacity",HeroPossessedPresentation.RainOpacity);
+            material.SetFloat("_RainTime",HeroPossessedSequence.CameraStopAt);
+            Color32[] rainy=ReadComposite(material,throne,target,readback);
+            material.SetFloat("_RainTime",HeroPossessedSequence.CameraStopAt+.2f);
+            Color32[] moving=ReadComposite(material,throne,target,readback);
+            Color32[] repeated=ReadComposite(material,throne,target,readback);
+            material.SetFloat("_RainTime",HeroPossessedSequence.CameraStopAt);
+            material.SetFloat("_Lightning",1);
+            Color32[] lit=ReadComposite(material,throne,target,readback);
+            int rainPixels=0,movingPixels=0,skyPixels=0,litPixels=0;
+            for(int y=0;y<target.height;y++) for(int x=0;x<target.width;x++)
+            {
+                int i=y*target.width+x;
+                bool changed=!dry[i].Equals(rainy[i]);
+                bool face=x>target.width*.435f && x<target.width*.565f && y>throne.height*.72f && y<throne.height*.79f;
+                bool torso=x>target.width*.38f && x<target.width*.62f && y>throne.height*.52f && y<throne.height*.70f;
+                if(face || torso || y<throne.height*.52f || Math.Max(dry[i].r,Math.Max(dry[i].g,dry[i].b))>16)
+                    Assert(!changed && dry[i].Equals(moving[i]),"rain stays behind Aren, the throne, floor and bright architecture");
+                Assert(moving[i].Equals(repeated[i]),"the same sequence clock reproduces the rain regardless of render count");
+                if(changed)
+                {
+                    rainPixels++;
+                    Assert(rainy[i].b-dry[i].b+1>=rainy[i].g-dry[i].g && rainy[i].g-dry[i].g+1>=rainy[i].r-dry[i].r,
+                        "rain keeps a subtle blue-grey color");
+                    if(y>throne.height) skyPixels++;
+                    if(lit[i].b>rainy[i].b+2) litPixels++;
+                }
+                if(!moving[i].Equals(rainy[i])) movingPixels++;
+            }
+            Assert(rainPixels>1000 && skyPixels>200,"rain is visible in the black recess and expanded sky without lightning");
+            Assert(movingPixels>rainPixels/2,"rain continues falling between lightning flashes");
+            Assert(litPixels>rainPixels/2,"lightning illuminates the falling rain");
+        }
+        finally
+        {
+            RenderTexture.active=previous; target.Release();
+            UnityEngine.Object.DestroyImmediate(target); UnityEngine.Object.DestroyImmediate(readback); UnityEngine.Object.DestroyImmediate(material);
+        }
+    }
+    private static Color32[] ReadComposite(Material material,Texture2D room,RenderTexture target,Texture2D readback)
+    {
+        Graphics.Blit(room,target,material); RenderTexture.active=target;
+        readback.ReadPixels(new Rect(0,0,target.width,target.height),0,0); readback.Apply();
+        return readback.GetPixels32();
     }
     private static void ValidateNaturalColor(Material material,Texture2D room,RenderTexture target,Texture2D readback)
     {

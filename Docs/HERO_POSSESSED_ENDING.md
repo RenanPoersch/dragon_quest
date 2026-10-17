@@ -14,6 +14,8 @@ Um gerador local com semente própria cria a sequência, sem afetar o sorteio de
 
 O `PossessedSpiritFront` fica reto, com a máscara e os olhos voltados de frente, os ombros nivelados e os braços ao lado do corpo. O compositor agora preserva diretamente as cores originais do PNG: marfim na máscara, azul e ciano nas chamas. A opacidade máxima é de 76%, multiplicada pelo alpha do sprite e pelo brilho do clarão, proporcionando uma leve transparência. A aparição desaparece completamente quando o raio se apaga. Os raios são compostos atrás do espírito.
 
+A área preta também recebe chuva contínua em três camadas, com gotas azul-acinzentadas de comprimentos e velocidades diferentes, caindo com uma leve inclinação. Os clarões realçam as gotas. A chuva usa a mesma máscara do fundo e fica atrás do espírito, de Aren, do trono e das colunas. A animação procedural avança a 24 quadros por segundo pelo relógio não escalado da sequência, inclusive entre raios e com `Time.timeScale = 0`; acompanha os fades e não exige novos sprites.
+
 O shader `PossessedThroneComposite` usa o fundo preto da pintura e a área preta adicional como máscara; trono, Aren e colunas ocultam o efeito. O compositor não modifica as imagens originais e não aplica flashes brancos na tela inteira. Material, RenderTexture e sombra temporários são descartados ao sair.
 
 ## Arte e autoria
@@ -30,4 +32,4 @@ As variações adicionais `PossessionLightningC.png` (canal duplo) e `Possession
 - `Tools/Test-FinalOne.ps1`: regressão do final das cinzas.
 - `Tools/Test-Castle.ps1`: condições dos três desfechos preservadas.
 - `Tools/Test-UnityScripts.ps1`: compilação com as bibliotecas reais da Unity 6000.6.5f1.
-- Na Unity: `Tools > Dragon Quest > Validate Possessed Ending` e `Preview Possessed Ending`. A prévia permite animar ou saltar para tapete, escadas, trono, rajada, outro local, fade e preto. A validação verifica o alpha dos sprites, as quatro formas renderizadas, RGB natural, leve transparência, rosto acima da coroa e os pixels do herói preservados em todos os raios.
+- Na Unity: `Tools > Dragon Quest > Validate Possessed Ending` e `Preview Possessed Ending`. A prévia permite animar ou saltar para tapete, escadas, trono, rajada, outro local, fade e preto. A validação verifica o alpha dos sprites, as quatro formas renderizadas, RGB natural, leve transparência, rosto acima da coroa, chuva animada entre clarões e os pixels do herói e da arquitetura preservados.
