@@ -194,9 +194,9 @@ internal static class BattleChecks
             MateriaResolver.Attack, MateriaResolver.Defend, MateriaResolver.LimitBreak), CombatTeam.Party);
         var root = BattleCommandMenu.Root(bare);
         Assert(root.Count == 2 && root[0].Ability == MateriaResolver.Attack && root[1].Kind == BattleCommandKind.Items,
-            "Sem materias, menu principal deve mostrar Ataque e Itens; Defender fica no menu lateral.");
+            "Sem materias, menu principal deve mostrar Ataque e Itens; Defender substitui a primeira linha ao pressionar esquerda.");
         Assert(BattleCommandMenu.Defend(bare) == MateriaResolver.Defend,
-            "Menu lateral deve usar a habilidade Defender do proprio personagem.");
+            "A primeira linha deve usar a habilidade Defender do proprio personagem.");
         bare.Limit.Restore(99);
         Assert(BattleCommandMenu.Root(bare)[0].Ability == MateriaResolver.Attack, "Limit incompleto deve manter Ataque.");
         bare.Limit.Restore(100);
@@ -210,7 +210,7 @@ internal static class BattleChecks
             "Defender continua disponivel com Limit pronto e consultar o menu nao gasta a carga.");
         var noDefense = new CombatantState("no-defense", new CombatantDefinition("Heroi", "", 100, 20, 20, 5, 5, 10,
             MateriaResolver.Attack), CombatTeam.Party);
-        Assert(BattleCommandMenu.Defend(noDefense) == null, "Menu lateral nao deve inventar uma defesa nao aprendida.");
+        Assert(BattleCommandMenu.Defend(noDefense) == null, "A primeira linha nao deve oferecer uma defesa nao aprendida.");
         bare.Limit.Spend();
         Assert(BattleCommandMenu.Root(bare)[0].Ability == MateriaResolver.Attack, "Gastar Limit deve devolver Ataque ao menu.");
 

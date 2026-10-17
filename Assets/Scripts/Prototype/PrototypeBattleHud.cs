@@ -134,13 +134,13 @@ namespace DragonQuest.Prototype
             {
                 if (!targeting && CanOpenDefendMenu)
                 {
-                    rootIndex = commandIndex; defendMode = true; commandIndex = 0; actionsScroll = Vector2.zero;
+                    defendMode = true;
                 }
-                else if (!defendMode) Cancel();
+                else if (targeting || InSubmenu) Cancel();
                 GameInput.ConsumeGamepadFrame(); return;
             }
-            if (rightPressed && defendMode)
-            { Cancel(); GameInput.ConsumeGamepadFrame(); return; }
+            if (rightPressed && !targeting && !InSubmenu && defendMode && commandIndex == 0)
+            { defendMode = false; GameInput.ConsumeGamepadFrame(); return; }
             int count = targeting ? TargetRowCount() : CommandCount();
             if (targeting) targetIndex = Mathf.Clamp(targetIndex, 0, Mathf.Max(0, count - 1));
             int delta = navigation == MenuDirection.Down || keys?.downArrowKey.wasPressedThisFrame == true || keys?.sKey.wasPressedThisFrame == true ? 1
@@ -170,15 +170,15 @@ namespace DragonQuest.Prototype
 
         private bool InSubmenu => itemMode || menuGroup != AbilityMenuGroup.Direct;
         private bool CanOpenDefendMenu => !InSubmenu && !defendMode && defendCommand != null
-            && commandIndex >= 0 && commandIndex < rootCommands.Count
+            && commandIndex == 0 && rootCommands.Count > 0
             && (rootCommands[commandIndex].Ability?.SourceAbilityId == "attack" || rootCommands[commandIndex].Ability?.UsesLimit == true);
-        private int CommandCount() => defendMode ? 1 : itemMode ? observedBattle.Inventory.Items.Count
+        private int CommandCount() => itemMode ? observedBattle.Inventory.Items.Count
             : InSubmenu ? groupAbilities.Count : rootCommands.Count;
-        private AbilityDefinition CommandAbility(int index) => defendMode ? defendCommand : InSubmenu
+        private AbilityDefinition CommandAbility(int index) => !InSubmenu && defendMode && index == 0 ? defendCommand : InSubmenu
             ? index < groupAbilities.Count ? groupAbilities[index] : null : rootCommands[index].Ability;
         private string CommandLabel(int index)
         {
-            if (defendMode) return defendCommand.Name;
+            if (!InSubmenu && defendMode && index == 0) return defendCommand.Name;
             if (itemMode)
             {
                 ItemStack stack = observedBattle.Inventory.Items[index];
@@ -201,19 +201,20 @@ namespace DragonQuest.Prototype
         private void Cancel()
         {
             if (selected != null || selectedItem != null) { selected = null; selectedItem = null; targetIndex = 0; }
-            else if (InSubmenu || defendMode)
+            else if (InSubmenu)
             {
-                itemMode = defendMode = false; menuGroup = AbilityMenuGroup.Direct; groupAbilities.Clear();
+                itemMode = false; menuGroup = AbilityMenuGroup.Direct; groupAbilities.Clear();
                 commandIndex = rootIndex;
                 actionsScroll = new Vector2(0, BattleCommandMenu.KeepRowVisible(0, commandIndex, CommandCount(), 120));
             }
+            else defendMode = false;
         }
         private void ChooseCommand(int index, bool navigateOnly = false)
         {
             if (index < 0 || index >= CommandCount()) return;
             commandIndex = index;
             if (!CommandEnabled(index)) return;
-            if (!defendMode && !InSubmenu && rootCommands[index].Kind != BattleCommandKind.Ability)
+            if (!InSubmenu && rootCommands[index].Kind != BattleCommandKind.Ability)
             {
                 BattleCommandKind kind = rootCommands[index].Kind;
                 rootIndex = index; itemMode = kind == BattleCommandKind.Items;
@@ -484,15 +485,7 @@ namespace DragonQuest.Prototype
                     limitReady: !itemMode && CommandAbility(i)?.UsesLimit == true && observedActor.Limit.IsReady)) { ChooseCommand(i); break; }
             }
             GUI.EndScrollView();
-            if (!targeting)
-            {
-                if (string.IsNullOrEmpty(controller.ErrorMessage))
-                {
-                    if (defendMode) GUI.Label(new Rect(40, 668, 560, 25), "Direita / D: voltar", small);
-                    else if (CanOpenDefendMenu) GUI.Label(new Rect(40, 668, 560, 25), "Esquerda / A: Defender", small);
-                }
-                return;
-            }
+            if (!targeting) return;
             IReadOnlyList<CombatantState> targets = Targets();
             targetIndex = Mathf.Clamp(targetIndex, 0, Mathf.Max(0, targets.Count - 1));
             bool group = selected != null && (selected.Targets == TargetRule.AllEnemies || selected.Targets == TargetRule.AllAllies);

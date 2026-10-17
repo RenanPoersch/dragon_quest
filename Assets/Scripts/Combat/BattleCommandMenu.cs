@@ -14,7 +14,7 @@ namespace DragonQuest.Combat
         { Kind = kind; Label = label; Description = description; Ability = ability; }
     }
 
-    // Groups commands by materia provenance and keeps defense in its side menu.
+    // Groups commands by materia provenance; defense replaces the attack row on demand.
     public static class BattleCommandMenu
     {
         public static float KeepRowVisible(float scroll, int index, int count, float viewportHeight)
