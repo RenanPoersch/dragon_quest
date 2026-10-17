@@ -43,6 +43,15 @@ namespace DragonQuest.Prototype
         private readonly Dictionary<CombatantState, int> seenChanges = new Dictionary<CombatantState, int>();
         private readonly List<FloatingNumber> numbers = new List<FloatingNumber>();
         private readonly DefeatedEnemyPresentation defeatedEnemies = new DefeatedEnemyPresentation();
+        private readonly Dictionary<CombatantState, EnemySpritePose> enemyPoses = new Dictionary<CombatantState, EnemySpritePose>();
+        private readonly struct EnemySpritePose
+        {
+            public readonly int Frame;
+            public readonly AbilityDefinition Ability;
+            public readonly string DragonResource;
+            public EnemySpritePose(int frame, AbilityDefinition ability, string dragonResource)
+            { Frame = frame; Ability = ability; DragonResource = dragonResource; }
+        }
         private sealed class FloatingNumber
         {
             public CombatantState Target;
@@ -64,7 +73,7 @@ namespace DragonQuest.Prototype
             if (observedBattle != battle)
             {
                 observedBattle = battle; observedActor = null; seenChanges.Clear(); numbers.Clear();
-                defeatedEnemies.Reset(); castCounter.Reset();
+                defeatedEnemies.Reset(); castCounter.Reset(); enemyPoses.Clear();
                 ultimateAnimation.Prepare();
                 spiritFloatStartedAt = Time.unscaledTime;
                 preferredEnemyTarget = null;
@@ -568,9 +577,9 @@ namespace DragonQuest.Prototype
             if (participant.Id == CastleBattleRules.TyrantId && battleSprites != null)
             {
                 // Shield termina sobre a postura normal; so entao aparece o sprite de conjuracao.
-                if (protectPresentation && battleSprites.Draw(rect, participant.Id, 0, tint)) return;
+                if (protectPresentation && DrawEnemySprite(rect, participant, 0, tint)) return;
                 if (CastleMeteorPresentation.HoldCastPose(controller.CastleRules, meteorPresentation, protectPresentation)
-                    && battleSprites.Draw(rect, participant.Id, CastleMeteorPresentation.ChargePose(controller.CastleRules),
+                    && DrawEnemySprite(rect, participant, CastleMeteorPresentation.ChargePose(controller.CastleRules),
                         tint, CastleBattleRules.PrepareMeteor)) return;
             }
             // Every action has readable movement, even when it has no dedicated pose sheet.
@@ -583,7 +592,7 @@ namespace DragonQuest.Prototype
                 rect.y -= Mathf.Sin(progress * Mathf.PI) * 5;
             }
             if (participant.Team == CombatTeam.Enemy && battleSprites != null
-                && battleSprites.Draw(rect, participant.Id, acting ? controller.AttackPose : 0,
+                && DrawEnemySprite(rect, participant, acting ? controller.AttackPose : 0,
                     tint, acting ? controller.PresentingAbility : null)) return;
             if (participant.Team == CombatTeam.Party && battleSprites != null)
             {
@@ -604,8 +613,7 @@ namespace DragonQuest.Prototype
                 bool charged = participant.IsAlive && participant.IsCharging;
                 string resource = attacking ? DragonAttackAnimation.Resource(abilityId) : charged ? "DragonCharge" : "Dragon";
                 int frame = attacking ? DragonAttackAnimation.Frame(abilityId, Time.unscaledTime - controller.ActionStartedAt) : charged ? 5 : 0;
-                if (dragonSprites.Draw(rect, resource, frame,
-                    tint)) return;
+                if (DrawEnemySprite(rect, participant, frame, tint, dragonResource: resource)) return;
             }
             if (pixelSprites != null && participant.Team == CombatTeam.Party)
             {
@@ -632,6 +640,20 @@ namespace DragonQuest.Prototype
                 new Color(0.9f, 0.77f, 0.59f) * tint);
             RectBox(new Rect(rect.x + rect.width * 0.12f, rect.y + rect.height * 0.78f, rect.width * 0.3f, rect.height * 0.22f), clothes);
             RectBox(new Rect(rect.x + rect.width * 0.58f, rect.y + rect.height * 0.78f, rect.width * 0.3f, rect.height * 0.22f), clothes);
+        }
+
+        private bool DrawEnemySprite(Rect rect, CombatantState participant, int frame, Color tint,
+            AbilityDefinition ability = null, string dragonResource = null)
+        {
+            // Defeat clears charge/cast state before the impact is drawn; keep the last visible pose.
+            EnemySpritePose pose;
+            if (participant.IsAlive || !enemyPoses.TryGetValue(participant, out pose))
+                pose = new EnemySpritePose(frame, ability, dragonResource);
+            bool drawn = pose.DragonResource != null
+                ? dragonSprites.Draw(rect, pose.DragonResource, pose.Frame, tint)
+                : battleSprites != null && battleSprites.Draw(rect, participant.Id, pose.Frame, tint, pose.Ability);
+            if (drawn && participant.IsAlive) enemyPoses[participant] = pose;
+            return drawn;
         }
 
         private Color FighterTint(CombatantState participant)
