@@ -1,5 +1,5 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
+using DragonQuest.Input;
 using DragonQuest.Exploration;
 using DragonQuest.Interactions;
 using DragonQuest.Shops;
@@ -15,6 +15,7 @@ namespace DragonQuest.Prototype
         public ShopService Service { get; private set; }
         public ShopInventory ActiveShop { get; private set; }
         public bool IsOpen => ActiveShop != null;
+        public bool IsInputBlocked => battle == null || battle.IsCheatMenuBlocking;
         public string Message { get; private set; }
         public DeliveryQuest Quest { get; private set; }
         public void Initialize(PlayerMovement hero, DialogueController dialogueController, PrototypeBattleController battleController,
@@ -59,7 +60,7 @@ namespace DragonQuest.Prototype
         private void Update()
         {
             if (battle == null || battle.IsCheatMenuBlocking) return;
-            if (IsOpen && Application.isFocused && Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame) Close();
+            if (IsOpen && GameInput.CancelPressed) { Close(); GameInput.ConsumeGamepadFrame(); }
         }
     }
 }

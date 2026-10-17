@@ -1,5 +1,5 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
+using DragonQuest.Input;
 using DragonQuest.Progression;
 
 namespace DragonQuest.Prototype
@@ -13,10 +13,10 @@ namespace DragonQuest.Prototype
         public void Initialize(PrototypeBattleController battleController) => controller = battleController;
         private void Update()
         {
-            if (controller == null || !controller.IsPostBattleOpen || !Application.isFocused) return;
-            var keys = Keyboard.current;
-            if (keys != null && (keys.enterKey.wasPressedThisFrame || keys.spaceKey.wasPressedThisFrame
-                || keys.escapeKey.wasPressedThisFrame)) controller.ReturnToCity();
+            if (controller == null || !controller.IsPostBattleOpen || !GameInput.IsFocused) return;
+            if (controller.IsCheatMenuBlocking) return;
+            if (GameInput.ConfirmPressed || GameInput.CancelPressed)
+            { controller.ReturnToCity(); GameInput.ConsumeGamepadFrame(); }
         }
         private void OnGUI()
         {

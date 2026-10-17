@@ -1,6 +1,6 @@
 using System;
 using UnityEngine;
-using UnityEngine.InputSystem;
+using DragonQuest.Input;
 using DragonQuest.Exploration;
 using DragonQuest.Interactions;
 using DragonQuest.Persistence;
@@ -156,7 +156,7 @@ namespace DragonQuest.Prototype
             intro?.Update(Time.unscaledDeltaTime);
             if (voyage != null)
             {
-                if (Application.isFocused) voyage.Update(Time.unscaledDeltaTime);
+                if (GameInput.IsFocused) voyage.Update(Time.unscaledDeltaTime);
                 if (!voyage.IsPlaying)
                 {
                     voyage.Dispose(); voyage = null;
@@ -169,11 +169,23 @@ namespace DragonQuest.Prototype
             {
                 if ((intro == null || !intro.IsPlaying) && menuHasDrawn)
                     menuFadeInElapsed = Mathf.Min(MenuFadeInDuration, menuFadeInElapsed + Time.unscaledDeltaTime);
+                if (!IsMenuFadingIn && (intro == null || !intro.BlocksMenuInput) && GameInput.IsFocused)
+                {
+                    MenuDirection direction = GameInput.Navigation;
+                    if (GameInput.GamepadCancelPressed) UpdateMenuInput(KeyCode.Escape);
+                    else
+                    {
+                        if (direction == MenuDirection.Up) MoveSelection(-1);
+                        else if (direction == MenuDirection.Down) MoveSelection(1);
+                        if (GameInput.GamepadConfirmPressed) UpdateMenuInput(KeyCode.Return);
+                    }
+                    if (GameInput.GamepadConfirmPressed || GameInput.GamepadCancelPressed) GameInput.ConsumeGamepadFrame();
+                }
                 return;
             }
-            if (!IsMenuVisible && !dialogue.IsOpen && !battle.IsBusy && Application.isFocused
-                && Keyboard.current?.f5Key.wasPressedThisFrame == true) SaveManual();
-            if (Application.isFocused && !battle.HasEnded) playSeconds += Time.unscaledDeltaTime;
+            if (!IsMenuVisible && !dialogue.IsOpen && !battle.IsBusy && GameInput.IsFocused
+                && GameInput.SavePressed) { SaveManual(); GameInput.ConsumeGamepadFrame(); }
+            if (GameInput.IsFocused && !battle.HasEnded) playSeconds += Time.unscaledDeltaTime;
         }
         private void OpenPage(MenuPage next)
         {

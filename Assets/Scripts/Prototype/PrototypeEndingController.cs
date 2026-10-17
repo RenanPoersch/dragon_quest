@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.InputSystem;
+using DragonQuest.Input;
 using UnityEngine.SceneManagement;
 using DragonQuest.Exploration;
 using DragonQuest.Progression;
@@ -74,9 +74,13 @@ namespace DragonQuest.Prototype
                 if(aftermath.Sequence.IsComplete) SceneManager.LoadScene(SceneManager.GetActiveScene().path);
                 return;
             }
-            if(pages==null||page>=pages.Length-1||Time.frameCount<=shownFrame||!Application.isFocused) return;
-            Keyboard keyboard=Keyboard.current;
-            if(keyboard!=null&&(keyboard.eKey.wasPressedThisFrame||keyboard.spaceKey.wasPressedThisFrame||keyboard.enterKey.wasPressedThisFrame)) page++;
+            if(pages==null||Time.frameCount<=shownFrame||!GameInput.IsFocused) return;
+            if(GameInput.ConfirmPressed)
+            {
+                GameInput.ConsumeGamepadFrame();
+                if(page<pages.Length-1) page++;
+                else SceneManager.LoadScene(SceneManager.GetActiveScene().path);
+            }
         }
         private void OnGUI()
         {

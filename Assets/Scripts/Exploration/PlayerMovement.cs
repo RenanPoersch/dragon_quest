@@ -1,5 +1,5 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
+using DragonQuest.Input;
 
 namespace DragonQuest.Exploration
 {
@@ -53,19 +53,15 @@ namespace DragonQuest.Exploration
 
         private void Update()
         {
-            Keyboard keyboard = Keyboard.current;
-            if (!movementEnabled || keyboard == null || !Application.isFocused)
+            if (!movementEnabled || !GameInput.IsFocused)
             {
                 movement = Vector2.zero;
                 return;
             }
 
-            float horizontal = 0f;
-            float vertical = 0f;
-            if (keyboard.aKey.isPressed || keyboard.leftArrowKey.isPressed) horizontal -= 1f;
-            if (keyboard.dKey.isPressed || keyboard.rightArrowKey.isPressed) horizontal += 1f;
-            if (keyboard.sKey.isPressed || keyboard.downArrowKey.isPressed) vertical -= 1f;
-            if (keyboard.wKey.isPressed || keyboard.upArrowKey.isPressed) vertical += 1f;
+            Vector2 input = GameInput.Movement;
+            float horizontal = input.x;
+            float vertical = input.y;
 
             // Clamp evita que a diagonal seja mais rápida que os eixos.
             movement = IsSideView ? new Vector2(horizontal, 0)
@@ -78,7 +74,7 @@ namespace DragonQuest.Exploration
         {
             if (IsSideView)
             {
-                Vector2 velocity = movementEnabled && Application.isFocused
+                Vector2 velocity = movementEnabled && GameInput.IsFocused
                     ? MovementDynamics.StepVelocity(new Vector2(lateralVelocity, 0), movement * speed * lateralSpeedMultiplier,
                         Time.fixedDeltaTime, acceleration, deceleration) : Vector2.zero;
                 float x = Mathf.Clamp(body.position.x + velocity.x * Time.fixedDeltaTime, lateralMin, lateralMax);
@@ -89,7 +85,7 @@ namespace DragonQuest.Exploration
             }
             // Evita trocar instantaneamente a velocidade e provocar um solavanco na camera.
             // Parte da velocidade resolvida pela fisica, conservando colisao e deslizamento nas paredes.
-            body.linearVelocity = movementEnabled && Application.isFocused
+            body.linearVelocity = movementEnabled && GameInput.IsFocused
                 ? MovementDynamics.StepVelocity(body.linearVelocity, movement * speed, Time.fixedDeltaTime, acceleration, deceleration)
                 : Vector2.zero;
             if (movementConstraint != null)

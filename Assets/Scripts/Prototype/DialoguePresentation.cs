@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using DragonQuest.Interactions;
+using UnityEngine.InputSystem;
+using DragonQuest.Input;
 using UnityEngine;
 
 namespace DragonQuest.Prototype
@@ -115,6 +117,9 @@ namespace DragonQuest.Prototype
                 scroll.y = Mathf.Clamp(scroll.y, 0, Mathf.Max(0, contentHeight - viewport.height));
                 lastSelectedChoice = dialogue.SelectedChoice;
             }
+            if (Event.current.type == EventType.Repaint && GameInput.IsFocused && Gamepad.current != null)
+                scroll.y = Mathf.Clamp(scroll.y - Gamepad.current.rightStick.ReadValue().y * 260 * Time.unscaledDeltaTime,
+                    0, Mathf.Max(0, contentHeight - viewport.height));
             // An idle mouse must not pull selection away from arrow-key navigation.
             Vector2 pointer = Event.current.mousePosition;
             bool pointerMoved = Event.current.type == EventType.Repaint && hasPointer

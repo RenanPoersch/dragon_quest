@@ -5,7 +5,7 @@ using DragonQuest.Equipment;
 using DragonQuest.Inventory;
 using DragonQuest.Interactions;
 using DragonQuest.Progression;
-using UnityEngine.InputSystem;
+using DragonQuest.Input;
 
 namespace DragonQuest.Prototype
 {
@@ -166,7 +166,7 @@ namespace DragonQuest.Prototype
         private void LateUpdate()
         {
             if (movement == null || dialogue == null) return;
-            bool paused = IsBusy || dialogue.IsOpen || !Application.isFocused;
+            bool paused = IsBusy || dialogue.IsOpen || !GameInput.IsFocused;
             Party.AdvancePoison(Time.deltaTime, paused);
             if (explorationSprite != null && Party.Members.Count > 0)
             {
@@ -186,7 +186,7 @@ namespace DragonQuest.Prototype
             bool teleported = !trackingWalk || lastTeleportRevision != movement.TeleportRevision;
             float distance = trackingWalk ? Vector2.Distance(position, lastWalkPosition) : 0;
             lastWalkPosition = position; lastTeleportRevision = movement.TeleportRevision; trackingWalk = true;
-            bool blocked = IsBusy || dialogue.IsOpen || !Application.isFocused || !movement.HasMovementInput;
+            bool blocked = IsBusy || dialogue.IsOpen || !GameInput.IsFocused || !movement.HasMovementInput;
             if (randomEncounters.Advance(currentLocation(), distance, blocked, teleported)) StartRandomBattle();
         }
 
@@ -344,14 +344,14 @@ namespace DragonQuest.Prototype
                 if (!IsPostBattleOpen) { IsPostBattleOpen = true; PostBattleStartedAt = Time.unscaledTime; }
                 return;
             }
-            Keyboard keyboard = Keyboard.current;
-            if (!HasEnded && !IsActive && !otherMenuOpen() && !dialogue.IsOpen && keyboard != null && Application.isFocused)
+            if (!HasEnded && !IsActive && !otherMenuOpen() && !dialogue.IsOpen && GameInput.IsFocused)
             {
-                if (IsMenuOpen && keyboard.escapeKey.wasPressedThisFrame) CloseMenu();
-                else if (keyboard.iKey.wasPressedThisFrame)
+                if (IsMenuOpen && GameInput.CancelPressed) { CloseMenu(); GameInput.ConsumeGamepadFrame(); }
+                else if (GameInput.InventoryPressed)
                 {
                     if (IsMenuOpen) CloseMenu();
                     else { IsMenuOpen = true; movement.SetMovementEnabled(false); }
+                    GameInput.ConsumeGamepadFrame();
                 }
             }
             if (!IsActive || Session.CurrentActor == null || Session.CurrentActor.Team != CombatTeam.Enemy)

@@ -25,6 +25,25 @@ Use essa versão do Editor para evitar migrações involuntárias.
 6. Clique dentro da janela **Game** e use **WASD ou as setas** para andar; **E** interage com objetos próximos, **I** abre o inventário e **F5** salva no mapa global ou na hospedaria.
 7. Durante a jornada, a tecla **`** (backquote) abre e fecha o **Cheat Engine**. Use clique ou setas + Enter: **LIMIT infinito** mantém o Limit pronto para todos; **Gold infinito** permite comprar e descansar sem gastar; **Nível 99** eleva toda a equipe e atualiza os atributos, inclusive no combate atual. **Encontros aleatórios** permite desativar ou reativar as batalhas ao caminhar; batalhas por interação e chefes continuam disponíveis, e um combate em andamento continua normalmente. Ao reativar, a contagem de distância reinicia para evitar um encontro imediato. **Esc** fecha o menu. LIMIT, gold e encontros valem nesta sessão; ao desligar LIMIT e gold, a carga e o saldo originais retornam. O nível 99 permanece se você salvar a jornada normalmente. O menu bloqueia movimento, interações e ações de combate enquanto está aberto.
 
+## Controle
+
+Conecte um controle reconhecido pelo Input System da Unity; ele pode ser conectado ou reconectado durante a partida. Teclado e mouse continuam disponíveis. No Windows, a compatibilidade depende do dispositivo e do driver: controles Xbox/XInput e modelos PlayStation reconhecidos como Gamepad usam o mesmo mapeamento por posição dos botões.
+
+| Ação | Controle |
+| --- | --- |
+| Andar / navegar | Analógico esquerdo ou direcional |
+| Interagir / avançar diálogo / confirmar / atacar | Botão inferior: A no Xbox, X no PlayStation |
+| Voltar / fechar | Botão direito: B no Xbox, Círculo no PlayStation |
+| Inventário | Botão esquerdo: X no Xbox, Quadrado no PlayStation; ou Start/Options |
+| Salvar no mapa global ou na hospedaria | View/Back/Share |
+| Consultar o poema após aprendê-lo | Botão superior: Y no Xbox, Triângulo no PlayStation |
+| Rolar texto de diálogo longo | Analógico direito |
+| Abrir / fechar Cheat Engine | Clique no analógico direito (R3) |
+
+Nos menus de inventário e loja, o direcional percorre os botões em sequência; cima/esquerda volta e baixo/direita avança. O botão selecionado recebe uma borda dourada, opções indisponíveis são puladas e listas rolam para manter a seleção visível. Confirme o produto, quantidade, compra/venda, equipamento ou encaixe pelo mesmo botão inferior. A tela inicial, Continue, escolha de slot, confirmação de sobrescrita, escolhas de diálogo, batalha e resultados também aceitam controle.
+
+Validação e roteiro de teste: [Docs/CONTROLLER_SUPPORT.md](Docs/CONTROLLER_SUPPORT.md).
+
 ## Parte 7A — ilha e cenários locais
 
 A demo começa no **mapa global de uma pequena ilha arredondada e irregular, cercada pelo mar**. Chão e POIs usam pixel art na mesma direção da periferia, com ícones um pouco mais altos que o herói. Caminhe até a área de entrada dos pontos para mudar automaticamente para os cenários locais:

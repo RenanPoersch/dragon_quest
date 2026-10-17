@@ -7,6 +7,7 @@ namespace DragonQuest.Prototype
     public sealed class PrototypeShopHud : MonoBehaviour
     {
         private PrototypeShopController controller;
+        private readonly ControllerMenu navigation = new ControllerMenu();
         private Texture2D pixel;
         private GUIStyle title, text, small, button, iconButton;
         private ShopInventory observedShop;
@@ -20,6 +21,7 @@ namespace DragonQuest.Prototype
         private void OnGUI()
         {
             if (controller == null || !controller.IsOpen) { observedShop = null; return; }
+            navigation.Begin(controller.IsInputBlocked);
             EnsureStyles();
             ShopInventory shop = controller.ActiveShop;
             if (observedShop != shop) { observedShop = shop; selling = false; ResetSelection(); }
@@ -31,18 +33,19 @@ namespace DragonQuest.Prototype
             Panel(new Rect(30, 20, 1220, 90));
             GUI.Label(new Rect(48, 32, 700, 32), shop.Name.ToUpperInvariant(), title);
             GUI.Label(new Rect(48, 70, 700, 26), "Ouro: " + controller.Service.Progress.Gold + "  |  Venda por 50% do valor de compra", small);
-            if (GUI.Button(new Rect(1000, 40, 220, 40), "Fechar / Esc", button)) controller.Close();
-            if (GUI.Button(new Rect(30, 125, 240, 42), (!selling ? "> " : "") + "Comprar", button)) { selling = false; ResetSelection(); }
-            if (GUI.Button(new Rect(285, 125, 240, 42), (selling ? "> " : "") + "Vender", button)) { selling = true; ResetSelection(); }
+            if (navigation.Button(new Rect(1000, 40, 220, 40), "Fechar / Esc", button)) controller.Close();
+            if (navigation.Button(new Rect(30, 125, 240, 42), (!selling ? "> " : "") + "Comprar", button)) { selling = false; ResetSelection(); }
+            if (navigation.Button(new Rect(285, 125, 240, 42), (selling ? "> " : "") + "Vender", button)) { selling = true; ResetSelection(); }
             string questAction = controller.Quest.ActionLabel(shop.Id);
             GUI.Label(new Rect(552, 119, questAction == null ? 675 : 405, 58), controller.Quest.ContextText(shop.Id), small);
-            if (questAction != null && GUI.Button(new Rect(972, 125, 278, 42), questAction, button)) controller.InteractQuest();
+            if (questAction != null && navigation.Button(new Rect(972, 125, 278, 42), questAction, button)) controller.InteractQuest();
             Panel(new Rect(30, 182, 595, 435));
             Panel(new Rect(645, 182, 605, 435));
             if (selling) DrawSales(shop); else DrawProducts(shop);
             DrawDetails();
             Panel(new Rect(30, 635, 1220, 65));
             GUI.Label(new Rect(48, 646, 1180, 46), controller.Message, small);
+            navigation.End();
             GUI.matrix = previous;
         }
 
@@ -52,16 +55,16 @@ namespace DragonQuest.Prototype
             var products = new List<ShopProduct>();
             foreach (ShopProduct product in shop.Products) if (product.InitialStock > 0) products.Add(product);
             GUI.Label(new Rect(48, 192, 540, 30), "Catalogo / estoque limitado", title);
-            listScroll = GUI.BeginScrollView(new Rect(45, 238, 565, 357), listScroll, new Rect(0, 0, 532, products.Count * 55));
+            listScroll = navigation.BeginScrollView(new Rect(45, 238, 565, 357), listScroll, new Rect(0, 0, 532, products.Count * 55));
             for (int i = 0; i < products.Count; i++)
             {
                 ShopProduct product = products[i];
-                if (GUI.Button(new Rect(0, i * 55, 526, 49), (selectedProduct == product ? "> " : "") + product.Name
+                if (navigation.Button(new Rect(0, i * 55, 526, 49), (selectedProduct == product ? "> " : "") + product.Name
                     + "\n" + product.Price + " moedas / " + (product.Stock == 0 ? "ESGOTADO" : "Estoque: " + product.Stock), iconButton))
                 { selectedProduct = product; quantity = 1; }
                 InventoryPixelArt.Draw(new Rect(7, i * 55 + 6, 36, 36), ProductTexture(product));
             }
-            GUI.EndScrollView();
+            navigation.EndScrollView();
         }
 
         private void DrawSales(ShopInventory shop)
@@ -75,18 +78,18 @@ namespace DragonQuest.Prototype
                 selectedSale = fresh;
             }
             GUI.Label(new Rect(48, 192, 540, 30), "Seus objetos / categoria desta loja", title);
-            listScroll = GUI.BeginScrollView(new Rect(45, 238, 565, 357), listScroll, new Rect(0, 0, 532, entries.Count * 60));
+            listScroll = navigation.BeginScrollView(new Rect(45, 238, 565, 357), listScroll, new Rect(0, 0, 532, entries.Count * 60));
             for (int i = 0; i < entries.Count; i++)
             {
                 SaleEntry entry = entries[i];
                 string location = entry.Equipment != null ? controller.Service.Party.LocationOf(entry.Equipment)
                     : entry.Materia != null ? controller.Service.Party.LocationOf(entry.Materia) : "Inventario";
-                if (GUI.Button(new Rect(0, i * 60, 526, 54), (selectedSale != null && SameObject(entry, selectedSale) ? "> " : "")
+                if (navigation.Button(new Rect(0, i * 60, 526, 54), (selectedSale != null && SameObject(entry, selectedSale) ? "> " : "")
                     + entry.Name + " / x" + entry.Quantity + " / " + location + "\n" + (entry.CanSell ? entry.UnitPrice + " moedas cada" : entry.BlockReason), iconButton))
                 { selectedSale = entry; quantity = 1; }
                 InventoryPixelArt.Draw(new Rect(7, i * 60 + 9, 36, 36), SaleTexture(entry));
             }
-            GUI.EndScrollView();
+            navigation.EndScrollView();
             if (entries.Count == 0) GUI.Label(new Rect(48, 249, 530, 100), "Nao ha objetos desta categoria no seu inventario.", text);
         }
         private static bool SameObject(SaleEntry one, SaleEntry two) => one.Item != null && one.Item == two.Item
@@ -111,11 +114,11 @@ namespace DragonQuest.Prototype
             GUI.Label(new Rect(665, 383, 550, 28), "Quantidade: " + quantity + " / Disponivel: " + maximum, text);
             bool enabled = GUI.enabled;
             GUI.enabled = quantity > 1;
-            if (GUI.Button(new Rect(665, 421, 65, 38), "-", button)) quantity--;
+            if (navigation.Button(new Rect(665, 421, 65, 38), "-", button)) quantity--;
             GUI.enabled = maximum > quantity;
-            if (GUI.Button(new Rect(742, 421, 65, 38), "+", button)) quantity++;
+            if (navigation.Button(new Rect(742, 421, 65, 38), "+", button)) quantity++;
             GUI.enabled = maximum > 0;
-            if (GUI.Button(new Rect(819, 421, 180, 38), selling ? "Todas as unidades" : "Maximo acessivel", button))
+            if (navigation.Button(new Rect(819, 421, 180, 38), selling ? "Todas as unidades" : "Maximo acessivel", button))
                 quantity = selling ? maximum : Mathf.Max(1, Mathf.Min(maximum, controller.Service.Progress.Gold / price));
             GUI.enabled = enabled;
             long total = (long)price * quantity;
@@ -124,13 +127,13 @@ namespace DragonQuest.Prototype
                 : total > controller.Service.Progress.Gold ? "Ouro insuficiente." : null;
             GUI.Label(new Rect(665, 517, 550, 40), reason ?? (selling ? "Objetos vendidos saem do inventario." : "Compra enviada ao inventario. Use I depois de fechar a loja."), small);
             GUI.enabled = maximum > 0 && string.IsNullOrEmpty(reason);
-            if (GUI.Button(new Rect(665, 567, 300, 35), selling ? "Confirmar venda" : "Confirmar compra", button))
+            if (navigation.Button(new Rect(665, 567, 300, 35), selling ? "Confirmar venda" : "Confirmar compra", button))
             {
                 if (selling) controller.Sell(selectedSale, quantity); else controller.Buy(selectedProduct, quantity);
                 quantity = 1;
             }
             GUI.enabled = enabled;
-            if (GUI.Button(new Rect(986, 567, 230, 35), "Cancelar selecao", button)) ResetSelection();
+            if (navigation.Button(new Rect(986, 567, 230, 35), "Cancelar selecao", button)) ResetSelection();
         }
 
         private void Panel(Rect rect) => Box(rect, new Color(0.075f, 0.12f, 0.18f));

@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using DragonQuest.Input;
 using DragonQuest.Exploration;
 using DragonQuest.Progression;
 
@@ -30,39 +31,40 @@ namespace DragonQuest.Interactions
                 return;
             }
             Keyboard keyboard = Keyboard.current;
-            bool hasInput = keyboard != null && Application.isFocused;
+            bool hasInput = GameInput.IsFocused;
 
             // A mesma tecla que fecha uma conversa não abre outra neste frame.
             if (context.Dialogue.IsOpen)
             {
                 movement.SetMovementEnabled(false);
-                if (hasInput && keyboard.escapeKey.wasPressedThisFrame) context.Dialogue.Close();
+                if (hasInput && GameInput.CancelPressed) context.Dialogue.Close();
                 else if (hasInput && context.Dialogue.ChoicesReady)
                 {
-                    if (keyboard.downArrowKey.wasPressedThisFrame) context.Dialogue.MoveChoice(1);
-                    else if (keyboard.upArrowKey.wasPressedThisFrame) context.Dialogue.MoveChoice(-1);
-                    if (keyboard.digit1Key.wasPressedThisFrame || keyboard.numpad1Key.wasPressedThisFrame) context.Dialogue.Choose(0);
-                    else if (keyboard.digit2Key.wasPressedThisFrame || keyboard.numpad2Key.wasPressedThisFrame) context.Dialogue.Choose(1);
-                    else if (keyboard.digit3Key.wasPressedThisFrame || keyboard.numpad3Key.wasPressedThisFrame) context.Dialogue.Choose(2);
-                    else if (keyboard.enterKey.wasPressedThisFrame || keyboard.numpadEnterKey.wasPressedThisFrame
-                        || keyboard.spaceKey.wasPressedThisFrame || keyboard.eKey.wasPressedThisFrame)
+                    if (GameInput.Navigation == MenuDirection.Down || keyboard?.downArrowKey.wasPressedThisFrame == true) context.Dialogue.MoveChoice(1);
+                    else if (GameInput.Navigation == MenuDirection.Up || keyboard?.upArrowKey.wasPressedThisFrame == true) context.Dialogue.MoveChoice(-1);
+                    if (keyboard?.digit1Key.wasPressedThisFrame == true || keyboard?.numpad1Key.wasPressedThisFrame == true) context.Dialogue.Choose(0);
+                    else if (keyboard?.digit2Key.wasPressedThisFrame == true || keyboard?.numpad2Key.wasPressedThisFrame == true) context.Dialogue.Choose(1);
+                    else if (keyboard?.digit3Key.wasPressedThisFrame == true || keyboard?.numpad3Key.wasPressedThisFrame == true) context.Dialogue.Choose(2);
+                    else if (GameInput.ConfirmPressed)
                         context.Dialogue.ConfirmChoice();
                 }
-                else if (hasInput && (keyboard.eKey.wasPressedThisFrame || keyboard.spaceKey.wasPressedThisFrame || keyboard.enterKey.wasPressedThisFrame))
+                else if (hasInput && GameInput.ConfirmPressed)
                     context.Dialogue.Continue();
+                GameInput.ConsumeGamepadFrame();
                 movement.SetMovementEnabled(!context.Dialogue.IsOpen && !context.IsBusy());
                 return;
             }
 
             movement.SetMovementEnabled(true);
-            if(hasInput && context.Secrets != null && context.Secrets.KnowsPoem && keyboard.pKey.wasPressedThisFrame)
+            if(hasInput && context.Secrets != null && context.Secrets.KnowsPoem && GameInput.PoemPressed)
             {
                 context.Dialogue.Open("Poema da lenda",LegendPoem.ExplainedPages());
                 movement.SetMovementEnabled(false);return;
             }
-            if (hasInput && keyboard.eKey.wasPressedThisFrame)
+            if (hasInput && GameInput.InteractPressed)
             {
                 FindNearest()?.Interact(context);
+                GameInput.ConsumeGamepadFrame();
                 movement.SetMovementEnabled(!context.Dialogue.IsOpen && !context.IsBusy());
             }
         }

@@ -1,5 +1,5 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
+using DragonQuest.Input;
 using DragonQuest.Exploration;
 
 namespace DragonQuest.Prototype
@@ -29,15 +29,21 @@ namespace DragonQuest.Prototype
 
         private void Update()
         {
-            if (battle == null || saves.IsMenuVisible || battle.HasEnded || !Application.isFocused) return;
-            var keyboard = Keyboard.current;
-            if (keyboard == null) return;
-            if (keyboard.backquoteKey.wasPressedThisFrame)
+            if (battle == null || saves.IsMenuVisible || battle.HasEnded || !GameInput.IsFocused) return;
+            if (GameInput.CheatsPressed)
             {
                 if (IsOpen) Close();
                 else { IsOpen = true; player.SetMovementEnabled(false); }
             }
-            else if (IsOpen && keyboard.escapeKey.wasPressedThisFrame) Close();
+            else if (IsOpen && GameInput.CancelPressed) Close();
+            else if (IsOpen)
+            {
+                MenuDirection direction = GameInput.Navigation;
+                if (direction == MenuDirection.Up) selected = (selected + OptionCount - 1) % OptionCount;
+                else if (direction == MenuDirection.Down) selected = (selected + 1) % OptionCount;
+                if (GameInput.GamepadConfirmPressed) Activate(selected);
+            }
+            if (BlocksInput) GameInput.ConsumeGamepadFrame();
         }
 
         private void Close()

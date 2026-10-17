@@ -10,6 +10,7 @@ namespace DragonQuest.Prototype
     {
         private PrototypeBattleController controller;
         private AncientSecrets secrets;
+        private readonly ControllerMenu navigation = new ControllerMenu();
         private Texture2D pixel;
         private GUIStyle title, text, small, button, iconButton, socketButton;
         private int memberIndex;
@@ -28,6 +29,7 @@ namespace DragonQuest.Prototype
         private void OnGUI()
         {
             if (controller == null || !controller.IsMenuOpen) return;
+            navigation.Begin(controller.IsCheatMenuBlocking);
             EnsureStyles();
             Box(new Rect(0, 0, Screen.width, Screen.height), new Color(0.025f, 0.045f, 0.07f));
             float scale = Mathf.Min(Screen.width / 1280f, Screen.height / 720f);
@@ -41,14 +43,14 @@ namespace DragonQuest.Prototype
                 ? "Escolha uma materia, depois um encaixe. Role os encaixes para ver equipamentos com mais pares."
                 : page == 1 ? "Trocar ou remover equipamento devolve suas materias ao inventario. Os novos encaixes ficam vazios."
                 : "Escolha um personagem e um item para usar. HP, MP e condicoes permanecem entre encontros.", small);
-            if (GUI.Button(new Rect(1000, 34, 225, 43), "Fechar / I ou Esc", button)) controller.CloseMenu();
+            if (navigation.Button(new Rect(1000, 34, 225, 43), "Fechar / I ou Esc", button)) controller.CloseMenu();
 
             for (int i = 0; i < party.Members.Count; i++)
-                if (GUI.Button(new Rect(30 + i * 220, 115, 205, 40), (memberIndex == i ? "> " : "") + party.Members[i].Name, button))
+                if (navigation.Button(new Rect(30 + i * 220, 115, 205, 40), (memberIndex == i ? "> " : "") + party.Members[i].Name, button))
                 { memberIndex = i; ResetSocketSelection(); commandsScroll = Vector2.zero; }
             string[] tabs = { "Materias", "Equipamentos", "Itens" };
             for (int i = 0; i < tabs.Length; i++)
-                if (GUI.Button(new Rect(710 + i * 181, 115, 173, 40), (page == i ? "> " : "") + tabs[i], button))
+                if (navigation.Button(new Rect(710 + i * 181, 115, 173, 40), (page == i ? "> " : "") + tabs[i], button))
                 { page = i; selected = null; pendingGear = null; ResetSocketSelection(); }
             PartyMember member = party.Members[memberIndex];
             Panel(new Rect(30, 168, 1220, 65));
@@ -59,6 +61,7 @@ namespace DragonQuest.Prototype
             if (page == 0) DrawMaterias(member, party);
             else if (page == 1) DrawGear(member, party);
             else DrawConsumables(party);
+            navigation.End();
             GUI.matrix = previous;
         }
 
@@ -66,29 +69,29 @@ namespace DragonQuest.Prototype
         {
             Panel(new Rect(30, 245, 615, 209));
             float contentHeight = EquipmentHeight(member.Weapon) + EquipmentHeight(member.Armor);
-            socketsScroll = GUI.BeginScrollView(new Rect(45, 252, 585, 192), socketsScroll, new Rect(0, 0, 550, contentHeight));
+            socketsScroll = navigation.BeginScrollView(new Rect(45, 252, 585, 192), socketsScroll, new Rect(0, 0, 550, contentHeight));
             DrawEquipment(member, member.Weapon, EquipmentSlot.Weapon, 0, party);
             DrawEquipment(member, member.Armor, EquipmentSlot.Armor, EquipmentHeight(member.Weapon), party);
-            GUI.EndScrollView();
+            navigation.EndScrollView();
             DrawPreview(member, party);
 
             Panel(new Rect(670, 245, 580, 450));
             GUI.Label(new Rect(690, 255, 530, 28), "Materias da equipe", title);
             GUI.Label(new Rect(690, 286, 530, 26), "Verde: magia / Azul: suporte / Vermelha: summon / Roxa: fisico", small);
-            inventoryScroll = GUI.BeginScrollView(new Rect(687, 318, 545, 290), inventoryScroll,
+            inventoryScroll = navigation.BeginScrollView(new Rect(687, 318, 545, 290), inventoryScroll,
                 new Rect(0, 0, 515, party.Materias.Count * 45));
             for (int i = 0; i < party.Materias.Count; i++)
             {
                 MateriaInstance materia = party.Materias[i];
                 Color previousColor = GUI.backgroundColor;
                 GUI.backgroundColor = MateriaColor(materia.Definition.Type);
-                if (GUI.Button(new Rect(0, i * 45, 509, 40), (selected == materia ? "> " : "")
+                if (navigation.Button(new Rect(0, i * 45, 509, 40), (selected == materia ? "> " : "")
                     + materia.Definition.Name + "\n" + party.LocationOf(materia), iconButton))
                 { selected = materia; message = "Agora clique no encaixe de destino, em qualquer personagem."; }
                 GUI.backgroundColor = previousColor;
                 InventoryPixelArt.Draw(new Rect(8, i * 45 + 6, 28, 28), InventoryPixelArt.Texture(materia.Definition));
             }
-            GUI.EndScrollView();
+            navigation.EndScrollView();
             GUI.Label(new Rect(690, 620, 535, 65), selected == null
                 ? "Os encaixes unidos por -- formam um par. Combos funcionam somente dentro do mesmo par. All e Infusao sozinhas nao concedem acao."
                 : selected.Definition.Description, small);
@@ -99,26 +102,26 @@ namespace DragonQuest.Prototype
             Panel(new Rect(30, 467, 615, 228));
             GUI.Label(new Rect(48, 475, 550, 28), "Acoes disponiveis na proxima batalha", title);
             var commands = MateriaResolver.Resolve(member);
-            commandsScroll = GUI.BeginScrollView(new Rect(45, 512, 585, 123), commandsScroll,
+            commandsScroll = navigation.BeginScrollView(new Rect(45, 512, 585, 123), commandsScroll,
                 new Rect(0, 0, 555, commands.Count * 28));
             for (int i = 0; i < commands.Count; i++)
                 GUI.Label(new Rect(0, i * 28, 550, 27), commands[i].Name + "  |  " + commands[i].MpCost + " MP"
                     + (commands[i].UsesLimit ? "  |  Limit 100%" : "  |  Poder " + commands[i].Power)
                     + (commands[i].Element == DamageElement.None ? "" : "  |  " + ElementalAffinities.NameOf(commands[i].Element)), small);
-            GUI.EndScrollView();
+            navigation.EndScrollView();
             GUI.Label(new Rect(48, 642, 345, 44), message, small);
             bool enabled = GUI.enabled;
             if (page == 0)
             {
                 GUI.enabled = selectedEquipment != null && selectedSlot >= 0 && selectedEquipment.IsValidSocket(selectedSlot)
                     && (selectedEquipment == member.Weapon || selectedEquipment == member.Armor) && selectedEquipment.Sockets[selectedSlot] != null;
-                if (GUI.Button(new Rect(405, 650, 220, 31), "Remover do encaixe", button))
+                if (navigation.Button(new Rect(405, 650, 220, 31), "Remover do encaixe", button))
                 { party.TryUnequip(member, selectedEquipment, selectedSlot, out message); selected = null; }
             }
             else
             {
                 GUI.enabled = pendingGear != null && pendingGear != member.Weapon && pendingGear != member.Armor;
-                if (GUI.Button(new Rect(405, 650, 220, 31), "Equipar selecionado", button))
+                if (navigation.Button(new Rect(405, 650, 220, 31), "Equipar selecionado", button))
                 { party.TryEquipEquipment(member, pendingGear, out message); ResetSocketSelection(); selected = null; }
             }
             GUI.enabled = enabled;
@@ -142,10 +145,10 @@ namespace DragonQuest.Prototype
             GUI.Label(new Rect(48, 379, 560, 24), "A troca devolve as materias. Monte seus pares na aba Materias.", small);
             bool enabled = GUI.enabled;
             GUI.enabled = member.Weapon != null;
-            if (GUI.Button(new Rect(48, 411, 255, 31), "Remover arma", button))
+            if (navigation.Button(new Rect(48, 411, 255, 31), "Remover arma", button))
             { party.TryRemoveEquipment(member, EquipmentSlot.Weapon, out message); ResetSocketSelection(); selected = null; }
             GUI.enabled = member.Armor != null;
-            if (GUI.Button(new Rect(338, 411, 260, 31), "Remover armadura", button))
+            if (navigation.Button(new Rect(338, 411, 260, 31), "Remover armadura", button))
             { party.TryRemoveEquipment(member, EquipmentSlot.Armor, out message); ResetSocketSelection(); selected = null; }
             GUI.enabled = enabled;
             DrawPreview(member, party);
@@ -153,17 +156,17 @@ namespace DragonQuest.Prototype
             Panel(new Rect(670, 245, 580, 450));
             GUI.Label(new Rect(690, 255, 530, 28), "Equipamentos da equipe", title);
             GUI.Label(new Rect(690, 286, 530, 26), "Uso livre por classe. Equipamento de outro aliado pode ser trocado.", small);
-            gearScroll = GUI.BeginScrollView(new Rect(687, 318, 545, 290), gearScroll, new Rect(0, 0, 515, party.Equipments.Count * 52));
+            gearScroll = navigation.BeginScrollView(new Rect(687, 318, 545, 290), gearScroll, new Rect(0, 0, 515, party.Equipments.Count * 52));
             for (int i = 0; i < party.Equipments.Count; i++)
             {
                 EquipmentLoadout item = party.Equipments[i];
-                if (GUI.Button(new Rect(0, i * 52, 509, 47), (pendingGear == item ? "> " : "") + item.Definition.Name
+                if (navigation.Button(new Rect(0, i * 52, 509, 47), (pendingGear == item ? "> " : "") + item.Definition.Name
                     + " / " + (item.Definition.Slot == EquipmentSlot.Weapon ? "Arma" : "Armadura") + "\n"
                     + party.LocationOf(item) + " / ATQ +" + item.Definition.AttackBonus + " DEF +" + item.Definition.DefenseBonus
                     + " MAG +" + item.Definition.MagicBonus + " / " + item.Sockets.Count + " encaixes", iconButton)) pendingGear = item;
                 InventoryPixelArt.Draw(new Rect(6, i * 52 + 5, 38, 38), InventoryPixelArt.Texture(item.Definition));
             }
-            GUI.EndScrollView();
+            navigation.EndScrollView();
             if (pendingGear != null) InventoryPixelArt.Draw(new Rect(690, 618, 64, 64), InventoryPixelArt.Texture(pendingGear.Definition));
             GUI.Label(new Rect(pendingGear == null ? 690 : 770, 620, pendingGear == null ? 535 : 455, 65), pendingGear == null
                 ? "Selecione um equipamento para comparar atributos. A troca devolve as materias."
@@ -178,7 +181,7 @@ namespace DragonQuest.Prototype
             for (int i = 0; i < party.Consumables.Items.Count; i++)
             {
                 ItemStack stack = party.Consumables.Items[i];
-                if (GUI.Button(new Rect(48, 305 + i * 54, 570, 45), (selectedInventoryItem == stack.Definition ? "> " : "")
+                if (navigation.Button(new Rect(48, 305 + i * 54, 570, 45), (selectedInventoryItem == stack.Definition ? "> " : "")
                     + stack.Definition.Name + " / Quantidade: " + stack.Quantity, iconButton)) selectedInventoryItem = stack.Definition;
                 InventoryPixelArt.Draw(new Rect(56, 309 + i * 54, 36, 36), InventoryPixelArt.Texture(stack.Definition));
             }
@@ -194,7 +197,7 @@ namespace DragonQuest.Prototype
                 ?? "Pocao recupera HP, eter recupera MP, antidoto remove veneno e Pluma da Fenix revive.", text);
             GUI.Label(new Rect(690, 483, 530, 130), "Itens nao recebem bonus de classe ou combos de materia. O estoque nao e restaurado a cada batalha. Compre suprimentos na loja de itens.", text);
             var target = party.Members[memberIndex];
-            if (selectedInventoryItem != null && GUI.Button(new Rect(690, 578, 530, 40), "Usar em " + target.Name, button))
+            if (selectedInventoryItem != null && navigation.Button(new Rect(690, 578, 530, 40), "Usar em " + target.Name, button))
                 party.TryUseItem(selectedInventoryItem, target, out message);
             GUI.Label(new Rect(690, 622, 530, 28), message, small);
             if(secrets.IsDiscovered) GUI.Label(new Rect(690,660,530,30),secrets.Summary,small);
@@ -220,7 +223,7 @@ namespace DragonQuest.Prototype
                 GUI.backgroundColor = materia == null ? Color.gray : MateriaColor(materia.Definition.Type);
                 string label = (selectedEquipment == equipment && selectedSlot == i ? "> " : "")
                     + (i + 1) + ": " + (materia == null ? "Vazio" : materia.Definition.Name);
-                if (GUI.Button(socket, label, socketButton))
+                if (navigation.Button(socket, label, socketButton))
                 {
                     selectedEquipment = equipment; selectedSlot = i;
                     if (selected != null)

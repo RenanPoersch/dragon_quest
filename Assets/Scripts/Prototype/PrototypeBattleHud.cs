@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using DragonQuest.Input;
 using DragonQuest.Combat;
 using DragonQuest.Inventory;
 using DragonQuest.Progression;
@@ -114,19 +115,21 @@ namespace DragonQuest.Prototype
             if (controller.IsCheatMenuBlocking) return;
             if (controller.IsPresentingAction) return;
             Keyboard keys = Keyboard.current;
-            if (keys == null || !Application.isFocused) return;
+            if (!GameInput.IsFocused) return;
             if (observedBattle.Outcome != BattleOutcome.None)
             {
-                if (keys.enterKey.wasPressedThisFrame) controller.ReturnToCity();
+                if (GameInput.ConfirmPressed) { controller.ReturnToCity(); GameInput.ConsumeGamepadFrame(); }
                 return;
             }
             if (observedActor == null || observedActor.Team != CombatTeam.Party) return;
-            if (keys.escapeKey.wasPressedThisFrame || keys.leftArrowKey.wasPressedThisFrame || keys.aKey.wasPressedThisFrame) { Cancel(); return; }
+            if (GameInput.CancelPressed || keys?.leftArrowKey.wasPressedThisFrame == true || keys?.aKey.wasPressedThisFrame == true)
+            { Cancel(); GameInput.ConsumeGamepadFrame(); return; }
             bool targeting = selected != null || selectedItem != null;
             int count = targeting ? TargetRowCount() : CommandCount();
             if (targeting) targetIndex = Mathf.Clamp(targetIndex, 0, Mathf.Max(0, count - 1));
-            int delta = keys.downArrowKey.wasPressedThisFrame || keys.sKey.wasPressedThisFrame ? 1
-                : keys.upArrowKey.wasPressedThisFrame || keys.wKey.wasPressedThisFrame ? -1 : 0;
+            MenuDirection navigation = GameInput.Navigation;
+            int delta = navigation == MenuDirection.Down || keys?.downArrowKey.wasPressedThisFrame == true || keys?.sKey.wasPressedThisFrame == true ? 1
+                : navigation == MenuDirection.Up || keys?.upArrowKey.wasPressedThisFrame == true || keys?.wKey.wasPressedThisFrame == true ? -1 : 0;
             if (count > 0 && delta != 0)
             {
                 if (targeting)
@@ -140,12 +143,13 @@ namespace DragonQuest.Prototype
                     actionsScroll.y = BattleCommandMenu.KeepRowVisible(actionsScroll.y, commandIndex, count, 120);
                 }
             }
-            if (keys.enterKey.wasPressedThisFrame || keys.spaceKey.wasPressedThisFrame)
+            if (GameInput.ConfirmPressed)
             {
                 if (targeting && count > 0) ExecuteTarget(Targets()[targetIndex]);
                 else if (!targeting) ChooseCommand(commandIndex);
+                GameInput.ConsumeGamepadFrame();
             }
-            else if (!targeting && (keys.rightArrowKey.wasPressedThisFrame || keys.dKey.wasPressedThisFrame))
+            else if (!targeting && (navigation == MenuDirection.Right || keys?.rightArrowKey.wasPressedThisFrame == true || keys?.dKey.wasPressedThisFrame == true))
                 ChooseCommand(commandIndex, navigateOnly: true);
         }
 
