@@ -12,7 +12,7 @@ namespace DragonQuest.Combat
             0, 0, AbilityEffect.Heal, TargetRule.AllAllies, usesLimit: true, sourceAbilityId: "lia-salvation",
             partyEffect: PartyEffect.RestoreCleanseAndRevive, recoveryPercent: 80);
         public static readonly AbilityDefinition Aegis = new AbilityDefinition("limit-break", "Bastiao Inabalavel",
-            "Golpe de escudo em TODOS os inimigos. Shield reduz todo dano recebido pelos herois vivos em 50% por 3 turnos de cada aliado. Consome 100% do LIMIT, sem MP.",
+            "Primeiro um grito concede Shield; depois um golpe de escudo no chao atinge TODOS os inimigos. Shield reduz todo dano recebido pelos herois vivos em 50% por 3 turnos de cada aliado. Consome 100% do LIMIT, sem MP.",
             0, 65, AbilityEffect.PhysicalDamage, TargetRule.AllEnemies, usesLimit: true, sourceAbilityId: "bram-aegis",
             partyEffect: PartyEffect.DamageShield, shieldDuration: 3);
 

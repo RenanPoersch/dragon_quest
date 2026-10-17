@@ -7,8 +7,8 @@ from pathlib import Path
 import numpy as np
 from PIL import Image
 
-ACTORS = {"ArenOmnislash": 0, "ArenFinisher": 15, "LiaGospel": 15, "BramCatastrophe": 15}
-NAMES = (*ACTORS, "ArenImpact", "LiaCelestial", "BramCataclysm", "BramBarrier")
+ACTORS = {"ArenOmnislash": 0, "ArenFinisher": 15, "LiaGospel": 15, "BramBastion": 15}
+NAMES = (*ACTORS, "ArenImpact", "LiaCelestial", "BramShieldImpact", "BramBarrier")
 
 
 def divisions(density, count=4):

@@ -6,7 +6,7 @@ namespace DragonQuest.Combat
     public static class UltimateSpriteTimeline
     {
         public static readonly string[] Atlases = { "ArenOmnislash", "ArenFinisher", "ArenImpact", "LiaGospel",
-            "LiaCelestial", "BramCatastrophe", "BramCataclysm", "BramBarrier" };
+            "LiaCelestial", "BramBastion", "BramShieldImpact", "BramBarrier" };
         public const int FramesPerAtlas = 16;
         private static readonly int[][] Cuts={new[]{3,4,5,7},new[]{8,9,10,11},new[]{3,12,13,14},new[]{4,5,6,15}};
         private static readonly int[] LiaFloatPoses={8,9,10,11,10,9};
@@ -26,7 +26,7 @@ namespace DragonQuest.Combat
         }
         public static string PoseAtlas(AbilityDefinition ability, float elapsed) => UltimateTimeline.IsOmnislash(ability)
             ? elapsed>=UltimateTimeline.JumpStart?"ArenFinisher":"ArenOmnislash"
-            : ability?.SourceAbilityId=="lia-salvation"?"LiaGospel":"BramCatastrophe";
+            : ability?.SourceAbilityId=="lia-salvation"?"LiaGospel":"BramBastion";
         public static int PoseFrame(AbilityDefinition ability, float elapsed)
         {
             if(UltimateTimeline.IsOmnislash(ability))
@@ -46,11 +46,18 @@ namespace DragonQuest.Combat
                 if(elapsed<5f) return LiaFloatPoses[Loop(elapsed,1.9f,0,LiaFloatPoses.Length,3)];
                 return Range(elapsed,5f,5.95f,12,15);
             }
-            if(elapsed<.85f) return Range(elapsed,0,.85f,0,3);
-            if(elapsed<1.4f) return Range(elapsed,.85f,1.4f,4,7);
-            if(elapsed<1.75f) return Range(elapsed,1.4f,1.75f,8,11);
-            if(elapsed<5.65f) return 11;
-            return Range(elapsed,5.65f,6.35f,12,15);
+            if(elapsed<UltimateTimeline.AegisShieldImpact)
+                return Range(elapsed,0,UltimateTimeline.AegisShieldImpact,0,3);
+            if(elapsed<UltimateTimeline.AegisShieldFade)
+                return Range(elapsed,UltimateTimeline.AegisShieldImpact,UltimateTimeline.AegisShieldFade,4,5);
+            if(elapsed<UltimateTimeline.AegisShieldEnd)
+                return Range(elapsed,UltimateTimeline.AegisShieldFade,UltimateTimeline.AegisShieldEnd,6,7);
+            if(elapsed<UltimateTimeline.AegisBashStart) return 7;
+            if(elapsed<UltimateTimeline.AegisImpact)
+                return Range(elapsed,UltimateTimeline.AegisBashStart,UltimateTimeline.AegisImpact,8,9);
+            if(elapsed<UltimateTimeline.AegisImpact+.1f) return 10;
+            if(elapsed<UltimateTimeline.AegisImpact+.2f) return 11;
+            return Range(elapsed,UltimateTimeline.AegisImpact+.2f,UltimateTimeline.AegisRecoveryEnd,12,15);
         }
         public static int CelestialFrame(float elapsed)
         {
@@ -58,18 +65,19 @@ namespace DragonQuest.Combat
             if(elapsed<5.1f) return Loop(elapsed,1.45f,8,4,4);
             return Range(elapsed,5.1f,5.9f,12,15);
         }
-        public static int BeamFrame(float elapsed)
-        {
-            if(elapsed<2.65f) return Range(elapsed,1.75f,2.65f,0,3);
-            if(elapsed<UltimateTimeline.AegisImpact) return Range(elapsed,2.65f,UltimateTimeline.AegisImpact,4,7);
-            if(elapsed<4.65f) return Loop(elapsed,UltimateTimeline.AegisImpact,8,4,16);
-            return Range(elapsed,4.65f,5.6f,12,15);
-        }
+        public static bool BarrierVisible(float elapsed) => elapsed>=UltimateTimeline.AegisShieldStart
+            && elapsed<UltimateTimeline.AegisShieldEnd;
+        public static bool ShieldImpactVisible(float elapsed) => elapsed>=UltimateTimeline.AegisImpact
+            && elapsed<UltimateTimeline.AegisEffectEnd;
+        public static int ShieldImpactFrame(float elapsed)
+            => Range(elapsed,UltimateTimeline.AegisImpact,UltimateTimeline.AegisEffectEnd,0,15);
         public static int BarrierFrame(float elapsed)
         {
-            if(elapsed<1.25f) return Range(elapsed,.55f,1.25f,0,7);
-            if(elapsed<4.85f) return Loop(elapsed,1.25f,8,4,12);
-            return Range(elapsed,4.85f,5.7f,12,15);
+            if(elapsed<UltimateTimeline.AegisShieldImpact)
+                return Range(elapsed,UltimateTimeline.AegisShieldStart,UltimateTimeline.AegisShieldImpact,0,7);
+            if(elapsed<UltimateTimeline.AegisShieldFade)
+                return Range(elapsed,UltimateTimeline.AegisShieldImpact,UltimateTimeline.AegisShieldFade,8,11);
+            return Range(elapsed,UltimateTimeline.AegisShieldFade,UltimateTimeline.AegisShieldEnd,12,15);
         }
         public static int SlashFrame(float age, int hit) => Range(age,0,.2f,hit%2==0?4:0,hit%2==0?7:3);
         public static int FinisherFrame(float elapsed) => Range(elapsed,UltimateTimeline.FinalImpact-.1f,UltimateTimeline.FinalImpact+.95f,8,15);

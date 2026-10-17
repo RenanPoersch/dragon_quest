@@ -13,7 +13,6 @@ namespace DragonQuest.Prototype
         private readonly Dictionary<string,UltimateSpriteSheet> sheets=new Dictionary<string,UltimateSpriteSheet>();
         private readonly Dictionary<string,BattleAnimationSheet> blessings=new Dictionary<string,BattleAnimationSheet>();
         private GUIStyle caption;
-        private Color bramTint=Color.white;
         private static readonly Color Mint=new Color(.6f,1,.85f);
         private UltimateSpriteSheet Sheet(string name)
         {
@@ -68,22 +67,23 @@ namespace DragonQuest.Prototype
         public static Rect BramRect(Rect home,float elapsed)
         {
             Rect rect=home;
-            float rise=Mathf.SmoothStep(0,1,(elapsed-.85f)/.85f);
-            float land=Mathf.SmoothStep(0,1,(elapsed-5.65f)/.7f);
-            rect.position=Vector2.Lerp(home.position,new Vector2(735,75),rise*(1-land));
-            if(elapsed>=1.75f && elapsed<5.65f)
-                rect.position+=new Vector2(Mathf.Sin(elapsed*37)*.7f,Mathf.Sin(elapsed*29)*.4f);
+            // The shout stays at home; the shield bash is a short planted lunge, never a jump.
+            float drive=Mathf.SmoothStep(0,1,(elapsed-UltimateTimeline.AegisBashStart)
+                /(UltimateTimeline.AegisImpact-UltimateTimeline.AegisBashStart));
+            float recover=Mathf.SmoothStep(0,1,(elapsed-UltimateTimeline.AegisImpact-.2f)
+                /(UltimateTimeline.AegisRecoveryEnd-UltimateTimeline.AegisImpact-.2f));
+            rect.x-=30*drive*(1-recover);
             return rect;
         }
         public void DrawBackdrop(AbilityDefinition ability,float elapsed,Rect caster,IReadOnlyList<Rect> allies)
         {
             if(!UltimateTimeline.IsUltimate(ability) || elapsed<0 || elapsed>=UltimateTimeline.Duration(ability)) return;
-            if(ability.SourceAbilityId=="bram-aegis" && elapsed>=.55f)
+            if(ability.SourceAbilityId=="bram-aegis" && UltimateSpriteTimeline.BarrierVisible(elapsed))
                 foreach(Rect home in allies)
                 {
                     Rect ally=home==caster?BramRect(home,elapsed):home;
                     Sheet("BramBarrier").DrawCanvas(new Rect(ally.center.x-65,ally.center.y-82,130,164),
-                        UltimateSpriteTimeline.BarrierFrame(elapsed),Fade(Color.white,.8f*Mathf.Clamp01((5.8f-elapsed)/.6f)));
+                        UltimateSpriteTimeline.BarrierFrame(elapsed),Fade(Color.white,.8f*Mathf.Clamp01((UltimateTimeline.AegisShieldEnd-elapsed)/.2f)));
                 }
         }
         public bool DrawActor(Rect home,Rect focus,string hero,AbilityDefinition ability,float elapsed,
@@ -105,8 +105,6 @@ namespace DragonQuest.Prototype
             }
             else
             {
-                bramTint=tint;
-                if(elapsed>=1.75f && elapsed<5.65f) return true;
                 rect=BramRect(home,elapsed);
             }
             Sheet(UltimateSpriteTimeline.PoseAtlas(ability,elapsed)).DrawActor(rect,UltimateSpriteTimeline.PoseFrame(ability,elapsed),tint,mirror);
@@ -130,10 +128,7 @@ namespace DragonQuest.Prototype
             }
             else
             {
-                if(elapsed>=1.75f && elapsed<5.65f)
-                    Sheet("BramCatastrophe").DrawActor(BramRect(caster,elapsed),
-                        UltimateSpriteTimeline.PoseFrame(ability,elapsed),bramTint);
-                DrawCataclysm(elapsed,caster,targets);
+                DrawShieldImpact(elapsed,targets);
             }
         }
         private void DrawOmnislash(float elapsed,Rect target)
@@ -171,19 +166,16 @@ namespace DragonQuest.Prototype
                         Fade(Mint,(5.4f-elapsed)/.4f));
             }
         }
-        private void DrawCataclysm(float elapsed,Rect caster,IReadOnlyList<Rect> targets)
+        private void DrawShieldImpact(float elapsed,IReadOnlyList<Rect> targets)
         {
-            if(elapsed<1.75f || elapsed>=5.65f) return;
-            Rect bram=BramRect(caster,elapsed);
-            Vector2 source=new Vector2(bram.x-52,bram.center.y+5);
-            if(targets.Count>0)
+            if(!UltimateSpriteTimeline.ShieldImpactVisible(elapsed)) return;
+            foreach(Rect target in targets)
             {
-                Rect target=targets[targets.Count/2];
-                Vector2 impact=new Vector2(target.center.x,target.yMax-5);
-                float width=Mathf.Max(200,(source.x-impact.x)/.63f),height=Mathf.Max(170,(impact.y-source.y)/.6f);
-                Rect area=new Rect(source.x-width*.85f,source.y-height*.18f,width,height);
-                Sheet("BramCataclysm").DrawCanvas(area,UltimateSpriteTimeline.BeamFrame(elapsed),
-                    Fade(Color.white,(5.65f-elapsed)/.45f));
+                float size=Mathf.Clamp(target.height*1.9f,170,235);
+                // The authored impact sits at 78% of its canvas, on each enemy's ground line.
+                Rect area=new Rect(target.center.x-size*.5f,target.yMax-size*.78f,size,size);
+                Sheet("BramShieldImpact").DrawCanvas(area,UltimateSpriteTimeline.ShieldImpactFrame(elapsed),
+                    Fade(Color.white,(UltimateTimeline.AegisEffectEnd-elapsed)/.2f));
             }
         }
     }

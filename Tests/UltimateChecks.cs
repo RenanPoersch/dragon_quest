@@ -179,7 +179,7 @@ public static class UltimateChecks
     public static void Main()
     {
         Signatures(); Salvation(); Aegis(); Omnislash(); OverkillFeedback(); TimingAndValidation(); SpriteSequences();
-        Console.WriteLine(checks+" ultimate checks passed: signature commands, 80% recovery/revive/cleanse, shield/AoE, single-target cuts, individual damage and aerial finish.");
+        Console.WriteLine(checks+" ultimate checks passed: signature commands, 80% recovery/revive/cleanse, shield/AoE, single-target cuts, individual damage, aerial sword finish and separate grounded shout/shield bash.");
     }
 
     private static void SpriteSequences()
@@ -209,13 +209,36 @@ public static class UltimateChecks
         Check(UltimateSpriteTimeline.PoseAtlas(HeroUltimates.Omnislash,UltimateTimeline.HangStart)=="ArenFinisher"
             && UltimateSpriteTimeline.PoseFrame(HeroUltimates.Omnislash,UltimateTimeline.HangStart+.1f)>=4
             && UltimateSpriteTimeline.PoseFrame(HeroUltimates.Omnislash,UltimateTimeline.HangStart+.1f)<=7,"Airborne hold uses its dedicated drawn wind-up poses.");
-        Check(UltimateSpriteTimeline.BeamFrame(UltimateTimeline.AegisImpact)>=8
-            && UltimateSpriteTimeline.BeamFrame(UltimateTimeline.AegisImpact)<=11,"AoE damage lands when the drawn bombardment reaches its explosive peak.");
-        int firingPose=UltimateSpriteTimeline.PoseFrame(HeroUltimates.Aegis,2f);
-        bool steady=true;
-        for(float time=2;time<5.65f;time+=.01f) steady &= UltimateSpriteTimeline.PoseFrame(HeroUltimates.Aegis,time)==firingPose;
-        Check(steady,"Bram holds one braced pose through the beam instead of cycling moving body drawings.");
-        foreach(var pick in new Func<float,int>[] { UltimateSpriteTimeline.CelestialFrame,UltimateSpriteTimeline.BeamFrame,UltimateSpriteTimeline.BarrierFrame })
+        Check(UltimateTimeline.AegisShieldStart<UltimateTimeline.AegisShieldImpact
+            && UltimateTimeline.AegisShieldImpact<UltimateTimeline.AegisShieldEnd
+            && UltimateTimeline.AegisShieldEnd<UltimateTimeline.AegisBashStart
+            && UltimateTimeline.AegisBashStart<UltimateTimeline.AegisImpact,
+            "Shout grants Shield, its barrier finishes, then the separate bash starts and hits.");
+        Check(UltimateTimeline.ImpactDelay(HeroUltimates.Aegis)==UltimateTimeline.AegisImpact
+            && UltimateSpriteTimeline.PoseFrame(HeroUltimates.Aegis,UltimateTimeline.AegisImpact)==10,
+            "AoE damage, hit reaction and numbers match the fully extended shield pose.");
+        Check(UltimateSpriteTimeline.PoseAtlas(HeroUltimates.Aegis,0)=="BramBastion",
+            "Bram uses the new grounded shout/bash poses.");
+        bool separated=true;
+        for(float time=0;time<UltimateTimeline.AegisDuration;time+=1f/120)
+        {
+            bool barrier=UltimateSpriteTimeline.BarrierVisible(time);
+            bool impact=UltimateSpriteTimeline.ShieldImpactVisible(time);
+            separated &= !(barrier && impact)
+                && (time<UltimateTimeline.AegisBashStart || !barrier)
+                && (time>=UltimateTimeline.AegisImpact || !impact);
+        }
+        Check(separated,"Barrier never persists into the bash and impact never appears before damage.");
+        Check(!UltimateSpriteTimeline.BarrierVisible(UltimateTimeline.AegisShieldStart-.001f)
+            && UltimateSpriteTimeline.BarrierVisible(UltimateTimeline.AegisShieldStart)
+            && !UltimateSpriteTimeline.BarrierVisible(UltimateTimeline.AegisShieldEnd)
+            && UltimateSpriteTimeline.ShieldImpactVisible(UltimateTimeline.AegisImpact)
+            && !UltimateSpriteTimeline.ShieldImpactVisible(UltimateTimeline.AegisEffectEnd),
+            "Effect visibility has explicit start and end boundaries.");
+        Check(UltimateTimeline.AegisDuration>UltimateTimeline.AegisRecoveryEnd
+            && UltimateTimeline.AegisDuration>UltimateTimeline.AegisImpact+DefeatedEnemyPresentation.Duration,
+            "Controls wait for the grounded recovery and defeated enemies to finish.");
+        foreach(var pick in new Func<float,int>[] { UltimateSpriteTimeline.CelestialFrame,UltimateSpriteTimeline.ShieldImpactFrame,UltimateSpriteTimeline.BarrierFrame })
         {
             var used=new System.Collections.Generic.HashSet<int>();
             for(float time=0;time<6;time+=1f/120) used.Add(pick(time));

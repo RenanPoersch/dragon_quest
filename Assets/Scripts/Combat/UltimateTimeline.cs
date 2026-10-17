@@ -7,12 +7,16 @@ namespace DragonQuest.Combat
     {
         public const float CutStart = 1.15f, CutInterval = .22f;
         public const float JumpStart = 3.9f, HangStart = 4.4f, DiveStart = 5.02f, FinalImpact = 5.32f;
-        public const float SalvationImpact = 3.65f, AegisImpact = 3.5f;
+        public const float SalvationImpact = 3.65f;
+        public const float AegisShieldStart = .55f, AegisShieldImpact = .85f;
+        public const float AegisShieldFade = 1.25f, AegisShieldEnd = 1.8f;
+        public const float AegisBashStart = 2.05f, AegisImpact = 2.85f, AegisEffectEnd = 3.65f;
+        public const float AegisRecoveryEnd = 4.3f, AegisDuration = 4.5f;
         public static bool IsUltimate(AbilityDefinition ability) => ability != null && ability.UsesLimit
             && (ability.SourceAbilityId == "omnislash" || ability.SourceAbilityId == "lia-salvation" || ability.SourceAbilityId == "bram-aegis");
         public static bool IsOmnislash(AbilityDefinition ability) => IsUltimate(ability) && ability.SourceAbilityId == "omnislash";
         public static float Duration(AbilityDefinition ability) => IsOmnislash(ability) ? 6.5f
-            : ability?.SourceAbilityId == "lia-salvation" ? 6f : 6.5f;
+            : ability?.SourceAbilityId == "lia-salvation" ? 6f : AegisDuration;
         public static float ImpactDelay(AbilityDefinition ability) => IsOmnislash(ability) ? FinalImpact
             : ability?.SourceAbilityId == "lia-salvation" ? SalvationImpact : AegisImpact;
         public static float HitTime(int hitIndex) => hitIndex >= HeroUltimates.Omnislash.HitCount

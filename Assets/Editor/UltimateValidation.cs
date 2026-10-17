@@ -36,11 +36,20 @@ public static class UltimateValidation
             || UltimateAnimation.ActorVisible(UltimateTimeline.CutStart+.14f))
             throw new InvalidOperationException("Teleport cuts must alternate disappearance and reappearance.");
         Rect bramHome=new Rect(925,281,64,90);
-        Vector2 firing=UltimateAnimation.BramRect(bramHome,2).position;
-        for(float time=2;time<5.65f;time+=.05f)
-            if(Vector2.Distance(firing,UltimateAnimation.BramRect(bramHome,time).position)>1.7f)
-                throw new InvalidOperationException("Bram must stay fixed with only a slight tremor until the beam ends.");
-        Debug.Log("ULTIMATE_VALIDATION_OK: 128 sprite frames, native imports, atlas/foot anchors, teleport cuts, aerial finish and cinematic timing.");
+        for(float time=0;time<UltimateTimeline.AegisDuration;time+=1f/120)
+        {
+            Rect bram=UltimateAnimation.BramRect(bramHome,time);
+            if(bram.y!=bramHome.y || bram.x>bramHome.x || bram.x<bramHome.x-30.01f)
+                throw new InvalidOperationException("Bram must shout and bash with his feet on the ground.");
+            if(time<UltimateTimeline.AegisBashStart && bram!=bramHome)
+                throw new InvalidOperationException("The shout must finish before Bram lunges.");
+            if(time>=UltimateTimeline.AegisBashStart && UltimateSpriteTimeline.BarrierVisible(time))
+                throw new InvalidOperationException("The barrier must dissolve before the shield bash starts.");
+        }
+        if(UltimateAnimation.BramRect(bramHome,UltimateTimeline.AegisImpact).x>=bramHome.x-29.9f
+            || UltimateAnimation.BramRect(bramHome,UltimateTimeline.AegisRecoveryEnd)!=bramHome)
+            throw new InvalidOperationException("The grounded bash must hit at full extension and then recover.");
+        Debug.Log("ULTIMATE_VALIDATION_OK: 128 sprite frames, native imports, atlas/foot anchors, teleport cuts, aerial sword finish and separate grounded shout/shield bash.");
     }
 
     [MenuItem("Tools/Dragon Quest/Preview Ultimates")]
@@ -74,7 +83,7 @@ public static class UltimateValidation
         var animation=new UltimateAnimation(draw,false); animation.Prepare();
         var party=new[]{new Rect(925,125,64,90),new Rect(985,203,64,90),new Rect(925,281,64,90)};
         var enemies=new[]{new Rect(260,155,80,110),new Rect(405,227,80,110)};
-        var idle=new[]{new UltimateSpriteSheet("ArenOmnislash",draw),new UltimateSpriteSheet("LiaGospel",draw),new UltimateSpriteSheet("BramCatastrophe",draw)};
+        var idle=new[]{new UltimateSpriteSheet("ArenOmnislash",draw),new UltimateSpriteSheet("LiaGospel",draw),new UltimateSpriteSheet("BramBastion",draw)};
         var abilities=new[]{HeroUltimates.Omnislash,HeroUltimates.Salvation,HeroUltimates.Aegis};
         var background=Resources.Load<Texture2D>("BattleBackgrounds/city");
         var opponents=new[]{Resources.Load<Texture2D>("PixelArt/GolemBattle"),Resources.Load<Texture2D>("PixelArt/WolfBattle")};
