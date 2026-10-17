@@ -1,0 +1,135 @@
+{
+  "width": 1254,
+  "height": 1254,
+  "referenceHeight": 233.0,
+  "frames": [
+    {
+      "x": 0,
+      "y": 0,
+      "width": 313,
+      "height": 318,
+      "pivotX": 157.0,
+      "pivotY": 316.0
+    },
+    {
+      "x": 313,
+      "y": 0,
+      "width": 314,
+      "height": 318,
+      "pivotX": 138.0,
+      "pivotY": 316.0
+    },
+    {
+      "x": 627,
+      "y": 0,
+      "width": 313,
+      "height": 318,
+      "pivotX": 143.0,
+      "pivotY": 316.0
+    },
+    {
+      "x": 940,
+      "y": 0,
+      "width": 314,
+      "height": 318,
+      "pivotX": 132.5,
+      "pivotY": 316.0
+    },
+    {
+      "x": 0,
+      "y": 318,
+      "width": 313,
+      "height": 321,
+      "pivotX": 156.0,
+      "pivotY": 319.0
+    },
+    {
+      "x": 313,
+      "y": 318,
+      "width": 314,
+      "height": 321,
+      "pivotX": 141.0,
+      "pivotY": 320.0
+    },
+    {
+      "x": 627,
+      "y": 318,
+      "width": 313,
+      "height": 321,
+      "pivotX": 141.0,
+      "pivotY": 315.0
+    },
+    {
+      "x": 940,
+      "y": 318,
+      "width": 314,
+      "height": 321,
+      "pivotX": 199.0,
+      "pivotY": 314.0
+    },
+    {
+      "x": 0,
+      "y": 639,
+      "width": 313,
+      "height": 301,
+      "pivotX": 177.0,
+      "pivotY": 290.0
+    },
+    {
+      "x": 313,
+      "y": 639,
+      "width": 314,
+      "height": 301,
+      "pivotX": 171.0,
+      "pivotY": 290.0
+    },
+    {
+      "x": 627,
+      "y": 639,
+      "width": 313,
+      "height": 301,
+      "pivotX": 171.0,
+      "pivotY": 285.0
+    },
+    {
+      "x": 940,
+      "y": 639,
+      "width": 314,
+      "height": 301,
+      "pivotX": 198.0,
+      "pivotY": 290.0
+    },
+    {
+      "x": 0,
+      "y": 940,
+      "width": 313,
+      "height": 314,
+      "pivotX": 155.0,
+      "pivotY": 278.0
+    },
+    {
+      "x": 313,
+      "y": 940,
+      "width": 314,
+      "height": 314,
+      "pivotX": 162.5,
+      "pivotY": 279.0
+    },
+    {
+      "x": 627,
+      "y": 940,
+      "width": 313,
+      "height": 314,
+      "pivotX": 144.0,
+      "pivotY": 278.0
+    },
+    {
+      "x": 940,
+      "y": 940,
+      "width": 314,
+      "height": 314,
+      "pivotX": 145.5,
+      "pivotY": 278.0
+    }
+  ]
+}

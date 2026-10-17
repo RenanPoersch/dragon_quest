@@ -120,7 +120,9 @@ public static class UltimateChecks
     private static void TimingAndValidation()
     {
         for(int hit=1;hit<13;hit++) Check(UltimateTimeline.HitTime(hit)<UltimateTimeline.HitTime(hit+1),"Individual damage times strictly increase.");
-        Check(UltimateTimeline.CutsLanded(.9f)==0 && UltimateTimeline.CutsLanded(1.06f)==1 && UltimateTimeline.CutsLanded(3.3f)==12,"The teleport combo has twelve distinct cuts.");
+        Check(UltimateTimeline.CutsLanded(UltimateTimeline.CutStart-.01f)==0
+            && UltimateTimeline.CutsLanded(UltimateTimeline.CutStart+.01f)==1
+            && UltimateTimeline.CutsLanded(UltimateTimeline.HitTime(12)+.01f)==12,"The teleport combo has twelve distinct cuts.");
         Check(UltimateTimeline.JumpStart>UltimateTimeline.HitTime(12) && UltimateTimeline.HangStart<UltimateTimeline.DiveStart
             && UltimateTimeline.DiveStart<UltimateTimeline.FinalImpact,"Jump, airborne hold, dive and final impact occur in order.");
         Check(UltimateTimeline.DiveStart-UltimateTimeline.HangStart>.5f,"Sword wind-up hangs visibly in the air.");
@@ -132,7 +134,48 @@ public static class UltimateChecks
     }
     public static void Main()
     {
-        Signatures(); Salvation(); Aegis(); Omnislash(); TimingAndValidation();
+        Signatures(); Salvation(); Aegis(); Omnislash(); TimingAndValidation(); SpriteSequences();
         Console.WriteLine(checks+" ultimate checks passed: signature commands, 80% recovery/revive/cleanse, shield/AoE, single-target cuts, individual damage and aerial finish.");
+    }
+
+    private static void SpriteSequences()
+    {
+        Check(UltimateSpriteTimeline.Atlases.Length==8 && UltimateSpriteTimeline.Atlases.Distinct().Count()==8,"Eight original sprite atlases have distinct resources.");
+        foreach(var ability in new[]{HeroUltimates.Omnislash,HeroUltimates.Salvation,HeroUltimates.Aegis})
+        {
+            var used=new System.Collections.Generic.Dictionary<string,System.Collections.Generic.HashSet<int>>();
+            bool inRange=true;
+            for(float time=0;time<UltimateTimeline.Duration(ability);time+=1f/120)
+            {
+                string atlas=UltimateSpriteTimeline.PoseAtlas(ability,time);
+                int frame=UltimateSpriteTimeline.PoseFrame(ability,time);
+                inRange &= frame>=0 && frame<16 && UltimateSpriteTimeline.Atlases.Contains(atlas);
+                if(!used.ContainsKey(atlas)) used[atlas]=new System.Collections.Generic.HashSet<int>();
+                used[atlas].Add(frame);
+            }
+            Check(inRange,"Every frame of the complete cinematic refers to a valid actual sprite.");
+            foreach(var sequence in used) Check(sequence.Value.Count==16,"All sixteen authored character poses play: "+sequence.Key);
+        }
+        for(int hit=1;hit<=12;hit++)
+        {
+            float time=UltimateTimeline.HitTime(hit);
+            Check(UltimateSpriteTimeline.ActorVisible(time),"The sword wielder is visible at each actual hit.");
+            Check(!UltimateSpriteTimeline.ActorVisible(time+.14f),"The sword wielder vanishes between cuts.");
+        }
+        Check(UltimateSpriteTimeline.PoseAtlas(HeroUltimates.Omnislash,UltimateTimeline.HangStart)=="ArenFinisher"
+            && UltimateSpriteTimeline.PoseFrame(HeroUltimates.Omnislash,UltimateTimeline.HangStart+.1f)>=4
+            && UltimateSpriteTimeline.PoseFrame(HeroUltimates.Omnislash,UltimateTimeline.HangStart+.1f)<=7,"Airborne hold uses its dedicated drawn wind-up poses.");
+        Check(UltimateSpriteTimeline.BeamFrame(UltimateTimeline.AegisImpact)>=8
+            && UltimateSpriteTimeline.BeamFrame(UltimateTimeline.AegisImpact)<=11,"AoE damage lands when the drawn bombardment reaches its explosive peak.");
+        int firingPose=UltimateSpriteTimeline.PoseFrame(HeroUltimates.Aegis,2f);
+        bool steady=true;
+        for(float time=2;time<5.65f;time+=.01f) steady &= UltimateSpriteTimeline.PoseFrame(HeroUltimates.Aegis,time)==firingPose;
+        Check(steady,"Bram holds one braced pose through the beam instead of cycling moving body drawings.");
+        foreach(var pick in new Func<float,int>[] { UltimateSpriteTimeline.CelestialFrame,UltimateSpriteTimeline.BeamFrame,UltimateSpriteTimeline.BarrierFrame })
+        {
+            var used=new System.Collections.Generic.HashSet<int>();
+            for(float time=0;time<6;time+=1f/120) used.Add(pick(time));
+            Check(used.Count==16 && used.Min()==0 && used.Max()==15,"Effect animation plays all sixteen frames without escaping its atlas.");
+        }
     }
 }

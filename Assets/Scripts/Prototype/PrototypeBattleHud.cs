@@ -63,6 +63,7 @@ namespace DragonQuest.Prototype
             {
                 observedBattle = battle; observedActor = null; seenChanges.Clear(); numbers.Clear();
                 defeatedEnemies.Reset(); castCounter.Reset();
+                ultimateAnimation.Prepare();
                 spiritFloatStartedAt = Time.unscaledTime;
                 preferredEnemyTarget = null;
                 // Optional map-specific art; the menu and fighter anchors do not depend on the background.
@@ -333,8 +334,10 @@ namespace DragonQuest.Prototype
                     && HeroCastAnimation.IsCasting(controller.PresentingAbility)
                     ? HeroCastAnimation.Step(Time.unscaledTime - controller.ActionStartedAt, controller.ActionDuration) : 0;
                 bool omnislashActor = ultimate && UltimateTimeline.IsOmnislash(controller.PresentingAbility) && participant == controller.PresentingActor;
+                Rect shadowFigure = ultimate && controller.PresentingAbility.SourceAbilityId == "bram-aegis"
+                    && participant == controller.PresentingActor ? UltimateAnimation.BramRect(figure, ultimateElapsed) : figure;
                 if (!omnislashActor)
-                    RectBox(new Rect(figure.x + castStep - 8, groundFigure.yMax - 8, figure.width + 16, 10),
+                    RectBox(new Rect(shadowFigure.x + castStep - 8, groundFigure.yMax - 8, figure.width + 16, 10),
                         new Color(0, 0, 0, .25f * defeatedEnemies.Alpha(participant, Time.unscaledTime)));
                 DrawFighter(figure, participant);
                 if (!ultimate && participant.IsAlive && participant == (controller.IsPresentingAction ? controller.PresentingActor : observedActor))
@@ -519,7 +522,9 @@ namespace DragonQuest.Prototype
                     : Time.unscaledTime - controller.ActionImpactAt;
                 foreach (CombatantState target in controller.PresentingTargets)
                     if (target == participant && sinceImpact >= 0 && sinceImpact < .22f
-                        && controller.PresentingAbility.Effect != AbilityEffect.Prepare)
+                        && (controller.PresentingAbility.Effect == AbilityEffect.PhysicalDamage
+                            || controller.PresentingAbility.Effect == AbilityEffect.MagicDamage
+                            || controller.PresentingAbility.Effect == AbilityEffect.Drain))
                     { rect.x += Mathf.Sin(sinceImpact * 75f) * (controller.IsPresentingUltimate ? 9 : 5); break; }
             }
             if (acting && controller.IsPresentingUltimate && battleSprites != null)

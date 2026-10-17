@@ -23,7 +23,7 @@ namespace DragonQuest.Prototype
 
         private void Prepare(AbilityDefinition ability)
         {
-            if(sprites==null) sprites=new PrototypeBattleSprites();
+            if(sprites==null) { sprites=new PrototypeBattleSprites(); animation.Prepare(); }
             if(background==null) background=Resources.Load<Texture2D>("BattleBackgrounds/city");
             if(text==null)
             {
