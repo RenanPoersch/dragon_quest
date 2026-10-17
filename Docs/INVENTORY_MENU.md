@@ -5,7 +5,7 @@ Abra com **I**, X/Quadrado ou Start/Options durante a exploracao. O menu suspend
 A tela principal segue a referencia fornecida: fundo preto, paineis com degrade azul e bordas prateadas, retratos dos tres aliados, nivel, HP/MP, progresso ate o proximo nivel e Limit. O menu lateral tem somente **Item, Magic, Equip, Status e Config**. As caixas inferiores mostram o tempo real da jornada, ouro e localizacao atual. O tempo acompanha o mesmo contador que e salvo e restaurado nos slots.
 
 - **Item:** retratos e HP/MP a esquerda, lista com icones e quantidades a direita, descricao no topo. Clique no item para levar a luva aos retratos; confirme o rosto do personagem para usar.
-- **Magic:** materias, encaixes, pares e previa dos comandos de combate.
+- **Magic:** lista de materias a direita e retratos com os slots de arma/armadura a esquerda, sem os campos de nivel ou HP/MP.
 - **Equip:** troca e remocao de armas/armaduras e comparacao dos atributos.
 - **Status:** ficha individual no painel azul, retrato e HP/MP no topo, atributos a esquerda, EXP/Limit a direita, comandos de combate e equipamentos com materias e pares ligados.
 - **Config:** volume e tela cheia; ajustes validos nesta sessao.
@@ -19,6 +19,18 @@ Selecionar ou cancelar nao consome recursos. Confirmar um rosto usa exatamente u
 Validacao do fluxo de Item: `Tools/Test-ItemMenu.ps1` executa 26 verificacoes de selecao, navegacao, cancelamento, consumo, alvos invalidos, esgotamento, quatro efeitos, organizacao e inventario vazio. A apresentacao usa o mesmo canvas proporcional de 1280x720 da tela principal.
 
 Conferencia adicional em projeto Unity isolado: Enter mudou da lista aos retratos sem consumir, seta para baixo selecionou Lia, e tres pressionamentos separados de Esc retornaram para lista, resumo e exploracao. Capturas em 1280x720 e 960x720 confirmaram o layout, a transferencia da luva da lista ao rosto e o uso da Pocao em Lia: HP de 35/80 para 75/80 e estoque de 6 para 5. A partida aberta no Editor principal foi preservada.
+
+## Tela de Materia
+
+A tela aberta por **Magic** reutiliza a composicao de Item: comandos e descricao no topo, os tres retratos a esquerda e a lista rolavel a direita. Ao lado de cada retrato aparecem o nome do personagem, arma e armadura, com ate seis slots por equipamento. Os slots mostram as materias pelas suas cores e as ligacoes dos pares. Sem equipamento, o nome e `--` e a barra fica vazia. Os campos de nivel e HP/MP nao aparecem nesta tela.
+
+Clique ou confirme uma materia para transferir a luva da lista para os slots. Esquerda/direita percorre os encaixes; cima/baixo troca entre as linhas de arma e armadura dos personagens, conservando a coluna quando possivel. Confirmar o slot equipa a instancia selecionada e retorna a lista. A lista mostra onde cada materia esta equipada; trocar entre dois slots ocupados conserva a troca atomica do dominio, sem duplicar materias.
+
+**Equip** retorna a lista. **Remove**, Delete/Backspace ou Y/Triangulo leva a luva a um slot ocupado; confirmar devolve a materia ao inventario. **Arrange** ordena visualmente pelo nome. **Esc/B/Circulo** cancela a escolha de slot, depois retorna ao resumo e a exploracao; **I** fecha diretamente. Selecionar, navegar ou cancelar conserva a equipe. A descricao do topo mostra a materia selecionada ou o resultado da ultima acao, sem dicas de controle ou texto de ajuda no rodape.
+
+`Tools/Test-MateriaMenu.ps1` passou nas 46 verificacoes de selecao, cancelamento, troca entre personagens, propriedade unica, navegacao entre linhas, sexto slot, organizacao, remocao, destinos removidos e inventario vazio. A tela usa o canvas proporcional de 1280x720.
+
+Validacao adicional: scripts compilados com as bibliotecas da Unity, 26 verificacoes de regressao de Item e 13 verificacoes de integracao com teclado e controle. A previa Unity isolada foi renderizada em 1280x720 e 960x720, incluindo selecao de slot, materia equipada, remocao e personagens sem equipamento. Cada desenho conservou o estado da equipe. A partida aberta no Editor principal foi preservada.
 
 ## Tela de Status
 

@@ -18,17 +18,16 @@ namespace DragonQuest.Prototype
         private readonly ItemMenuSession itemMenu = new ItemMenuSession();
         private readonly ItemMenuPresentation itemScreen = new ItemMenuPresentation();
         private readonly StatusMenuPresentation statusScreen = new StatusMenuPresentation();
-        private GUIStyle title, text, small, button, iconButton, socketButton;
+        private readonly MateriaMenuSession materiaMenu = new MateriaMenuSession();
+        private readonly MateriaMenuPresentation materiaScreen = new MateriaMenuPresentation();
+        private GUIStyle title, text, small, button, iconButton;
         private int memberIndex;
         private int page = -1, selectedMenu, openedFrame;
         private bool wasOpen, acceptsInput;
         private Vector2 lastPointer;
-        private MateriaInstance selected;
         private EquipmentLoadout pendingGear;
-        private EquipmentLoadout selectedEquipment;
-        private int selectedSlot = -1;
-        private string message = "Escolha uma materia na lista e clique no encaixe de destino.";
-        private Vector2 inventoryScroll, commandsScroll, socketsScroll, gearScroll;
+        private string message = "";
+        private Vector2 commandsScroll, gearScroll;
 
         public void Initialize(PrototypeBattleController battleController, AncientSecrets ancientSecrets)
         {
@@ -38,6 +37,11 @@ namespace DragonQuest.Prototype
 
         private bool ReturnFromInventoryMenu()
         {
+            if (page == 0)
+            {
+                if (materiaMenu.ChoosingSocket) materiaMenu.CancelSocket(); else page = -1;
+                return true;
+            }
             if (page == 3) { page = -1; return true; }
             if (page != 2) return false;
             if (itemMenu.ChoosingTarget) itemMenu.CancelTarget(); else page = -1;
@@ -49,6 +53,7 @@ namespace DragonQuest.Prototype
             if (controller == null || !controller.IsMenuOpen) { wasOpen = false; return; }
             CheckOpened();
             if (controller.IsCheatMenuBlocking || !GameInput.IsFocused || openedFrame == Time.frameCount) return;
+            if (page == 0) { UpdateMateriaInput(); return; }
             if (page == 2) { UpdateItemInput(); return; }
             if (page == 3) { UpdateStatusInput(); return; }
             if (page >= 0) return;
@@ -69,17 +74,18 @@ namespace DragonQuest.Prototype
         {
             if (wasOpen) return;
             wasOpen = true; page = -1; selectedMenu = 0; openedFrame = Time.frameCount;
-            selected = null; pendingGear = null; memberIndex = 0;
-            message = ""; ResetSocketSelection();
+            pendingGear = null; memberIndex = 0;
+            message = "";
             lastPointer = new Vector2(-1, -1);
         }
 
         private void OpenCommand(int index)
         {
             page = index == 0 ? 2 : index == 1 ? 0 : index == 2 ? 1 : index;
-            selected = null; pendingGear = null; ResetSocketSelection();
-            inventoryScroll = gearScroll = commandsScroll = Vector2.zero;
+            pendingGear = null;
+            gearScroll = commandsScroll = Vector2.zero;
             message = "";
+            if (page == 0) { materiaMenu.Reset(controller.Party); materiaScreen.Reset(); }
             if (page == 2) { itemMenu.Reset(controller.Party); itemScreen.Reset(); }
             if (page == 3) statusScreen.Reset();
         }
@@ -127,6 +133,32 @@ namespace DragonQuest.Prototype
             GameInput.ConsumeGamepadFrame();
         }
 
+        private void UpdateMateriaInput()
+        {
+            materiaMenu.Refresh(controller.Party);
+            if (!GameInput.IsFrameAvailable || GameInput.CancelPressed || GameInput.InventoryPressed) return;
+            Keyboard keys = Keyboard.current;
+            if (keys?.deleteKey.wasPressedThisFrame == true || keys?.backspaceKey.wasPressedThisFrame == true
+                || Gamepad.current?.buttonNorth.wasPressedThisFrame == true)
+            { materiaMenu.BeginRemove(controller.Party); GameInput.ConsumeGamepadFrame(); return; }
+            MenuDirection direction = GameInput.Navigation;
+            if (keys != null)
+            {
+                if (keys.upArrowKey.wasPressedThisFrame || keys.wKey.wasPressedThisFrame) direction = MenuDirection.Up;
+                else if (keys.downArrowKey.wasPressedThisFrame || keys.sKey.wasPressedThisFrame) direction = MenuDirection.Down;
+                else if (keys.leftArrowKey.wasPressedThisFrame || keys.aKey.wasPressedThisFrame) direction = MenuDirection.Left;
+                else if (keys.rightArrowKey.wasPressedThisFrame || keys.dKey.wasPressedThisFrame) direction = MenuDirection.Right;
+            }
+            if (direction == MenuDirection.Up || direction == MenuDirection.Down)
+                materiaMenu.MoveVertical(direction == MenuDirection.Up ? -1 : 1);
+            else if (direction == MenuDirection.Left || direction == MenuDirection.Right)
+                materiaMenu.Move(direction == MenuDirection.Left ? -1 : 1);
+            if (!GameInput.ConfirmPressed) return;
+            if (materiaMenu.ChoosingSocket) materiaMenu.ConfirmSocket(controller.Party);
+            else materiaMenu.BeginEquip(controller.Party);
+            GameInput.ConsumeGamepadFrame();
+        }
+
         private void OnGUI()
         {
             if (controller == null || !controller.IsMenuOpen) { wasOpen = false; return; }
@@ -146,6 +178,11 @@ namespace DragonQuest.Prototype
                 GUI.matrix = previous; GUI.enabled = previousEnabled;
                 return;
             }
+            if (page == 0)
+            {
+                materiaScreen.Draw(presentation, materiaMenu, party, acceptsInput, () => page = -1);
+                GUI.matrix = previous; GUI.enabled = previousEnabled; return;
+            }
             if (page == 2)
             {
                 itemScreen.Draw(presentation, itemMenu, party, secrets != null && secrets.HasScale, acceptsInput, () => page = -1);
@@ -158,11 +195,9 @@ namespace DragonQuest.Prototype
             }
             navigation.Begin(!acceptsInput);
             Panel(new Rect(30, 20, 1220, 82));
-            string heading = page == 0 ? "Magic" : page == 1 ? "Equip" : "Config";
+            string heading = page == 1 ? "Equip" : "Config";
             GUI.Label(new Rect(48, 30, 850, 30), heading, title);
-            GUI.Label(new Rect(48, 66, 890, 26), page == 0
-                ? "Escolha uma materia, depois um encaixe. Role os encaixes para ver equipamentos com mais pares."
-                : page == 1 ? "Trocar ou remover equipamento devolve suas materias ao inventario. Os novos encaixes ficam vazios."
+            GUI.Label(new Rect(48, 66, 890, 26), page == 1 ? "Trocar ou remover equipamento devolve suas materias ao inventario. Os novos encaixes ficam vazios."
                 : "Ajuste o audio e a exibicao do jogo.", small);
             if (NavigationButton(new Rect(1000, 34, 225, 43), "Voltar", button)) page = -1;
 
@@ -172,15 +207,14 @@ namespace DragonQuest.Prototype
             }
             for (int i = 0; i < party.Members.Count; i++)
                 if (NavigationButton(new Rect(30 + i * 220, 115, 205, 40), (memberIndex == i ? "> " : "") + party.Members[i].Name, button))
-                { memberIndex = i; pendingGear = null; ResetSocketSelection(); commandsScroll = Vector2.zero; }
+                { memberIndex = i; pendingGear = null; commandsScroll = Vector2.zero; }
             PartyMember member = party.Members[memberIndex];
             Panel(new Rect(30, 168, 1220, 65));
             GUI.Label(new Rect(48, 176, 1140, 25), member.Name + " / " + member.BaseStats.Role + "  |  " + member.AffinityDescription, text);
             GUI.Label(new Rect(48, 204, 1140, 24), "Ataque " + member.Attack + "  |  Defesa " + member.Defense
                 + "  |  HP " + member.Hp + "/" + member.MaxHp + "  |  MP " + member.Mp + "/" + member.MaxMp + "  |  Magia " + member.Magic + "  |  Limit " + member.Limit.Charge + "%", small);
 
-            if (page == 0) DrawMaterias(member, party);
-            else if (page == 1) DrawGear(member, party);
+            if (page == 1) DrawGear(member, party);
             navigation.End();
             GUI.matrix = previous; GUI.enabled = previousEnabled;
         }
@@ -221,38 +255,6 @@ namespace DragonQuest.Prototype
             if (NavigationButton(new Rect(750, 242, 430, 44), "Alternar tela cheia", button)) Screen.fullScreen = !Screen.fullScreen;
         }
 
-        private void DrawMaterias(PartyMember member, PartyProgress party)
-        {
-            Panel(new Rect(30, 245, 615, 209));
-            float contentHeight = EquipmentHeight(member.Weapon) + EquipmentHeight(member.Armor);
-            socketsScroll = navigation.BeginScrollView(new Rect(45, 252, 585, 192), socketsScroll, new Rect(0, 0, 550, contentHeight));
-            DrawEquipment(member, member.Weapon, EquipmentSlot.Weapon, 0, party);
-            DrawEquipment(member, member.Armor, EquipmentSlot.Armor, EquipmentHeight(member.Weapon), party);
-            navigation.EndScrollView();
-            DrawPreview(member, party);
-
-            Panel(new Rect(670, 245, 580, 450));
-            GUI.Label(new Rect(690, 255, 530, 28), "Materias da equipe", title);
-            GUI.Label(new Rect(690, 286, 530, 26), "Verde: magia / Azul: suporte / Vermelha: summon / Roxa: fisico", small);
-            inventoryScroll = navigation.BeginScrollView(new Rect(687, 318, 545, 290), inventoryScroll,
-                new Rect(0, 0, 515, party.Materias.Count * 45));
-            for (int i = 0; i < party.Materias.Count; i++)
-            {
-                MateriaInstance materia = party.Materias[i];
-                Color previousColor = GUI.backgroundColor;
-                GUI.backgroundColor = MateriaColor(materia.Definition.Type);
-                if (NavigationButton(new Rect(0, i * 45, 509, 40), (selected == materia ? "> " : "")
-                    + materia.Definition.Name + "\n" + party.LocationOf(materia), iconButton))
-                { selected = materia; message = "Agora clique no encaixe de destino, em qualquer personagem."; }
-                GUI.backgroundColor = previousColor;
-                InventoryPixelArt.Draw(new Rect(8, i * 45 + 6, 28, 28), InventoryPixelArt.Texture(materia.Definition));
-            }
-            navigation.EndScrollView();
-            GUI.Label(new Rect(690, 620, 535, 65), selected == null
-                ? "Os encaixes unidos por -- formam um par. Combos funcionam somente dentro do mesmo par. All e Infusao sozinhas nao concedem acao."
-                : selected.Definition.Description, small);
-        }
-
         private void DrawPreview(PartyMember member, PartyProgress party)
         {
             Panel(new Rect(30, 467, 615, 228));
@@ -267,19 +269,9 @@ namespace DragonQuest.Prototype
             navigation.EndScrollView();
             GUI.Label(new Rect(48, 642, 345, 44), message, small);
             bool enabled = GUI.enabled;
-            if (page == 0)
-            {
-                GUI.enabled = selectedEquipment != null && selectedSlot >= 0 && selectedEquipment.IsValidSocket(selectedSlot)
-                    && (selectedEquipment == member.Weapon || selectedEquipment == member.Armor) && selectedEquipment.Sockets[selectedSlot] != null;
-                if (NavigationButton(new Rect(405, 650, 220, 31), "Remover do encaixe", button))
-                { party.TryUnequip(member, selectedEquipment, selectedSlot, out message); selected = null; }
-            }
-            else
-            {
-                GUI.enabled = pendingGear != null && pendingGear != member.Weapon && pendingGear != member.Armor;
-                if (NavigationButton(new Rect(405, 650, 220, 31), "Equipar selecionado", button))
-                { party.TryEquipEquipment(member, pendingGear, out message); ResetSocketSelection(); selected = null; }
-            }
+            GUI.enabled = pendingGear != null && pendingGear != member.Weapon && pendingGear != member.Armor;
+            if (NavigationButton(new Rect(405, 650, 220, 31), "Equipar selecionado", button))
+                party.TryEquipEquipment(member, pendingGear, out message);
             GUI.enabled = enabled;
         }
 
@@ -302,10 +294,10 @@ namespace DragonQuest.Prototype
             bool enabled = GUI.enabled;
             GUI.enabled = member.Weapon != null;
             if (NavigationButton(new Rect(48, 411, 255, 31), "Remover arma", button))
-            { party.TryRemoveEquipment(member, EquipmentSlot.Weapon, out message); ResetSocketSelection(); selected = null; }
+            { party.TryRemoveEquipment(member, EquipmentSlot.Weapon, out message); }
             GUI.enabled = member.Armor != null;
             if (NavigationButton(new Rect(338, 411, 260, 31), "Remover armadura", button))
-            { party.TryRemoveEquipment(member, EquipmentSlot.Armor, out message); ResetSocketSelection(); selected = null; }
+            { party.TryRemoveEquipment(member, EquipmentSlot.Armor, out message); }
             GUI.enabled = enabled;
             DrawPreview(member, party);
 
@@ -327,47 +319,6 @@ namespace DragonQuest.Prototype
             GUI.Label(new Rect(pendingGear == null ? 690 : 770, 620, pendingGear == null ? 535 : 455, 65), pendingGear == null
                 ? "Selecione um equipamento para comparar atributos. A troca devolve as materias."
                 : pendingGear.Definition.Affinities.Description + (pendingGear.Definition.IsStoryItem ? " / Item de historia: protegido contra venda." : ""), small);
-        }
-
-        private void ResetSocketSelection() { selectedEquipment = null; selectedSlot = -1; socketsScroll = Vector2.zero; }
-        private static float EquipmentHeight(EquipmentLoadout equipment) => equipment == null || equipment.Sockets.Count == 0
-            ? 45 : 41 + equipment.Sockets.Count / 2 * 37;
-
-        private void DrawEquipment(PartyMember member, EquipmentLoadout equipment, EquipmentSlot slot, float y, PartyProgress party)
-        {
-            string kind = slot == EquipmentSlot.Weapon ? "Arma" : "Armadura";
-            InventoryPixelArt.Draw(new Rect(0, y, 24, 24), InventoryPixelArt.Texture(equipment?.Definition));
-            GUI.Label(new Rect(32, y, 508, 24), kind + ": " + (equipment?.Definition.Name ?? "nenhuma")
-                + (equipment == null ? "" : " / " + equipment.Sockets.Count + " encaixes"), small);
-            if (equipment == null || equipment.Sockets.Count == 0) return;
-            for (int i = 0; i < equipment.Sockets.Count; i++)
-            {
-                int column = i % 2, row = i / 2;
-                MateriaInstance materia = equipment.Sockets[i];
-                Rect socket = new Rect(column * 285, y + 27 + row * 37, 250, 31);
-                Color previous = GUI.backgroundColor;
-                GUI.backgroundColor = materia == null ? Color.gray : MateriaColor(materia.Definition.Type);
-                string label = (selectedEquipment == equipment && selectedSlot == i ? "> " : "")
-                    + (i + 1) + ": " + (materia == null ? "Vazio" : materia.Definition.Name);
-                if (NavigationButton(socket, label, socketButton))
-                {
-                    selectedEquipment = equipment; selectedSlot = i;
-                    if (selected != null)
-                    { party.TryEquip(member, equipment, i, selected, out message); selected = null; }
-                    else message = "Encaixe selecionado. Escolha uma materia ou remova a atual.";
-                }
-                GUI.backgroundColor = previous;
-                InventoryPixelArt.Draw(new Rect(socket.x + 6, socket.y + 3, 24, 24), InventoryPixelArt.Texture(materia?.Definition));
-                if (column == 0) GUI.Label(new Rect(253, socket.y + 3, 28, 23), "--", small);
-            }
-        }
-
-        private static Color MateriaColor(MateriaType type)
-        {
-            if (type == MateriaType.Magic) return new Color(0.25f, 0.8f, 0.4f);
-            if (type == MateriaType.Support) return new Color(0.25f, 0.55f, 1f);
-            if (type == MateriaType.Summon) return new Color(1f, 0.32f, 0.3f);
-            return new Color(0.8f, 0.35f, 0.95f);
         }
 
         private void Panel(Rect rect) => presentation.Panel(rect);
@@ -395,7 +346,6 @@ namespace DragonQuest.Prototype
             button.normal.background = button.hover.background = button.active.background = button.focused.background = null;
             button.normal.textColor = button.hover.textColor = button.active.textColor = button.focused.textColor = Color.white;
             iconButton = InventoryPixelArt.ButtonStyle(PrototypeTypography.Style(button, 16));
-            socketButton = InventoryPixelArt.ButtonStyle(button, 38);
             title.normal.textColor = Color.white;
             text.normal.textColor = Color.white; small.normal.textColor = new Color(0.85f, 0.9f, 0.95f);
         }
@@ -404,7 +354,7 @@ namespace DragonQuest.Prototype
         {
             if (controller != null && controller.TryCancelInventorySelection == ReturnFromInventoryMenu)
                 controller.TryCancelInventorySelection = null;
-            statusScreen.Dispose(); presentation?.Dispose(); if (pixel != null) Destroy(pixel);
+            materiaScreen.Dispose(); statusScreen.Dispose(); presentation?.Dispose(); if (pixel != null) Destroy(pixel);
         }
     }
 }
