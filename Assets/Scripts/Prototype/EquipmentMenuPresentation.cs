@@ -10,6 +10,7 @@ namespace DragonQuest.Prototype
         private static readonly string[] singular = { "arma", "armadura", "acessorio" };
         private static readonly string[] stats = { "Ataque", "Defesa", "Magia", "HP max.", "MP max.", "Velocidade", "Encaixes" };
         private static readonly Color up = new Color(.22f, 1, .38f), down = new Color(1, .25f, .3f);
+        private static readonly Color equippedText = new Color(.55f, .57f, .64f);
         private GUIStyle text, heading, small, cyan, number;
         private Vector2 scroll, pointer = new Vector2(-1, -1);
         private int revealed = -1, activatedFrame = -1, lastMember = -1;
@@ -89,13 +90,14 @@ namespace DragonQuest.Prototype
             for (int i = 0; i < session.Items.Count; i++)
             {
                 var item = session.Items[i]; Rect row = new Rect(64, i * rowHeight, 556, rowHeight - 2);
+                bool equipped = party.IsEquipped(item);
                 if (canInteract && moved && row.Contains(localMouse)) session.SelectItem(i);
                 if (Click(row, canInteract)) session.SelectItem(i);
                 InventoryPixelArt.Draw(new Rect(72, row.y + 8, 48, 48), InventoryPixelArt.Texture(item?.Definition));
                 FitLabel(new Rect(132, row.y, 474, 36), item?.Definition.Name
-                    ?? "Remover " + singular[(int)session.Category], text);
-                FitLabel(new Rect(132, row.y + 34, 474, 24), item == null ? "--" : party.LocationOf(item)
-                    + (item == session.CurrentItem ? " / Equipado" : ""), cyan);
+                    ?? "Remover " + singular[(int)session.Category], text, equipped ? equippedText : Color.white);
+                if (equipped) FitLabel(new Rect(132, row.y + 34, 474, 24), party.LocationOf(item)
+                    + (item == session.CurrentItem ? " / Equipado" : ""), small, equippedText);
             }
             if (session.HasSelection) theme.DrawHand(new Rect(70, session.ItemIndex * rowHeight, 44, rowHeight - 2));
             else Label(new Rect(34, 28, 570, 40), "--", text);

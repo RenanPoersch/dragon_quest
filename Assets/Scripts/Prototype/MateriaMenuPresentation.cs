@@ -11,7 +11,7 @@ namespace DragonQuest.Prototype
         private const float RowHeight = 60;
         private Vector2 scroll, pointer = new Vector2(-1, -1);
         private int revealedIndex = -1, activatedFrame = -1;
-        private GUIStyle text, heading, small, cyan;
+        private GUIStyle text, heading, small, cyan, muted, mutedSmall;
         public void Reset() { scroll = Vector2.zero; pointer = new Vector2(-1, -1); revealedIndex = -1; }
         private void EnsureStyles()
         {
@@ -21,6 +21,8 @@ namespace DragonQuest.Prototype
             heading = new GUIStyle(text) { fontSize = 38 };
             small = new GUIStyle(text) { fontSize = 22 };
             cyan = new GUIStyle(small); cyan.normal.textColor = new Color(.1f, 1, .91f);
+            muted = new GUIStyle(text); muted.normal.textColor = new Color(.55f, .57f, .64f);
+            mutedSmall = new GUIStyle(small); mutedSmall.normal.textColor = muted.normal.textColor;
         }
         public void Draw(InventoryMenuPresentation theme, MateriaMenuSession session, PartyProgress party, bool canInteract, Action back)
         {
@@ -66,11 +68,12 @@ namespace DragonQuest.Prototype
             for (int i = 0; i < session.Materias.Count; i++)
             {
                 var materia = session.Materias[i]; Rect row = new Rect(64, i * RowHeight, 556, RowHeight - 2);
+                bool equipped = party.IsEquipped(materia);
                 if (canInteract && moved && !session.ChoosingSocket && row.Contains(localMouse)) session.SelectMateria(i);
                 if (Click(row, canInteract)) { session.SelectMateria(i); session.BeginEquip(party); }
                 MateriaSocketArt.DrawMateria(new Rect(72, row.y + 10, 40, 40), materia.Definition);
-                FitLabel(new Rect(130, row.y, 476, 34), materia.Definition.Name, text);
-                FitLabel(new Rect(130, row.y + 32, 476, 24), party.LocationOf(materia), cyan);
+                FitLabel(new Rect(130, row.y, 476, 34), materia.Definition.Name, equipped ? muted : text);
+                if (equipped) FitLabel(new Rect(130, row.y + 32, 476, 24), party.LocationOf(materia), mutedSmall);
             }
             if (!session.ChoosingSocket && session.Materias.Count > 0) theme.DrawHand(new Rect(70, rowY, 44, RowHeight - 2));
             GUI.EndScrollView();

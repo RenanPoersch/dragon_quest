@@ -26,6 +26,8 @@ Conferencia adicional em projeto Unity isolado: Enter mudou da lista aos retrato
 
 A lista direita filtra os equipamentos possuidos pela categoria, incluindo pecas de outros aliados e uma opcao de remocao. Selecionar ou passar o mouse mostra a previa sem alterar a equipe; **Equipar/Remover** ou confirmar aplica a escolha. A previa considera a perda das materias dos equipamentos trocados e preserva os bonus das pecas restantes. A troca atomica entre aliados e a propriedade das instancias continuam sendo validadas pelo dominio. A parte inferior mostra o icone, as afinidades e os encaixes resultantes, reutilizando os sprites existentes.
 
+Nas listas de equipamentos e materias, nomes e localizacao dos objetos equipados aparecem em cinza, incluindo os usados por outros aliados. Objetos livres conservam o nome branco e nao mostram o texto `Inventario` abaixo. A cor nao bloqueia selecao nem troca entre personagens.
+
 Setas/WASD ou direcional: cima/baixo percorre a lista, esquerda/direita troca de categoria. **Q/R**, **Page Up/Page Down**, **LB/RB** ou as setas junto ao nome trocam o personagem. **Enter/E/Espaco** ou **A/X** confirma. **Esc/B/Circulo** retorna ao resumo e **I** fecha diretamente. Nao ha texto de ajuda na tela.
 
 Cada personagem pode equipar um acessorio. A loja de equipamentos vende duas copias de cada modelo por 90 moedas; venda por 45 moedas, bloqueada enquanto equipado. O kit inicial conserva seu inventario anterior. Os acessorios nao possuem encaixes de materia e podem ser transferidos ou removidos sem desmontar as materias da arma/armadura.
