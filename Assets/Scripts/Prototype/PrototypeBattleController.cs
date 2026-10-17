@@ -230,6 +230,7 @@ namespace DragonQuest.Prototype
 
         private void StartEncounter(BattleSession encounter, bool dragonEncounter)
         {
+            GameInput.ConsumeGamepadFrame();
             Session = encounter; IsDragonEncounter = dragonEncounter;
             PostBattle = new PostBattleResults(Party, encounter);
             IsPostBattleOpen = false; PostBattleStartedAt = 0;

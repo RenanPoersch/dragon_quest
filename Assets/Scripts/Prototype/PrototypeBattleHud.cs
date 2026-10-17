@@ -135,7 +135,7 @@ namespace DragonQuest.Prototype
             if (controller.IsCheatMenuBlocking) return;
             if (controller.IsPresentingAction) return;
             Keyboard keys = Keyboard.current;
-            if (!GameInput.IsFocused) return;
+            if (!GameInput.IsFrameAvailable) return;
             if (observedBattle.Outcome != BattleOutcome.None)
             {
                 if (GameInput.ConfirmPressed) { controller.ReturnToCity(); GameInput.ConsumeGamepadFrame(); }
@@ -186,6 +186,8 @@ namespace DragonQuest.Prototype
                 ChooseCommand(commandIndex, navigateOnly: true);
         }
 
+        private bool CanAcceptMenuInput => GameInput.IsFrameAvailable && !controller.IsCheatMenuBlocking
+            && !controller.IsPresentingAction;
         private bool InSubmenu => itemMode || menuGroup != AbilityMenuGroup.Direct;
         private bool CanOpenDefendMenu => !InSubmenu && !defendMode && defendCommand != null
             && commandIndex == 0 && rootCommands.Count > 0
@@ -286,6 +288,8 @@ namespace DragonQuest.Prototype
         private void OnGUI()
         {
             if (controller == null || !controller.IsActive || controller.IsPostBattleOpen) return;
+            // Keyboard commands belong to Update; IMGUI must not confirm the new selection again.
+            if (Event.current.isKey) Event.current.Use();
             EnsureStyles(); ObserveBattle();
             GUISkin previousSkin = GUI.skin;
             GUI.skin = battleSkin;
@@ -400,7 +404,11 @@ namespace DragonQuest.Prototype
                 {
                     if (targets[i] != participant) continue;
                     if (group || i == targetIndex) DrawHand(new Rect(figure.x - 60, figure.center.y - 18, 56, 36));
-                    if (GUI.Button(figure, GUIContent.none, GUIStyle.none)) { targetIndex = i; ExecuteTarget(participant); }
+                    bool previousEnabled = GUI.enabled;
+                    GUI.enabled = previousEnabled && CanAcceptMenuInput;
+                    bool clicked = GUI.Button(figure, GUIContent.none, GUIStyle.none);
+                    GUI.enabled = previousEnabled;
+                    if (clicked) { GameInput.ConsumeGamepadFrame(); targetIndex = i; ExecuteTarget(participant); }
                 }
             }
             if (controller.IsPresentingAction && controller.IsPresentingSummon)
@@ -555,13 +563,14 @@ namespace DragonQuest.Prototype
         }
         private bool CommandButton(Rect rect, string label, bool focused, bool enabled, Texture2D icon = null, bool limitReady = false)
         {
-            bool previous = GUI.enabled; GUI.enabled = previous && enabled;
+            bool previous = GUI.enabled; GUI.enabled = previous && enabled && CanAcceptMenuInput;
             bool clicked = LimitCommandGlow.Button(rect, label,
                 limitReady,
                 icon == null ? button : itemButton);
             InventoryPixelArt.Draw(new Rect(rect.x + 50, rect.center.y - 14, 28, 28), icon);
             GUI.enabled = previous;
             if (focused) DrawHand(new Rect(rect.x + 2, rect.center.y - 15, 44, 30));
+            if (clicked) GameInput.ConsumeGamepadFrame();
             return clicked;
         }
         private void DrawTurnArrow(float x, float y)

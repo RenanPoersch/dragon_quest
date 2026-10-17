@@ -13,7 +13,8 @@ namespace DragonQuest.Input
         private static System.Func<bool> hasFocus = () => Application.isFocused;
         // One gate for exploration and every screen, also replaceable in isolated input checks.
         public static bool IsFocused => hasFocus();
-        private static bool PadAvailable => IsFocused && consumedFrame != Time.frameCount
+        public static bool IsFrameAvailable => IsFocused && consumedFrame != Time.frameCount;
+        private static bool PadAvailable => IsFrameAvailable
             && Gamepad.current != null && Gamepad.current.enabled;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
@@ -69,25 +70,25 @@ namespace DragonQuest.Input
         }
         public static bool GamepadConfirmPressed => PadAvailable && Gamepad.current.buttonSouth.wasPressedThisFrame;
         public static bool GamepadCancelPressed => PadAvailable && Gamepad.current.buttonEast.wasPressedThisFrame;
-        public static bool ConfirmPressed => IsFocused && (GamepadConfirmPressed
+        public static bool ConfirmPressed => IsFrameAvailable && (GamepadConfirmPressed
             || Keyboard.current != null && (Keyboard.current.enterKey.wasPressedThisFrame
                 || Keyboard.current.numpadEnterKey.wasPressedThisFrame || Keyboard.current.spaceKey.wasPressedThisFrame
                 || Keyboard.current.eKey.wasPressedThisFrame));
-        public static bool CancelPressed => IsFocused && (GamepadCancelPressed
+        public static bool CancelPressed => IsFrameAvailable && (GamepadCancelPressed
             || Keyboard.current?.escapeKey.wasPressedThisFrame == true);
-        public static bool InteractPressed => IsFocused && (GamepadConfirmPressed
+        public static bool InteractPressed => IsFrameAvailable && (GamepadConfirmPressed
             || Keyboard.current?.eKey.wasPressedThisFrame == true);
-        public static bool InventoryPressed => IsFocused && (PadAvailable
+        public static bool InventoryPressed => IsFrameAvailable && (PadAvailable
             && (Gamepad.current.buttonWest.wasPressedThisFrame || Gamepad.current.startButton.wasPressedThisFrame)
             || Keyboard.current?.iKey.wasPressedThisFrame == true);
-        public static bool SavePressed => IsFocused && (PadAvailable && Gamepad.current.selectButton.wasPressedThisFrame
+        public static bool SavePressed => IsFrameAvailable && (PadAvailable && Gamepad.current.selectButton.wasPressedThisFrame
             || Keyboard.current?.f5Key.wasPressedThisFrame == true);
-        public static bool PoemPressed => IsFocused && (PadAvailable && Gamepad.current.buttonNorth.wasPressedThisFrame
+        public static bool PoemPressed => IsFrameAvailable && (PadAvailable && Gamepad.current.buttonNorth.wasPressedThisFrame
             || Keyboard.current?.pKey.wasPressedThisFrame == true);
-        public static bool CheatsPressed => IsFocused && (PadAvailable && Gamepad.current.rightStickButton.wasPressedThisFrame
+        public static bool CheatsPressed => IsFrameAvailable && (PadAvailable && Gamepad.current.rightStickButton.wasPressedThisFrame
             || Keyboard.current?.backquoteKey.wasPressedThisFrame == true);
 
-        // A press which dismisses a screen must never activate the screen underneath it.
+        // Legacy name: consume keyboard and gamepad presses so one screen cannot activate another.
         public static void ConsumeGamepadFrame() => consumedFrame = Time.frameCount;
     }
 }

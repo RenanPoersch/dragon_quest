@@ -108,6 +108,64 @@ public static class ControllerUnityChecks
         Check(!dialogue.IsOpen && activations == beforeCancel, "Cancel closes the selector without executing a response.");
         State(keyboard);
     }
+    private static void CheckBattleConfirmation(Keyboard keyboard)
+    {
+        foreach (Key key in new[] { Key.Enter, Key.NumpadEnter, Key.Space, Key.E })
+        {
+            State(keyboard, key);
+            Check(GameInput.ConfirmPressed, key + " is a fresh confirmation.");
+            GameInput.ConsumeGamepadFrame();
+            Check(!GameInput.ConfirmPressed && !GameInput.InteractPressed,
+                key + " cannot confirm another screen after its frame was consumed.");
+
+            var fixture = new GameObject("Battle confirmation " + key);
+            var movement = fixture.AddComponent<PlayerMovement>(); Call(movement, "Awake");
+            var dialogue = fixture.AddComponent<DialogueController>();
+            var battle = fixture.AddComponent<PrototypeBattleController>();
+            battle.Initialize(movement, dialogue, new ExplorationProgress());
+            var hud = fixture.AddComponent<PrototypeBattleHud>(); hud.Initialize(battle);
+            var interaction = fixture.AddComponent<PlayerInteraction>();
+            interaction.Initialize(new InteractionContext(dialogue, new ExplorationProgress(), _ => {},
+                battle.StartBattle, () => battle.IsBusy), new Interactable[0]);
+            dialogue.OpenWithCompletion("Encontro", battle.StartBattle, "Entrar na batalha.");
+            dialogue.RevealAll();
+            State(keyboard, key); Call(interaction, "Update");
+            // This input-only project has no artwork; skip the HUD's asset preloading.
+            typeof(PrototypeBattleHud).GetField("observedBattle", BindingFlags.Instance | BindingFlags.NonPublic)
+                .SetValue(hud, battle.Session);
+            Call(hud, "Update");
+            var actor = battle.Session.CurrentActor;
+            var selected = typeof(PrototypeBattleHud).GetField("selected", BindingFlags.Instance | BindingFlags.NonPublic);
+            Check(battle.IsActive && actor.Team == DragonQuest.Combat.CombatTeam.Party
+                && actor.TurnsTaken == 0 && selected.GetValue(hud) == null,
+                key + " opens the battle without also selecting its first command.");
+            State(keyboard); Call(hud, "Update"); Call(battle, "Update");
+            Check(actor.TurnsTaken == 0 && !battle.IsPresentingAction,
+                "A new battle waits for the player's command when input is idle.");
+            State(keyboard, key); Call(hud, "Update");
+            Check(selected.GetValue(hud) != null && actor.TurnsTaken == 0,
+                "A fresh " + key + " selects attack and waits for target confirmation.");
+            Call(hud, "Update");
+            Check(actor.TurnsTaken == 0 && !battle.IsPresentingAction,
+                "The same keyboard press cannot select attack and execute it in one frame.");
+            Reset(); InputSystem.QueueStateEvent(keyboard, new KeyboardState(key)); InputSystem.Update();
+            Call(hud, "Update");
+            Check(actor.TurnsTaken == 0, "Holding confirmation cannot execute the selected attack.");
+            var enemy = battle.Session.Combatants.First(c => c.Team == DragonQuest.Combat.CombatTeam.Enemy);
+            int hp = enemy.Hp;
+            State(keyboard, key); Call(hud, "Update");
+            Check(actor.TurnsTaken == 1 && enemy.Hp < hp && battle.IsPresentingAction,
+                "Releasing and pressing " + key + " again executes exactly one chosen attack.");
+            Call(hud, "Update");
+            Check(actor.TurnsTaken == 1, "An accepted attack is not repeated during its presentation.");
+            UnityEngine.Object.DestroyImmediate(fixture);
+        }
+        State(keyboard, Key.Escape); GameInput.ConsumeGamepadFrame();
+        Check(!GameInput.CancelPressed, "A consumed keyboard cancel cannot close another screen.");
+        State(keyboard, Key.I); GameInput.ConsumeGamepadFrame();
+        Check(!GameInput.InventoryPressed, "A consumed inventory shortcut cannot reopen its menu.");
+        State(keyboard);
+    }
     public static void Run()
     {
         try
@@ -193,6 +251,7 @@ public static class ControllerUnityChecks
             Check(GameInput.Movement.x > 0 && GameInput.Movement.y > 0 && GameInput.Movement.magnitude <= 1.0001f,
                 "Keyboard movement still works with a controller connected.");
             CheckDialogueNavigation(keyboard, interaction, dialogue, movement);
+            CheckBattleConfirmation(keyboard);
             UnityEngine.Object.DestroyImmediate(hero);
             Debug.Log("CONTROLLER_UNITY_CHECKS_OK: " + checks + " virtual gamepad, movement, dialogue, inventory, shops, reconnection and keyboard checks.");
             EditorApplication.Exit(0);
