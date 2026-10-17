@@ -42,6 +42,8 @@ Conecte um controle reconhecido pelo Input System da Unity; ele pode ser conecta
 
 Nos menus de inventário e loja, o direcional percorre os botões em sequência; cima/esquerda volta e baixo/direita avança. O botão selecionado recebe uma borda dourada, opções indisponíveis são puladas e listas rolam para manter a seleção visível. Confirme o produto, quantidade, compra/venda, equipamento ou encaixe pelo mesmo botão inferior. A tela inicial, Continue, escolha de slot, confirmação de sobrescrita, escolhas de diálogo, batalha e resultados também aceitam controle.
 
+Na batalha, selecione a linha **Ataque/LIMIT** e pressione **A ou seta para a esquerda** para abrir **Defender**. **D ou seta para a direita** retorna à lista normal, mantendo Ataque ou LIMIT conforme a carga. Abrir ou fechar esse menu não gasta o turno; confirme para defender. O direcional e o analógico do controle usam as mesmas direções, e Esc/botão direito também retorna.
+
 Validação e roteiro de teste: [Docs/CONTROLLER_SUPPORT.md](Docs/CONTROLLER_SUPPORT.md).
 
 ## Parte 7A — ilha e cenários locais

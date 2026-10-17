@@ -32,7 +32,8 @@ namespace DragonQuest.Prototype
         private CombatantState preferredEnemyTarget;
         private AbilityDefinition selected;
         private ConsumableDefinition selectedItem;
-        private bool itemMode;
+        private bool itemMode, defendMode;
+        private AbilityDefinition defendCommand;
         private AbilityMenuGroup menuGroup;
         private List<BattleMenuCommand> rootCommands = new List<BattleMenuCommand>();
         private List<AbilityDefinition> groupAbilities = new List<AbilityDefinition>();
@@ -77,8 +78,9 @@ namespace DragonQuest.Prototype
                 observedActor = battle.CurrentActor; selected = null; selectedItem = null;
                 observedDefinition = observedActor?.Definition;
                 observedLimitReady = observedActor?.Limit.IsReady ?? false;
-                itemMode = false; menuGroup = AbilityMenuGroup.Direct; rootIndex = commandIndex = targetIndex = 0;
+                itemMode = defendMode = false; menuGroup = AbilityMenuGroup.Direct; rootIndex = commandIndex = targetIndex = 0;
                 rootCommands = observedActor == null ? new List<BattleMenuCommand>() : BattleCommandMenu.Root(observedActor);
+                defendCommand = observedActor == null ? null : BattleCommandMenu.Defend(observedActor);
                 groupAbilities.Clear(); actionsScroll = targetsScroll = Vector2.zero;
             }
             foreach (CombatantState participant in battle.Combatants)
@@ -122,12 +124,25 @@ namespace DragonQuest.Prototype
                 return;
             }
             if (observedActor == null || observedActor.Team != CombatTeam.Party) return;
-            if (GameInput.CancelPressed || keys?.leftArrowKey.wasPressedThisFrame == true || keys?.aKey.wasPressedThisFrame == true)
+            if (GameInput.CancelPressed)
             { Cancel(); GameInput.ConsumeGamepadFrame(); return; }
             bool targeting = selected != null || selectedItem != null;
+            MenuDirection navigation = GameInput.Navigation;
+            bool leftPressed = navigation == MenuDirection.Left || keys?.leftArrowKey.wasPressedThisFrame == true || keys?.aKey.wasPressedThisFrame == true;
+            bool rightPressed = navigation == MenuDirection.Right || keys?.rightArrowKey.wasPressedThisFrame == true || keys?.dKey.wasPressedThisFrame == true;
+            if (leftPressed)
+            {
+                if (!targeting && CanOpenDefendMenu)
+                {
+                    rootIndex = commandIndex; defendMode = true; commandIndex = 0; actionsScroll = Vector2.zero;
+                }
+                else if (!defendMode) Cancel();
+                GameInput.ConsumeGamepadFrame(); return;
+            }
+            if (rightPressed && defendMode)
+            { Cancel(); GameInput.ConsumeGamepadFrame(); return; }
             int count = targeting ? TargetRowCount() : CommandCount();
             if (targeting) targetIndex = Mathf.Clamp(targetIndex, 0, Mathf.Max(0, count - 1));
-            MenuDirection navigation = GameInput.Navigation;
             int delta = navigation == MenuDirection.Down || keys?.downArrowKey.wasPressedThisFrame == true || keys?.sKey.wasPressedThisFrame == true ? 1
                 : navigation == MenuDirection.Up || keys?.upArrowKey.wasPressedThisFrame == true || keys?.wKey.wasPressedThisFrame == true ? -1 : 0;
             if (count > 0 && delta != 0)
@@ -149,17 +164,21 @@ namespace DragonQuest.Prototype
                 else if (!targeting) ChooseCommand(commandIndex);
                 GameInput.ConsumeGamepadFrame();
             }
-            else if (!targeting && (navigation == MenuDirection.Right || keys?.rightArrowKey.wasPressedThisFrame == true || keys?.dKey.wasPressedThisFrame == true))
+            else if (!targeting && rightPressed)
                 ChooseCommand(commandIndex, navigateOnly: true);
         }
 
         private bool InSubmenu => itemMode || menuGroup != AbilityMenuGroup.Direct;
-        private int CommandCount() => itemMode ? observedBattle.Inventory.Items.Count
+        private bool CanOpenDefendMenu => !InSubmenu && !defendMode && defendCommand != null
+            && commandIndex >= 0 && commandIndex < rootCommands.Count
+            && (rootCommands[commandIndex].Ability?.SourceAbilityId == "attack" || rootCommands[commandIndex].Ability?.UsesLimit == true);
+        private int CommandCount() => defendMode ? 1 : itemMode ? observedBattle.Inventory.Items.Count
             : InSubmenu ? groupAbilities.Count : rootCommands.Count;
-        private AbilityDefinition CommandAbility(int index) => InSubmenu
+        private AbilityDefinition CommandAbility(int index) => defendMode ? defendCommand : InSubmenu
             ? index < groupAbilities.Count ? groupAbilities[index] : null : rootCommands[index].Ability;
         private string CommandLabel(int index)
         {
+            if (defendMode) return defendCommand.Name;
             if (itemMode)
             {
                 ItemStack stack = observedBattle.Inventory.Items[index];
@@ -182,9 +201,9 @@ namespace DragonQuest.Prototype
         private void Cancel()
         {
             if (selected != null || selectedItem != null) { selected = null; selectedItem = null; targetIndex = 0; }
-            else if (InSubmenu)
+            else if (InSubmenu || defendMode)
             {
-                itemMode = false; menuGroup = AbilityMenuGroup.Direct; groupAbilities.Clear();
+                itemMode = defendMode = false; menuGroup = AbilityMenuGroup.Direct; groupAbilities.Clear();
                 commandIndex = rootIndex;
                 actionsScroll = new Vector2(0, BattleCommandMenu.KeepRowVisible(0, commandIndex, CommandCount(), 120));
             }
@@ -194,7 +213,7 @@ namespace DragonQuest.Prototype
             if (index < 0 || index >= CommandCount()) return;
             commandIndex = index;
             if (!CommandEnabled(index)) return;
-            if (!InSubmenu && rootCommands[index].Kind != BattleCommandKind.Ability)
+            if (!defendMode && !InSubmenu && rootCommands[index].Kind != BattleCommandKind.Ability)
             {
                 BattleCommandKind kind = rootCommands[index].Kind;
                 rootIndex = index; itemMode = kind == BattleCommandKind.Items;
@@ -465,7 +484,15 @@ namespace DragonQuest.Prototype
                     limitReady: !itemMode && CommandAbility(i)?.UsesLimit == true && observedActor.Limit.IsReady)) { ChooseCommand(i); break; }
             }
             GUI.EndScrollView();
-            if (!targeting) return;
+            if (!targeting)
+            {
+                if (string.IsNullOrEmpty(controller.ErrorMessage))
+                {
+                    if (defendMode) GUI.Label(new Rect(40, 668, 560, 25), "Direita / D: voltar", small);
+                    else if (CanOpenDefendMenu) GUI.Label(new Rect(40, 668, 560, 25), "Esquerda / A: Defender", small);
+                }
+                return;
+            }
             IReadOnlyList<CombatantState> targets = Targets();
             targetIndex = Mathf.Clamp(targetIndex, 0, Mathf.Max(0, targets.Count - 1));
             bool group = selected != null && (selected.Targets == TargetRule.AllEnemies || selected.Targets == TargetRule.AllAllies);

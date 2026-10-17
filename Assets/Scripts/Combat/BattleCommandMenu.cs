@@ -14,7 +14,7 @@ namespace DragonQuest.Combat
         { Kind = kind; Label = label; Description = description; Ability = ability; }
     }
 
-    // Keeps materia provenance even when Infuse converts a spell into physical damage.
+    // Groups commands by materia provenance and keeps defense in its side menu.
     public static class BattleCommandMenu
     {
         public static float KeepRowVisible(float scroll, int index, int count, float viewportHeight)
@@ -37,6 +37,13 @@ namespace DragonQuest.Combat
             return result;
         }
 
+        public static AbilityDefinition Defend(CombatantState actor)
+        {
+            foreach (AbilityDefinition ability in actor.Definition.Abilities)
+                if (!ability.UsesLimit && ability.Effect == AbilityEffect.Defend) return ability;
+            return null;
+        }
+
         public static List<BattleMenuCommand> Root(CombatantState actor)
         {
             var result = new List<BattleMenuCommand>();
@@ -53,7 +60,8 @@ namespace DragonQuest.Combat
             if (magic) result.Add(new BattleMenuCommand(BattleCommandKind.Magic, "Magic", "Escolha uma magia equipada."));
             if (summon) result.Add(new BattleMenuCommand(BattleCommandKind.Summon, "Summon", "Escolha uma invocacao equipada."));
             foreach (AbilityDefinition ability in actor.Definition.Abilities)
-                if (ability != attack && !ability.UsesLimit && ability.MenuGroup == AbilityMenuGroup.Direct)
+                if (ability != attack && !ability.UsesLimit && ability.Effect != AbilityEffect.Defend
+                    && ability.MenuGroup == AbilityMenuGroup.Direct)
                     result.Add(new BattleMenuCommand(BattleCommandKind.Ability, ability.Name, ability.Description, ability));
             result.Add(new BattleMenuCommand(BattleCommandKind.Items, "Itens", "Usar um consumivel do inventario."));
             return result;

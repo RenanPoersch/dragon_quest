@@ -193,15 +193,24 @@ internal static class BattleChecks
         var bare = new CombatantState("hero", new CombatantDefinition("Heroi", "", 100, 20, 20, 5, 5, 10,
             MateriaResolver.Attack, MateriaResolver.Defend, MateriaResolver.LimitBreak), CombatTeam.Party);
         var root = BattleCommandMenu.Root(bare);
-        Assert(root.Count == 3 && root[0].Ability == MateriaResolver.Attack,
-            "Sem materias, menu deve mostrar Ataque, Defender e Itens, sem categorias vazias ou Limit.");
+        Assert(root.Count == 2 && root[0].Ability == MateriaResolver.Attack && root[1].Kind == BattleCommandKind.Items,
+            "Sem materias, menu principal deve mostrar Ataque e Itens; Defender fica no menu lateral.");
+        Assert(BattleCommandMenu.Defend(bare) == MateriaResolver.Defend,
+            "Menu lateral deve usar a habilidade Defender do proprio personagem.");
         bare.Limit.Restore(99);
         Assert(BattleCommandMenu.Root(bare)[0].Ability == MateriaResolver.Attack, "Limit incompleto deve manter Ataque.");
         bare.Limit.Restore(100);
         root = BattleCommandMenu.Root(bare);
-        Assert(root.Count == 3 && root[0].Label == "LIMIT" && root[0].Ability == MateriaResolver.LimitBreak,
+        Assert(root.Count == 2 && root[0].Label == "LIMIT" && root[0].Ability == MateriaResolver.LimitBreak,
             "Limit pronto deve substituir Ataque, sem acrescentar outra linha.");
-        foreach (var command in root) Assert(command.Ability != MateriaResolver.Attack, "Ataque nao pode aparecer junto de Limit pronto.");
+        foreach (var command in root)
+            Assert(command.Ability != MateriaResolver.Attack && command.Ability != MateriaResolver.Defend,
+                "Limit pronto nao deve duplicar Ataque nem trazer Defender para a lista principal.");
+        Assert(BattleCommandMenu.Defend(bare) == MateriaResolver.Defend && bare.Limit.IsReady,
+            "Defender continua disponivel com Limit pronto e consultar o menu nao gasta a carga.");
+        var noDefense = new CombatantState("no-defense", new CombatantDefinition("Heroi", "", 100, 20, 20, 5, 5, 10,
+            MateriaResolver.Attack), CombatTeam.Party);
+        Assert(BattleCommandMenu.Defend(noDefense) == null, "Menu lateral nao deve inventar uma defesa nao aprendida.");
         bare.Limit.Spend();
         Assert(BattleCommandMenu.Root(bare)[0].Ability == MateriaResolver.Attack, "Gastar Limit deve devolver Ataque ao menu.");
 
@@ -229,8 +238,8 @@ internal static class BattleChecks
         var aren = party.Members[0];
         Assert(party.TryEquip(aren, aren.Armor, 3, infuse, out _), "Fixture deve equipar Infusao ligada a Thunder.");
         var spells = BattleCommandMenu.Group(aren.CreateCombatant(), AbilityMenuGroup.Magic);
-        Assert(spells.Count == 1 && spells[0].Effect == AbilityEffect.PhysicalDamage,
-            "Infusao deve preservar Thunder no menu Magic apesar da conversao em golpe fisico.");
+        Assert(spells.Count == 1 && spells[0].Effect == AbilityEffect.MagicDamage,
+            "Infusao deve preservar Thunder como magia no menu Magic.");
     }
 
     private static void CheckMenuScrolling()
