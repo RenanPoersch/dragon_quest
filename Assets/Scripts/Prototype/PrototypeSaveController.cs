@@ -156,13 +156,17 @@ namespace DragonQuest.Prototype
             if (store == null) return;
             intro?.Update(Time.unscaledDeltaTime);
             bool titleVisible = IsMenuVisible && page == MenuPage.Title && voyage == null
-                && !IsMenuFadingIn && (intro == null || !intro.BlocksMenuInput);
+                && intro != null && intro.IsPlaying;
             if (!titleVisible) achievementScreen.Dismiss();
             else if (GameInput.IsFocused)
             {
-                var notification = PrototypeAchievements.TakeNotification();
-                if (notification != null) achievementScreen.Show(notification, PrototypeAchievements.Progress.Counter);
-                achievementScreen.Update(Time.unscaledDeltaTime);
+                if (!achievementScreen.IsVisible)
+                {
+                    var notification = PrototypeAchievements.TakeNotification();
+                    if (notification != null) achievementScreen.Show(notification, PrototypeAchievements.Progress.Counter);
+                }
+                var displayed = achievementScreen.Achievement;
+                if (achievementScreen.Update(Time.unscaledDeltaTime)) PrototypeAchievements.MarkNotified(displayed);
             }
             if (voyage != null)
             {
@@ -254,7 +258,7 @@ namespace DragonQuest.Prototype
         {
             // Save notices belong to the journey selection menu, never to the game maps.
             if (store == null || !IsMenuVisible) return;
-            if (intro != null && intro.IsPlaying) { intro.Draw(); return; }
+            if (intro != null && intro.IsPlaying) { intro.Draw(); DrawAchievementNotification(); return; }
             if (voyage != null) { voyage.Draw(); return; }
             // Wait for the reveal and release of the skip input before allowing menu selection.
             if ((IsMenuFadingIn || intro != null && intro.BlocksMenuInput)
@@ -286,7 +290,6 @@ namespace DragonQuest.Prototype
             lastMousePosition = Event.current.mousePosition;
             if (page == MenuPage.Title)
             {
-                achievementScreen.Draw();
                 if (scaleSprite != null)
                     GUI.DrawTexture(new Rect(440, 160, 400, 400), scaleSprite, ScaleMode.ScaleToFit, true);
                 if (MenuButton(new Rect(490, 562, 300, 48), "New game", 0, titleButtonStyle)) NewGame();
@@ -334,6 +337,22 @@ namespace DragonQuest.Prototype
             }
             if (Event.current.type == EventType.Repaint) menuHasDrawn = true;
             GUI.matrix = previousMatrix; GUI.depth = previousDepth; GUI.color = previousColor;
+        }
+        private void DrawAchievementNotification()
+        {
+            if (!achievementScreen.IsVisible) return;
+            Matrix4x4 previousMatrix = GUI.matrix;
+            Color previousColor = GUI.color;
+            int previousDepth = GUI.depth;
+            float scale = Mathf.Min(Screen.width / 1280f, Screen.height / 720f);
+            GUI.matrix = Matrix4x4.TRS(new Vector3((Screen.width - 1280 * scale) / 2,
+                (Screen.height - 720 * scale) / 2, 0), Quaternion.identity, new Vector3(scale, scale, 1));
+            GUI.depth = -110;
+            GUI.color = Color.white;
+            achievementScreen.Draw();
+            GUI.matrix = previousMatrix;
+            GUI.color = previousColor;
+            GUI.depth = previousDepth;
         }
         private bool MenuButton(Rect rect, string label, int option, GUIStyle style)
         {

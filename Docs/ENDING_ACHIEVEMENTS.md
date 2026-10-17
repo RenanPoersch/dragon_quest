@@ -11,10 +11,16 @@ Cada conquista é liberada ao concluir a sequência do respectivo final, antes d
 o achievement recém-liberado: seu ícone, The good, The bad ou The ugly, e o contador 1/3,
 2/3 ou 3/3. Não há lista de conquistas ou ícones bloqueados.
 
-A notificação começa quando a abertura e o fade da tela título terminam. Permanece por
-seis segundos e desaparece com fade; não recebe foco nem bloqueia os botões. Ao sair da
-tela título, é descartada. Não reaparece ao reabrir o jogo, iniciar outra partida ou
-repetir um final já registrado. O tempo pausa quando o jogo perde o foco.
+A notificação aparece sobre a tela de abertura que mostra DRAGON QUEST, antes das
+opções New game e Continue. Permanece por seis segundos e desaparece com fade; não
+recebe foco nem bloqueia os controles. O tempo pausa quando o jogo perde o foco.
+
+Conquistas salvas que ainda não foram notificadas são recuperadas automaticamente,
+uma por vez, inclusive em perfis anteriores a esta correção. O aviso só é marcado como
+exibido após completar os seis segundos na tela. Se a tela for fechada antes disso,
+o aviso continua disponível na próxima abertura. Esse registro usa a chave PlayerPrefs
+`DragonQuest.EndingAchievements.NotifiedMask.v1`, sem alterar os slots nem apagar finais.
+Concluir novamente um final também exibe seu aviso, mantendo a contagem de finais únicos.
 
 O arquivo `Application.persistentDataPath/Achievements/endings.json` acumula os três finais
 entre partidas e reinícios, independentemente dos slots de jornada. Novo jogo, sobrescrever
@@ -42,7 +48,7 @@ Validação automática:
 - `Tools > Dragon Quest > Validate Ending Achievements`: importadores, alpha, fonte, layout e hooks.
 - `Tools > Dragon Quest > Preview Ending Achievements`: prévia de uma notificação por vez, sem alterar o perfil.
 
-Conferência em Play: concluir um final ainda não registrado, esperar o retorno à tela
-título e observar somente a nova conquista e a contagem. A notificação desaparece após
-seis segundos. Reabrir o jogo ou repetir o mesmo final não deve exibi-la novamente.
-Os finais registrados continuam salvos entre jornadas; derrota comum não libera conquistas.
+Conferência em Play: concluir um final e observar seu ícone, nome e contagem sobre a
+tela DRAGON QUEST. Perfis que já têm conquistas também recuperam os avisos não exibidos.
+O aviso desaparece após seis segundos. Repetir um final conserva a contagem e volta a
+exibir seu aviso. Os finais permanecem salvos entre jornadas; derrota comum não libera conquistas.

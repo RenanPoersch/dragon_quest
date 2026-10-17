@@ -93,12 +93,11 @@ public sealed class EndingAchievementPreview : EditorWindow
             Quaternion.identity, new Vector3(scale, scale, 1));
         Color color = GUI.color; GUI.color = Color.black;
         GUI.DrawTexture(new Rect(0, 0, 1280, 720), Texture2D.whiteTexture); GUI.color = Color.white;
-        var emblem = Resources.Load<Texture2D>("PixelArt/DragonScale");
-        if (emblem != null) GUI.DrawTexture(new Rect(440, 160, 400, 400), emblem, ScaleMode.ScaleToFit, true);
-        var style = PrototypeTypography.Style(GUI.skin.label, 36, true); style.alignment = TextAnchor.MiddleCenter;
+        var sunset = Resources.Load<Texture2D>("PixelArt/Intro/Sunset");
+        if (sunset != null) GUI.DrawTexture(new Rect(0, 0, 1280, 720), sunset, ScaleMode.ScaleToFit, true);
+        var style = PrototypeTypography.Style(GUI.skin.label, 56, true); style.alignment = TextAnchor.MiddleCenter;
         style.normal.textColor = Color.white;
-        GUI.Label(new Rect(490, 562, 300, 48), "New game", style);
-        GUI.Label(new Rect(490, 620, 300, 48), "Continue", style);
+        GUI.Label(new Rect(0, 100, 1280, 96), IntroSequence.Title, style);
         if (count > 0) presentation.Show(EndingAchievements.All[count - 1], progress.Counter);
         else presentation.Dismiss();
         presentation.Draw();

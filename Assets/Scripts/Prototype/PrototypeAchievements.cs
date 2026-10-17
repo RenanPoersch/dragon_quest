@@ -7,6 +7,7 @@ namespace DragonQuest.Prototype
 {
     public static class PrototypeAchievements
     {
+        private const string NotifiedMaskKey = "DragonQuest.EndingAchievements.NotifiedMask.v1";
         private static EndingAchievementStore store;
         private static EndingAchievement pendingNotification;
         private static EndingAchievementStore Store => store ?? (store = new EndingAchievementStore(
@@ -20,19 +21,33 @@ namespace DragonQuest.Prototype
 
         public static void Complete(GameEnding ending)
         {
-            bool wasUnlocked = Store.Progress.Has(ending);
             if (!Store.TryUnlock(ending, out string error)) Debug.LogWarning(error);
-            if (wasUnlocked || !Store.Progress.Has(ending)) return;
+            if (!Store.Progress.Has(ending)) return;
             foreach (var achievement in EndingAchievements.All)
                 if (achievement.Ending == ending) { pendingNotification = achievement; break; }
         }
 
-        // The unlock survives the ending scene reload; the notification is consumed once.
         public static EndingAchievement TakeNotification()
         {
-            var notification = pendingNotification;
-            pendingNotification = null;
-            return notification;
+            if (pendingNotification != null)
+            {
+                var notification = pendingNotification;
+                pendingNotification = null;
+                return notification;
+            }
+            // Recover saved unlocks whose notification was never displayed, including older profiles.
+            int notified = PlayerPrefs.GetInt(NotifiedMaskKey, 0);
+            foreach (var achievement in EndingAchievements.All)
+                if (Store.Progress.Has(achievement.Ending) && (notified & achievement.Bit) == 0)
+                    return achievement;
+            return null;
+        }
+
+        public static void MarkNotified(EndingAchievement achievement)
+        {
+            if (achievement == null) return;
+            PlayerPrefs.SetInt(NotifiedMaskKey, PlayerPrefs.GetInt(NotifiedMaskKey, 0) | achievement.Bit);
+            PlayerPrefs.Save();
         }
     }
 }

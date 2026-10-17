@@ -19,6 +19,7 @@ namespace DragonQuest.Prototype
         private bool hasDrawn;
         private GUIStyle counterStyle, nameStyle;
         public bool IsVisible => achievement != null;
+        public EndingAchievement Achievement => achievement;
 
         public void Show(EndingAchievement unlocked, string total)
         {
@@ -30,11 +31,13 @@ namespace DragonQuest.Prototype
             if (icon != null) icon.filterMode = FilterMode.Point;
         }
 
-        public void Update(float unscaledDeltaTime)
+        public bool Update(float unscaledDeltaTime)
         {
-            if (!IsVisible || !hasDrawn) return;
+            if (!IsVisible || !hasDrawn) return false;
             elapsed += Mathf.Max(0, unscaledDeltaTime);
-            if (elapsed >= Duration) Dismiss();
+            if (elapsed < Duration) return false;
+            Dismiss();
+            return true;
         }
 
         public void Dismiss()
