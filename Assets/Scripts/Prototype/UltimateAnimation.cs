@@ -12,7 +12,7 @@ namespace DragonQuest.Prototype
         { this.drawFrame=drawFrame; this.drawText=drawText; }
         private readonly Dictionary<string,UltimateSpriteSheet> sheets=new Dictionary<string,UltimateSpriteSheet>();
         private readonly Dictionary<string,BattleAnimationSheet> blessings=new Dictionary<string,BattleAnimationSheet>();
-        private GUIStyle banner,caption,combo;
+        private GUIStyle banner,caption;
         private Color bramTint=Color.white;
         private static readonly Color Gold=new Color(1,.8f,.4f), Mint=new Color(.6f,1,.85f), Blue=new Color(.5f,.85f,1);
         private UltimateSpriteSheet Sheet(string name)
@@ -32,7 +32,6 @@ namespace DragonQuest.Prototype
             if(banner!=null) return;
             banner=PrototypeTypography.Style(GUI.skin.label,30,true); banner.alignment=TextAnchor.MiddleCenter;
             caption=PrototypeTypography.Style(GUI.skin.label,17,true); caption.alignment=TextAnchor.MiddleCenter;
-            combo=PrototypeTypography.Style(GUI.skin.label,30,true); combo.alignment=TextAnchor.MiddleCenter;
         }
         private void Label(Rect rect,string value,GUIStyle style,Color color)
         {
@@ -159,10 +158,6 @@ namespace DragonQuest.Prototype
                 effect.DrawCanvas(new Rect(target.center.x-size*.5f,target.center.y-size*.5f,size,size),
                     UltimateSpriteTimeline.SlashFrame(age,hit),Color.white);
             }
-            int count=UltimateTimeline.CutsLanded(elapsed);
-            if(drawText && count>0) Label(new Rect(535,95,230,45),count.ToString("00")+" HITS",combo,Gold);
-            if(drawText && elapsed>=UltimateTimeline.HangStart && elapsed<UltimateTimeline.DiveStart)
-                Label(new Rect(535,145,230,28),"CORTE FINAL",caption,Gold);
             if(elapsed>=UltimateTimeline.FinalImpact-.1f && elapsed<UltimateTimeline.FinalImpact+1.02f)
                 effect.DrawCanvas(new Rect(target.center.x-155,target.yMax-240,310,270),
                     UltimateSpriteTimeline.FinisherFrame(elapsed),Fade(Color.white,(UltimateTimeline.FinalImpact+1.02f-elapsed)/.2f));
