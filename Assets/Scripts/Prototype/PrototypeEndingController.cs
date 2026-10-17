@@ -21,6 +21,7 @@ namespace DragonQuest.Prototype
         private GUIStyle titleStyle,textStyle,smallStyle,buttonStyle;
         private CastleDestroyedPresentation aftermath;
         private HeroPossessedPresentation possession;
+        private KingFreedPresentation liberation;
 
         public void Initialize(Dictionary<string,GameObject> roots,PlayerMovement hero,Camera camera,CameraFollow cameraFollow,ObliqueScenery models)
         {maps=roots;player=hero;view=camera;follow=cameraFollow;scenery=models;}
@@ -40,6 +41,11 @@ namespace DragonQuest.Prototype
                 possession=new HeroPossessedPresentation();
                 return;
             }
+            if(result==GameEnding.KingFreed)
+            {
+                liberation=new KingFreedPresentation();
+                return;
+            }
             scenery.Show("Cena final / "+result,ObliqueScenery.EndingSceneData(result),transform);
             view.orthographic=true;view.rect=new Rect(0,0,1,1);view.ResetAspect();
             view.transform.rotation=Quaternion.AngleAxis(ObliqueProjection.YawDegrees,Vector3.forward)
@@ -50,6 +56,12 @@ namespace DragonQuest.Prototype
         }
         private void Update()
         {
+            if(liberation!=null)
+            {
+                liberation.Update(Time.unscaledDeltaTime);
+                if(liberation.Sequence.IsComplete) SceneManager.LoadScene(SceneManager.GetActiveScene().path);
+                return;
+            }
             if(possession!=null)
             {
                 possession.Update(Time.unscaledDeltaTime);
@@ -69,6 +81,7 @@ namespace DragonQuest.Prototype
         private void OnGUI()
         {
             if(pages==null) return;
+            if(liberation!=null) {liberation.Draw();return;}
             if(aftermath!=null) {aftermath.Draw();return;}
             if(possession!=null) {possession.Draw();return;}
             EnsureStyles();
@@ -98,6 +111,6 @@ namespace DragonQuest.Prototype
             textStyle=PrototypeTypography.Style(GUI.skin.label,24);textStyle.wordWrap=true;textStyle.normal.textColor=Color.white;
             smallStyle=PrototypeTypography.Style(textStyle,16);buttonStyle=PrototypeTypography.Style(GUI.skin.button,20);
         }
-        private void OnDestroy() {aftermath?.Dispose();possession?.Dispose();if(pixel!=null) Destroy(pixel);}
+        private void OnDestroy() {aftermath?.Dispose();possession?.Dispose();liberation?.Dispose();if(pixel!=null) Destroy(pixel);}
     }
 }

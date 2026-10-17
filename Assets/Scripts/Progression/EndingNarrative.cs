@@ -2,6 +2,19 @@ namespace DragonQuest.Progression
 {
     public static class EndingNarrative
     {
+        public const string KingFreedSpeech =
+            "Meu povo,\nhoje volto a falar\ncom minha própria voz.\n\n"
+            + "A sombra caiu.\nAren, Lia e Bram\nnos devolveram o amanhã.\n\n"
+            + "Nenhuma palavra apaga\no sofrimento que houve.\nQue meus atos comecem\na reparar essa dor.\n\n"
+            + "Abriremos os celeiros,\nrestauraremos as casas\ne cuidaremos da terra.\n\n"
+            + "Que estas portas\npermaneçam abertas.\nQue o pão alcance\ntodas as mesas.\n\n"
+            + "A coroa só tem valor\nquando serve ao povo.";
+        public const string KingFreedEpilogue =
+            "O rei cumpriu a promessa.\n\n"
+            + "Os celeiros se encheram.\nA feira voltou às ruas.\nOficinas abriram as portas.\n\n"
+            + "Nos campos, a colheita\nalimentou a ilha inteira.\nNo castelo, o povo\nencontrou abrigo e escuta.\n\n"
+            + "Aren, Lia e Bram\nseguiram seu caminho.\nDeixaram para trás\num reino livre.\n\n"
+            + "A chama ancestral\npermaneceu acesa.\nE, desta vez,\niluminava dias de paz.";
         public const string HeroPossessedEpilogue =
             "O tirano caiu.\nPor um instante,\na ilha pareceu livre.\n\n"
             + "Mas a sombra deixou\no corpo do velho rei.\nE encontrou Aren.\n\n"
