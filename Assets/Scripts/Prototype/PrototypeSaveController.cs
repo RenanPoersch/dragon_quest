@@ -52,6 +52,7 @@ namespace DragonQuest.Prototype
         private bool IsMenuFadingIn => menuFadeInElapsed < MenuFadeInDuration;
         public bool IsMenuVisible { get; private set; } = true;
         public int ActiveSlot { get; private set; }
+        public long PlaySeconds => (long)playSeconds;
 
         public void Initialize(PlayerMovement hero, PrototypeBattleController combat, PrototypeShopController vendors,
             PrototypeLocations maps, DialogueController conversations, ExplorationProgress exploration,
