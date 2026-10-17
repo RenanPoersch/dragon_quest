@@ -1,5 +1,4 @@
 using System;
-using DragonQuest.Exploration;
 using DragonQuest.Progression;
 using UnityEngine;
 
@@ -8,12 +7,9 @@ namespace DragonQuest.Prototype
     public sealed class CastleDestroyedPresentation : IDisposable
     {
         public const string BackgroundResource = "PixelArt/Endings/CastleAftermath";
-        public const string ForegroundResource = "PixelArt/Endings/ScorchedEarth";
-        public const string ElderResource = "PixelArt/Endings/ElderEndingWalk";
+        public const string ForegroundResource = "PixelArt/Endings/SeatedElderHill";
         private readonly string[] lines = EndingNarrative.CastleDestroyedEpilogue.Split('\n');
-        private readonly Texture2D background, foreground, shade, elder;
-        private readonly PixelFrame[] elderFrames;
-        private readonly float elderScale;
+        private readonly Texture2D background, foreground, shade;
         private GUIStyle story, caption;
         private bool hasDrawn;
         public CastleDestroyedSequence Sequence { get; }
@@ -23,15 +19,6 @@ namespace DragonQuest.Prototype
             Sequence = new CastleDestroyedSequence(lines.Length);
             background = Load(BackgroundResource);
             foreground = Load(ForegroundResource);
-            elder = Load(ElderResource);
-            Color32[] elderPixels = elder.GetPixels32();
-            var alpha = new byte[elderPixels.Length];
-            for (int i = 0; i < alpha.Length; i++) alpha[i] = elderPixels[i].a;
-            elderFrames = PixelSpriteLayout.Read(elder.width, elder.height, alpha, true);
-            int tallest = 1;
-            foreach (PixelFrame frame in elderFrames) tallest = Math.Max(tallest, frame.Height);
-            // One scale for every pose keeps the body size and grounded feet stable while walking.
-            elderScale = 116f / tallest;
             shade = new Texture2D(128, 1, TextureFormat.RGBA32, false)
                 { name = "FinalOne / narrative shade", wrapMode = TextureWrapMode.Clamp };
             var colors = new Color[128];
@@ -82,18 +69,10 @@ namespace DragonQuest.Prototype
         {
             float x = Sequence.LandX;
             float height = CastleDestroyedSequence.LandWidth * foreground.height / foreground.width;
-            // The sheer rock face extends below the frame, anchoring the ledge to a tall cliff.
-            var bounds = new Rect(x, 430, CastleDestroyedSequence.LandWidth, height);
+            // One painted layer keeps the seated man's palm, hips and extended boot on the curved soil.
+            // Its lower hillside continues below the frame, while the entire pose remains visible.
+            var bounds = new Rect(x, 180, CastleDestroyedSequence.LandWidth, height);
             GUI.color = Color.white; GUI.DrawTexture(bounds, foreground);
-            if (!Sequence.ElderVisible) return;
-            PixelFrame frame = elderFrames[Sequence.ElderFrame];
-            float foot = bounds.y + height * .21f;
-            var destination = new Rect(Sequence.ElderX - frame.FootX * frame.Width * elderScale,
-                foot - (frame.Height - 1) * elderScale, frame.Width * elderScale, frame.Height * elderScale);
-            var uv = new Rect(frame.X / (float)elder.width, frame.Y / (float)elder.height,
-                frame.Width / (float)elder.width, frame.Height / (float)elder.height);
-            GUI.color = new Color(.94f, .85f, .76f);
-            GUI.DrawTextureWithTexCoords(destination, elder, uv, true);
         }
 
         private void DrawWaterAndAsh()

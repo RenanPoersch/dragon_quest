@@ -14,27 +14,13 @@ public static class FinalOneChecks
     {
         Check(Near(At(0).BlackOpacity, 1), "The aftermath starts under black.");
         Check(CastleDestroyedSequence.LandStartX + CastleDestroyedSequence.LandWidth < 0,
-            "The cliff begins entirely outside the picture.");
+            "The hillside and its seated figure begin outside the picture.");
         float arrivalEnd = CastleDestroyedSequence.ArrivalEnd;
         Check(Near(At(arrivalEnd).LandX, CastleDestroyedSequence.LandStopX), "Foreground reaches its mark.");
-        Check(!At(arrivalEnd).ElderVisible && CastleDestroyedSequence.ElderEntranceStart > arrivalEnd,
-            "The old man waits off screen until the cliff has arrived.");
-        var entrance = At(CastleDestroyedSequence.ElderEntranceStart);
-        Check(entrance.ElderWalking && entrance.ElderFrame < 4
-            && entrance.ElderX + CastleDestroyedSequence.ElderWidth / 2 < 0,
-            "The old man begins walking right from outside the frame.");
-        var entering = At(CastleDestroyedSequence.ElderEntranceStart + CastleDestroyedSequence.ElderWalkDuration / 2);
-        Check(entering.ElderX > 0 && entering.ElderX < At(CastleDestroyedSequence.ElderAtCastleAt).ElderX,
-            "The old man walks into the frame on the cliff after its arrival.");
-        var looking = At(CastleDestroyedSequence.ElderAtCastleAt);
-        Check(looking.ElderFacingCastle && !looking.ElderWalking && looking.ElderFrame >= 4 && looking.ElderFrame < 8,
-            "He stops in a rear-facing pose toward the distant castle.");
-        Check(looking.ElderLocalX > 0 && looking.ElderLocalX + CastleDestroyedSequence.ElderWidth / 2 < CastleDestroyedSequence.LandWidth,
-            "The watching character stays well inside the cliff edge.");
-        Check(CastleDestroyedSequence.TextStart > CastleDestroyedSequence.ElderAtCastleAt,
-            "The story starts after the old man has reached his place.");
-        Check(At(CastleDestroyedSequence.ElderEntranceStart + .2f).ElderFrame
-            != At(CastleDestroyedSequence.ElderEntranceStart + .4f).ElderFrame, "Walking changes the leg and arm pose.");
+        Check(CastleDestroyedSequence.TextStart > arrivalEnd && CastleDestroyedSequence.TextStart - arrivalEnd < 1,
+            "The story follows the seated composition's arrival without waiting for a walk.");
+        Check(At(arrivalEnd).TextOffset >= CastleDestroyedSequence.TextWindowHeight,
+            "The text stays below its window during the hill's entrance.");
         var lastLine = At(At(0).TextEndAt - .5f);
         Check(lastLine.TextOffset + lastLine.LineCount * CastleDestroyedSequence.LineHeight > 0
             && Near(lastLine.BlackOpacity, 0), "No fade while the last line is still crossing the window.");
@@ -42,12 +28,9 @@ public static class FinalOneChecks
         Check(textEnd.TextOffset + textEnd.LineCount * CastleDestroyedSequence.LineHeight <= .003f,
             "All text clears the window before fading.");
         Check(Near(textEnd.BlackOpacity, 0), "The ruins remain visible for a pause after the text.");
-        var leaving = At(textEnd.ElderExitAt + CastleDestroyedSequence.ElderWalkDuration / 2);
-        Check(leaving.ElderWalking && leaving.ElderFrame >= 8 && leaving.ElderX < looking.ElderX,
-            "After the narrative he walks back toward the left edge.");
-        var gone = At(textEnd.ElderExitEnd);
-        Check(!gone.ElderVisible && gone.ElderX + CastleDestroyedSequence.ElderWidth / 2 < 0
-            && Near(gone.BlackOpacity, 0), "He leaves the frame completely before the fade starts.");
+        Check(Near(textEnd.CompleteAt - textEnd.TextEndAt,
+            CastleDestroyedSequence.EndHold + CastleDestroyedSequence.FadeOutDuration + CastleDestroyedSequence.BlackHold),
+            "After the final line, the seated scene holds and fades without a walking departure.");
         Check(Near(At(textEnd.FadeOutAt + CastleDestroyedSequence.FadeOutDuration / 2).BlackOpacity, .5f),
             "The final fade is gradual.");
         var black = At(textEnd.BlackAt);
@@ -58,9 +41,9 @@ public static class FinalOneChecks
         {
             var frame = At(t);
             Check(frame.LandX >= previousX - .003f && frame.LandX <= CastleDestroyedSequence.LandStopX + CastleDestroyedSequence.LandDrift,
-                "The cliff keeps moving slowly right after its approach.");
+                "The entire painted hillside keeps moving slowly right without separating the figure from the ground.");
             Check(frame.BackgroundX <= previousBackground && frame.BackgroundX >= -CastleDestroyedSequence.BackgroundDrift,
-                "The background moves left, opposite the cliff, within its overscan margin.");
+                "The background moves left, opposite the hill, within its overscan margin.");
             if (t > arrivalEnd + .1f)
             {
                 Check(frame.LandX > previousX && frame.LandX - previousX < .1f,
@@ -87,7 +70,7 @@ public static class FinalOneChecks
             try { At(0).Advance(invalid); } catch (ArgumentOutOfRangeException) { rejected = true; }
             Check(rejected, "Invalid time steps are rejected.");
         }
-        Console.WriteLine("FINAL_ONE_OK: " + checks + " opposing drift, delayed walk, rear pose, departure, narrative and fade checks.");
+        Console.WriteLine("FINAL_ONE_OK: " + checks + " seated composition, opposing drift, complete narrative and fade checks.");
         return 0;
     }
 }
