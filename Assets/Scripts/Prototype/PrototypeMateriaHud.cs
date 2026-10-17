@@ -17,6 +17,7 @@ namespace DragonQuest.Prototype
         private InventoryMenuPresentation presentation;
         private readonly ItemMenuSession itemMenu = new ItemMenuSession();
         private readonly ItemMenuPresentation itemScreen = new ItemMenuPresentation();
+        private readonly StatusMenuPresentation statusScreen = new StatusMenuPresentation();
         private GUIStyle title, text, small, button, iconButton, socketButton;
         private int memberIndex;
         private int page = -1, selectedMenu, openedFrame;
@@ -32,11 +33,12 @@ namespace DragonQuest.Prototype
         public void Initialize(PrototypeBattleController battleController, AncientSecrets ancientSecrets)
         {
             controller = battleController; secrets = ancientSecrets;
-            controller.TryCancelInventorySelection = ReturnFromItemMenu;
+            controller.TryCancelInventorySelection = ReturnFromInventoryMenu;
         }
 
-        private bool ReturnFromItemMenu()
+        private bool ReturnFromInventoryMenu()
         {
+            if (page == 3) { page = -1; return true; }
             if (page != 2) return false;
             if (itemMenu.ChoosingTarget) itemMenu.CancelTarget(); else page = -1;
             return true;
@@ -48,6 +50,7 @@ namespace DragonQuest.Prototype
             CheckOpened();
             if (controller.IsCheatMenuBlocking || !GameInput.IsFocused || openedFrame == Time.frameCount) return;
             if (page == 2) { UpdateItemInput(); return; }
+            if (page == 3) { UpdateStatusInput(); return; }
             if (page >= 0) return;
             MenuDirection direction = GameInput.Navigation;
             Keyboard keys = Keyboard.current;
@@ -78,6 +81,29 @@ namespace DragonQuest.Prototype
             inventoryScroll = gearScroll = commandsScroll = Vector2.zero;
             message = "";
             if (page == 2) { itemMenu.Reset(controller.Party); itemScreen.Reset(); }
+            if (page == 3) statusScreen.Reset();
+        }
+
+        private void ChangeStatusMember(int step)
+        {
+            int count = controller.Party.Members.Count;
+            memberIndex = (memberIndex + step + count) % count;
+            statusScreen.Reset();
+        }
+
+        private void UpdateStatusInput()
+        {
+            if (GameInput.CancelPressed || GameInput.InventoryPressed) return;
+            MenuDirection direction = GameInput.Navigation;
+            int step = direction == MenuDirection.Left || direction == MenuDirection.Up ? -1
+                : direction == MenuDirection.Right || direction == MenuDirection.Down ? 1 : 0;
+            Keyboard keys = Keyboard.current;
+            if (keys != null)
+            {
+                if (keys.aKey.wasPressedThisFrame || keys.leftArrowKey.wasPressedThisFrame || keys.upArrowKey.wasPressedThisFrame) step = -1;
+                else if (keys.dKey.wasPressedThisFrame || keys.rightArrowKey.wasPressedThisFrame || keys.downArrowKey.wasPressedThisFrame) step = 1;
+            }
+            if (step != 0) ChangeStatusMember(step);
         }
 
         private void UpdateItemInput()
@@ -125,15 +151,19 @@ namespace DragonQuest.Prototype
                 itemScreen.Draw(presentation, itemMenu, party, secrets != null && secrets.HasScale, acceptsInput, () => page = -1);
                 GUI.matrix = previous; GUI.enabled = previousEnabled; return;
             }
+            if (page == 3)
+            {
+                statusScreen.Draw(presentation, party.Members[memberIndex], acceptsInput, ChangeStatusMember, () => page = -1);
+                GUI.matrix = previous; GUI.enabled = previousEnabled; return;
+            }
             navigation.Begin(!acceptsInput);
             Panel(new Rect(30, 20, 1220, 82));
-            string heading = page == 0 ? "Magic" : page == 1 ? "Equip" : page == 2 ? "Item" : page == 3 ? "Status" : "Config";
+            string heading = page == 0 ? "Magic" : page == 1 ? "Equip" : "Config";
             GUI.Label(new Rect(48, 30, 850, 30), heading, title);
             GUI.Label(new Rect(48, 66, 890, 26), page == 0
                 ? "Escolha uma materia, depois um encaixe. Role os encaixes para ver equipamentos com mais pares."
                 : page == 1 ? "Trocar ou remover equipamento devolve suas materias ao inventario. Os novos encaixes ficam vazios."
-                : page == 2 ? "Escolha um personagem e um item para usar. HP, MP e condicoes permanecem entre encontros."
-                : page == 3 ? "Atributos e condicoes atuais da equipe." : "Ajuste o audio e a exibicao do jogo.", small);
+                : "Ajuste o audio e a exibicao do jogo.", small);
             if (NavigationButton(new Rect(1000, 34, 225, 43), "Voltar", button)) page = -1;
 
             if (page == 4)
@@ -151,7 +181,6 @@ namespace DragonQuest.Prototype
 
             if (page == 0) DrawMaterias(member, party);
             else if (page == 1) DrawGear(member, party);
-            else if (page == 3) DrawStatus(member);
             navigation.End();
             GUI.matrix = previous; GUI.enabled = previousEnabled;
         }
@@ -179,27 +208,6 @@ namespace DragonQuest.Prototype
             if (Event.current.type == EventType.Repaint) lastPointer = pointer;
             presentation.DrawHand(selectedMenu);
             GUI.Label(new Rect(34, 676, 610, 28), "I / Esc: fechar     Setas: selecionar     Enter: abrir", small);
-        }
-
-        private void DrawStatus(PartyMember member)
-        {
-            Panel(new Rect(30, 245, 615, 450)); Panel(new Rect(670, 245, 580, 450));
-            presentation.DrawPortrait(new Rect(60, 276, 150, 150), member);
-            GUI.Label(new Rect(238, 276, 380, 34), member.Name + " / Nivel " + member.Level, title);
-            GUI.Label(new Rect(238, 320, 380, 100), "HP " + member.Hp + " / " + member.MaxHp
-                + "\nMP " + member.Mp + " / " + member.MaxMp + "\nLimit " + member.Limit.Charge + "%", text);
-            GUI.Label(new Rect(60, 452, 548, 170), "Ataque    " + member.Attack + "\nDefesa    " + member.Defense
-                + "\nMagia     " + member.Magic + "\nVelocidade    " + member.Speed
-                + "\nCritico    " + (member.CriticalChance * 100).ToString("0.#") + "%", text);
-            GUI.Label(new Rect(60, 632, 548, 40), !member.IsAlive ? "Condicao: KO"
-                : member.IsPoisoned ? "Condicao: Veneno" : member.BoundActions > 0 ? "Condicao: Preso" : "Condicao: Normal", small);
-            GUI.Label(new Rect(694, 266, 530, 34), "Experiencia", title);
-            GUI.Label(new Rect(694, 310, 530, 78), "EXP total: " + member.Experience + "\nProximo nivel: "
-                + (member.Level == CharacterProgression.MaxLevel ? "MAX" : member.Progression.ExperienceToNextLevel.ToString()), text);
-            GUI.Label(new Rect(694, 406, 530, 32), "Equipamento", title);
-            GUI.Label(new Rect(694, 450, 530, 75), (member.Weapon?.Definition.Name ?? "Sem arma")
-                + "\n" + (member.Armor?.Definition.Name ?? "Sem armadura"), text);
-            GUI.Label(new Rect(694, 544, 530, 115), member.Affinities.Description + "\n" + member.AffinityDescription, small);
         }
 
         private void DrawConfig()
@@ -398,9 +406,9 @@ namespace DragonQuest.Prototype
 
         private void OnDestroy()
         {
-            if (controller != null && controller.TryCancelInventorySelection == ReturnFromItemMenu)
+            if (controller != null && controller.TryCancelInventorySelection == ReturnFromInventoryMenu)
                 controller.TryCancelInventorySelection = null;
-            presentation?.Dispose(); if (pixel != null) Destroy(pixel);
+            statusScreen.Dispose(); presentation?.Dispose(); if (pixel != null) Destroy(pixel);
         }
     }
 }
