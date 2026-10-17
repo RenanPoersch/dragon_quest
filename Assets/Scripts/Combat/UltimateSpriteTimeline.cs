@@ -9,6 +9,7 @@ namespace DragonQuest.Combat
             "LiaCelestial", "BramCatastrophe", "BramCataclysm", "BramBarrier" };
         public const int FramesPerAtlas = 16;
         private static readonly int[][] Cuts={new[]{3,4,5,7},new[]{8,9,10,11},new[]{3,12,13,14},new[]{4,5,6,15}};
+        private static readonly int[] LiaFloatPoses={8,9,10,11,10,9};
         private static int Clamp(int value, int min, int max) => Math.Max(min, Math.Min(value, max));
         private static int Range(float elapsed, float start, float end, int first, int last)
             => Clamp(first+(int)((elapsed-start)/Math.Max(.001f,end-start)*(last-first+1)),first,last);
@@ -40,10 +41,10 @@ namespace DragonQuest.Combat
             }
             if(ability?.SourceAbilityId=="lia-salvation")
             {
-                if(elapsed<.6f) return Range(elapsed,0,.6f,0,3);
-                if(elapsed<1.15f) return Range(elapsed,.6f,1.15f,4,7);
-                if(elapsed<5.2f) return Loop(elapsed,1.15f,8,4,12);
-                return Range(elapsed,5.2f,5.85f,12,15);
+                if(elapsed<.9f) return Range(elapsed,0,.9f,0,3);
+                if(elapsed<1.9f) return Range(elapsed,.9f,1.9f,4,7);
+                if(elapsed<5f) return LiaFloatPoses[Loop(elapsed,1.9f,0,LiaFloatPoses.Length,3)];
+                return Range(elapsed,5f,5.95f,12,15);
             }
             if(elapsed<.85f) return Range(elapsed,0,.85f,0,3);
             if(elapsed<1.4f) return Range(elapsed,.85f,1.4f,4,7);

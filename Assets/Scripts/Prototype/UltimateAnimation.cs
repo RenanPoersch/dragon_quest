@@ -99,9 +99,9 @@ namespace DragonQuest.Prototype
             }
             else if(ability.SourceAbilityId=="lia-salvation")
             {
-                float rise=Mathf.SmoothStep(0,1,(elapsed-.6f)/.7f);
-                float settle=Mathf.SmoothStep(0,1,(elapsed-5.1f)/.7f);
-                rect.y-=38*rise*(1-settle);
+                float rise=Mathf.SmoothStep(0,1,(elapsed-.9f)/1.4f);
+                float settle=Mathf.SmoothStep(0,1,(elapsed-4.85f)/1.1f);
+                rect.y-=26*rise*(1-settle);
             }
             else
             {
