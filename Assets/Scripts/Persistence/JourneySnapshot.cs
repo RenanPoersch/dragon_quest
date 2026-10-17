@@ -30,7 +30,7 @@ namespace DragonQuest.Persistence
             var members = new List<MemberData>(); var gear = new List<GearData>();
             var materias = new List<MateriaData>(); var items = new List<StackData>(); var stocks = new List<StockData>();
             foreach (var member in party.Members) members.Add(new MemberData
-                {Id = member.Id, Weapon = member.Weapon?.Id, Armor = member.Armor?.Id, Limit = member.Limit.SavedCharge, Experience = member.Experience,
+                {Id = member.Id, Weapon = member.Weapon?.Id, Armor = member.Armor?.Id, Accessory = member.Accessory?.Id, Limit = member.Limit.SavedCharge, Experience = member.Experience,
                     Hp = member.Hp, Mp = member.Mp, Poisoned = member.IsPoisoned, BoundActions = member.BoundActions});
             foreach (var equipment in party.Equipments)
             {
@@ -45,7 +45,7 @@ namespace DragonQuest.Persistence
             string[] chests = progress.OpenedChests; Array.Sort(chests, StringComparer.Ordinal);
             return new JourneyData
             {
-                Version = JourneyData.CurrentVersion, SavedUtc = DateTime.UtcNow.ToString("O", CultureInfo.InvariantCulture),
+                Version = JourneyData.CurrentVersion, EquipmentCatalogVersion = 1, SavedUtc = DateTime.UtcNow.ToString("O", CultureInfo.InvariantCulture),
                 Map = map, X = x, Y = y, Ending = (int)ending, Gold = progress.SavedGold, OpenedChests = chests,
                 Secrets = new SecretData {KnowsPoem = secrets.KnowsPoem, AltarSolved = secrets.AltarSolved,
                     MonolithStep = secrets.MonolithStep, HasScale = secrets.HasScale, PassageOpen = secrets.PassageOpen},
@@ -59,6 +59,7 @@ namespace DragonQuest.Persistence
         public static RestoredJourney Restore(JourneyData data)
         {
             Require(data != null && data.Version == JourneyData.CurrentVersion, "Versao de save nao suportada.");
+            Require(data.EquipmentCatalogVersion >= 0 && data.EquipmentCatalogVersion <= 1, "Catalogo de equipamento nao suportado.");
             Require(DateTimeOffset.TryParseExact(data.SavedUtc, "O", CultureInfo.InvariantCulture, DateTimeStyles.None, out _), "Data de save invalida.");
             Require(!data.PlaySeconds.HasValue || data.PlaySeconds.Value >= 0, "Tempo de jogo invalido.");
             Require(data.Gold >= 0 && Enum.IsDefined(typeof(GameEnding), data.Ending), "Ouro ou final invalido.");
@@ -110,6 +111,7 @@ namespace DragonQuest.Persistence
                 Require(member != null, "Personagem desconhecido.");
                 member.SetEquipment(EquipmentSlot.Weapon, AssignGear(saved.Weapon, EquipmentSlot.Weapon, gear, usedGear));
                 member.SetEquipment(EquipmentSlot.Armor, AssignGear(saved.Armor, EquipmentSlot.Armor, gear, usedGear));
+                member.SetEquipment(EquipmentSlot.Accessory, AssignGear(saved.Accessory, EquipmentSlot.Accessory, gear, usedGear));
                 member.Limit.Restore(saved.Limit);
                 member.Progression.Restore(saved.Experience);
             }
@@ -133,7 +135,7 @@ namespace DragonQuest.Persistence
                     }
             var shops = PrototypeShopFactory.Create(party, progress); var products = new Dictionary<string, ShopProduct>();
             foreach (var shop in shops.Shops) foreach (var product in shop.Products) products.Add(shop.Id + "/" + product.Id, product);
-            CheckArray(data.Stocks, products.Count); Require(data.Stocks.Length == products.Count, "Estoque incompleto.");
+            CheckArray(data.Stocks, products.Count);
             var stockIds = new HashSet<string>();
             foreach (var stock in data.Stocks)
             {
@@ -142,6 +144,9 @@ namespace DragonQuest.Persistence
                     && stock.Quantity >= 0 && stock.Quantity <= product.InitialStock, "Estoque invalido.");
                 product.RestoreStock(stock.Quantity);
             }
+            foreach (var product in products)
+                Require(stockIds.Contains(product.Key) || data.EquipmentCatalogVersion == 0
+                    && product.Value.Equipment?.Slot == EquipmentSlot.Accessory, "Estoque incompleto.");
             Require(Enum.IsDefined(typeof(DeliveryStage), data.DeliveryStage)
                 && data.DeliveryRestocked == (data.DeliveryStage == (int)DeliveryStage.Completed), "Missao/reposicao inconsistente.");
             shops.RestoreDeliveryRestock(data.DeliveryRestocked);

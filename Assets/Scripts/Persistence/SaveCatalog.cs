@@ -12,7 +12,8 @@ namespace DragonQuest.Persistence
         private static readonly Dictionary<string, EquipmentDefinition> gear = new Dictionary<string, EquipmentDefinition>
         {
             {"initial-weapon", P.InitialWeapon}, {"initial-armor", P.InitialArmor}, {"iron-sword", P.IronSword},
-            {"runic-staff", P.RunicStaff}, {"iron-armor", P.IronArmor}, {"arcane-robe", P.ArcaneRobe}, {"dragon-armor", DragonProgress.Armor}
+            {"runic-staff", P.RunicStaff}, {"iron-armor", P.IronArmor}, {"arcane-robe", P.ArcaneRobe}, {"dragon-armor", DragonProgress.Armor},
+            {"power-ring", P.PowerRing}, {"guardian-bracelet", P.GuardianBracelet}, {"arcane-pendant", P.ArcanePendant}
         };
         private static readonly Dictionary<string, MateriaDefinition> materia = new Dictionary<string, MateriaDefinition>();
         private static readonly Dictionary<string, ConsumableDefinition> items = new Dictionary<string, ConsumableDefinition>();

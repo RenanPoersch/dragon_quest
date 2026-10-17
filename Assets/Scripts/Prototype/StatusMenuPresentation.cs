@@ -53,8 +53,8 @@ namespace DragonQuest.Prototype
             if (Click(new Rect(976, 38, 300, 68), canInteract)) back();
 
             string[] baseLabels = { "Base attack", "Speed", "Base defense", "Base magic", "Critical", "Class" };
-            string[] baseValues = { member.AttackWith(null, null).ToString(), member.Speed.ToString(),
-                member.DefenseWith(null, null).ToString(), member.MagicWith(null, null).ToString(),
+            string[] baseValues = { member.AttackWith(null, null, null).ToString(), member.Speed.ToString(),
+                member.DefenseWith(null, null, null).ToString(), member.MagicWith(null, null, null).ToString(),
                 (member.CriticalChance * 100).ToString("0.#") + "%", member.BaseStats.Role };
             for (int i = 0; i < baseLabels.Length; i++) Stat(218 + i * 32, baseLabels[i], baseValues[i]);
             string[] finalLabels = { "Attack", "Defense", "Magic atk", "Magic def", "Max HP", "Max MP" };
@@ -66,7 +66,8 @@ namespace DragonQuest.Prototype
             EquipmentRow(442, "Wpn:", member.Weapon);
             EquipmentRow(538, "Arm:", member.Armor);
             Label(new Rect(644, 620, 132, 40), "Acc:", cyan);
-            Label(new Rect(784, 620, 414, 40), "--", text);
+            InventoryPixelArt.Draw(new Rect(774, 620, 40, 40), InventoryPixelArt.Texture(member.Accessory?.Definition));
+            FitLabel(new Rect(824, 620, 386, 40), member.Accessory?.Definition.Name ?? "--", text);
             FitLabel(new Rect(644, 660, 584, 22), member.Affinities.Description, caption);
 
             if (Click(new Rect(32, 696, 62, 24), canInteract)) changeMember(-1);

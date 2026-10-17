@@ -27,7 +27,9 @@ foreach ($saveName in @('PrototypePartyFactory', 'PrototypeShopFactory', 'Protot
 }
 $saveArguments += Join-Path $saveProjectRoot 'Assets/Scripts/Exploration/ObliqueProjection.cs'
 $saveArguments += Join-Path $saveProjectRoot 'Tests/SaveChecks.cs'
-& $saveDotnet $saveCsc.FullName @saveArguments
+$saveResponse = Join-Path $WorkDirectory 'SaveChecks.rsp'
+$saveArguments | ForEach-Object { '"' + $_ + '"' } | Set-Content -LiteralPath $saveResponse -Encoding utf8
+& $saveDotnet $saveCsc.FullName "@$saveResponse"
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 Copy-Item -LiteralPath $saveCoreAssembly -Destination $WorkDirectory -Force
 $saveRuntimeConfig = @{ runtimeOptions = @{ tfm = $saveReferenceDirectory.Name; framework = @{ name = 'Microsoft.NETCore.App'; version = $saveRuntimeFolder.Name } } }

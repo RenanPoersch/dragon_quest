@@ -16,6 +16,9 @@ namespace DragonQuest.Prototype
             { PrototypePartyFactory.InitialArmor, "initial-armor" },
             { PrototypePartyFactory.IronArmor, "iron-armor" },
             { PrototypePartyFactory.ArcaneRobe, "arcane-robe" },
+            { PrototypePartyFactory.PowerRing, "power-ring" },
+            { PrototypePartyFactory.GuardianBracelet, "guardian-bracelet" },
+            { PrototypePartyFactory.ArcanePendant, "arcane-pendant" },
             { DragonProgress.Armor, "dragon-armor" }
         };
 

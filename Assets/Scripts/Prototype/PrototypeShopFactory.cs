@@ -19,6 +19,9 @@ namespace DragonQuest.Prototype
                 new ShopProduct("runic-staff", PrototypePartyFactory.RunicStaff, 80, 2),
                 new ShopProduct("iron-armor", PrototypePartyFactory.IronArmor, 70, 2),
                 new ShopProduct("arcane-robe", PrototypePartyFactory.ArcaneRobe, 100, 2),
+                new ShopProduct("power-ring", PrototypePartyFactory.PowerRing, 90, 2),
+                new ShopProduct("guardian-bracelet", PrototypePartyFactory.GuardianBracelet, 90, 2),
+                new ShopProduct("arcane-pendant", PrototypePartyFactory.ArcanePendant, 90, 2),
                 // Sem estoque de compra; registram o valor de venda das pecas iniciais.
                 new ShopProduct("initial-weapon", PrototypePartyFactory.InitialWeapon, 30, 0),
                 new ShopProduct("initial-armor", PrototypePartyFactory.InitialArmor, 40, 0));

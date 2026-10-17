@@ -21,7 +21,7 @@ namespace DragonQuest.Shops
         public string Name => Item?.Name ?? Equipment?.Name ?? Materia.Name;
         public string Description => Item?.Description ?? Materia?.Description ??
             "ATQ +" + Equipment.AttackBonus + " / DEF +" + Equipment.DefenseBonus + " / MAG +" + Equipment.MagicBonus
-            + " / " + Equipment.SocketCount / 2 + " pares ligados. Valores base antes da afinidade de classe.";
+            + (Equipment.Slot == EquipmentSlot.Accessory ? " / Acessorio" : " / " + Equipment.SocketCount / 2 + " pares ligados. Valores base antes da afinidade de classe.");
 
         public ShopProduct(string id, ConsumableDefinition item, int price, int stock, bool canSell = true)
             : this(id, ShopCategory.Items, price, stock, canSell) { Item = item ?? throw new ArgumentNullException(nameof(item)); }

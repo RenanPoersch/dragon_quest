@@ -13,6 +13,9 @@ namespace DragonQuest.Prototype
         public static readonly EquipmentDefinition RunicStaff = new EquipmentDefinition("Cajado runico", 3, 0, 4, magicBonus: 6);
         public static readonly EquipmentDefinition IronArmor = new EquipmentDefinition("Armadura de ferro", 0, 10, 2, EquipmentSlot.Armor);
         public static readonly EquipmentDefinition ArcaneRobe = new EquipmentDefinition("Manto arcano", 0, 3, 6, EquipmentSlot.Armor, 4);
+        public static readonly EquipmentDefinition PowerRing = new EquipmentDefinition("Anel da Forca", 4, 0, 0, EquipmentSlot.Accessory);
+        public static readonly EquipmentDefinition GuardianBracelet = new EquipmentDefinition("Bracelete Guardiao", 0, 4, 0, EquipmentSlot.Accessory);
+        public static readonly EquipmentDefinition ArcanePendant = new EquipmentDefinition("Pingente Arcano", 0, 0, 0, EquipmentSlot.Accessory, 4);
         public static readonly ConsumableDefinition Potion = new ConsumableDefinition("potion", "Pocao", "Recupera 40 HP de um aliado vivo e ferido. Usa uma unidade e um turno.", ItemEffect.RestoreHp, 40);
         public static readonly ConsumableDefinition Ether = new ConsumableDefinition("ether", "Eter", "Recupera 15 MP de um aliado vivo. Usa uma unidade e um turno.", ItemEffect.RestoreMp, 15);
         public static readonly ConsumableDefinition Antidote = new ConsumableDefinition("antidote", "Antidoto", "Remove veneno de um aliado vivo. Usa uma unidade e um turno.", ItemEffect.CleansePoison, 0);

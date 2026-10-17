@@ -9,6 +9,7 @@ namespace DragonQuest.Persistence
     {
         public const int CurrentVersion = 1;
         [DataMember(IsRequired = true)] public int Version;
+        [DataMember(EmitDefaultValue = false)] public int EquipmentCatalogVersion;
         [DataMember(IsRequired = true)] public string SavedUtc;
         // Optional: legacy saves have no recorded duration.
         [DataMember(EmitDefaultValue = false)] public long? PlaySeconds;
@@ -41,6 +42,7 @@ namespace DragonQuest.Persistence
         [DataMember(IsRequired = true)] public string Id;
         [DataMember(IsRequired = true)] public string Weapon;
         [DataMember(IsRequired = true)] public string Armor;
+        [DataMember(EmitDefaultValue = false)] public string Accessory;
         [DataMember(IsRequired = true)] public int Limit;
         // Campo opcional: saves anteriores comecam no nivel 1, sem XP.
         [DataMember(EmitDefaultValue = false)] public int Experience;

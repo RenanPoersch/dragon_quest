@@ -16,6 +16,9 @@ namespace DragonQuest.Equipment
         public CombatantDefinition BaseStats { get; }
         public EquipmentLoadout Weapon { get; private set; }
         public EquipmentLoadout Armor { get; private set; }
+        public EquipmentLoadout Accessory { get; private set; }
+        public EquipmentLoadout EquipmentIn(EquipmentSlot slot) => slot == EquipmentSlot.Weapon ? Weapon
+            : slot == EquipmentSlot.Armor ? Armor : slot == EquipmentSlot.Accessory ? Accessory : null;
         public LimitGauge Limit { get; } = new LimitGauge();
         public CharacterProgression Progression { get; } = new CharacterProgression();
         private int? currentHp, currentMp;
@@ -50,10 +53,15 @@ namespace DragonQuest.Equipment
         public int Attack => AttackWith(Weapon, Armor);
         public int Defense => DefenseWith(Weapon, Armor);
         public int Magic => MagicWith(Weapon, Armor);
-        public int MaxHp => StatWithMaterias(Grow(BaseStats.MaxHp, HpGrowth), MateriaModifier.HpUp, Weapon, Armor);
-        public int MaxMp => StatWithMaterias(Grow(BaseStats.MaxMp, MpGrowth), MateriaModifier.MpUp, Weapon, Armor);
+        public int MaxHp => MaxHpWith(Weapon, Armor);
+        public int MaxMp => MaxMpWith(Weapon, Armor);
+        public int MaxHpWith(EquipmentLoadout weapon, EquipmentLoadout armor)
+            => StatWithMaterias(Grow(BaseStats.MaxHp, HpGrowth), MateriaModifier.HpUp, weapon, armor);
+        public int MaxMpWith(EquipmentLoadout weapon, EquipmentLoadout armor)
+            => StatWithMaterias(Grow(BaseStats.MaxMp, MpGrowth), MateriaModifier.MpUp, weapon, armor);
         public ElementalAffinities Affinities => ElementalAffinities.Combine(BaseStats.Affinities,
             Weapon?.Definition.Affinities, Armor?.Definition.Affinities,
+            Accessory?.Definition.Affinities,
             new ElementalAffinities(resistances: new List<DamageElement>(new HashSet<DamageElement>(MateriaResolver.InfusedElements(Armor))).ToArray()));
 
         private static int StatWithMaterias(long value, MateriaModifier modifier, EquipmentLoadout weapon, EquipmentLoadout armor)
@@ -79,15 +87,22 @@ namespace DragonQuest.Equipment
         }
 
         private int Bonus(int value, CharacterClass affinity, int percent) => Class == affinity ? (int)Math.Min(int.MaxValue, (long)value * (100 + percent) / 100) : value;
-        public int AttackWith(EquipmentLoadout weapon, EquipmentLoadout armor) => StatWithMaterias((long)Grow(BaseStats.Attack, AttackGrowth)
-            + Bonus(weapon?.Definition.AttackBonus ?? 0, CharacterClass.Attacker, 20) + (armor?.Definition.AttackBonus ?? 0), MateriaModifier.AttackUp, weapon, armor);
-        public int DefenseWith(EquipmentLoadout weapon, EquipmentLoadout armor) => StatWithMaterias((long)Grow(BaseStats.Defense, DefenseGrowth)
-            + (weapon?.Definition.DefenseBonus ?? 0) + Bonus(armor?.Definition.DefenseBonus ?? 0, CharacterClass.Tank, 25), MateriaModifier.DefenseUp, weapon, armor);
-        public int MagicWith(EquipmentLoadout weapon, EquipmentLoadout armor) => (int)Math.Min(int.MaxValue, (long)Grow(BaseStats.Magic, MagicGrowth)
-            + (weapon?.Definition.MagicBonus ?? 0) + (armor?.Definition.MagicBonus ?? 0));
+        public int AttackWith(EquipmentLoadout weapon, EquipmentLoadout armor) => AttackWith(weapon, armor, Accessory);
+        public int AttackWith(EquipmentLoadout weapon, EquipmentLoadout armor, EquipmentLoadout accessory) => StatWithMaterias((long)Grow(BaseStats.Attack, AttackGrowth)
+            + Bonus(weapon?.Definition.AttackBonus ?? 0, CharacterClass.Attacker, 20) + (armor?.Definition.AttackBonus ?? 0)
+            + (accessory?.Definition.AttackBonus ?? 0), MateriaModifier.AttackUp, weapon, armor);
+        public int DefenseWith(EquipmentLoadout weapon, EquipmentLoadout armor) => DefenseWith(weapon, armor, Accessory);
+        public int DefenseWith(EquipmentLoadout weapon, EquipmentLoadout armor, EquipmentLoadout accessory) => StatWithMaterias((long)Grow(BaseStats.Defense, DefenseGrowth)
+            + (weapon?.Definition.DefenseBonus ?? 0) + Bonus(armor?.Definition.DefenseBonus ?? 0, CharacterClass.Tank, 25)
+            + (accessory?.Definition.DefenseBonus ?? 0), MateriaModifier.DefenseUp, weapon, armor);
+        public int MagicWith(EquipmentLoadout weapon, EquipmentLoadout armor) => MagicWith(weapon, armor, Accessory);
+        public int MagicWith(EquipmentLoadout weapon, EquipmentLoadout armor, EquipmentLoadout accessory) => (int)Math.Min(int.MaxValue, (long)Grow(BaseStats.Magic, MagicGrowth)
+            + (weapon?.Definition.MagicBonus ?? 0) + (armor?.Definition.MagicBonus ?? 0) + (accessory?.Definition.MagicBonus ?? 0));
         internal void SetEquipment(EquipmentSlot slot, EquipmentLoadout item)
         {
-            if (slot == EquipmentSlot.Weapon) Weapon = item; else Armor = item;
+            if (slot == EquipmentSlot.Weapon) Weapon = item;
+            else if (slot == EquipmentSlot.Armor) Armor = item;
+            else if (slot == EquipmentSlot.Accessory) Accessory = item;
         }
 
         public CombatantState CreateCombatant()
@@ -234,7 +249,7 @@ namespace DragonQuest.Equipment
             Members = members.AsReadOnly(); Materias = materias.AsReadOnly();
             ids.Clear();
             foreach (PartyMember member in members)
-                foreach (EquipmentLoadout item in new[] { member.Weapon, member.Armor })
+                foreach (EquipmentLoadout item in new[] { member.Weapon, member.Armor, member.Accessory })
                     if (item != null) RegisterEquipment(item, ids);
             if (spareEquipment != null)
                 foreach (EquipmentLoadout item in spareEquipment) RegisterEquipment(item, ids);
@@ -294,7 +309,7 @@ namespace DragonQuest.Equipment
         {
             if (item == null) return false;
             foreach (PartyMember member in members)
-                if (member.Weapon == item || member.Armor == item) return true;
+                if (member.Weapon == item || member.Armor == item || member.Accessory == item) return true;
             return false;
         }
 
@@ -302,7 +317,7 @@ namespace DragonQuest.Equipment
         {
             if (materia == null) return false;
             foreach (PartyMember member in members)
-                foreach (EquipmentLoadout equipment in new[] { member.Weapon, member.Armor })
+                foreach (EquipmentLoadout equipment in new[] { member.Weapon, member.Armor, member.Accessory })
                 {
                     if (equipment == null) continue;
                     foreach (MateriaInstance socket in equipment.Sockets) if (socket == materia) return true;
@@ -326,7 +341,7 @@ namespace DragonQuest.Equipment
         public string LocationOf(EquipmentLoadout item)
         {
             foreach (PartyMember member in members)
-                if (member.Weapon == item || member.Armor == item) return member.Name;
+                if (member.Weapon == item || member.Armor == item || member.Accessory == item) return member.Name;
             return "Inventario";
         }
 
@@ -334,18 +349,19 @@ namespace DragonQuest.Equipment
         {
             if (member == null || !members.Contains(member) || item == null || !equipments.Contains(item))
             { message = "Personagem ou equipamento invalido."; return false; }
-            EquipmentLoadout previous = item.Definition.Slot == EquipmentSlot.Weapon ? member.Weapon : member.Armor;
+            EquipmentLoadout previous = member.EquipmentIn(item.Definition.Slot);
             if (previous == item) { message = "Equipamento ja em uso."; return false; }
             PartyMember source = null;
             foreach (PartyMember owner in members)
-                if (owner.Weapon == item || owner.Armor == item) source = owner;
+                if (owner.Weapon == item || owner.Armor == item || owner.Accessory == item) source = owner;
             // Toda troca desequipa as materias dos equipamentos envolvidos, sem perder as instancias.
             previous?.ClearMaterias();
             item.ClearMaterias();
             if (source != null) source.SetEquipment(item.Definition.Slot, previous);
             member.SetEquipment(item.Definition.Slot, item);
             Changed?.Invoke();
-            message = item.Definition.Name + " equipado. Materias dos equipamentos trocados voltaram ao inventario.";
+            message = item.Definition.Slot == EquipmentSlot.Accessory ? item.Definition.Name + " equipado em " + member.Name + "."
+                : item.Definition.Name + " equipado. Materias dos equipamentos trocados voltaram ao inventario.";
             return true;
         }
 
@@ -353,19 +369,19 @@ namespace DragonQuest.Equipment
         {
             if (member == null || !members.Contains(member) || !Enum.IsDefined(typeof(EquipmentSlot), slot))
             { message = "Personagem ou tipo de equipamento invalido."; return false; }
-            EquipmentLoadout item = slot == EquipmentSlot.Weapon ? member.Weapon : member.Armor;
+            EquipmentLoadout item = member.EquipmentIn(slot);
             if (item == null) { message = "Nao ha equipamento neste espaco."; return false; }
             item.ClearMaterias();
             member.SetEquipment(slot, null);
             Changed?.Invoke();
-            message = "Equipamento e suas materias voltaram ao inventario.";
+            message = slot == EquipmentSlot.Accessory ? "Acessorio devolvido ao inventario." : "Equipamento e suas materias voltaram ao inventario.";
             return true;
         }
 
         public string LocationOf(MateriaInstance materia)
         {
             foreach (PartyMember member in members)
-                foreach (EquipmentLoadout equipment in new[] { member.Weapon, member.Armor })
+                foreach (EquipmentLoadout equipment in new[] { member.Weapon, member.Armor, member.Accessory })
                 {
                     if (equipment == null) continue;
                     for (int i = 0; i < equipment.Sockets.Count; i++)

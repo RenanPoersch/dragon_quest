@@ -6,7 +6,7 @@ A tela principal segue a referencia fornecida: fundo preto, paineis com degrade 
 
 - **Item:** retratos e HP/MP a esquerda, lista com icones e quantidades a direita, descricao no topo. Clique no item para levar a luva aos retratos; confirme o rosto do personagem para usar.
 - **Magic:** lista de materias a direita e retratos com os slots de arma/armadura a esquerda, sem os campos de nivel ou HP/MP.
-- **Equip:** troca e remocao de armas/armaduras e comparacao dos atributos.
+- **Equip:** armas, armaduras e acessorios, com comparacao dos atributos atuais/novos e diferencas numericas coloridas.
 - **Status:** ficha individual no painel azul, retrato e HP/MP no topo, atributos a esquerda, EXP/Limit a direita, comandos de combate e equipamentos com materias e pares ligados.
 - **Config:** volume e tela cheia; ajustes validos nesta sessao.
 
@@ -19,6 +19,28 @@ Selecionar ou cancelar nao consome recursos. Confirmar um rosto usa exatamente u
 Validacao do fluxo de Item: `Tools/Test-ItemMenu.ps1` executa 26 verificacoes de selecao, navegacao, cancelamento, consumo, alvos invalidos, esgotamento, quatro efeitos, organizacao e inventario vazio. A apresentacao usa o mesmo canvas proporcional de 1280x720 da tela principal.
 
 Conferencia adicional em projeto Unity isolado: Enter mudou da lista aos retratos sem consumir, seta para baixo selecionou Lia, e tres pressionamentos separados de Esc retornaram para lista, resumo e exploracao. Capturas em 1280x720 e 960x720 confirmaram o layout, a transferencia da luva da lista ao rosto e o uso da Pocao em Lia: HP de 35/80 para 75/80 e estoque de 6 para 5. A partida aberta no Editor principal foi preservada.
+
+## Tela de Equipamentos
+
+**Equip** usa os mesmos paineis azuis, bordas prateadas, tipografia e luva das telas de Item e Materia. As categorias **Armas**, **Armaduras** e **Acessorios** ficam no topo. O painel esquerdo mostra o retrato, o equipamento atual e os valores **Atual**, **Novo** e **Dif.** de ataque, defesa, magia, HP/MP maximos, velocidade e encaixes. Aumento usa seta verde para cima e numero positivo; reducao usa seta vermelha para baixo e numero negativo. Valores iguais ficam neutros.
+
+A lista direita filtra os equipamentos possuidos pela categoria, incluindo pecas de outros aliados e uma opcao de remocao. Selecionar ou passar o mouse mostra a previa sem alterar a equipe; **Equipar/Remover** ou confirmar aplica a escolha. A previa considera a perda das materias dos equipamentos trocados e preserva os bonus das pecas restantes. A troca atomica entre aliados e a propriedade das instancias continuam sendo validadas pelo dominio. A parte inferior mostra o icone, as afinidades e os encaixes resultantes, reutilizando os sprites existentes.
+
+Setas/WASD ou direcional: cima/baixo percorre a lista, esquerda/direita troca de categoria. **Q/R**, **Page Up/Page Down**, **LB/RB** ou as setas junto ao nome trocam o personagem. **Enter/E/Espaco** ou **A/X** confirma. **Esc/B/Circulo** retorna ao resumo e **I** fecha diretamente. Nao ha texto de ajuda na tela.
+
+Cada personagem pode equipar um acessorio. A loja de equipamentos vende duas copias de cada modelo por 90 moedas; venda por 45 moedas, bloqueada enquanto equipado. O kit inicial conserva seu inventario anterior. Os acessorios nao possuem encaixes de materia e podem ser transferidos ou removidos sem desmontar as materias da arma/armadura.
+
+| Acessorio | Bonus base |
+| --- | --- |
+| Anel da Forca | +4 ataque |
+| Bracelete Guardiao | +4 defesa |
+| Pingente Arcano | +4 magia |
+
+Os bonus participam dos atributos finais e do combate, incluindo os modificadores de materia ja existentes. Status mostra o nome e icone do acessorio; os atributos base da ficha excluem todos os equipamentos. Os tres icones foram gerados com imagegen e os caminhos/prompts estao em `Docs/ArtInputs/Accessories.prompts.json`.
+
+Os saves mantem a identidade e o dono do acessorio e o estoque da loja. `Accessory` e um campo opcional; `EquipmentCatalogVersion` distingue o catalogo atual do antigo. Saves anteriores conservam seu inventario e ouro e recebem somente os tres novos produtos na loja. Estoques antigos ausentes ou invalidos continuam sendo recusados.
+
+Validacao: compilacao Unity, 66 verificacoes de equipamentos, 52 de acessorios, 145 de salvamento, 46 de Materia e 26 de Item passaram. A integracao Unity isolada passou em 24 verificacoes de teclado/controle. Capturas em 1280x720 e 960x720 conferiram armas, armaduras, acessorios, Status e listas longas, sem alterar a equipe durante o desenho. O teste de saves usa arquivo de argumentos para evitar o limite de linha de comando do Windows.
 
 ## Tela de Materia
 
@@ -40,7 +62,7 @@ Validacao dos sprites: compilacao Unity e 46 verificacoes do menu passaram. Impo
 
 A ficha segue a composicao da referencia: painel azul com borda prateada, titulo no canto superior direito, retrato, nome, nivel e condicao; HP/MP, EXP total, progresso no nivel, EXP restante e barra de Limit. Os atributos usam os valores reais de `PartyMember`: valores base sem equipamento, velocidade, chance critica, classe, ataque/defesa/magia finais e HP/MP maximos. `Magic def` usa a defesa compartilhada pelos danos fisicos e magicos no combate atual. O jogo tem um nivel de Limit; a carga e mostrada pela barra.
 
-A caixa central mostra os comandos de batalha do personagem, incluindo Magic, Summon e LIMIT quando disponiveis. Comandos longos cabem na celula e a caixa permite rolar quando necessario. Arma e armadura mostram os nomes equipados, ate seis encaixes, cores das materias atuais e ligacoes dos pares. Sem equipamento, o nome e `--` e nao aparecem slots. `Acc: --` corresponde a ausencia de um sistema de acessorios. As afinidades aparecem abaixo dos equipamentos.
+A caixa central mostra os comandos de batalha do personagem, incluindo Magic, Summon e LIMIT quando disponiveis. Comandos longos cabem na celula e a caixa permite rolar quando necessario. Arma e armadura mostram os nomes equipados, ate seis encaixes, cores das materias atuais e ligacoes dos pares. Sem equipamento, o nome e `--` e nao aparecem slots. **Acc:** mostra o icone e nome do acessorio equipado, ou `--` quando vazio. As afinidades aparecem abaixo dos equipamentos.
 
 Use **A/D**, setas, direcional/analogico ou as setas clicaveis no rodape para trocar entre os tres personagens. **Esc/B/Circulo** retorna ao resumo da equipe; **I** fecha diretamente. O titulo **Status** tambem retorna ao resumo pelo mouse. A ficha e somente leitura e conserva HP, MP, EXP, Limit, equipamentos e materias ao navegar.
 

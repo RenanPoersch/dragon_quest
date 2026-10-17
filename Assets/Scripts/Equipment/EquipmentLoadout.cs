@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace DragonQuest.Equipment
 {
-    public enum EquipmentSlot { Weapon, Armor }
+    public enum EquipmentSlot { Weapon, Armor, Accessory }
 
     public sealed class EquipmentDefinition
     {
@@ -23,6 +23,7 @@ namespace DragonQuest.Equipment
             if (attackBonus < 0 || defenseBonus < 0 || magicBonus < 0 || socketCount < 0 || socketCount > 6 || socketCount % 2 != 0)
                 throw new ArgumentException("Equipamento exige bonus positivos e pares completos de encaixes, ate seis.");
             if (!Enum.IsDefined(typeof(EquipmentSlot), slot)) throw new ArgumentException("Tipo de equipamento desconhecido.");
+            if (slot == EquipmentSlot.Accessory && socketCount != 0) throw new ArgumentException("Acessorios nao possuem encaixes de materia.");
             Name = name; AttackBonus = attackBonus; DefenseBonus = defenseBonus; SocketCount = socketCount;
             Slot = slot; MagicBonus = magicBonus;
             Affinities = affinities ?? DragonQuest.Combat.ElementalAffinities.Neutral; IsStoryItem = isStoryItem;
