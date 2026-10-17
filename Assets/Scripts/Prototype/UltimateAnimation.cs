@@ -14,7 +14,7 @@ namespace DragonQuest.Prototype
         private readonly Dictionary<string,BattleAnimationSheet> blessings=new Dictionary<string,BattleAnimationSheet>();
         private GUIStyle caption;
         private Color bramTint=Color.white;
-        private static readonly Color Mint=new Color(.6f,1,.85f), Blue=new Color(.5f,.85f,1);
+        private static readonly Color Mint=new Color(.6f,1,.85f);
         private UltimateSpriteSheet Sheet(string name)
         {
             if(!sheets.TryGetValue(name,out var sheet)) { sheet=new UltimateSpriteSheet(name,drawFrame); sheets.Add(name,sheet); }
@@ -185,8 +185,6 @@ namespace DragonQuest.Prototype
                 Sheet("BramCataclysm").DrawCanvas(area,UltimateSpriteTimeline.BeamFrame(elapsed),
                     Fade(Color.white,(5.65f-elapsed)/.45f));
             }
-            if(drawText && elapsed>=UltimateTimeline.AegisImpact)
-                Label(new Rect(780,376,430,28),"SHIELD  -50% DANO  /  3 TURNOS",caption,Fade(Blue,(5.8f-elapsed)/.5f));
         }
     }
 }
