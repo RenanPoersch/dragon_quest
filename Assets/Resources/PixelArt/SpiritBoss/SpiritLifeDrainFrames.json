@@ -2,7 +2,7 @@
   "width": 1448,
   "height": 1086,
   "casterHeight": 404,
-  "effectHeight": 341,
+  "effectHeight": 101,
   "frames": [
     {
       "x": 11,
@@ -33,60 +33,61 @@
       "pivotX": 158
     },
     {
-      "x": 25,
-      "y": 482,
-      "width": 356,
-      "height": 277,
-      "pivotX": 178.0
+      "x": 127,
+      "y": 210,
+      "width": 160,
+      "height": 87,
+      "pivotX": 36.5
     },
     {
-      "x": 400,
-      "y": 446,
-      "width": 327,
-      "height": 313,
-      "pivotX": 163.5
+      "x": 547,
+      "y": 210,
+      "width": 207,
+      "height": 87,
+      "pivotX": 35.5
     },
     {
-      "x": 743,
-      "y": 419,
-      "width": 320,
-      "height": 341,
-      "pivotX": 160.0
+      "x": 951,
+      "y": 210,
+      "width": 284,
+      "height": 87,
+      "pivotX": 35.5
     },
     {
-      "x": 1105,
-      "y": 423,
+      "x": 1411,
+      "y": 210,
+      "width": 306,
+      "height": 94,
+      "pivotX": 35.5
+    },
+    {
+      "x": 89,
+      "y": 615,
       "width": 325,
-      "height": 337,
-      "pivotX": 162.5
+      "height": 98,
+      "pivotX": 34.0
     },
     {
-      "x": 24,
-      "y": 797,
-      "width": 374,
-      "height": 249,
-      "pivotX": 187.0
+      "x": 547,
+      "y": 615,
+      "width": 346,
+      "height": 101,
+      "pivotX": 33.5
     },
     {
-      "x": 398,
-      "y": 780,
-      "width": 344,
-      "height": 281,
-      "pivotX": 172.0
+      "x": 1049,
+      "y": 621,
+      "width": 199,
+      "height": 70,
+      "pivotX": 31.0
     },
     {
-      "x": 760,
-      "y": 777,
-      "width": 323,
-      "height": 288,
-      "pivotX": 161.5
-    },
-    {
-      "x": 1107,
-      "y": 775,
-      "width": 321,
-      "height": 296,
-      "pivotX": 160.5
+      "x": 1506,
+      "y": 632,
+      "width": 114,
+      "height": 54,
+      "pivotX": 25.0
     }
-  ]
+  ],
+  "effectResource": "SpiritBoss/SpiritSoulStealOrb"
 }

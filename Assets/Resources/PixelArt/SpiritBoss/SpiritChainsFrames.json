@@ -1,36 +1,36 @@
 {
   "width": 1448,
   "height": 1086,
-  "casterHeight": 418,
+  "casterHeight": 533,
   "effectHeight": 318,
   "frames": [
     {
-      "x": 5,
-      "y": 70,
-      "width": 359,
-      "height": 364,
-      "pivotX": 202
+      "x": 56,
+      "y": 116,
+      "width": 475,
+      "height": 487,
+      "pivotX": 174
     },
     {
-      "x": 383,
-      "y": 18,
-      "width": 371,
-      "height": 418,
-      "pivotX": 142
+      "x": 741,
+      "y": 84,
+      "width": 483,
+      "height": 533,
+      "pivotX": 190
     },
     {
-      "x": 754,
-      "y": 24,
-      "width": 346,
-      "height": 417,
-      "pivotX": 114
+      "x": 33,
+      "y": 741,
+      "width": 678,
+      "height": 436,
+      "pivotX": 205
     },
     {
-      "x": 1100,
-      "y": 51,
-      "width": 348,
-      "height": 390,
-      "pivotX": 182
+      "x": 728,
+      "y": 717,
+      "width": 509,
+      "height": 468,
+      "pivotX": 188
     },
     {
       "x": 11,
@@ -88,5 +88,6 @@
       "height": 304,
       "pivotX": 151.5
     }
-  ]
+  ],
+  "casterResource": "SpiritBoss/SpiritChainsCaster"
 }

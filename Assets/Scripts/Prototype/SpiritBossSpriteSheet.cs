@@ -16,8 +16,10 @@ namespace DragonQuest.Prototype
             public int width, height;
             public float casterHeight, effectHeight;
             public Frame[] frames;
+            public string casterResource, effectResource;
         }
         private readonly Texture2D texture;
+        private readonly Texture2D casterTexture, effectTexture;
         private readonly Action<Texture2D, Rect, Rect, Color> draw;
         public Atlas Coordinates { get; }
         public Texture2D Texture => texture;
@@ -30,15 +32,27 @@ namespace DragonQuest.Prototype
             if (Coordinates?.frames == null || Coordinates.frames.Length != 12 || Coordinates.casterHeight <= 0
                 || Coordinates.effectHeight <= 0 || Coordinates.width != texture.width || Coordinates.height != texture.height)
                 throw new InvalidOperationException("Invalid spirit skill coordinates: " + resource);
+            casterTexture = LoadOptional(Coordinates.casterResource);
+            effectTexture = LoadOptional(Coordinates.effectResource);
             texture.filterMode = FilterMode.Point;
             this.draw = draw;
         }
+        private static Texture2D LoadOptional(string resource)
+        {
+            if (string.IsNullOrEmpty(resource)) return null;
+            var replacement = Resources.Load<Texture2D>("PixelArt/" + resource);
+            if (replacement == null) throw new InvalidOperationException("Missing spirit frame source: " + resource);
+            replacement.filterMode = FilterMode.Point;
+            return replacement;
+        }
+        public Texture2D FrameTexture(int frame) => frame < 4 ? casterTexture ?? texture : effectTexture ?? texture;
         private void Draw(Rect destination, int frame, Color tint)
         {
             Frame cell = Coordinates.frames[frame];
-            Rect uv = new Rect((float)cell.x / Coordinates.width, 1f - (float)(cell.y + cell.height) / Coordinates.height,
-                (float)cell.width / Coordinates.width, (float)cell.height / Coordinates.height);
-            draw(texture, destination, uv, tint);
+            Texture2D source = FrameTexture(frame);
+            Rect uv = new Rect((float)cell.x / source.width, 1f - (float)(cell.y + cell.height) / source.height,
+                (float)cell.width / source.width, (float)cell.height / source.height);
+            draw(source, destination, uv, tint);
         }
         public void DrawActor(Rect home, int pose, Color tint)
         {
@@ -53,7 +67,7 @@ namespace DragonQuest.Prototype
             pose = 4 + Mathf.Clamp(pose, 0, 7);
             Frame cell = Coordinates.frames[pose];
             float scale = height / Coordinates.effectHeight;
-            Draw(new Rect(center.x - cell.width * scale / 2, center.y - cell.height * scale / 2,
+            Draw(new Rect(center.x - cell.pivotX * scale, center.y - cell.height * scale / 2,
                 cell.width * scale, cell.height * scale), pose, tint);
         }
     }

@@ -104,7 +104,7 @@ namespace DragonQuest.Prototype
                         frame >= 6 ? 300 : 220, frame, tint);
                 else if (skill == 2)
                 {
-                    // Torn souls arc from the victim into the open chest. HP returns on the first arrival.
+                    // Round souls with a thin trail arc into the chest. HP returns on the first arrival.
                     for (int soul = 0; soul < 3; soul++)
                     {
                         float progress = Mathf.Clamp01((time - .65f - soul * .18f)
@@ -114,7 +114,7 @@ namespace DragonQuest.Prototype
                             Mathf.SmoothStep(0, 1, progress));
                         point.y -= Mathf.Sin(progress * Mathf.PI) * (80 + soul * 25);
                         Color soulTint = tint; soulTint.a *= 1 - .6f * soul / 3;
-                        sheet.DrawEffect(point, Mathf.Lerp(165, 70, progress), frame, soulTint);
+                        sheet.DrawEffect(point, Mathf.Lerp(42, 24, progress), frame, soulTint);
                     }
                 }
                 else if (skill == 3) sheet.DrawEffect(new Vector2(target.center.x, Mathf.Min(target.center.y, 310)), 210, frame, tint);

@@ -16,30 +16,33 @@ public static class SpiritAttackValidation
     [MenuItem("Tools/Dragon Quest/Validate Spirit Attacks")]
     public static void Run()
     {
+        var validated = new System.Collections.Generic.HashSet<Texture2D>();
         foreach (string resource in SpiritAttackTimeline.Resources)
         {
             var sheet = new SpiritBossSpriteSheet(resource, (texture, rect, uv, color) => { });
-            var texture = sheet.Texture;
-            var importer = (TextureImporter)AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(texture));
-            if (!importer.isReadable || importer.mipmapEnabled || texture.filterMode != FilterMode.Point
-                || importer.textureCompression != TextureImporterCompression.Uncompressed || !importer.alphaIsTransparency)
-                throw new InvalidOperationException("Spirit atlas must preserve native pixels and alpha: " + resource);
-            var source = new Texture2D(2, 2);
-            try
+            for (int index = 0; index < sheet.Coordinates.frames.Length; index++)
             {
-                source.LoadImage(File.ReadAllBytes(AssetDatabase.GetAssetPath(texture)));
-                if (source.width != texture.width || source.height != texture.height)
-                    throw new InvalidOperationException("Spirit atlas was resized during import: " + resource);
-                var pixels = texture.GetPixels32(); int transparent = 0;
-                foreach (var pixel in pixels) if (pixel.a == 0) transparent++;
-                if (transparent < pixels.Length / 12) throw new InvalidOperationException("No real transparent alpha: " + resource);
-                foreach (var frame in sheet.Coordinates.frames)
-                    if (frame.width < 12 || frame.height < 12 || frame.x < 0 || frame.y < 0
-                        || frame.x + frame.width > texture.width || frame.y + frame.height > texture.height
-                        || frame.pivotX < 0 || frame.pivotX > frame.width)
-                        throw new InvalidOperationException("Empty or clipped spirit frame: " + resource);
+                var texture = sheet.FrameTexture(index);
+                if (validated.Add(texture)) ValidateTexture(texture, resource);
+                var frame = sheet.Coordinates.frames[index];
+                if (frame.width < 12 || frame.height < 12 || frame.x < 0 || frame.y < 0
+                    || frame.x + frame.width > texture.width || frame.y + frame.height > texture.height
+                    || frame.pivotX < 0 || frame.pivotX > frame.width)
+                    throw new InvalidOperationException("Empty or clipped spirit frame: " + resource);
+                if (index < 4 && !string.IsNullOrEmpty(sheet.Coordinates.casterResource))
+                {
+                    if (frame.x < 8 || frame.y < 8 || frame.x + frame.width > texture.width - 8
+                        || frame.y + frame.height > texture.height - 8)
+                        throw new InvalidOperationException("Caster chain is too close to its frame edge.");
+                    for (int previous = 0; previous < index; previous++)
+                    {
+                        var other = sheet.Coordinates.frames[previous];
+                        if (new Rect(frame.x,frame.y,frame.width,frame.height).Overlaps(
+                            new Rect(other.x,other.y,other.width,other.height)))
+                            throw new InvalidOperationException("Caster poses overlap in the source atlas.");
+                    }
+                }
             }
-            finally { UnityEngine.Object.DestroyImmediate(source); }
         }
         // A party-wide catastrophe draws one nova, rather than stacking three copies.
         int chaosDraws = 0;
@@ -48,6 +51,24 @@ public static class SpiritAttackValidation
             new Rect(985,203,64,90), new Rect(925,281,64,90) }, Skills[4], SpiritAttackTimeline.Impact(Skills[4]));
         if (chaosDraws != 1) throw new InvalidOperationException("Chaos must have one shared arena impact.");
         Debug.Log("SPIRIT_ATTACK_VALIDATION_OK: five independent skills, 60 native sprite frames, measured pivots and one party-wide nova.");
+    }
+    private static void ValidateTexture(Texture2D texture, string resource)
+    {
+        var importer = (TextureImporter)AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(texture));
+        if (!importer.isReadable || importer.mipmapEnabled || texture.filterMode != FilterMode.Point
+            || importer.textureCompression != TextureImporterCompression.Uncompressed || !importer.alphaIsTransparency)
+            throw new InvalidOperationException("Spirit atlas must preserve native pixels and alpha: " + resource);
+        var source = new Texture2D(2, 2);
+        try
+        {
+            source.LoadImage(File.ReadAllBytes(AssetDatabase.GetAssetPath(texture)));
+            if (source.width != texture.width || source.height != texture.height)
+                throw new InvalidOperationException("Spirit atlas was resized during import: " + resource);
+            var pixels = texture.GetPixels32(); int transparent = 0;
+            foreach (var pixel in pixels) if (pixel.a == 0) transparent++;
+            if (transparent < pixels.Length / 12) throw new InvalidOperationException("No real transparent alpha: " + resource);
+        }
+        finally { UnityEngine.Object.DestroyImmediate(source); }
     }
     [MenuItem("Tools/Dragon Quest/Preview Spirit Boss Skills")]
     public static void Preview()
