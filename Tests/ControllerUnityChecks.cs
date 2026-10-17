@@ -32,6 +32,82 @@ public static class ControllerUnityChecks
         Reset(); InputSystem.QueueStateEvent(pad, new GamepadState()); InputSystem.Update();
         InputSystem.QueueStateEvent(pad, state); InputSystem.Update();
     }
+    private static void State(Keyboard keyboard, params Key[] keys)
+    {
+        Reset();
+        InputSystem.QueueStateEvent(pad, new GamepadState());
+        InputSystem.QueueStateEvent(keyboard, new KeyboardState()); InputSystem.Update();
+        InputSystem.QueueStateEvent(keyboard, new KeyboardState(keys)); InputSystem.Update();
+    }
+    private static void CheckDialogueNavigation(Keyboard keyboard, PlayerInteraction interaction,
+        DialogueController dialogue, PlayerMovement movement)
+    {
+        foreach (ButtonControl button in keyboard.allControls.OfType<ButtonControl>()) { bool prime = button.wasPressedThisFrame; }
+        int chosen = -1, activations = 0;
+        string[] options = { "Um", "Dois", "Tres", "Quatro", "Cinco" };
+        Action<int> select = index => { chosen = index; activations++; };
+        dialogue.OpenChoices("Seletor", "Escolha uma resposta.", options, select);
+        State(keyboard, Key.S); Call(interaction, "Update");
+        Check(dialogue.IsTyping && dialogue.SelectedChoice == 0 && chosen == -1,
+            "Navigation waits for the speech to finish.");
+        State(keyboard, Key.Enter); Call(interaction, "Update");
+        Check(dialogue.ChoicesReady && chosen == -1, "Revealing the speech cannot choose a response.");
+        foreach (Key key in new[] { Key.W, Key.A, Key.UpArrow, Key.LeftArrow })
+        {
+            dialogue.SelectChoice(0);
+            State(keyboard, key); Call(interaction, "Update"); Call(movement, "Update");
+            Check(dialogue.SelectedChoice == 4 && chosen == -1,
+                key + " wraps to the previous response without confirming.");
+            Check(!movement.HasMovementInput, key + " navigates the conversation without moving the hero.");
+        }
+        foreach (Key key in new[] { Key.S, Key.D, Key.DownArrow, Key.RightArrow })
+        {
+            dialogue.SelectChoice(4);
+            State(keyboard, key); Call(interaction, "Update"); Call(movement, "Update");
+            Check(dialogue.SelectedChoice == 0 && chosen == -1,
+                key + " wraps to the next response without confirming.");
+            Check(!movement.HasMovementInput, key + " navigates the conversation without moving the hero.");
+        }
+        for (int i = 1; i <= options.Length; i++)
+        {
+            State(keyboard, Key.S); Call(interaction, "Update");
+            Check(dialogue.SelectedChoice == i % options.Length, "Every response is reachable, including beyond numeric shortcuts.");
+        }
+        State(keyboard); // Release the keyboard before checking each controller direction.
+        foreach (GamepadButton button in new[] { GamepadButton.DpadUp, GamepadButton.DpadLeft, GamepadButton.DpadDown, GamepadButton.DpadRight })
+        {
+            dialogue.SelectChoice(0);
+            State(new GamepadState().WithButton(button)); Call(interaction, "Update");
+            int expected = button == GamepadButton.DpadUp || button == GamepadButton.DpadLeft ? 4 : 1;
+            Check(dialogue.SelectedChoice == expected && chosen == -1, button + " navigates dialogue responses.");
+        }
+        foreach (Vector2 direction in new[] { Vector2.up, Vector2.left, Vector2.down, Vector2.right })
+        {
+            dialogue.SelectChoice(0);
+            State(new GamepadState { leftStick = direction }); Call(interaction, "Update");
+            Check(dialogue.SelectedChoice == (direction.x < 0 || direction.y > 0 ? 4 : 1) && chosen == -1,
+                "The left stick navigates responses in direction " + direction + ".");
+        }
+        State(keyboard, Key.S); Focus(false); Call(interaction, "Update");
+        Check(dialogue.SelectedChoice == 1 && chosen == -1, "An unfocused conversation ignores keyboard navigation.");
+        State(keyboard, Key.Enter); Call(interaction, "Update");
+        Check(chosen == 1 && activations == 1 && !dialogue.IsOpen, "Enter confirms only the highlighted response.");
+        foreach (Key key in new[] { Key.Space, Key.E })
+        {
+            dialogue.OpenChoices("Outro seletor", "Outra resposta.", options, select); dialogue.RevealAll();
+            Check(dialogue.SelectedChoice == 0, "A new conversation resets its selector.");
+            State(keyboard, Key.D); Call(interaction, "Update");
+            State(keyboard, key); Call(interaction, "Update");
+            Check(chosen == 1 && !dialogue.IsOpen, key + " confirms after WASD navigation.");
+        }
+        dialogue.OpenChoices("Uma resposta", "Teste", new[] { "Voltar" }, select); dialogue.RevealAll();
+        State(keyboard, Key.A); Call(interaction, "Update");
+        Check(dialogue.SelectedChoice == 0, "A selector with one response remains valid.");
+        int beforeCancel = activations;
+        State(keyboard, Key.Escape); Call(interaction, "Update");
+        Check(!dialogue.IsOpen && activations == beforeCancel, "Cancel closes the selector without executing a response.");
+        State(keyboard);
+    }
     public static void Run()
     {
         try
@@ -116,6 +192,7 @@ public static class ControllerUnityChecks
             State(new GamepadState()); InputSystem.QueueStateEvent(keyboard, new KeyboardState(Key.W, Key.D)); InputSystem.Update();
             Check(GameInput.Movement.x > 0 && GameInput.Movement.y > 0 && GameInput.Movement.magnitude <= 1.0001f,
                 "Keyboard movement still works with a controller connected.");
+            CheckDialogueNavigation(keyboard, interaction, dialogue, movement);
             UnityEngine.Object.DestroyImmediate(hero);
             Debug.Log("CONTROLLER_UNITY_CHECKS_OK: " + checks + " virtual gamepad, movement, dialogue, inventory, shops, reconnection and keyboard checks.");
             EditorApplication.Exit(0);

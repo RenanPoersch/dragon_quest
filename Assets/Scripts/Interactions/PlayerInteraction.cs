@@ -40,8 +40,16 @@ namespace DragonQuest.Interactions
                 if (hasInput && GameInput.CancelPressed) context.Dialogue.Close();
                 else if (hasInput && context.Dialogue.ChoicesReady)
                 {
-                    if (GameInput.Navigation == MenuDirection.Down || keyboard?.downArrowKey.wasPressedThisFrame == true) context.Dialogue.MoveChoice(1);
-                    else if (GameInput.Navigation == MenuDirection.Up || keyboard?.upArrowKey.wasPressedThisFrame == true) context.Dialogue.MoveChoice(-1);
+                    // Every dialogue selector uses the same previous/next controls, regardless of its options.
+                    MenuDirection direction = GameInput.Navigation;
+                    if (direction == MenuDirection.Down || direction == MenuDirection.Right
+                        || keyboard?.sKey.wasPressedThisFrame == true || keyboard?.dKey.wasPressedThisFrame == true
+                        || keyboard?.downArrowKey.wasPressedThisFrame == true || keyboard?.rightArrowKey.wasPressedThisFrame == true)
+                        context.Dialogue.MoveChoice(1);
+                    else if (direction == MenuDirection.Up || direction == MenuDirection.Left
+                        || keyboard?.wKey.wasPressedThisFrame == true || keyboard?.aKey.wasPressedThisFrame == true
+                        || keyboard?.upArrowKey.wasPressedThisFrame == true || keyboard?.leftArrowKey.wasPressedThisFrame == true)
+                        context.Dialogue.MoveChoice(-1);
                     if (keyboard?.digit1Key.wasPressedThisFrame == true || keyboard?.numpad1Key.wasPressedThisFrame == true) context.Dialogue.Choose(0);
                     else if (keyboard?.digit2Key.wasPressedThisFrame == true || keyboard?.numpad2Key.wasPressedThisFrame == true) context.Dialogue.Choose(1);
                     else if (keyboard?.digit3Key.wasPressedThisFrame == true || keyboard?.numpad3Key.wasPressedThisFrame == true) context.Dialogue.Choose(2);
