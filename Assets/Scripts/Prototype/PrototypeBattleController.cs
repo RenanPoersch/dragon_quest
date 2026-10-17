@@ -69,6 +69,7 @@ namespace DragonQuest.Prototype
         public float PostBattleStartedAt { get; private set; }
         public CombatantState PresentingActor { get; private set; }
         public AbilityDefinition PresentingAbility { get; private set; }
+        public bool IsPresentingConfusedAction { get; private set; }
         public System.Collections.Generic.IReadOnlyList<CombatantState> PresentingTargets { get; private set; } = new CombatantState[0];
         public System.Collections.Generic.IReadOnlyList<CombatantState> PresentingPartyTargets { get; private set; } = new CombatantState[0];
         public System.Collections.Generic.IReadOnlyList<CombatantState> PresentingRevivedTargets { get; private set; } = new CombatantState[0];
@@ -308,6 +309,7 @@ namespace DragonQuest.Prototype
             System.Collections.Generic.IReadOnlyList<CombatantState> targets)
         {
             PresentingActor = actor; PresentingAbility = ability; PresentingTargets = targets;
+            IsPresentingConfusedAction = ability == BattleSession.MindControlAttack;
             ActionStartedAt = Time.unscaledTime;
         }
 
@@ -339,6 +341,16 @@ namespace DragonQuest.Prototype
         {
             if (IsCheatMenuBlocking) { pendingEnemy = null; return; }
             if (IsPresentingAction) return;
+            if (IsActive && Session.CurrentActor?.MindControlTurns > 0)
+            {
+                CombatantState confused = Session.CurrentActor;
+                if (Session.TryTakeMindControlTurn(System.Math.Min(UnityEngine.Random.value, .999999d), out var victim, out _))
+                {
+                    PresentAction(confused, BattleSession.MindControlAttack, new[] { victim });
+                    ErrorMessage = string.Empty; AwardIfComplete();
+                    return;
+                }
+            }
             if (IsActive && PostBattle?.IsComplete == true)
             {
                 if (!IsPostBattleOpen) { IsPostBattleOpen = true; PostBattleStartedAt = Time.unscaledTime; }

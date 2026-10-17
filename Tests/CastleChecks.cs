@@ -30,6 +30,7 @@ internal static class CastleChecks
     private static void Defend(BattleSession battle)
     {
         var actor=battle.CurrentActor;
+        if(actor.MindControlTurns>0) {Assert(battle.TryTakeMindControlTurn(.5,out _,out _),"Controle mental deve consumir uma acao automatica.");return;}
         Assert(battle.TryAct(actor,actor.Definition.Abilities.Single(a=>a.Effect==AbilityEffect.Defend),actor,out _),"Aliado deve poder defender durante a contagem.");
     }
     private static void BeforeKing(BattleSession battle,bool revive=false)
@@ -164,13 +165,14 @@ internal static class CastleChecks
         while(battle.Outcome==BattleOutcome.None&&actions++<250)
         {
             var actor=battle.CurrentActor;
+            if(actor.MindControlTurns>0) {Assert(battle.TryTakeMindControlTurn(.5,out _,out _),"Confusao deve progredir no castelo.");continue;}
             if(actor.Team==CombatTeam.Enemy) {Assert(EnemyAI.TryTakeTurn(battle,out _),"IA deve progredir em combate completo do castelo.");continue;}
             AbilityDefinition ability=actor.Definition.Abilities.Single(a=>a.Id=="attack");var target=Find(battle,CastleBattleRules.SpiritId);
             if(actor.Id=="lia"&&actor.Mp<6&&battle.Inventory.QuantityOf(PrototypePartyFactory.Ether)>0)
             {Assert(battle.TryUseItem(actor,PrototypePartyFactory.Ether,actor,out _),"Eter deve permitir sustentar a equipe.");continue;}
             if(actor.Id=="bram"&&Find(battle,CastleBattleRules.TyrantId).TauntTurns==0&&actor.Mp>=3)
             {ability=actor.Definition.Abilities.Single(a=>a.Effect==AbilityEffect.Taunt);target=Find(battle,CastleBattleRules.TyrantId);}
-            else if(actor.Id=="lia"&&actor.Mp>=6)
+            else if(actor.Id=="lia"&&actor.Mp>=6&&!actor.IsSilenced)
             {
                 var wounded=battle.Combatants.Where(c=>c.Team==CombatTeam.Party&&c.IsAlive).OrderBy(c=>(double)c.Hp/c.Definition.MaxHp).First();
                 if(wounded.Hp*100<wounded.Definition.MaxHp*65) {ability=actor.Definition.Abilities.Single(a=>a.Effect==AbilityEffect.Heal&&!a.UsesLimit);target=wounded;}

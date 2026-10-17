@@ -2,7 +2,7 @@ using System;
 
 namespace DragonQuest.Combat
 {
-    public enum AbilityEffect { PhysicalDamage, Heal, Defend, Cleanse, Revive, Taunt, Protect, MagicDamage, Prepare, Drain, Bind }
+    public enum AbilityEffect { PhysicalDamage, Heal, Defend, Cleanse, Revive, Taunt, Protect, MagicDamage, Prepare, Drain, Bind, MindControl, Silence }
     public enum TargetRule { Enemy, Ally, Self, AllEnemies, AllAllies }
     public enum AbilityMenuGroup { Direct, Magic, Summon }
     public enum PartyEffect { None, RestoreAndRevive, DamageShield, RestoreCleanseAndRevive }
@@ -26,6 +26,10 @@ namespace DragonQuest.Combat
         public int ShieldDuration { get; }
         public int HitCount { get; }
         public int FinalHitMultiplier { get; }
+        public bool IsMagic => MenuGroup == AbilityMenuGroup.Magic || MenuGroup == AbilityMenuGroup.Summon
+            || Effect == AbilityEffect.MagicDamage || Effect == AbilityEffect.Drain
+            || Effect == AbilityEffect.Heal || Effect == AbilityEffect.Cleanse || Effect == AbilityEffect.Revive
+            || Effect == AbilityEffect.MindControl || Effect == AbilityEffect.Silence;
 
         public AbilityDefinition(string id, string name, string description, int mpCost, int power,
             AbilityEffect effect, TargetRule targets, int poisonTurns = 0, bool usesLimit = false, string sourceAbilityId = null,
@@ -61,6 +65,9 @@ namespace DragonQuest.Combat
                 throw new ArgumentException("Drenar vida exige um inimigo individual.");
             if (effect == AbilityEffect.Bind && (targets != TargetRule.Enemy || power != 1))
                 throw new ArgumentException("Correntes exige um inimigo e impede exatamente uma acao.");
+            if ((effect == AbilityEffect.MindControl || effect == AbilityEffect.Silence)
+                && (targets != TargetRule.Enemy || power != 1))
+                throw new ArgumentException("Controle mental e silencio exigem um inimigo e duram exatamente uma acao.");
             if (effect == AbilityEffect.Revive && (power < 1 || power > 100))
                 throw new ArgumentException("Reviver exige uma porcentagem de HP entre 1 e 100.");
             Id = id;

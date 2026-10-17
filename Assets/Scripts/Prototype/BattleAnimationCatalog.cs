@@ -43,7 +43,8 @@ namespace DragonQuest.Prototype
                 }
                 return null;
             }
-            if (family == "evil-spirit" && (action == "drain-life" || action == "chains" || action == "chaos-magic")) return "SpiritBattle";
+            if (family == "evil-spirit" && (action == "mind-control" || action == "silence"
+                || action == "drain-life" || action == "chains" || action == "chaos-magic")) return "SpiritAttacks";
             if (!ability.UsesLimit && (action == "attack" || family == "guard"
                 && (action == "poison-strike" || action == "enemy-sweep"))) return Idle(id);
             return null;
@@ -53,7 +54,7 @@ namespace DragonQuest.Prototype
         public static float Duration(string id, AbilityDefinition ability) => Family(id) == "tyrant"
             && ability?.SourceAbilityId == "flaming-meteor" ? CastleMeteorPresentation.Duration
             : Family(id) == "tyrant" && (ability?.SourceAbilityId == "prepare-meteor"
-                || ability?.SourceAbilityId == "tyrant-protect") ? CastleMeteorPresentation.ProtectDuration : .8f;
+                || ability?.SourceAbilityId == "tyrant-protect") ? CastleMeteorPresentation.ProtectDuration : Family(id) == "evil-spirit" ? 1.4f : .8f;
         public static float ImpactDelay(string id, AbilityDefinition ability) => CastleMeteorPresentation.IsMeteor(id, ability)
             ? CastleMeteorPresentation.ImpactDelay : Duration(id, ability) * .5f;
         public static int Frame(string resource, float elapsed, float duration)

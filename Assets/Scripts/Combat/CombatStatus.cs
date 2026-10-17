@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace DragonQuest.Combat
 {
-    public enum CombatStatus { Poison, Shield, Defending, Protected, Taunted, Bound, Charging, Defeated }
+    public enum CombatStatus { Poison, Shield, Defending, Protected, Taunted, Bound, Charging, Defeated, MindControlled, Silenced }
     public readonly struct StatusIndicator
     {
         public readonly CombatStatus Status;
@@ -23,6 +23,10 @@ namespace DragonQuest.Combat
             if (member.ProtectedBy != null) result.Add(new StatusIndicator(CombatStatus.Protected, "Protegido por " + member.ProtectedBy.Definition.Name));
             if (member.TauntTurns > 0) result.Add(new StatusIndicator(CombatStatus.Taunted, "Provocado", member.TauntTurns));
             if (member.BoundActions > 0) result.Add(new StatusIndicator(CombatStatus.Bound, "Correntes: perde a proxima acao", member.BoundActions));
+            if (member.MindControlTurns > 0) result.Add(new StatusIndicator(CombatStatus.MindControlled,
+                "Confusao: ataca automaticamente um aliado ou inimigo aleatorio", member.MindControlTurns));
+            if (member.SilenceTurns > 0) result.Add(new StatusIndicator(CombatStatus.Silenced,
+                "Silencio: nao pode usar magias ou invocacoes", member.SilenceTurns));
             if (member.IsCharging) result.Add(new StatusIndicator(CombatStatus.Charging, "Preparando ataque"));
             return result;
         }

@@ -10,6 +10,9 @@ namespace DragonQuest.Combat
     // Regras puras em C#: não dependem de cenas, menus ou animações da Unity.
     public sealed class BattleSession
     {
+        public static readonly AbilityDefinition MindControlAttack = new AbilityDefinition("confused-attack", "Ataque confuso",
+            "Ataca um combatente vivo aleatorio por controle mental.", 0, 0, AbilityEffect.PhysicalDamage,
+            TargetRule.Enemy, sourceAbilityId: "attack");
         private readonly List<CombatantState> combatants;
         private readonly List<CombatantState> turnOrder = new List<CombatantState>();
         private int turnIndex;
@@ -76,6 +79,7 @@ namespace DragonQuest.Combat
             if (Outcome != BattleOutcome.None) { message = "A batalha ja terminou."; return false; }
             if (actor == null || actor != CurrentActor || actor.Team != CombatTeam.Party)
             { message = "Itens so podem ser usados no turno de um aliado."; return false; }
+            if (actor.MindControlTurns > 0) { message = "O controle mental obriga um ataque aleatorio."; return false; }
             if (item == null || Inventory.QuantityOf(item) == 0) { message = "Item indisponivel no inventario."; return false; }
             if (target == null || !combatants.Contains(target) || !IsValidItemTarget(actor, item, target))
             { message = "Este alvo nao precisa ou nao pode receber o item."; return false; }
@@ -155,7 +159,8 @@ namespace DragonQuest.Combat
             if (ability.Effect == AbilityEffect.Heal && target.Hp >= target.Definition.MaxHp) return false;
             if (ability.Effect == AbilityEffect.Cleanse && target.PoisonTurns == 0) return false;
             if (ability.Effect == AbilityEffect.Protect && target == actor) return false;
-            if ((ability.Effect == AbilityEffect.PhysicalDamage || ability.Effect == AbilityEffect.MagicDamage || ability.Effect == AbilityEffect.Drain || ability.Effect == AbilityEffect.Bind) && ability.Targets == TargetRule.Enemy
+            if ((ability.Effect == AbilityEffect.PhysicalDamage || ability.Effect == AbilityEffect.MagicDamage || ability.Effect == AbilityEffect.Drain || ability.Effect == AbilityEffect.Bind
+                || ability.Effect == AbilityEffect.MindControl || ability.Effect == AbilityEffect.Silence) && ability.Targets == TargetRule.Enemy
                 && actor.TauntTurns > 0 && actor.TauntedBy != null && actor.TauntedBy.IsAlive && target != actor.TauntedBy) return false;
             return true;
         }
@@ -168,6 +173,8 @@ namespace DragonQuest.Combat
             foreach (AbilityDefinition known in actor.Definition.Abilities)
                 if (known == ability) knownAbility = true;
             if (!knownAbility) { message = "Habilidade indisponivel para este personagem."; return false; }
+            if (actor.MindControlTurns > 0) { message = "O controle mental obriga um ataque aleatorio."; return false; }
+            if (actor.IsSilenced && ability.IsMagic) { message = "Silencio: nao pode usar magia neste turno."; return false; }
             if(Rules!=null&&!Rules.ValidateAction(actor,ability,out message)) return false;
             if (actor.Mp < ability.MpCost) { message = "MP insuficiente."; return false; }
             if (ability.UsesLimit && !actor.Limit.IsReady) { message = "Limit Break exige a barra em 100%."; return false; }
@@ -246,6 +253,15 @@ namespace DragonQuest.Combat
                 target.TauntTurns = ability.Power;
                 message = actor.Definition.Name + " provocou " + target.Definition.Name + " por " + ability.Power + " turnos do alvo.";
             }
+            else if (ability.Effect == AbilityEffect.MindControl || ability.Effect == AbilityEffect.Silence)
+            {
+                if (ability.Effect == AbilityEffect.MindControl) target.MindControlTurns = 1;
+                else target.SilenceTurns = 1;
+                message = actor.Definition.Name + " usou " + ability.Name + ": " + target.Definition.Name
+                    + (ability.Effect == AbilityEffect.MindControl
+                        ? " esta confuso e atacara um alvo aleatorio na proxima acao."
+                        : " nao podera usar magia na proxima acao.");
+            }
             else if(ability.Effect==AbilityEffect.Bind)
             {
                 target.BoundActions=1;
@@ -259,6 +275,29 @@ namespace DragonQuest.Combat
 
             if (ability.PartyEffect != PartyEffect.None)
                 message += ApplyPartyEffect(actor, ability);
+            CompleteAction(actor, ref message);
+            return true;
+        }
+
+        // The controller presents this forced action through the same attack/impact timeline as normal attacks.
+        // The roll is supplied by the caller, keeping target choice deterministic in combat checks.
+        public bool TryTakeMindControlTurn(double targetRoll, out CombatantState target, out string message)
+        {
+            target = null; message = string.Empty;
+            CombatantState actor = CurrentActor;
+            if (actor == null || !actor.IsAlive || actor.MindControlTurns <= 0) return false;
+            if (double.IsNaN(targetRoll) || targetRoll < 0 || targetRoll >= 1)
+                throw new ArgumentOutOfRangeException(nameof(targetRoll));
+            var candidates = new List<CombatantState>();
+            foreach (CombatantState participant in combatants)
+                if (participant.IsAlive && participant != actor) candidates.Add(participant);
+            if (candidates.Count == 0) return false;
+            target = candidates[(int)(targetRoll * candidates.Count)];
+            CombatantState intended = target;
+            if (target.ProtectedBy != null && target.ProtectedBy.IsAlive) target = target.ProtectedBy;
+            var report = new StringBuilder(actor.Definition.Name + " esta confuso! ");
+            ApplyDamage(actor, MindControlAttack, intended, true, report);
+            message = report.ToString();
             CompleteAction(actor, ref message);
             return true;
         }
@@ -293,6 +332,8 @@ namespace DragonQuest.Combat
         private void CompleteAction(CombatantState actor, ref string message)
         {
             actor.TurnsTaken++;
+            if (actor.MindControlTurns > 0) actor.MindControlTurns--;
+            if (actor.SilenceTurns > 0) actor.SilenceTurns--;
             if (actor.TauntTurns > 0 && --actor.TauntTurns == 0) actor.TauntedBy = null;
             RemoveDeadSources();
             Rules?.AfterAction(this);

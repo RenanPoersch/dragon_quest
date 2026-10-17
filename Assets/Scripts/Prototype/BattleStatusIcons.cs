@@ -19,6 +19,8 @@ namespace DragonQuest.Prototype
                 case CombatStatus.Protected: return new[] { " ##  ## ", "########", "########", " ###### ", "  ####  ", "   ##   ", "        ", "        " };
                 case CombatStatus.Taunted: return new[] { "   ##   ", " ###### ", "## ## ##", "########", "## ## ##", " ###### ", "   ##   ", "        " };
                 case CombatStatus.Bound: return new[] { " ###    ", "## ##   ", "## ##   ", " ###    ", "    ### ", "   ## ##", "   ## ##", "    ### " };
+                case CombatStatus.MindControlled: return new[] { "  ####  ", " ##  ## ", "     ## ", "   ###  ", "   ##   ", "        ", "   ##   ", "        " };
+                case CombatStatus.Silenced: return new[] { "        ", "        ", "        ", "        ", "## ## ##", "## ## ##", "        ", "        " };
                 case CombatStatus.Charging: return new[] { "    ##  ", "   ##   ", "  ##### ", " ####   ", "   ##   ", "  ##    ", " ##     ", "        " };
                 default: return new[] { "##    ##", " ##  ## ", "  ####  ", "   ##   ", "  ####  ", " ##  ## ", "##    ##", "        " };
             }
@@ -29,6 +31,8 @@ namespace DragonQuest.Prototype
             var texture = new Texture2D(8, 8) { filterMode = FilterMode.Point };
             Color color = status == CombatStatus.Poison ? BattleStatusColors.Poison
                 : status == CombatStatus.Shield ? new Color(.25f, .9f, 1)
+                : status == CombatStatus.MindControlled ? new Color(.85f, .45f, 1f)
+                : status == CombatStatus.Silenced ? new Color(1f, .85f, .25f)
                 : status == CombatStatus.Defeated ? new Color(1, .3f, .25f)
                 : status == CombatStatus.Bound ? new Color(.8f, .8f, .85f) : new Color(1, .85f, .35f);
             string[] pattern = Pattern(status);
@@ -37,6 +41,21 @@ namespace DragonQuest.Prototype
             texture.Apply(); textures[status] = texture;
             return texture;
         }
+        public void DrawOverhead(Rect figure, bool confused, bool silenced, float time)
+        {
+            if (confused)
+                for (int i = 0; i < 3; i++)
+                {
+                    float angle = time * 3.5f + i * Mathf.PI * 2 / 3;
+                    float x = figure.center.x + Mathf.Cos(angle) * 25;
+                    float y = figure.y - 18 + Mathf.Sin(angle) * 7;
+                    GUI.DrawTexture(new Rect(x - 8, y - 12, 16, 16), Icon(CombatStatus.MindControlled), ScaleMode.StretchToFill, true);
+                }
+            if (silenced)
+                GUI.DrawTexture(new Rect(figure.center.x - 18, figure.y - (confused ? 56 : 30), 36, 24),
+                    Icon(CombatStatus.Silenced), ScaleMode.StretchToFill, true);
+        }
+
         public void Draw(float x, float y, CombatantState member)
             => Draw(x, y, CombatStatuses.Active(member));
         public void Draw(float x, float y, IReadOnlyList<StatusIndicator> statuses)

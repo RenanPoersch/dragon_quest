@@ -4,7 +4,8 @@ namespace DragonQuest.Combat
     {
         private static bool IsCycledAction(AbilityDefinition ability) => ability.Effect == AbilityEffect.PhysicalDamage
             || ability.Effect == AbilityEffect.MagicDamage || ability.Effect == AbilityEffect.Prepare
-            || ability.Effect == AbilityEffect.Drain || ability.Effect == AbilityEffect.Bind;
+            || ability.Effect == AbilityEffect.Drain || ability.Effect == AbilityEffect.Bind
+            || ability.Effect == AbilityEffect.MindControl || ability.Effect == AbilityEffect.Silence;
         public static AbilityDefinition ChooseAbility(BattleSession battle)
         {
             CombatantState actor = battle.CurrentActor;
@@ -22,7 +23,7 @@ namespace DragonQuest.Combat
                 foreach (AbilityDefinition ability in actor.Definition.Abilities)
                 {
                     if (!IsCycledAction(ability)) continue;
-                    if (index++ == desired && ability.MpCost <= actor.Mp && battle.GetValidTargets(ability).Count > 0)
+                    if (index++ == desired && (!actor.IsSilenced || !ability.IsMagic) && ability.MpCost <= actor.Mp && battle.GetValidTargets(ability).Count > 0)
                         return ability;
                 }
             }

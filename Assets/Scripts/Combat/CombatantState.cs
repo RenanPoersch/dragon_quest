@@ -32,6 +32,9 @@ namespace DragonQuest.Combat
         public bool IsDefending { get; internal set; }
         public bool IsCharging { get; internal set; }
         public int BoundActions { get; internal set; }
+        public int MindControlTurns { get; internal set; }
+        public int SilenceTurns { get; internal set; }
+        public bool IsSilenced => SilenceTurns > 0;
         // Positive means poisoned; poison lasts until cleansed or defeated.
         public int PoisonTurns { get; internal set; }
         public bool IsPoisoned => PoisonTurns > 0;
@@ -110,6 +113,7 @@ namespace DragonQuest.Combat
             IsDefending = false;
             IsCharging = false;
             BoundActions = 0;
+            MindControlTurns = SilenceTurns = 0;
             PoisonTurns = 0;
             ShieldTurns = 0; skipShieldTick = false;
             TauntTurns = 0;
@@ -119,7 +123,7 @@ namespace DragonQuest.Combat
 
         internal void ClearHarmfulConditions()
         {
-            PoisonTurns = 0; BoundActions = 0; TauntTurns = 0; TauntedBy = null;
+            PoisonTurns = 0; BoundActions = 0; MindControlTurns = SilenceTurns = 0; TauntTurns = 0; TauntedBy = null;
         }
 
         internal void GrantDamageShield(int turns, bool castingAction)

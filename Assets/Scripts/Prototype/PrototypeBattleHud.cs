@@ -21,6 +21,7 @@ namespace DragonQuest.Prototype
         private readonly HeroKnockoutPresentation heroKnockouts = new HeroKnockoutPresentation();
         private readonly UltimateAnimation ultimateAnimation = new UltimateAnimation();
         private readonly SummonAnimation summonAnimation = new SummonAnimation();
+        private readonly SpiritAttackAnimation spiritAttacks = new SpiritAttackAnimation();
         private readonly BattleStatusIcons statusIcons = new BattleStatusIcons();
         private readonly CastleSpellAnimation castleSpells = new CastleSpellAnimation();
         private readonly CastleCastCounter castCounter = new CastleCastCounter();
@@ -82,7 +83,7 @@ namespace DragonQuest.Prototype
                 preferredEnemyTarget = null;
                 // Optional map-specific art; the menu and fighter anchors do not depend on the background.
                 background = Resources.Load<Texture2D>("BattleBackgrounds/" + controller.BattleLocationId);
-                if (controller.IsCastleEncounter) castleSpells.Prepare();
+                if (controller.IsCastleEncounter) { castleSpells.Prepare(); spiritAttacks.Prepare(); }
             }
             if (observedActor != battle.CurrentActor || observedDefinition != battle.CurrentActor?.Definition
                 || observedLimitReady != (battle.CurrentActor?.Limit.IsReady ?? false))
@@ -140,7 +141,7 @@ namespace DragonQuest.Prototype
                 if (GameInput.ConfirmPressed) { controller.ReturnToCity(); GameInput.ConsumeGamepadFrame(); }
                 return;
             }
-            if (observedActor == null || observedActor.Team != CombatTeam.Party) return;
+            if (observedActor == null || observedActor.Team != CombatTeam.Party || observedActor.MindControlTurns > 0) return;
             if (GameInput.CancelPressed)
             { Cancel(); GameInput.ConsumeGamepadFrame(); return; }
             bool targeting = selected != null || selectedItem != null;
@@ -207,9 +208,13 @@ namespace DragonQuest.Prototype
         }
         private bool CommandEnabled(int index)
         {
+            if (observedActor.MindControlTurns > 0) return false;
+            if (!InSubmenu && observedActor.IsSilenced && (rootCommands[index].Kind == BattleCommandKind.Magic
+                || rootCommands[index].Kind == BattleCommandKind.Summon)) return false;
             if (itemMode) return observedBattle.Inventory.Items[index].Quantity > 0;
             AbilityDefinition ability = CommandAbility(index);
-            return ability == null || observedActor.Mp >= ability.MpCost && (!ability.UsesLimit || observedActor.Limit.IsReady);
+            return ability == null || (!observedActor.IsSilenced || !ability.IsMagic)
+                && observedActor.Mp >= ability.MpCost && (!ability.UsesLimit || observedActor.Limit.IsReady);
         }
         private IReadOnlyList<CombatantState> Targets() => selectedItem != null ? observedBattle.GetValidItemTargets(selectedItem)
             : observedBattle.GetValidTargets(selected);
@@ -384,6 +389,10 @@ namespace DragonQuest.Prototype
                     RectBox(new Rect(shadowFigure.x + castStep - 8, groundFigure.yMax - 8, figure.width + 16, 10),
                         new Color(0, 0, 0, .25f * defeatedEnemies.Alpha(participant, Time.unscaledTime)));
                 DrawFighter(figure, participant);
+                if (participant.IsAlive)
+                    statusIcons.DrawOverhead(figure, participant.MindControlTurns > 0
+                        || controller.IsPresentingAction && controller.IsPresentingConfusedAction && controller.PresentingActor == participant,
+                        participant.IsSilenced, Time.unscaledTime);
                 if (!ultimate && participant.IsAlive && participant == (controller.IsPresentingAction ? controller.PresentingActor : observedActor))
                     DrawTurnArrow(figure.center.x + castStep, figure.y - 30 + Mathf.Sin(Time.unscaledTime * 5) * 3);
                 bool group = selected != null && (selected.Targets == TargetRule.AllEnemies || selected.Targets == TargetRule.AllAllies);
@@ -413,6 +422,10 @@ namespace DragonQuest.Prototype
                 foreach (CombatantState target in controller.PresentingTargets)
                     spellAnimation.Draw(FigureRect(target), controller.PresentingAbility,
                         Time.unscaledTime - controller.ActionStartedAt);
+            if (controller.IsPresentingAction && controller.PresentingActor.Id == CastleBattleRules.SpiritId)
+                foreach (CombatantState target in controller.PresentingTargets)
+                    spiritAttacks.DrawEffect(FigureRect(controller.PresentingActor), FigureRect(target),
+                        controller.PresentingAbility, Time.unscaledTime - controller.ActionStartedAt);
             bool meteorAction = controller.IsPresentingAction
                 && CastleMeteorPresentation.IsMeteor(controller.PresentingActor.Id, controller.PresentingAbility);
             if (controller.IsCastleEncounter)
@@ -600,6 +613,8 @@ namespace DragonQuest.Prototype
                 rect.x += Mathf.Sin(progress * Mathf.PI) * (participant.Team == CombatTeam.Party ? -18 : 18);
                 rect.y -= Mathf.Sin(progress * Mathf.PI) * 5;
             }
+            if (participant.Id == CastleBattleRules.SpiritId && acting
+                && spiritAttacks.Draw(rect, controller.PresentingAbility, Time.unscaledTime - controller.ActionStartedAt, tint)) return;
             if (participant.Team == CombatTeam.Enemy && battleSprites != null
                 && DrawEnemySprite(rect, participant, acting ? controller.AttackPose : 0,
                     tint, acting ? controller.PresentingAbility : null)) return;
