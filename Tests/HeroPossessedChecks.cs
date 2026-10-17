@@ -19,17 +19,27 @@ public static class HeroPossessedChecks
         for (float t = 0; t < At(0).CompleteAt; t += .025f)
         {
             var frame = At(t);
-            Check(frame.CameraFocusY <= previous+.0001f && frame.CameraFocusY >= .322f-.0001f,
+            Check(frame.CameraFocusY <= previous+.0001f && frame.CameraFocusY >= HeroPossessedSequence.FinalCameraFocusY-.0001f,
                 "The camera travels upward from carpet to steps to the king, without reversing.");
-            if (frame.CameraStopped) Check(Near(frame.CameraFocusY,.322f) && Near(frame.CameraImageWidth,1040),
+            if (frame.CameraStopped) Check(Near(frame.CameraFocusY,HeroPossessedSequence.FinalCameraFocusY) && Near(frame.CameraImageWidth,1040),
                 "The throne remains centered and the camera locks for all lightning.");
             else Check(frame.Lightning == 0, "The apparition waits for the stopped camera.");
             Check(frame.BlackOpacity >= 0 && frame.BlackOpacity <= 1 && frame.Lightning >= 0 && frame.Lightning <= 1,
                 "Fade and lightning remain bounded.");
+            Check(frame.Lightning > 0 ? frame.LightningFrame >= 0 && frame.LightningFrame < 2 : frame.LightningFrame == -1,
+                "Only a visible flash selects one of the two sprite frames.");
             previous = frame.CameraFocusY;
         }
         float strike = HeroPossessedSequence.FirstLightningAt;
         Check(At(strike+.08f).Lightning>.99f, "Lightning reveals the spirit after the camera stops.");
+        Check(At(strike+.08f).LightningFrame==0 && At(strike+.48f).LightningFrame==1
+            && At(strike+.48f).Lightning>.64f, "Each double flash alternates sprite A then sprite B.");
+        Check(At(strike+5.58f).LightningFrame==0 && At(strike+5.98f).LightningFrame==1,
+            "The following strike repeats A/B without depending on a frame counter.");
+        Check(At(strike+.40f).LightningFrame==-1 && At(strike+1).LightningFrame==-1,
+            "Both the internal flicker gap and the pause between strikes hide the ray.");
+        Check(HeroPossessedSequence.FinalCameraFocusY < .322f-.1f,
+            "The final camera rises well above the previous throne framing to show the ghost.");
         Check(At(strike+1).Lightning==0 && At(strike+5.58f).Lightning>.99f,
             "The apparition disappears between intermittent strikes.");
         var finalText = At(At(0).TextEndAt-.2f);
@@ -47,7 +57,7 @@ public static class HeroPossessedChecks
         Check(Near(At(finishedText.BlackAt).BlackOpacity,1) && !At(finishedText.BlackAt).IsComplete,
             "Black holds before the automatic return to menu.");
         var done = At(10000);
-        Check(done.IsComplete && done.BlackOpacity==1 && done.Lightning==0, "Large frames finish safely at black.");
+        Check(done.IsComplete && done.BlackOpacity==1 && done.Lightning==0 && done.LightningFrame==-1, "Large frames finish safely at black.");
         done.Advance(10); Check(Near(done.Elapsed,done.CompleteAt), "Completion is stable.");
         var fine = At(0);
         for (int i=0;i<1200;i++) fine.Advance(1f/60);

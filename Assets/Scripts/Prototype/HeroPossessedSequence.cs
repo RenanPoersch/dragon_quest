@@ -8,6 +8,7 @@ namespace DragonQuest.Prototype
         public const float FadeInDuration = CastleDestroyedSequence.FadeInDuration;
         public const float CameraStart = 1.4f, CarpetDuration = 9, StairDuration = 10, RevealDuration = 8;
         public const float CameraStopAt = CameraStart + CarpetDuration + StairDuration + RevealDuration;
+        public const float FinalCameraFocusY = .16f;
         public const float TextStart = 2.2f, TextWindowHeight = 324, LineHeight = 34, ScrollSpeed = 29;
         public const float EndHold = CastleDestroyedSequence.EndHold;
         public const float FadeOutDuration = CastleDestroyedSequence.FadeOutDuration;
@@ -35,21 +36,28 @@ namespace DragonQuest.Prototype
                 if (t <= CarpetDuration) return Lerp(.84f, .64f, Smooth(t / CarpetDuration));
                 t -= CarpetDuration;
                 if (t <= StairDuration) return Lerp(.64f, .44f, Smooth(t / StairDuration));
-                return Lerp(.44f, .322f, Smooth((t - StairDuration) / RevealDuration));
+                return Lerp(.44f, FinalCameraFocusY, Smooth((t - StairDuration) / RevealDuration));
             }
         }
         public float CameraImageWidth => Lerp(1500, 1040, Smooth((Elapsed - CameraStart) / (CameraStopAt - CameraStart)));
-        public float Lightning
+        public float Lightning => SampleLightning(out _);
+        public int LightningFrame
         {
-            get
+            get { SampleLightning(out int frame); return frame; }
+        }
+        private float SampleLightning(out int frame)
+        {
+            frame = -1;
+            if (!CameraStopped || Elapsed >= FadeOutAt) return 0;
+            float t = (Elapsed - CameraStopAt) % 26;
+            foreach (float strike in strikes)
             {
-                if (!CameraStopped || Elapsed >= FadeOutAt) return 0;
-                float t = (Elapsed - CameraStopAt) % 26;
-                float flash = 0;
-                foreach (float strike in strikes)
-                    flash = Math.Max(flash, Math.Max(Pulse(t - strike, .08f, .30f), .65f * Pulse(t - strike - .43f, .05f, .22f)));
-                return flash;
+                float first = Pulse(t - strike, .08f, .30f);
+                if (first > 0) { frame = 0; return first; }
+                float second = .65f * Pulse(t - strike - .43f, .05f, .22f);
+                if (second > 0) { frame = 1; return second; }
             }
+            return 0;
         }
 
         public HeroPossessedSequence(int lineCount)

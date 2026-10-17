@@ -4,7 +4,10 @@ Shader "Hidden/DragonQuest/PossessedThroneComposite"
     {
         _MainTex ("Throne", 2D) = "black" {}
         _SpiritTex ("Spirit silhouette", 2D) = "black" {}
+        _LightningTex ("Lightning animation frame", 2D) = "black" {}
         _Lightning ("Lightning", Float) = 0
+        _SkyPadding ("Black space above the painting", Float) = .18
+        _SpiritRect ("Frontal spirit in room coordinates", Vector) = (.22,.49,.56,.56)
     }
     SubShader
     {
@@ -15,46 +18,36 @@ Shader "Hidden/DragonQuest/PossessedThroneComposite"
             #pragma vertex vert_img
             #pragma fragment frag
             #include "UnityCG.cginc"
-            sampler2D _MainTex, _SpiritTex;
-            float _Lightning;
-            float segment(float2 p, float2 a, float2 b)
-            {
-                float2 d = b-a;
-                return length(p-a-d*saturate(dot(p-a,d)/dot(d,d)));
-            }
+            sampler2D _MainTex, _SpiritTex, _LightningTex;
+            float _Lightning, _SkyPadding;
+            float4 _SpiritRect;
             fixed4 frag(v2f_img i) : SV_Target
             {
-                fixed4 room = tex2D(_MainTex, i.uv);
+                // Extend the black recess above the original art without changing its pixels.
+                float2 roomUV = float2(i.uv.x, i.uv.y * (1 + _SkyPadding));
+                fixed4 room = roomUV.y <= 1 ? tex2D(_MainTex, roomUV) : fixed4(0,0,0,1);
+                room.rgb *= 1-smoothstep(.94,1,roomUV.y);
                 if (_Lightning <= 0) return room;
                 // The original painting's black recess acts as a matte: gold, skin,
                 // cloak and columns occlude the apparition without modifying the PNG.
                 float brightness = max(room.r, max(room.g, room.b));
-                float recess = (1-smoothstep(.001,.008,brightness)) * smoothstep(.52,.56,i.uv.y);
-                // Protect the entire seated figure, including truly black pupils and
-                // cloth folds. Color keying alone would also illuminate these shadows.
-                float fromTop = 1-i.uv.y;
+                float recess = (1-smoothstep(.014,.055,brightness)) * smoothstep(.52,.56,roomUV.y);
+                // Protect pupils and central cloth folds, which also contain pure black.
+                float fromTop = 1-roomUV.y;
                 float foregroundHalfWidth = fromTop < .27 ? .085 : .13;
-                float foreground = step(.195,fromTop)*step(fromTop,.55)*step(abs(i.uv.x-.5),foregroundHalfWidth);
+                float foreground = step(.195,fromTop)*step(fromTop,.55)*step(abs(roomUV.x-.5),foregroundHalfWidth);
                 recess *= 1-foreground;
-                float2 spiritUV = (i.uv-float2(.14,.49))/float2(.72,.51);
+                float2 spiritUV = (roomUV-_SpiritRect.xy)/_SpiritRect.zw;
                 float inside = step(0,spiritUV.x)*step(spiritUV.x,1)*step(0,spiritUV.y)*step(spiritUV.y,1);
                 fixed4 spirit = tex2D(_SpiritTex, saturate(spiritUV));
-                float silhouette = spirit.a * inside * recess;
+                float silhouette = pow(spirit.a,1.6) * inside * recess;
                 float detail = dot(spirit.rgb,float3(.2,.4,.4));
-                room.rgb += _Lightning * (silhouette * lerp(float3(.08,.09,.14),float3(.20,.24,.34),detail)
+                room.rgb += _Lightning * (silhouette * lerp(float3(.065,.08,.12),float3(.28,.32,.44),detail)
                     + recess * float3(.012,.016,.028));
-                float2 p = i.uv;
-                float bolt = min(segment(p,float2(.76,1),float2(.744,.974)), segment(p,float2(.744,.974),float2(.756,.963)));
-                bolt = min(bolt,segment(p,float2(.756,.963),float2(.728,.932)));
-                bolt = min(bolt,segment(p,float2(.728,.932),float2(.741,.917)));
-                bolt = min(bolt,segment(p,float2(.741,.917),float2(.707,.879)));
-                bolt = min(bolt,segment(p,float2(.707,.879),float2(.722,.863)));
-                bolt = min(bolt,segment(p,float2(.722,.863),float2(.691,.817)));
-                bolt = min(bolt,segment(p,float2(.691,.817),float2(.700,.799)));
-                bolt = min(bolt,segment(p,float2(.700,.799),float2(.673,.754)));
-                bolt = min(bolt,segment(p,float2(.728,.932),float2(.762,.909)));
-                bolt = min(bolt,segment(p,float2(.762,.909),float2(.752,.891)));
-                room.rgb += recess * _Lightning * (1-smoothstep(.0008,.0025,bolt))*float3(.48,.57,.75);
+                float2 boltUV = (roomUV-float2(.64,.78))/float2(.20,.28);
+                float boltInside = step(0,boltUV.x)*step(boltUV.x,1)*step(0,boltUV.y)*step(boltUV.y,1);
+                fixed4 bolt = tex2D(_LightningTex,saturate(boltUV));
+                room.rgb += recess * _Lightning * boltInside * pow(bolt.a,1.5) * bolt.rgb * .85;
                 return room;
             }
             ENDCG

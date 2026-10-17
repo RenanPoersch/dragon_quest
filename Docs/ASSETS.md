@@ -123,3 +123,9 @@ Os arquivos gerados são copiados integralmente, mantendo RGBA e transparência.
 `Assets/Resources/PixelArt/Endings/PossessedThrone.png` foi gerado pelo `imagegen` integrado para o epílogo de Aren possuído, usando seu retrato de conversa e a sala do trono como referências de identidade, estilo e arquitetura. PNG original de 1024 × 1536 copiado integralmente, Point/Clamp, sem mipmaps, compressão ou redimensionamento. SHA-256: `59329F8C215BBE4639153521D088ED21C4E6F4EF0B0CD6AB47291709AD689855`. Prompt completo em `ArtInputs/PossessedThrone.prompt.txt`.
 
 A silhueta reutiliza `PixelArt/SpiritBattle`, já escolhido pelo usuário, com composição e iluminação feitas pelo shader original `PossessedThroneComposite`. O fundo, os pixels de Aren e os arquivos aprovados não são editados. Detalhes e roteiro em `HERO_POSSESSED_ENDING.md`.
+
+## Fantasma frontal e raios do final de possessão — 16 de outubro de 2026
+
+`Assets/Resources/PixelArt/Endings/PossessedSpiritFront.png`, `PossessionLightningA.png` e `PossessionLightningB.png` são três gerações separadas do `imagegen` integrado, com transparência real. Os PNGs de 1024 × 1536 foram copiados integralmente, sem editar pixels, alpha ou resolução; Point/Clamp, sem compressão ou mipmaps. O novo fantasma conserva a máscara e as chamas azuis do espírito, em pose reta de frente e com o acabamento sério dos retratos. Os dois raios têm ramificações diferentes e alternam A/B nos pulsos de cada clarão.
+
+Prompts completos, referências e hashes SHA-256 em `Docs/ArtInputs/PossessionSprites.prompts.json`. O quadro final sobe para mostrar o rosto inteiro acima do trono e amplia o fundo preto por composição. O PNG `SpiritBattle.png` não foi alterado. Ver `Docs/HERO_POSSESSED_ENDING.md`.
