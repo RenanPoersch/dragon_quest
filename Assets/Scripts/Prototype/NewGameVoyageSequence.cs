@@ -5,9 +5,10 @@ namespace DragonQuest.Prototype
     // A single unscaled clock keeps the ship, party, scroll and transition in sync.
     public sealed class NewGameVoyageSequence
     {
+        public const float FadeInDelay = 2;
         public const float FadeInDuration = 3.2f;
         // Let the opening fade finish before the voyage starts moving.
-        public const float ArrivalStart = FadeInDuration + .4f, ArrivalDuration = 6.2f;
+        public const float ArrivalStart = FadeInDelay + FadeInDuration + .4f, ArrivalDuration = 6.2f;
         public const float ShipWidth = 1560, ShipStartX = 1300, ShipStopX = 548, ShipExitX = -ShipWidth - 64;
         public const float HeroSize = 96;
         public const float WalkStart = ArrivalStart + 1.7f, WalkDuration = 4.4f, HeroDelay = .48f;
@@ -57,7 +58,7 @@ namespace DragonQuest.Prototype
         public static float RevealAt => BlackAt + BlackHold;
         public static float CompleteAt => RevealAt + RevealDuration;
         public float Elapsed { get; private set; }
-        public float AnimationElapsed => Math.Max(0, Elapsed - FadeInDuration);
+        public float AnimationElapsed => Math.Max(0, Elapsed - FadeInDelay - FadeInDuration);
         public bool IsPlaying => Elapsed < CompleteAt;
         public bool ShowsScene => Elapsed < RevealAt;
         public bool IsDeparting => Elapsed >= DepartureAt;
@@ -72,7 +73,7 @@ namespace DragonQuest.Prototype
             : Lerp(ShipStopX, ShipExitX, Smooth((Elapsed - DepartureAt) / DepartureDuration));
         public float BlackOpacity => Elapsed >= RevealAt
             ? 1 - Smooth((Elapsed - RevealAt) / RevealDuration)
-            : Math.Max(1 - Smooth(Elapsed / FadeInDuration),
+            : Math.Max(1 - Smooth((Elapsed - FadeInDelay) / FadeInDuration),
                 Smooth((Elapsed - FadeOutAt) / FadeOutDuration));
 
         public float HeroLocalX(int index) => Lerp(.64f + index * .055f, .245f + index * .065f, HeroWalkProgress(index));
