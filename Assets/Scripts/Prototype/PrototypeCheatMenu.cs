@@ -29,7 +29,8 @@ namespace DragonQuest.Prototype
 
         private void Update()
         {
-            if (battle == null || saves.IsMenuVisible || battle.HasEnded || !GameInput.IsFocused) return;
+            if (battle == null || saves.IsMenuVisible || battle.HasEnded || !GameInput.IsFocused
+                || GetComponent<InnRestController>()?.IsPlaying == true) return;
             if (GameInput.CheatsPressed)
             {
                 if (IsOpen) Close();

@@ -48,7 +48,7 @@ public static class InnValidation
             Person(root.transform,people,"Hospedeira",PrototypeInnLayout.Keeper,"NpcRoster",7);
             var service = new GameObject("Atendimento na frente do balcao"); service.transform.SetParent(root.transform,false);
             service.transform.localPosition = PrototypeInnLayout.Reception;
-            var interaction = service.AddComponent<InnInteraction>(); int saves = 0; interaction.Initialize(() => saves++);
+            var interaction = service.AddComponent<InnInteraction>(); int saves = 0; interaction.Initialize(() => saves++, () => { });
             var dialogue = root.AddComponent<DialogueController>();
             interaction.Interact(new InteractionContext(dialogue,new ExplorationProgress(),_=>{}));
             Assert(dialogue.HasChoices,"keeper opens save conversation from the counter");

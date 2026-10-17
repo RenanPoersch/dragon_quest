@@ -18,6 +18,7 @@ namespace DragonQuest.Prototype
         private TyrantAudience audience;
         private PrototypeSaveController saves;
         private InnSavePoint innSavePoint;
+        private InnRestController innRest;
         private ExplorationProgress progress;
         private readonly DragonProgress dragon = new DragonProgress();
 
@@ -111,9 +112,10 @@ namespace DragonQuest.Prototype
             PrototypeShopController shops = gameObject.AddComponent<PrototypeShopController>();
             PrototypeEndingController endings=gameObject.AddComponent<PrototypeEndingController>();
             endings.Initialize(mapRoots,player.GetComponent<PlayerMovement>(),camera,cameraFollow,scenery);
+            innRest = gameObject.AddComponent<InnRestController>();
             battle = gameObject.AddComponent<PrototypeBattleController>();
             var cheats = gameObject.AddComponent<PrototypeCheatMenu>();
-            battle.Initialize(player.GetComponent<PlayerMovement>(), dialogue, progress, () => shops.IsOpen || saves.IsMenuVisible || cheats.BlocksInput,dragon,secrets,locations.RecoverAtInn,endings.Show);
+            battle.Initialize(player.GetComponent<PlayerMovement>(), dialogue, progress, () => shops.IsOpen || saves.IsMenuVisible || cheats.BlocksInput || innRest.IsPlaying,dragon,secrets,locations.RecoverAtInn,endings.Show);
             audience = new GameObject("Party diante do tirano").AddComponent<TyrantAudience>();
             audience.transform.SetParent(transform, false);
             audience.Initialize(player.GetComponent<PlayerMovement>(), () => battle.Party, scenery);
@@ -135,7 +137,7 @@ namespace DragonQuest.Prototype
                 var s = journey.Secrets;
                 secrets.Restore(s.KnowsPoem, s.AltarSolved, s.MonolithStep, s.HasScale, s.PassageOpen);
                 dragon.Restore(journey.Dragon.IsDefeated);
-                battle.Initialize(player.GetComponent<PlayerMovement>(), dialogue, progress, () => shops.IsOpen || saves.IsMenuVisible || cheats.BlocksInput,
+                battle.Initialize(player.GetComponent<PlayerMovement>(), dialogue, progress, () => shops.IsOpen || saves.IsMenuVisible || cheats.BlocksInput || innRest.IsPlaying,
                     dragon, secrets, locations.RecoverAtInn, endings.Show, journey.Party);
                 shops.Initialize(player.GetComponent<PlayerMovement>(), dialogue, battle, progress, journey.Shops, journey.Quest);
                 interaction.Initialize(new InteractionContext(dialogue, progress, locations.TravelTo,
@@ -145,6 +147,8 @@ namespace DragonQuest.Prototype
                 locations.Restore(journey.Data.Map, new Vector2(journey.Data.X, journey.Data.Y));
             });
             cheats.Initialize(player.GetComponent<PlayerMovement>(), battle, saves, progress);
+            innRest.Initialize(player.GetComponent<PlayerMovement>(), () => battle.Party, scenery,
+                () => locations.LocationId == PrototypeTravel.Inn, () => dialogue.IsOpen || battle.IsBusy);
             innSavePoint.Initialize(player.GetComponent<PlayerMovement>(), () => dialogue.IsOpen || battle.IsBusy, saves.OpenInnSaveMenu);
         }
 
@@ -342,10 +346,10 @@ namespace DragonQuest.Prototype
             inn.gameObject.AddComponent<InnPixelScenery>().Build(frictionless);
             CreatePassage("Saida da hospedaria",PrototypeTravel.Inn,inn,PrototypeTravel.City);
             InnInteraction keeper=CreateNpcFigure("Hospedeira",PrototypeInnLayout.Keeper,"B89673",inn).AddComponent<InnInteraction>();
-            keeper.Initialize(() => saves.SaveManual());
+            keeper.Initialize(() => saves.SaveManual(), () => innRest.Begin());
             interactions.Add(keeper);
             InnInteraction reception=Entity("Recepcao / falar com a hospedeira",PrototypeInnLayout.Reception,inn).AddComponent<InnInteraction>();
-            reception.Initialize(() => saves.SaveManual());
+            reception.Initialize(() => saves.SaveManual(), () => innRest.Begin());
             interactions.Add(reception);
             innSavePoint=Entity("Cristal de salvamento",PrototypeInnLayout.SavePoint,inn).AddComponent<InnSavePoint>();
             return inn;
