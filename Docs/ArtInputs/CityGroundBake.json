@@ -1,82 +1,83 @@
 {
-  "width": 2305,
-  "height": 2975,
+  "width": 2688,
+  "height": 3472,
   "core": {
-    "x": 670,
-    "y": 673,
-    "width": 965,
-    "height": 1629
+    "x": 781,
+    "y": 785,
+    "width": 1126,
+    "height": 1902
   },
   "source": "Docs/ArtInputs/CityGroundNatural.png",
   "sourceSize": [
-    1104,
-    1425
+    2688,
+    3472
   ],
-  "sourceSha256": "d847343ea690586c9525710e977b13f8bc94f0b1d0560cff026d6c900c50577b",
-  "sha256": "5304bbb3d38ce29e0d0bad6950c0c46063a9ba9c83dc27c61ddaffd402dc0a7c",
-  "sampling": "nearest-neighbour with continuous landmark registration",
-  "corePixelSha256": "642b808ebae6abe3a6e8acc612282c2ff644a1077cc119ca280432c435ecb6ac",
-  "layout": "organic-dusk-paths-final-building-positions-baked-shop-lights",
+  "sourceSha256": "27d2901155034ee9c327ad2e0062a7b94232d620e865a644d456d0d7ee80cf74",
+  "sha256": "27d2901155034ee9c327ad2e0062a7b94232d620e865a644d456d0d7ee80cf74",
+  "upscaled": false,
+  "sampling": "byte-for-byte native source copy; no resampling or warp",
+  "coordinateCalibration": [
+    2305,
+    2975
+  ],
+  "layout": "original-fixed-layout-native-detail-facade-matched-reflections",
   "lights": [
     {
-      "building": "Loja de materias",
-      "door": [
+      "name": "Loja de materias",
+      "color": "#41E7E2",
+      "doorWorld": [
         5.0,
         0.6649999999999999
       ],
-      "lightCentre": [
-        1338.076923076923,
-        1496.200340909091
-      ],
-      "sourceCentre": [
-        665,
-        716
+      "doorPixel": [
+        1560.4124812280993,
+        1707.266879144385
       ]
     },
     {
-      "building": "Loja de itens",
-      "door": [
+      "name": "Loja de itens",
+      "color": "#F8D43B",
+      "doorWorld": [
         -4.9,
         -7.9350000000000005
       ],
-      "lightCentre": [
-        970.6346153846154,
-        1814.5957954545456
-      ],
-      "sourceCentre": [
-        423,
-        835
+      "doorPixel": [
+        1131.9157683964625,
+        2078.8531037433154
       ]
     },
     {
-      "building": "Loja de equipamentos",
-      "door": [
+      "name": "Loja de equipamentos",
+      "color": "#FFA51C",
+      "doorWorld": [
         5.1,
         -11.735
       ],
-      "lightCentre": [
-        1341.7884615384614,
-        1955.282159090909
-      ],
-      "sourceCentre": [
-        650,
-        943
+      "doorPixel": [
+        1564.7407308526613,
+        2243.0423657754013
       ]
     },
     {
-      "building": "Hospedaria",
-      "door": [
+      "name": "Hospedaria",
+      "color": "#FFD278",
+      "doorWorld": [
         -5.1,
         -15.835
       ],
-      "lightCentre": [
-        963.2115384615385,
-        2107.0753409090908
-      ],
-      "sourceCentre": [
-        432,
-        1035
+      "doorPixel": [
+        1123.2592691473385,
+        2420.1939379679143
       ]
     }
-  ]
+  ],
+  "unchanged": {
+    "Assets/Scripts/Prototype/PrototypeCityLayout.cs": "d3836ca8a51f6add53b77b0acbc5fe5301d815f9d06d139fdf0f2c54c1b2917a",
+    "Assets/Scripts/Prototype/CityPeripheryArt.cs": "8c30de80b0786af62901ce8b6b05896a935b20ce81c90fbccfecb59ae7978382",
+    "Assets/Scripts/Prototype/CityGroundArt.cs": "19c61f0a56f61228e88f7d2d8ddeb397dbbbf9a3e445023922aacb1de3d1d6ff",
+    "Assets/Scripts/Prototype/CastleFortressArt.cs": "4d1a62fbe5f9165db2e6fd8bbe9e0a14ef2172188dd78cff51e9cbb008c9a3ce",
+    "Assets/Resources/PixelArt/CityDetailsAtlas.png": "b85188fae64d3259745e605a55f4ae89ba4c8690b88da18bbbaca3c9bc21b3c3",
+    "Assets/Resources/PixelArt/CityMaterialsAtlas.png": "c78c73322cb276b5b71a992473fefbb3ed5b1e9f3a0b0b0166b86e9060f0e3a6",
+    "Assets/Resources/PixelArt/CastleMaterialsAtlas.png": "8e4b50d00d801a7a027f68c603ec2ee98dbda8ca6b22ed48689be3d0fda7be41"
+  }
 }
