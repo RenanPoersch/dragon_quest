@@ -56,7 +56,11 @@ namespace DragonQuest.Prototype
             var state = member.At(elapsed);
             bool leveledUp = state.Level > member.BeforeLevel;
             var figure = new Rect(138, y + 34, 166, 96);
-            sprites.Draw(figure, member.Id, leveledUp, elapsed);
+            bool knockedOut = false;
+            if (controller?.Party != null)
+                foreach (var hero in controller.Party.Members)
+                    if (hero.Id == member.Id) { knockedOut = !hero.IsAlive; break; }
+            sprites.Draw(figure, member.Id, leveledUp, elapsed, knockedOut);
             if (leveledUp)
             {
                 var label = new Rect(figure.center.x - 68, y + 7, 136, 30);

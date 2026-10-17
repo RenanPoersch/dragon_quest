@@ -7,10 +7,12 @@ namespace DragonQuest.Prototype
     public sealed class HeroVictoryAnimation
     {
         private readonly Dictionary<string, BattleAnimationSheet> sheets = new Dictionary<string, BattleAnimationSheet>();
+        private readonly HeroKnockoutSprites knockoutSprites = new HeroKnockoutSprites();
         public static string Resource(string id) => id == "aren" ? "ArenVictory" : id == "lia" ? "LiaVictory" : id == "bram" ? "BramVictory" : null;
         public static int Pose(double elapsed) => (int)(Math.Max(0, elapsed) * 6) % 4;
-        public bool Draw(Rect area, string id, bool celebrating, double elapsed)
+        public bool Draw(Rect area, string id, bool celebrating, double elapsed, bool knockedOut = false)
         {
+            if (knockedOut) return knockoutSprites.Draw(area, id);
             string resource = Resource(id);
             if (resource == null) return false;
             string key = id + (celebrating ? "/victory" : "/idle");

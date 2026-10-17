@@ -17,6 +17,8 @@ namespace DragonQuest.Prototype
         private PrototypeBattleSprites battleSprites;
         private readonly SpellAnimation spellAnimation = new SpellAnimation();
         private readonly HeroCastAnimation heroCastAnimation = new HeroCastAnimation();
+        private readonly HeroKnockoutSprites knockoutSprites = new HeroKnockoutSprites();
+        private readonly HeroKnockoutPresentation heroKnockouts = new HeroKnockoutPresentation();
         private readonly UltimateAnimation ultimateAnimation = new UltimateAnimation();
         private readonly SummonAnimation summonAnimation = new SummonAnimation();
         private readonly BattleStatusIcons statusIcons = new BattleStatusIcons();
@@ -74,6 +76,7 @@ namespace DragonQuest.Prototype
             {
                 observedBattle = battle; observedActor = null; seenChanges.Clear(); numbers.Clear();
                 defeatedEnemies.Reset(); castCounter.Reset(); enemyPoses.Clear();
+                heroKnockouts.Reset();
                 ultimateAnimation.Prepare();
                 spiritFloatStartedAt = Time.unscaledTime;
                 preferredEnemyTarget = null;
@@ -99,6 +102,11 @@ namespace DragonQuest.Prototype
                     foreach (CombatantState target in controller.PresentingTargets)
                         if (target == participant) { deathTime = controller.ActionImpactAt; break; }
                 defeatedEnemies.Observe(participant, deathTime);
+                float heroImpact = deathTime;
+                if (controller.IsPresentingAction && controller.PresentingAbility.PartyEffect != PartyEffect.None)
+                    foreach (CombatantState ally in controller.PresentingPartyTargets)
+                        if (ally == participant) { heroImpact = controller.ActionImpactAt; break; }
+                heroKnockouts.Observe(participant, heroImpact, Time.unscaledTime);
                 seenChanges.TryGetValue(participant, out int seen);
                 foreach (CombatVitalChange change in participant.VitalChanges)
                 {
@@ -552,6 +560,7 @@ namespace DragonQuest.Prototype
         {
             Color tint = FighterTint(participant);
             bool acting = controller.IsPresentingAction && controller.PresentingActor == participant;
+            if (heroKnockouts.IsKnockedOut(participant) && knockoutSprites.Draw(rect, participant.Id)) return;
             if (controller.IsPresentingAction)
             {
                 float sinceImpact = controller.IsPresentingUltimate
