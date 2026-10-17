@@ -35,9 +35,12 @@ public static class FinalOneValidation
             for (int x = 0; x < source.width; x++) if (source.GetPixel(x, 0).a > .9f) grounded++;
             Assert(grounded > source.width / 2, "the hill continues through the lower edge");
             int crest = SilhouetteTop(source, .4f);
-            Assert(SilhouetteTop(source, .12f) - crest > source.height * .1f
-                && SilhouetteTop(source, .98f) - crest > source.height * .1f,
-                "the terrain rises toward its crest and curves down on both sides instead of forming a straight ledge");
+            Assert(Mathf.Abs(SilhouetteTop(source, .04f) - crest) < source.height * .06f
+                && Mathf.Abs(SilhouetteTop(source, .12f) - crest) < source.height * .06f
+                && Mathf.Abs(SilhouetteTop(source, .25f) - crest) < source.height * .06f,
+                "the left ground continues near the seated man's level without a left downhill");
+            Assert(SilhouetteTop(source, .98f) - crest > source.height * .1f,
+                "the rounded downhill remains only on the right");
         }
         finally { UnityEngine.Object.DestroyImmediate(source); }
         var font = Resources.Load<Font>("Fonts/PixelOperator");
@@ -66,7 +69,7 @@ public static class FinalOneValidation
         Assert(EndingNarrative.Pages(GameEnding.CastleDestroyed).Length == 3
             && EndingNarrative.Pages(GameEnding.KingFreed).Length == 3
             && EndingNarrative.Pages(GameEnding.HeroPossessed).Length == 3, "the other endings retain their pages");
-        Debug.Log("FINAL_ONE_VALIDATION_OK: rounded hill and seated gardener, transparent air, opposing drift, narrative and fade.");
+        Debug.Log("FINAL_ONE_VALIDATION_OK: level left ground, curved right slope, seated gardener, smooth opposing drift, narrative and fade.");
     }
 
     [MenuItem("Tools/Dragon Quest/Preview FinalOne")]

@@ -8,7 +8,7 @@ namespace DragonQuest.Prototype
         public const float FadeInDuration = 1.4f;
         public const float ArrivalStart = .5f, ArrivalDuration = 16;
         public const float LandStartX = -1080, LandStopX = -144, LandWidth = 1040;
-        public const float LandDrift = 32, BackgroundDrift = 60;
+        public const float LandDrift = 32, BackgroundDrift = 90;
         public const float ArrivalEnd = ArrivalStart + ArrivalDuration;
         public const float TextStart = ArrivalEnd + .8f, TextWindowHeight = 324, LineHeight = 34, ScrollSpeed = 29;
         public const float EndHold = 1.8f, FadeOutDuration = 3, BlackHold = 1;
@@ -22,7 +22,7 @@ namespace DragonQuest.Prototype
         public float TextOffset => TextWindowHeight - Math.Max(0, Elapsed - TextStart) * ScrollSpeed;
         public float LandX => LandStartX + (LandStopX - LandStartX) * Smooth((Elapsed - ArrivalStart) / ArrivalDuration)
             + LandDrift * Clamp((Elapsed - ArrivalEnd) / (CompleteAt - ArrivalEnd));
-        public float BackgroundX => -BackgroundDrift * Elapsed / CompleteAt;
+        public float BackgroundX => -BackgroundDrift * Smooth(Elapsed / CompleteAt);
         public float BlackOpacity => Math.Max(1 - Smooth(Elapsed / FadeInDuration), Smooth((Elapsed - FadeOutAt) / FadeOutDuration));
 
         public CastleDestroyedSequence(int lineCount)

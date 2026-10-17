@@ -48,21 +48,32 @@ public static class FinalOneChecks
             {
                 Check(frame.LandX > previousX && frame.LandX - previousX < .1f,
                     "Steady foreground drift stays below one reference pixel per second.");
-                Check(previousBackground - frame.BackgroundX < .13f,
-                    "Background drift stays below 1.3 reference pixels per second.");
+                Check(previousBackground - frame.BackgroundX < .23f,
+                    "The more noticeable castle pan remains below 2.3 reference pixels per second.");
             }
             Check(frame.BlackOpacity >= 0 && frame.BlackOpacity <= 1, "Fade opacity remains bounded.");
             previousX = frame.LandX;
             previousBackground = frame.BackgroundX;
         }
         Check(At(0, 44).TextEndAt > At(0, 22).TextEndAt, "Longer narrative extends the scene before fading.");
+        float midpoint = textEnd.CompleteAt / 2;
+        float middleSpeed = -(At(midpoint + .125f).BackgroundX - At(midpoint - .125f).BackgroundX) / .25f;
+        float initialSpeed = -At(.25f).BackgroundX / .25f;
+        float finalSpeed = (At(textEnd.CompleteAt - .25f).BackgroundX - At(textEnd.CompleteAt).BackgroundX) / .25f;
+        Check(middleSpeed > 1.5f && middleSpeed < 2.3f,
+            "The castle is visibly faster through the central story passage.");
+        Check(initialSpeed < middleSpeed * .02f && finalSpeed < middleSpeed * .02f,
+            "The background eases gently into and out of its pan.");
+        Check(Math.Abs(At(midpoint + 1f / 60).BackgroundX - At(midpoint).BackgroundX) < .04f,
+            "A rendered frame advances the panorama by a fraction of a pixel without quantized jumps.");
         var complete = At(10000);
         Check(complete.IsComplete && Near(complete.BlackOpacity, 1), "A long frame finishes safely at black.");
         complete.Advance(10);
         Check(Near(complete.Elapsed, complete.CompleteAt), "Completion is stable.");
         var fixedStep = At(0);
         for (int i = 0; i < 1200; i++) fixedStep.Advance(1f / 60);
-        Check(Near(fixedStep.Elapsed, At(20).Elapsed) && Near(fixedStep.LandX, At(20).LandX),
+        Check(Near(fixedStep.Elapsed, At(20).Elapsed) && Near(fixedStep.LandX, At(20).LandX)
+            && Near(fixedStep.BackgroundX, At(20).BackgroundX),
             "Timing is independent of frame rate and uses the supplied unscaled clock.");
         foreach (float invalid in new[] { -1f, float.NaN, float.PositiveInfinity })
         {

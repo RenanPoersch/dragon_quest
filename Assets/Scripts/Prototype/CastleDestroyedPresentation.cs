@@ -17,8 +17,16 @@ namespace DragonQuest.Prototype
         public CastleDestroyedPresentation()
         {
             Sequence = new CastleDestroyedSequence(lines.Length);
-            background = Load(BackgroundResource);
+            Texture2D panorama = Load(BackgroundResource);
             foreground = Load(ForegroundResource);
+            // A private filtered copy blends fractional-pixel pans without changing the shared pixel-art asset.
+            background = new Texture2D(panorama.width, panorama.height, panorama.format, false)
+                { name = "FinalOne / smooth castle panorama", filterMode = FilterMode.Bilinear,
+                    wrapMode = TextureWrapMode.Clamp };
+            // Copy on the GPU: imported panoramas are intentionally non-readable in play mode/builds.
+            // Drop the empty CPU copy before the transfer so Apply cannot overwrite the copied image.
+            background.Apply(false, true);
+            Graphics.CopyTexture(panorama, background);
             shade = new Texture2D(128, 1, TextureFormat.RGBA32, false)
                 { name = "FinalOne / narrative shade", wrapMode = TextureWrapMode.Clamp };
             var colors = new Color[128];
@@ -52,9 +60,10 @@ namespace DragonQuest.Prototype
                     viewport.y + (viewport.height - 720 * scale) / 2, 0), Quaternion.identity, new Vector3(scale, scale, 1));
                 GUI.BeginGroup(new Rect(0, 30, 1280, 660));
                 GUI.color = Color.white;
-                float panoramaHeight = 1376f * background.height / background.width;
+                float panoramaWidth = 1280 + CastleDestroyedSequence.BackgroundDrift + 24;
+                float panoramaHeight = panoramaWidth * background.height / background.width;
                 GUI.DrawTexture(new Rect(-12 + Sequence.BackgroundX, (660 - panoramaHeight) / 2,
-                    1376, panoramaHeight), background);
+                    panoramaWidth, panoramaHeight), background);
                 DrawWaterAndAsh();
                 DrawForeground();
                 DrawNarrative();
@@ -136,7 +145,7 @@ namespace DragonQuest.Prototype
         { GUI.color = color; GUI.DrawTexture(area, Texture2D.whiteTexture); }
         public void Dispose()
         {
-            DestroyOwned(shade);
+            DestroyOwned(background); DestroyOwned(shade);
         }
         private static void DestroyOwned(UnityEngine.Object asset)
         {
