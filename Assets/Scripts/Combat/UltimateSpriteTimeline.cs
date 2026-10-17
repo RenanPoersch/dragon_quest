@@ -55,7 +55,7 @@ namespace DragonQuest.Combat
         public static int CelestialFrame(float elapsed)
         {
             if(elapsed<1.45f) return Range(elapsed,.7f,1.45f,0,7);
-            if(elapsed<5.1f) return Loop(elapsed,1.45f,8,4,12);
+            if(elapsed<5.1f) return Loop(elapsed,1.45f,8,4,4);
             return Range(elapsed,5.1f,5.9f,12,15);
         }
         public static int BeamFrame(float elapsed)
