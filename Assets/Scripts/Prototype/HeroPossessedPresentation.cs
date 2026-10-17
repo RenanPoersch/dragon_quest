@@ -72,11 +72,17 @@ namespace DragonQuest.Prototype
                 float scale = Mathf.Min(viewport.width / 1280, viewport.height / 720);
                 GUI.matrix = Matrix4x4.TRS(new Vector3(viewport.x + (viewport.width - 1280 * scale) / 2,
                     viewport.y + (viewport.height - 720 * scale) / 2, 0), Quaternion.identity, new Vector3(scale, scale, 1));
-                GUI.BeginGroup(new Rect(0, 30, 1280, 660));
+                GUI.BeginGroup(new Rect(0, 0, 1280, 690));
                 Rect camera = CameraBounds(Sequence, throne.width / (float)throne.height);
+                camera.y+=30;
                 GUI.color = Color.white;
                 GUI.DrawTexture(CompositeBounds(camera), illuminatedThrone);
+                // Keep the opening letterbox; once the camera locks, lightning
+                // can continue through the black sky to the actual screen top.
+                if(!Sequence.CameraStopped) Fill(new Rect(0,0,1280,30),Color.black);
+                GUI.BeginGroup(new Rect(0,30,1280,660));
                 DrawNarrative();
+                GUI.EndGroup();
                 GUI.EndGroup();
                 GUI.matrix = Matrix4x4.identity;
                 Fill(viewport, new Color(0, 0, 0, Sequence.BlackOpacity));

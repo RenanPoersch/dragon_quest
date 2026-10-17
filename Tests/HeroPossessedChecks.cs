@@ -68,7 +68,7 @@ public static class HeroPossessedChecks
     private static void VerifyStorm()
     {
         int frames=0,burstFlashes=0;
-        bool left=false,right=false,mirrored=false,normal=false;
+        bool left=false,right=false,shortFlash=false,longFlash=false,mirrored=false,normal=false;
         var schedule=At(0,80);
         HeroPossessedSequence.StormLight previous=HeroPossessedSequence.StormLight.Dark;
         Check(schedule.StormFlashCount>12,"The storm contains varied bursts through a longer narrative.");
@@ -77,18 +77,20 @@ public static class HeroPossessedChecks
             float peak=schedule.StormFlashPeakAt(i);
             var sample=At(peak,80).LightningState;
             Check(sample.Intensity>=.54f && sample.Frame>=0 && sample.Frame<4,"Every scheduled flash is visible at its peak.");
-            Check(schedule.StormFlashEndAt(i)-peak<.075f,"Storm flashes decay in tens of milliseconds, not the previous 300 ms.");
+            float duration=schedule.StormFlashEndAt(i)-schedule.StormFlashStartAt(i);
+            Check(duration>=0 && duration<=1.0001f,"Each flash has a random duration from zero to one second.");
+            shortFlash|=duration<.2f;longFlash|=duration>.7f;
             float radians=sample.Angle*(float)Math.PI/180;
             float extentX=(Math.Abs((float)Math.Cos(radians))*sample.Width+Math.Abs((float)Math.Sin(radians))*sample.Height/(2f/3))/2;
             float extentY=(Math.Abs((float)Math.Sin(radians))*sample.Width*(2f/3)+Math.Abs((float)Math.Cos(radians))*sample.Height)/2;
             Check(sample.X-extentX>=.1799f && sample.X+extentX<=.8401f
-                && sample.Y-extentY>=.7799f && sample.Y+extentY<=1.0451f,
-                "The entire tilted bolt fits inside the visible black recess.");
+                && Near(sample.Y+extentY,HeroPossessedSequence.LightningTopY)
+                && Near(sample.Width,HeroPossessedSequence.LightningWidth) && sample.Angle==0,
+                "The bolt's root, size and angle remain fixed at the top; only horizontal position changes.");
             if(sample.Burst==previous.Burst)
             {
-                Check(peak-schedule.StormFlashPeakAt(i-1)<.15f,"Successive flashes form rapid storm flickers.");
+                Check(peak-schedule.StormFlashPeakAt(i-1)<1.1f,"Successive flashes honor their randomized duration and dark gaps.");
                 Check(sample.Frame==(previous.Frame+1)%4,"The four shapes alternate within a burst.");
-                Check(sample.X==previous.X && sample.Y==previous.Y,"A physical strike stays in place while its shape flickers.");
                 burstFlashes++;
             }
             else
@@ -96,21 +98,26 @@ public static class HeroPossessedChecks
                 if(i>0)
                 {
                     Check(burstFlashes>=3 && burstFlashes<=5,"Bursts have three to five irregular flashes.");
-                    Check(sample.X!=previous.X || sample.Y!=previous.Y,"The next storm strike appears at a new random position.");
                 }
                 burstFlashes=1;
             }
+            if(i>0)
+            {
+                float dx=sample.X-previous.X;
+                Check(Math.Abs(dx)>.18f && sample.Y==previous.Y && sample.Height==previous.Height,
+                    "Every flash jumps horizontally without moving its top or its vertical extent.");
+            }
             if(i+1<schedule.StormFlashCount)
             {
-                float gap=(schedule.StormFlashEndAt(i)+schedule.StormFlashPeakAt(i+1)-.006f)/2;
+                float gap=(schedule.StormFlashEndAt(i)+schedule.StormFlashStartAt(i+1))/2;
                 Check(At(gap,80).Lightning==0 && At(gap,80).LightningFrame==-1,
                     "Dark gaps hide both the spirit and the ray, including inside rapid bursts.");
             }
             frames|=1<<sample.Frame; left|=sample.X<.45f;right|=sample.X>.55f;
             mirrored|=sample.Mirrored; normal|=!sample.Mirrored; previous=sample;
         }
-        Check(frames==15 && left && right && mirrored && normal,
-            "The storm uses all four shapes, both sides of the black recess and mirrored variants.");
+        Check(frames==15 && left && right && shortFlash && longFlash && mirrored && normal,
+            "The storm uses both sides, all four forms, mirrored variants and distinctly short and long flashes.");
         var same=At(schedule.StormFlashPeakAt(0),80).LightningState;
         var different=At(schedule.StormFlashPeakAt(0),80,27).LightningState;
         Check(same.X!=different.X || same.Y!=different.Y,"Different seeds change each presentation's storm.");

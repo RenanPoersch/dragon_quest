@@ -48,6 +48,9 @@ Shader "Hidden/DragonQuest/PossessedThroneComposite"
                 float2 boltUV = rotated/(_LightningRect.zw*float2(_RoomAspect,1))+.5;
                 boltUV.x=.5+(boltUV.x-.5)*_LightningMirror;
                 float boltInside = step(0,boltUV.x)*step(boltUV.x,1)*step(0,boltUV.y)*step(boltUV.y,1);
+                // Skip the transparent padding above all four source channels so
+                // the visible lightning continues through the top of the picture.
+                boltUV.y*=.92;
                 fixed4 bolt = tex2D(_LightningTex,saturate(boltUV));
                 room.rgb += recess * _Lightning * boltInside * pow(bolt.a,1.5) * bolt.rgb * .85;
                 float2 spiritUV = (roomUV-_SpiritRect.xy)/_SpiritRect.zw;

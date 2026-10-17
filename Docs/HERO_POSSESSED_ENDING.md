@@ -6,9 +6,11 @@ A câmera percorre verticalmente uma pintura contínua: começa no tapete, chega
 
 O texto de `EndingNarrative.HeroPossessedEpilogue` rola na lateral esquerda enquanto a câmera se move. Usa a fonte, cor, sombra, velocidade e recorte gradual das linhas do final das cinzas. Após a última linha sair, há pausa, fade preto de 3 s e 1 s de preto antes de reiniciar a cena e voltar ao menu. A sequência usa tempo não escalado e só começa depois da primeira renderização. Não exige continuar páginas.
 
-Depois da parada da câmera, a tempestade produz rajadas irregulares de 3 a 5 piscadas. Cada piscada dura de 34 a 64 ms, com pausas escuras de 24 a 67 ms entre elas. Entre rajadas há intervalos sorteados de 1,2 a 2,8 s. Quatro sprites (`PossessionLightningA/B/C/D`) alternam a forma dos canais, começando por um quadro sorteado a cada rajada; o brilho dos pulsos também varia.
+Depois da parada da câmera, a tempestade produz rajadas irregulares de até 5 piscadas. A duração de cada piscada é sorteada entre 0 e 1 segundo, com pausas escuras de 24 a 67 ms entre elas. Entre rajadas há intervalos sorteados de 1,2 a 2,8 s. Quatro sprites (`PossessionLightningA/B/C/D`) alternam a forma dos canais, começando por um quadro sorteado a cada rajada; o brilho dos pulsos também varia. A última rajada respeita o início do fade final.
 
-Cada rajada aparece em uma posição aleatória na área preta, à esquerda ou à direita do espírito, com tamanho, espelhamento e inclinação de até 12 graus variados. A posição permanece estável durante as piscadas do mesmo raio. Um gerador local com semente própria cria a sequência, sem afetar o sorteio de encontros/combate; cada apresentação normal recebe uma semente nova. Horários, formas e posições dependem do tempo decorrido, não da quantidade de quadros. A prévia e a validação usam uma semente fixa para permitir reprodução.
+Cada piscada começa colada ao topo do quadro e muda somente de posição horizontal, inclusive dentro da mesma rajada. O sorteio percorre seis regiões horizontais com desvio aleatório e impede descargas consecutivas próximas. A altura, a extensão vertical e a inclinação são fixas. O shader desconsidera a margem transparente superior dos PNGs para que o canal visível continue até a borda de cima, sem editar os arquivos originais. O espelhamento horizontal e as quatro formas mantêm a variedade.
+
+Um gerador local com semente própria cria a sequência, sem afetar o sorteio de encontros/combate; cada apresentação normal recebe uma semente nova. Horários, formas e posições dependem do tempo decorrido, não da quantidade de quadros. A prévia e a validação usam uma semente fixa para permitir reprodução.
 
 O `PossessedSpiritFront` fica reto, com a máscara e os olhos voltados de frente, os ombros nivelados e os braços ao lado do corpo. O compositor agora preserva diretamente as cores originais do PNG: marfim na máscara, azul e ciano nas chamas. A opacidade máxima é de 76%, multiplicada pelo alpha do sprite e pelo brilho do clarão, proporcionando uma leve transparência. A aparição desaparece completamente quando o raio se apaga. Os raios são compostos atrás do espírito.
 
@@ -24,7 +26,7 @@ As variações adicionais `PossessionLightningC.png` (canal duplo) e `Possession
 
 ## Verificação
 
-- `Tools/Test-HeroPossessed.ps1`: câmera, texto completo, rajadas rápidas de 3–5 piscadas, quatro formas, pausas escuras, limites dos raios inclinados, posições dos dois lados, sementes variadas, reprodução independente de FPS, fade e espera em preto.
+- `Tools/Test-HeroPossessed.ps1`: câmera, texto completo, duração aleatória de 0–1 s, quatro formas, pausas escuras, topo e extensão vertical fixos, mudanças somente horizontais com separação mínima, sementes variadas, reprodução independente de FPS, fade e espera em preto.
 - `Tools/Test-FinalOne.ps1`: regressão do final das cinzas.
 - `Tools/Test-Castle.ps1`: condições dos três desfechos preservadas.
 - `Tools/Test-UnityScripts.ps1`: compilação com as bibliotecas reais da Unity 6000.6.5f1.

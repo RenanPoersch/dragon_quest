@@ -16,7 +16,8 @@ namespace DragonQuest.Prototype
         public const float BlackHold = CastleDestroyedSequence.BlackHold;
         public const float FirstLightningAt = CameraStopAt + .7f;
         public const int LightningFrameCount = 4, DefaultStormSeed = 3157;
-        private const float FlashRise = .006f;
+        public const float LightningTopY=1.08f,LightningWidth=.16f,LightningHeight=.30f;
+        private static readonly float[] LocationX={.27f,.36f,.45f,.55f,.64f,.73f};
         private readonly List<StormFlash> flashes = new List<StormFlash>();
         public int StormSeed { get; }
         public int StormFlashCount => flashes.Count;
@@ -56,7 +57,8 @@ namespace DragonQuest.Prototype
                 {
                     StormFlash flash=flashes[i];
                     if (Elapsed<flash.Start) break;
-                    float strength=flash.Strength*Pulse(Elapsed-flash.Start,FlashRise,flash.Duration-FlashRise);
+                    float rise=FlashRise(flash.Duration);
+                    float strength=flash.Strength*Pulse(Elapsed-flash.Start,rise,flash.Duration-rise);
                     if (strength>0) return new StormLight(i,flash.Burst,flash.Frame,strength,flash.X,flash.Y,
                         flash.Width,flash.Height,flash.Angle,flash.Mirrored);
                 }
@@ -65,7 +67,8 @@ namespace DragonQuest.Prototype
         }
         // The Editor and render checks can inspect actual generated peaks without
         // relying on frame counters or hard-coded timing for one particular seed.
-        public float StormFlashPeakAt(int index) => flashes[index].Start+FlashRise;
+        public float StormFlashPeakAt(int index) => flashes[index].Start+FlashRise(flashes[index].Duration);
+        public float StormFlashStartAt(int index) => flashes[index].Start;
         public float StormFlashEndAt(int index) => flashes[index].Start+flashes[index].Duration;
 
         private void BuildStorm(int seed)
@@ -73,29 +76,53 @@ namespace DragonQuest.Prototype
             uint random=unchecked((uint)seed)^0x9e3779b9u;
             if (random==0) random=1;
             float time=FirstLightningAt;
+            int usedLocations=0;
+            float previousX=-10;
             for (int burst=0; time<FadeOutAt-.8f; burst++)
             {
                 int count=3+(int)(Next(ref random)*3);
                 int firstFrame=(int)(Next(ref random)*LightningFrameCount);
-                float width=Lerp(.11f,.18f,Next(ref random)), height=Lerp(.14f,.24f,Next(ref random));
-                float angle=Lerp(-12,12,Next(ref random));
-                bool mirror=Next(ref random)<.5f;
-                float radians=angle*(float)Math.PI/180;
-                float extentX=(Math.Abs((float)Math.Cos(radians))*width+Math.Abs((float)Math.Sin(radians))*height/(2f/3))/2;
-                float extentY=(Math.Abs((float)Math.Sin(radians))*width*(2f/3)+Math.Abs((float)Math.Cos(radians))*height)/2;
-                float x=Next(ref random)<.5f?Lerp(.27f,.40f,Next(ref random)):Lerp(.60f,.73f,Next(ref random));
-                x=Clamp(x,.18f+extentX,.84f-extentX);
-                float y=Clamp(Lerp(.87f,.97f,Next(ref random)),.78f+extentY,1.045f-extentY);
                 for (int pulse=0; pulse<count; pulse++)
                 {
-                    float duration=Lerp(.034f,.064f,Next(ref random));
+                    // Each flash chooses a distant horizontal position. The root,
+                    // height and angle stay fixed so the bolt enters from the top.
+                    int location=ChooseLocation(ref random,ref usedLocations,previousX);
+                    bool mirror=Next(ref random)<.5f;
+                    float x=Clamp(LocationX[location]+Lerp(-.010f,.010f,Next(ref random)),.18f+LightningWidth/2,.84f-LightningWidth/2);
+                    float remaining=FadeOutAt-.01f-time;
+                    if(remaining<=0) break;
+                    float duration=Math.Min(Next(ref random),remaining);
                     float strength=pulse==0?1:Lerp(.55f,.95f,Next(ref random));
                     flashes.Add(new StormFlash(time,duration,strength,burst,(firstFrame+pulse)%LightningFrameCount,
-                        x,y,width,height,angle,mirror));
+                        x,LightningTopY-LightningHeight/2,LightningWidth,LightningHeight,0,mirror));
+                    previousX=x;
                     time+=duration+Lerp(.024f,.067f,Next(ref random));
                 }
                 time+=Lerp(1.2f,2.8f,Next(ref random));
             }
+        }
+        private static int ChooseLocation(ref uint random,ref int used,float previousX)
+        {
+            int eligible=EligibleLocations(used,previousX);
+            if (eligible==0) { used=0;eligible=EligibleLocations(used,previousX); }
+            int count=0;
+            for(int i=0;i<LocationX.Length;i++) if((eligible&(1<<i))!=0) count++;
+            int choice=(int)(Next(ref random)*count);
+            for(int i=0;i<LocationX.Length;i++)
+                if((eligible&(1<<i))!=0 && choice--==0) { used|=1<<i;return i; }
+            throw new InvalidOperationException("No black area available for the next storm flash.");
+        }
+        private static int EligibleLocations(int used,float previousX)
+        {
+            int result=0;
+            for(int i=0;i<LocationX.Length;i++)
+            {
+                float dx=LocationX[i]-previousX;
+                // About 250 reference pixels between anchors leaves room for
+                // jitter and bounds clamping while keeping flashes visibly apart.
+                if((used&(1<<i))==0 && dx*dx>.24f*.24f) result|=1<<i;
+            }
+            return result;
         }
 
         public HeroPossessedSequence(int lineCount, int stormSeed = DefaultStormSeed)
@@ -111,9 +138,10 @@ namespace DragonQuest.Prototype
         }
         private static float Pulse(float t, float rise, float decay)
         {
-            if (t < 0 || t > rise + decay) return 0;
+            if (rise+decay<=0 || t < 0 || t > rise + decay) return 0;
             return t < rise ? t / rise : 1 - Smooth((t - rise) / decay);
         }
+        private static float FlashRise(float duration) => Math.Min(.012f,duration*.2f);
         private static float Lerp(float a, float b, float t) => a + (b - a) * t;
         private static float Clamp(float value,float minimum,float maximum) => Math.Max(minimum,Math.Min(maximum,value));
         private static float Next(ref uint state)

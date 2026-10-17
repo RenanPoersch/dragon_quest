@@ -101,6 +101,8 @@ public static class HeroPossessedValidation
         material.SetVector("_SpiritRect",HeroPossessedPresentation.SpiritRect);
         material.SetFloat("_SpiritOpacity",HeroPossessedPresentation.SpiritOpacity);
         material.SetFloat("_RoomAspect",throne.width/(float)throne.height);
+        material.SetVector("_LightningRect",new Vector4(.28f,HeroPossessedSequence.LightningTopY-HeroPossessedSequence.LightningHeight/2,
+            HeroPossessedSequence.LightningWidth,HeroPossessedSequence.LightningHeight));
         material.SetTexture("_LightningTex",Resources.Load<Texture2D>(HeroPossessedPresentation.LightningAResource));
         int height=Mathf.RoundToInt(throne.height*(1+HeroPossessedPresentation.SkyPadding));
         var target=new RenderTexture(throne.width,height,0,RenderTextureFormat.ARGB32);
@@ -119,7 +121,10 @@ public static class HeroPossessedValidation
                 material.SetFloat("_Lightning",1); Graphics.Blit(throne,target,material);
                 RenderTexture.active=target; readback.ReadPixels(new Rect(0,0,target.width,target.height),0,0); readback.Apply();
                 Color32[] lit=readback.GetPixels32();
-                int changed=0,alternate=0,visibleFace=0,visibleSky=0;
+                var stopped=new HeroPossessedSequence(28);stopped.Advance(HeroPossessedSequence.CameraStopAt);
+                Rect camera=HeroPossessedPresentation.CameraBounds(stopped,throne.width/(float)throne.height);
+                int topRow=Mathf.RoundToInt(throne.height*(1+(camera.y+30)/camera.height));
+                int changed=0,alternate=0,visibleFace=0,visibleSky=0,visibleTop=0;
                 for(int y=0;y<target.height;y++) for(int x=0;x<target.width;x++)
                 {
                     int i=y*target.width+x;
@@ -131,10 +136,12 @@ public static class HeroPossessedValidation
                     if(face || torso) Assert(same,"all four lightning forms remain behind Aren's face and clothing");
                     if(!same && x>target.width*.45f && x<target.width*.55f && y>throne.height*.89f && y<throne.height*.97f) visibleFace++;
                     if(!same && y>throne.height) visibleSky++;
+                    if(Math.Abs(y-topRow)<=1 && x>target.width*.18f && x<target.width*.38f && lit[i].r>dark[i].r+20) visibleTop++;
                 }
                 Assert(changed>1000,"lightning reveals the naturally colored spirit");
                 Assert(first==null || alternate>100,"each new lightning shape produces a distinct rendered frame");
                 Assert(visibleFace>500 && visibleSky>100,"the frontal face and upper horns appear in the expanded black recess");
+                Assert(visibleTop>0,"each lightning channel reaches the top edge without its transparent padding leaving a gap");
                 if(first==null) first=lit;
             }
             ValidateNaturalColor(material,throne,target,readback);
