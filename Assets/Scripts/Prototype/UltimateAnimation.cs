@@ -187,8 +187,9 @@ namespace DragonQuest.Prototype
             if(elapsed<1.75f || elapsed>=5.65f) return;
             Rect bram=BramRect(caster,elapsed);
             Vector2 source=new Vector2(bram.x-52,bram.center.y+5);
-            foreach(Rect target in targets)
+            if(targets.Count>0)
             {
+                Rect target=targets[targets.Count/2];
                 Vector2 impact=new Vector2(target.center.x,target.yMax-5);
                 float width=Mathf.Max(200,(source.x-impact.x)/.63f),height=Mathf.Max(170,(impact.y-source.y)/.6f);
                 Rect area=new Rect(source.x-width*.85f,source.y-height*.18f,width,height);
