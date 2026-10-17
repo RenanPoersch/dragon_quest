@@ -73,7 +73,6 @@ namespace DragonQuest.Prototype
             if (Click(new Rect(100, 696, 62, 24), canInteract)) changeMember(1);
             Label(new Rect(48, 696, 46, 24), "<", caption);
             Label(new Rect(116, 696, 46, 24), ">", caption);
-            Label(new Rect(176, 696, 750, 24), "A / D / setas: personagem     Esc: voltar", caption);
         }
 
         private void Stat(float y, string title, string value)

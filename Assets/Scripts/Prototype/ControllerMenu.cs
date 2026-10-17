@@ -15,7 +15,6 @@ namespace DragonQuest.Prototype
         private int selectedRectIndex = -1, revealIndex = -1;
         private int processedFrame = -1, lastDrawFrame = -10, activatedFrame = -1;
         private bool confirm;
-        private GUIStyle hint;
 
         public void Begin(bool blocked)
         {
@@ -37,11 +36,6 @@ namespace DragonQuest.Prototype
         public void End()
         {
             if (Event.current.type == EventType.Repaint) focus.SetButtons(buttons);
-            if (Gamepad.current != null)
-            {
-                if (hint == null) hint = PrototypeTypography.Style(GUI.skin.label, 16);
-                GUI.Label(new Rect(30, 700, 1220, 20), "Controle: direcional / analogico percorre botoes | A / X confirma | B / Circulo fecha", hint);
-            }
         }
         public bool Button(Rect area, string label, GUIStyle style)
         {

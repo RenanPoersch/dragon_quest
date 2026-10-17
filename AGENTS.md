@@ -2,6 +2,10 @@
 
 O projeto Unity está em `C:\Users\renan\Documents\Codex\2026-10-08\tenh\outputs\dragon_quest`. Use essa pasta para trabalhar no jogo.
 
+## Interface
+
+Não adicione textos de ajuda, dicas de teclas/controle ou instruções explicativas nas telas sem pedido explícito do usuário. Siga as referências visuais fornecidas.
+
 ## Commit e push ao concluir atividades
 
 Preferência permanente do usuário, autorizada em 13 de outubro de 2026: após concluir cada atividade que altere o projeto, faça o commit e o push automaticamente, em todos os chats deste projeto.

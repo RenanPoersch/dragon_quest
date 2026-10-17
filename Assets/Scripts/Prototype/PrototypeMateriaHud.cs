@@ -207,7 +207,6 @@ namespace DragonQuest.Prototype
             }
             if (Event.current.type == EventType.Repaint) lastPointer = pointer;
             presentation.DrawHand(selectedMenu);
-            GUI.Label(new Rect(34, 676, 610, 28), "I / Esc: fechar     Setas: selecionar     Enter: abrir", small);
         }
 
         private void DrawConfig()
@@ -220,9 +219,6 @@ namespace DragonQuest.Prototype
                 AudioListener.volume = Mathf.Clamp01(AudioListener.volume + .1f);
             GUI.Label(new Rect(64, 246, 650, 40), "Tela cheia    " + (Screen.fullScreen ? "Ativada" : "Desativada"), title);
             if (NavigationButton(new Rect(750, 242, 430, 44), "Alternar tela cheia", button)) Screen.fullScreen = !Screen.fullScreen;
-            GUI.Label(new Rect(64, 360, 1100, 36), "Teclado: WASD / setas movem; E confirma; I abre o inventario; Esc fecha.", text);
-            GUI.Label(new Rect(64, 420, 1100, 72), "Controle: direcional / analogico seleciona; A / X confirma; B / Circulo fecha.\nX / Quadrado ou Start / Options abre o inventario.", text);
-            GUI.Label(new Rect(64, 588, 1100, 54), "Os ajustes de audio e tela valem para esta sessao.", small);
         }
 
         private void DrawMaterias(PartyMember member, PartyProgress party)
