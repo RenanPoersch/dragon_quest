@@ -7,9 +7,10 @@
 | The ugly | Espírito possui Aren após a queda do tirano | Coroa e olho violeta |
 
 Cada conquista é liberada ao concluir a sequência do respectivo final, antes de voltar
-à tela inicial. O painel ACHIEVEMENTS aparece à direita da escama após o primeiro final.
+à tela inicial. O painel aparece à direita da escama após o primeiro final.
 Mostra os três nomes, ícones coloridos para as conquistas liberadas, ícones escurecidos para
-as bloqueadas e o contador 1/3, 2/3 ou 3/3. Os textos Liberado/Bloqueado distinguem os estados.
+as bloqueadas e o contador 1/3, 2/3 ou 3/3. A interface contém apenas os nomes
+The good, The bad e The ugly e o contador, sem título, subtítulos ou descrições.
 O painel acompanha a escala e o fade da tela inicial e não recebe foco de navegação.
 
 O arquivo `Application.persistentDataPath/Achievements/endings.json` acumula os três finais
@@ -20,7 +21,7 @@ concluída e assistir ao final também registra a respectiva conquista.
 
 A gravação é automática apenas para esse perfil de conquistas. Os slots continuam com
 salvamento manual. A escrita usa arquivo temporário, substituição atômica e backup da revisão
-anterior válida; falhas preservam o progresso na sessão e exibem um aviso no menu e no log.
+anterior válida; falhas preservam o progresso na sessão e registram um aviso no log.
 Versões futuras do perfil são preservadas. Não há integração com achievements de plataformas.
 
 Os três PNGs RGBA em `Assets/Resources/PixelArt/Achievements/` foram gerados individualmente

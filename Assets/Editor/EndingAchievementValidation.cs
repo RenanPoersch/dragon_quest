@@ -58,7 +58,7 @@ public static class EndingAchievementValidation
         Assert(endingSource.Split(new[] { "SceneManager.LoadScene(" }, StringSplitOptions.None).Length == 2,
             "There is one shared scene reload path.");
         string titleSource = File.ReadAllText("Assets/Scripts/Prototype/PrototypeSaveController.cs");
-        Assert(titleSource.Contains("achievementScreen.Draw(PrototypeAchievements.Progress, PrototypeAchievements.LastError);"),
+        Assert(titleSource.Contains("achievementScreen.Draw(PrototypeAchievements.Progress);"),
             "The title uses persistent achievement progress.");
         Debug.Log("ENDING_ACHIEVEMENT_UNITY_OK: three imported icons, pixel settings, transparency, font widths, layout and ending/menu hooks.");
     }
