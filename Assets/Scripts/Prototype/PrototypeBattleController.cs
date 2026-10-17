@@ -378,20 +378,15 @@ namespace DragonQuest.Prototype
             if (Time.unscaledTime < enemyActionTime) return;
             CombatantState actor = Session.CurrentActor;
             AbilityDefinition ability = EnemyAI.ChooseAbility(Session);
+            CombatantState selectedTarget = EnemyAI.ChooseTarget(Session, ability, System.Math.Min(UnityEngine.Random.value, .999999d));
             var effectTargets = new System.Collections.Generic.List<CombatantState>();
             if (ability != null)
             {
                 var valid = Session.GetValidTargets(ability);
                 if (ability.Targets == TargetRule.AllEnemies || ability.Targets == TargetRule.AllAllies) effectTargets.AddRange(valid);
-                else if (ability.Targets == TargetRule.Self) effectTargets.Add(actor);
-                else
-                {
-                    CombatantState weakest = null;
-                    foreach (CombatantState target in valid)
-                        if (weakest == null || (long)target.Hp * weakest.Definition.MaxHp < (long)weakest.Hp * target.Definition.MaxHp) weakest = target;
-                    if (weakest != null) effectTargets.Add(ability.Effect == AbilityEffect.PhysicalDamage
-                        && weakest.ProtectedBy != null && weakest.ProtectedBy.IsAlive ? weakest.ProtectedBy : weakest);
-                }
+                else if (selectedTarget != null)
+                    effectTargets.Add(ability.Effect == AbilityEffect.PhysicalDamage
+                        && selectedTarget.ProtectedBy != null && selectedTarget.ProtectedBy.IsAlive ? selectedTarget.ProtectedBy : selectedTarget);
             }
             if (CastleMeteorPresentation.IsMeteor(actor.Id, ability))
             {
@@ -401,7 +396,8 @@ namespace DragonQuest.Prototype
                 if (bearer != null) effectTargets.Add(bearer);
                 else effectTargets.AddRange(Session.Combatants);
             }
-            bool accepted = EnemyAI.TryTakeTurn(Session, out string message);
+            string message = "Inimigo sem acao valida.";
+            bool accepted = ability != null && selectedTarget != null && Session.TryAct(actor, ability, selectedTarget, out message);
             ErrorMessage = accepted ? string.Empty : message;
             if (accepted)
             {

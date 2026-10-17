@@ -57,7 +57,7 @@ internal static class BattleChecks
         Assert(!EnemyAI.TryTakeTurn(battle, out _), "IA nao pode agir no turno do jogador.");
         Act(battle, Defend, lia);
         Assert(battle.CurrentActor == guard, "Guarda deve agir antes do tank.");
-        Assert(EnemyAI.TryTakeTurn(battle, out _), "IA deve realizar uma acao valida.");
+        Assert(EnemyAI.TryTakeTurn(battle, 0, out _), "IA deve realizar uma acao valida.");
         Assert(aren.Hp == 85 && battle.CurrentActor == bram, "IA deve atacar aliado vivo e avancar.");
         Act(battle, Defend, bram);
         Assert(battle.Round == 2 && battle.CurrentActor == aren, "Fim da ordem deve iniciar nova rodada.");
@@ -91,7 +91,7 @@ internal static class BattleChecks
         CombatantState lia = Find(battle, "lia");
         Act(battle, Defend, aren);
         Act(battle, Attack, Find(battle, "guard"));
-        EnemyAI.TryTakeTurn(battle, out _);
+        EnemyAI.TryTakeTurn(battle, 0, out _);
         Assert(aren.Hp == 92, "Defesa deve reduzir 15 de dano para 8.");
         Act(battle, Defend, Find(battle, "bram"));
         Assert(!aren.IsDefending, "Defesa deve expirar no inicio do proximo turno do usuario.");
@@ -104,7 +104,7 @@ internal static class BattleChecks
         var enemy = new CombatantState("enemy", new CombatantDefinition("Inimigo", "Inimigo", 100, 0, 10, 0, 0, 10, Attack), CombatTeam.Enemy);
         battle = new BattleSession(victim, healer, enemy);
         Act(battle, Defend, healer);
-        EnemyAI.TryTakeTurn(battle, out _);
+        EnemyAI.TryTakeTurn(battle, 0, out _);
         Assert(victim.Hp == 0 && battle.CurrentActor == healer && battle.Round == 2, "Turno de derrotado deve ser pulado.");
         Assert(!battle.TryAct(healer, Heal, victim, out _) && healer.Mp == 36, "Cura comum nao pode reviver nem gastar MP em derrotado.");
         Assert(battle.Outcome == BattleOutcome.None, "Um aliado derrotado nao significa derrota da equipe.");
@@ -123,7 +123,7 @@ internal static class BattleChecks
         Assert(!battle.TryAct(two, Attack, enemy, out _), "Nao pode agir apos o resultado.");
         var challenger = new CombatantState("challenger", new CombatantDefinition("Outro inimigo", "Inimigo", 100, 0, 3, 0, 0, 30, Attack), CombatTeam.Enemy);
         var independent = new BattleSession(one, two, challenger);
-        Assert(EnemyAI.TryTakeTurn(independent, out _), "IA deve atacar uma das instancias compartilhadas.");
+        Assert(EnemyAI.TryTakeTurn(independent, 0, out _), "IA deve atacar uma das instancias compartilhadas.");
         Assert(one.Hp == 17 && two.Hp == 20 && shared.MaxHp == 20, "Dano deve alterar somente a instancia, preservando outra instancia e a definicao.");
 
         var fragile = new CombatantState("hero", new CombatantDefinition("Heroi", "Aliado", 1, 0, 1, 0, 0, 1, Attack), CombatTeam.Party);

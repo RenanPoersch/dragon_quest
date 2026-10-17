@@ -39,7 +39,8 @@ internal static class CastleChecks
         while(battle.Outcome==BattleOutcome.None&&battle.CurrentActor.Id!=CastleBattleRules.TyrantId&&steps++<20)
         {
             var actor=battle.CurrentActor;
-            if(actor.Team==CombatTeam.Enemy) Assert(EnemyAI.TryTakeTurn(battle,out _),"Espirito deve agir durante a preparacao.");
+            // Alvo fixo impede Silence aleatorio de bloquear a pluma de Lia neste roteiro.
+            if(actor.Team==CombatTeam.Enemy) Assert(EnemyAI.TryTakeTurn(battle,0,out _),"Espirito deve agir durante a preparacao.");
             else if(revive&&actor.Id=="lia"&&!Find(battle,"bram").IsAlive)
                 Assert(battle.TryUseItem(actor,PrototypePartyFactory.PhoenixFeather,Find(battle,"bram"),out _),"Pluma pode reviver o portador antes do meteoro.");
             else Defend(battle);
