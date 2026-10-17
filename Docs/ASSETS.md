@@ -118,6 +118,8 @@ Onze PNGs originais em `Assets/Resources/PixelArt/DialoguePortraits`, gerados se
 
 Os arquivos gerados são copiados integralmente, mantendo RGBA e transparência. Importação Point/Clamp, sem mipmap, compressão, redução ou cópia legível em CPU. `DialoguePortraitCatalog` faz a associação de personagens e `DialoguePresentation` desenha os PNGs inteiros. Prompts completos, referências e SHA-256 de cada original em `Docs/ArtInputs/DialoguePortraits/prompts.json`; documentação em `Docs/DIALOGUE_PORTRAITS.md`.
 
+Em 17 de outubro de 2026, `traveler.png` foi editado com o `image_gen` integrado para apresentar um senhor magrinho, gentil e esperançoso. Mantém o traje, a pose, a paleta e o estilo em pixel art. O original gerado de 1254 × 1254 foi copiado integralmente com alpha transparente, mantendo o GUID e o importador; prompt de edição e SHA-256 atualizados no manifesto de retratos.
+
 ## Final de possessão — 16 de outubro de 2026
 
 `Assets/Resources/PixelArt/Endings/PossessedThrone.png` foi gerado pelo `imagegen` integrado para o epílogo de Aren possuído, usando seu retrato de conversa e a sala do trono como referências de identidade, estilo e arquitetura. PNG original de 1024 × 1536 copiado integralmente, Point/Clamp, sem mipmaps, compressão ou redimensionamento. SHA-256: `59329F8C215BBE4639153521D088ED21C4E6F4EF0B0CD6AB47291709AD689855`. Prompt completo em `ArtInputs/PossessedThrone.prompt.txt`.

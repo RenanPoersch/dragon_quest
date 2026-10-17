@@ -10,7 +10,7 @@ Onze ilustrações originais em pixel art, com fisionomia, idade, expressão, si
 | Jardineiro | Idoso magro, rosto comprido e rugas marcadas; curvado sobre uma muda | `gardener.png` |
 | Exploradora | Rosto anguloso, pele bronzeada e sardas; queixo erguido, meio sorriso e mapa sob o braço | `explorer.png` |
 | Guardião da pedreira | Mandíbula larga, nariz achatado e barba curta; braços cruzados e olhar desconfiado | `quarry-keeper.png` |
-| Viajante | Homem mais velho e magro, rosto encovado; olha para trás por cima do ombro | `traveler.png` |
+| Viajante | Senhor magrinho e gentil, cabelos grisalhos, sorriso discreto e olhar esperançoso; capuz remendado e mochila | `traveler.png` |
 | Hospedeira | Rosto cheio, bochechas rosadas e coque; gargalhada acolhedora com a mão sobre o avental | `innkeeper.png` |
 | Tirano | Rei envelhecido de rosto ósseo e nariz adunco; olhar frontal severo e mão com anel junto ao rosto | `tyrant.png` |
 | Dragão corrompido | Cabeça frontal larga e baixa, olhar furioso e presas expostas | `dragon.png` |
@@ -26,6 +26,14 @@ Prompts completos, referências e hashes de cada original: [ArtInputs/DialoguePo
 
 `Tools > Dragon Quest > Validate Dialogue Portraits` confere os onze recursos, transparência, resolução nativa, importação, altura fixa e alinhamento inferior em três formatos de tela, além do avanço da escrita, escolhas e callbacks. As prévias são renderizadas em um projeto Unity isolado da sessão de jogo do usuário.
 
-![Coleção dos onze personagens, com fisionomias e poses próprias](DIALOGUE_PORTRAITS.preview.png)
+![Coleção original de 16 de outubro, anterior à revisão do viajante](DIALOGUE_PORTRAITS.preview.png)
 
-Validação concluída: scripts compilados com a Unity 6000.6.5f1; 169 verificações de páginas, escolhas, cancelamento e escrita; conferência nativa dos onze PNGs e de 17.297.676 pixels originais; 60 capturas do painel compacto em 1280 × 720, 960 × 720 e 540 × 960, incluindo escrita e rolagem de fala longa, fala curta e opções. A comparação visual confirmou a altura constante, o retrato transparente alinhado ao fundo e a separação da coluna de texto. A galeria dos retratos permanece válida: os PNGs dos personagens não foram alterados.
+Validação concluída: scripts compilados com a Unity 6000.6.5f1; 169 verificações de páginas, escolhas, cancelamento e escrita; conferência nativa dos onze PNGs e de 17.297.676 pixels originais; 60 capturas do painel compacto em 1280 × 720, 960 × 720 e 540 × 960, incluindo escrita e rolagem de fala longa, fala curta e opções. A comparação visual confirmou a altura constante, o retrato transparente alinhado ao fundo e a separação da coluna de texto. A galeria acima registra a coleção original de 16 de outubro, antes da revisão do viajante abaixo.
+
+## Viajante gentil — 17 de outubro de 2026
+
+O viajante da floresta passou a ser um senhor magrinho, gentil e esperançoso, com sorriso discreto, olhar acolhedor e cabelos e barba grisalhos. A edição com o `image_gen` integrado preserva o estilo em pixel art, a pose, o capuz marrom remendado, a mochila e a paleta do retrato anterior. O PNG gerado foi copiado integralmente em 1254 × 1254, com transparência real, sem alterar o GUID ou o importador. O prompt completo e o SHA-256 atualizado estão no manifesto de arte.
+
+Validação desta revisão: importação e carregamento do recurso confirmados na Unity 6000.6.5f1 em projeto isolado; resolução nativa de 1254 × 1254, GUID preservado, alpha real e Point/Clamp sem mipmaps, compressão ou redimensionamento. Os hashes e as configurações dos onze retratos também foram conferidos.
+
+![Retrato atualizado do viajante](../Assets/Resources/PixelArt/DialoguePortraits/traveler.png)
