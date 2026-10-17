@@ -142,10 +142,10 @@ namespace DragonQuest.Prototype
             }
             else
             {
-                DrawCataclysm(elapsed,caster,targets);
                 if(elapsed>=1.75f && elapsed<5.65f)
                     Sheet("BramCatastrophe").DrawActor(BramRect(caster,elapsed),
                         UltimateSpriteTimeline.PoseFrame(ability,elapsed),bramTint);
+                DrawCataclysm(elapsed,caster,targets);
             }
         }
         private void DrawOmnislash(float elapsed,Rect target)
