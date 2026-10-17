@@ -44,6 +44,9 @@ namespace DragonQuest.Prototype
         private PrototypeIntroPresentation intro;
         private NewGameVoyagePresentation voyage;
         private const float MenuFadeInDuration = 1.2f;
+        private const float NewGameFadeOutDuration = 1.2f;
+        private bool startingNewGame, newGameBlackHasDrawn;
+        private float newGameFadeOutElapsed;
         private float menuFadeInElapsed;
         private bool menuHasDrawn;
         private bool IsMenuFadingIn => menuFadeInElapsed < MenuFadeInDuration;
@@ -88,8 +91,15 @@ namespace DragonQuest.Prototype
         }
         private void NewGame()
         {
-            if (voyage != null) return;
+            if (voyage != null || startingNewGame) return;
+            startingNewGame = true;
+            newGameFadeOutElapsed = 0;
+            newGameBlackHasDrawn = false;
+        }
+        private void StartNewGameVoyage()
+        {
             voyage = new NewGameVoyagePresentation();
+            startingNewGame = false;
             ActiveSlot = 0;
             for (int slot = 1; slot <= SaveStore.SlotCount; slot++)
                 if (!store.Exists(slot)) { ActiveSlot = slot; break; }
@@ -167,6 +177,17 @@ namespace DragonQuest.Prototype
                 }
                 var displayed = achievementScreen.Achievement;
                 if (achievementScreen.Update(Time.unscaledDeltaTime)) PrototypeAchievements.MarkNotified(displayed);
+            }
+            if (startingNewGame)
+            {
+                if (GameInput.IsFocused)
+                {
+                    // Render a fully black frame before loading the voyage's assets.
+                    if (newGameBlackHasDrawn) StartNewGameVoyage();
+                    else newGameFadeOutElapsed = Mathf.Min(NewGameFadeOutDuration,
+                        newGameFadeOutElapsed + Time.unscaledDeltaTime);
+                }
+                return;
             }
             if (voyage != null)
             {
@@ -261,7 +282,7 @@ namespace DragonQuest.Prototype
             if (intro != null && intro.IsPlaying) { intro.Draw(); DrawAchievementNotification(); return; }
             if (voyage != null) { voyage.Draw(); return; }
             // Wait for the reveal and release of the skip input before allowing menu selection.
-            if ((IsMenuFadingIn || intro != null && intro.BlocksMenuInput)
+            if ((startingNewGame || IsMenuFadingIn || intro != null && intro.BlocksMenuInput)
                 && (Event.current.isKey || Event.current.isMouse))
                 Event.current.Use();
             // Consume menu keys before drawing controls so a focused IMGUI button cannot activate twice.
@@ -328,12 +349,17 @@ namespace DragonQuest.Prototype
                 Panel(rect); GUI.Label(new Rect(rect.x + 12, rect.y + 6, rect.width - 24, rect.height - 10),
                     message, smallStyle);
             }
-            if (IsMenuFadingIn)
+            if (IsMenuFadingIn || startingNewGame)
             {
-                // Fade the whole menu, including the cursor and highlighted buttons, from black.
+                // Fade the whole menu, including the cursor and highlighted buttons.
                 GUI.matrix = Matrix4x4.identity; GUI.depth = -101;
-                GUI.color = new Color(0, 0, 0, Mathf.SmoothStep(1, 0, menuFadeInElapsed / MenuFadeInDuration));
+                float opacity = startingNewGame
+                    ? Mathf.SmoothStep(0, 1, newGameFadeOutElapsed / NewGameFadeOutDuration)
+                    : Mathf.SmoothStep(1, 0, menuFadeInElapsed / MenuFadeInDuration);
+                GUI.color = new Color(0, 0, 0, opacity);
                 GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), pixel);
+                if (startingNewGame && newGameFadeOutElapsed >= NewGameFadeOutDuration
+                    && Event.current.type == EventType.Repaint) newGameBlackHasDrawn = true;
             }
             if (Event.current.type == EventType.Repaint) menuHasDrawn = true;
             GUI.matrix = previousMatrix; GUI.depth = previousDepth; GUI.color = previousColor;
@@ -356,14 +382,14 @@ namespace DragonQuest.Prototype
         }
         private bool MenuButton(Rect rect, string label, int option, GUIStyle style)
         {
-            if (GUI.enabled && (pointerMoved || Event.current.type == EventType.MouseMove
+            if (!startingNewGame && GUI.enabled && (pointerMoved || Event.current.type == EventType.MouseMove
                 || Event.current.type == EventType.MouseDown) && rect.Contains(Event.current.mousePosition))
                 selectedOption = option;
             Color previous = GUI.color;
             if (GUI.enabled && selectedOption == option) GUI.color = new Color(0.96f, 0.8f, 0.48f);
             bool clicked = GUI.Button(rect, label, style);
             GUI.color = previous;
-            return clicked;
+            return !startingNewGame && clicked;
         }
         private void DrawSelectedHand()
         {
