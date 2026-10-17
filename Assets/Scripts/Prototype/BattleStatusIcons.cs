@@ -38,6 +38,8 @@ namespace DragonQuest.Prototype
             return texture;
         }
         public void Draw(float x, float y, CombatantState member)
+            => Draw(x, y, CombatStatuses.Active(member));
+        public void Draw(float x, float y, IReadOnlyList<StatusIndicator> statuses)
         {
             if (count == null)
             {
@@ -45,7 +47,7 @@ namespace DragonQuest.Prototype
                 count.alignment = TextAnchor.LowerRight; count.padding = new RectOffset(0,0,0,0);
             }
             int index = 0;
-            foreach (StatusIndicator indicator in CombatStatuses.Active(member))
+            foreach (StatusIndicator indicator in statuses)
             {
                 Rect rect = new Rect(x + index % 4 * 18, y + index / 4 * 18, 16, 16); index++;
                 string tooltip = indicator.Description + (indicator.Turns > 0 ? ": " + indicator.Turns + " turno(s) restante(s)" : "");

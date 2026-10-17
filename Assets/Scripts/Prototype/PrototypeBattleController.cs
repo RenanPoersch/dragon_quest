@@ -72,6 +72,26 @@ namespace DragonQuest.Prototype
         public System.Collections.Generic.IReadOnlyList<CombatantState> PresentingTargets { get; private set; } = new CombatantState[0];
         public System.Collections.Generic.IReadOnlyList<CombatantState> PresentingPartyTargets { get; private set; } = new CombatantState[0];
         public System.Collections.Generic.IReadOnlyList<CombatantState> PresentingRevivedTargets { get; private set; } = new CombatantState[0];
+        public sealed class SalvationCastState
+        {
+            public int Hp { get; }
+            public Color Tint { get; }
+            public System.Collections.Generic.IReadOnlyList<StatusIndicator> Statuses { get; }
+            public SalvationCastState(CombatantState member)
+            {
+                Hp = member.Hp;
+                Tint = member.IsAlive ? BattleStatusColors.Tint(member) : new Color(.4f, .4f, .4f);
+                Statuses = CombatStatuses.Active(member);
+            }
+        }
+        private readonly System.Collections.Generic.Dictionary<CombatantState, SalvationCastState> salvationBeforeCast
+            = new System.Collections.Generic.Dictionary<CombatantState, SalvationCastState>();
+        private bool AwaitingSalvationImpact => IsPresentingAction && PresentingAbility.SourceAbilityId == "lia-salvation"
+            && Time.unscaledTime < ActionImpactAt;
+        public SalvationCastState PendingSalvationState(CombatantState member) => AwaitingSalvationImpact
+            && salvationBeforeCast.TryGetValue(member, out var before) ? before : null;
+        public string PresentedMessage => AwaitingSalvationImpact
+            ? PresentingActor.Definition.Name + " esta conjurando " + PresentingAbility.Name + "..." : Session.LastMessage;
         public bool IsPresentingUltimate => UltimateTimeline.IsUltimate(PresentingAbility);
         public bool IsPresentingSummon => SummonAnimation.Resource(PresentingAbility) != null;
         public float ActionDuration => IsPresentingDragonAttack ? DragonAttackAnimation.Duration(PresentingAbility.Id)
@@ -216,6 +236,7 @@ namespace DragonQuest.Prototype
             PresentingActor = null; PresentingAbility = null; PresentingTargets = new CombatantState[0];
             PresentingPartyTargets = new CombatantState[0];
             PresentingRevivedTargets = new CombatantState[0];
+            salvationBeforeCast.Clear();
             BattleLocationId = currentLocation();
             notifiedCompletion = false;
             IsActive = true;
@@ -244,9 +265,13 @@ namespace DragonQuest.Prototype
                 effectTargets.Add(ability != null && ability.Effect == AbilityEffect.PhysicalDamage
                     && target.ProtectedBy != null && target.ProtectedBy.IsAlive ? target.ProtectedBy : target);
             var revivedTargets = new System.Collections.Generic.List<CombatantState>();
+            salvationBeforeCast.Clear();
             if (ability?.PartyEffect == PartyEffect.RestoreCleanseAndRevive)
                 foreach (CombatantState ally in effectTargets)
+                {
+                    salvationBeforeCast.Add(ally, new SalvationCastState(ally));
                     if (!ally.IsAlive) revivedTargets.Add(ally);
+                }
             bool accepted = Session.TryAct(actor, ability, target, out string message);
             ErrorMessage = accepted ? string.Empty : message;
             if (accepted)

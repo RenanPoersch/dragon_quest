@@ -261,7 +261,7 @@ namespace DragonQuest.Prototype
             DrawArena();
             GUI.matrix = arenaMatrix;
             Panel(new Rect(20, 426, 1240, 60));
-            GUI.Label(new Rect(40, 438, 1200, 40), observedBattle.LastMessage, text);
+            GUI.Label(new Rect(40, 438, 1200, 40), controller.PresentedMessage, text);
             // Equal halves: all commands/target choices stay on the left, party status stays on the right.
             Panel(new Rect(20, 496, 620, 204)); Panel(new Rect(640, 496, 620, 204));
             DrawPartyStatus();
@@ -482,8 +482,9 @@ namespace DragonQuest.Prototype
                 float y = 544 + i++ * 48;
                 if (participant == observedActor) RectBox(new Rect(650, y - 2, 600, 45), new Color(.16f, .29f, .65f));
                 GUI.Label(new Rect(665, y, 95, 25), participant.Definition.Name, text);
-                statusIcons.Draw(770, y + 2, participant);
-                DrawBar(new Rect(850, y + 4, 170, 25), participant.Hp, participant.Definition.MaxHp, new Color(.18f, .60f, .47f));
+                var beforeSalvation = controller.PendingSalvationState(participant);
+                statusIcons.Draw(770, y + 2, beforeSalvation?.Statuses ?? CombatStatuses.Active(participant));
+                DrawBar(new Rect(850, y + 4, 170, 25), beforeSalvation?.Hp ?? participant.Hp, participant.Definition.MaxHp, new Color(.18f, .60f, .47f));
                 DrawBar(new Rect(1030, y + 4, 120, 25), participant.Mp, participant.Definition.MaxMp, new Color(.20f, .45f, .82f));
                 DrawBar(new Rect(1160, y + 4, 75, 25), participant.Limit.Charge, 100, new Color(.62f, .28f, .75f));
             }
@@ -610,6 +611,8 @@ namespace DragonQuest.Prototype
         {
             if (participant.Team == CombatTeam.Party)
             {
+                var beforeSalvation = controller.PendingSalvationState(participant);
+                if (beforeSalvation != null) return beforeSalvation.Tint;
                 if (controller.IsPresentingAction && controller.IsPresentingUltimate && Time.unscaledTime < controller.ActionImpactAt)
                     foreach (CombatantState fallen in controller.PresentingRevivedTargets)
                         if (fallen == participant) return new Color(.4f, .4f, .4f);
