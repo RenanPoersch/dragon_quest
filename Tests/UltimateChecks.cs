@@ -98,7 +98,9 @@ public static class UltimateChecks
         aren=Fighter("aren",CombatTeam.Party,30,HeroUltimates.Omnislash);
         first=Fighter("first",CombatTeam.Enemy,2,hp:10); second=Fighter("second",CombatTeam.Enemy,1);
         battle=Battle(aren,first,second); Ready(aren); Act(battle,HeroUltimates.Omnislash,first);
-        Check(!first.IsAlive && first.VitalChanges.Count==1 && second.Hp==1000,"A lethal cut stops mechanical overkill and never changes target.");
+        Check(first.Hp==0 && first.VitalChanges.Count==13 && second.Hp==1000,"Overkill keeps all thirteen damage numbers on the original target.");
+        Check(first.VitalChanges.Take(12).All(c=>c.Amount==-30) && first.VitalChanges.Last().Amount==-90,"Fatal and post-defeat cuts show calculated damage, including the triple finisher.");
+        Check(first.VitalChanges.Select(c=>c.ActionHitIndex).SequenceEqual(Enumerable.Range(1,13)),"Overkill preserves every cinematic hit time.");
         var death=new DefeatedEnemyPresentation(); death.Observe(first,UltimateTimeline.FinalImpact);
         Check(death.IsVisible(first,UltimateTimeline.HangStart) && !death.IsRed(first,UltimateTimeline.HangStart),"Defeated target stays for the aerial finisher.");
         Check(death.IsRed(first,UltimateTimeline.FinalImpact+.01f),"Death flash starts at final impact.");
@@ -107,7 +109,7 @@ public static class UltimateChecks
         first=Fighter("first",CombatTeam.Enemy,2); second=Fighter("second",CombatTeam.Enemy,1,hp:10);
         first.ProtectedBy=second; battle=Battle(aren,first,second); Ready(aren);
         Act(battle,HeroUltimates.Omnislash,first);
-        Check(first.Hp==1000 && !second.IsAlive,"An interception locks the entire sequence to one recipient.");
+        Check(first.Hp==1000 && second.Hp==0 && second.VitalChanges.Count==13,"An interception locks all overkill feedback to the protector.");
 
         aren=Fighter("aren",CombatTeam.Party,30,HeroUltimates.Omnislash,critical:.5);
         first=Fighter("first",CombatTeam.Enemy,1); int rolls=0;
@@ -116,6 +118,48 @@ public static class UltimateChecks
         Act(battle,HeroUltimates.Omnislash,first);
         Check(rolls==13 && first.VitalChanges.Count(c=>c.IsCritical)==7,"Every cut rolls its own critical.");
         Check(first.VitalChanges[0].Amount==-10 && first.VitalChanges[1].Amount==-8 && first.VitalChanges[12].Amount==-28,"Each hit respects critical rounding, Defend and Shield; final remains triple.");
+    }
+    private static void OverkillFeedback()
+    {
+        foreach(int hp in new[]{65,450})
+        {
+            var aren=Fighter("aren",CombatTeam.Party,30,HeroUltimates.Omnislash);
+            var target=Fighter("target",CombatTeam.Enemy,1,hp:hp);
+            var battle=Battle(aren,target); Ready(aren);
+            Act(battle,HeroUltimates.Omnislash,target);
+            Check(target.Hp==0 && target.VitalChanges.Count==13,"Middle-cut and final-cut defeats both keep the complete sequence.");
+            Check(target.VitalChanges.Take(12).All(c=>c.Amount==-30) && target.VitalChanges.Last().Amount==-90,"Floating damage is independent of remaining HP.");
+            Check(battle.Outcome==BattleOutcome.Victory && aren.TurnsTaken==1 && aren.Limit.Charge==0,"Overkill finishes one action before resolving victory.");
+        }
+
+        var enemy=Fighter("enemy",CombatTeam.Enemy,30,HeroUltimates.Omnislash,critical:.5);
+        var ally=Fighter("ally",CombatTeam.Party,2);
+        ally.RestoreVitals(7,30,true,0);
+        var survivor=Fighter("survivor",CombatTeam.Party,1);
+        int rolls=0;
+        var incoming=new BattleSession(()=> ++rolls%2==1 ? 0 : 1,null,new ItemInventory(),enemy,ally,survivor);
+        ally.IsDefending=true; ally.GrantDamageShield(3,false); ally.PoisonTurns=1;
+        Ready(enemy); Act(incoming,HeroUltimates.Omnislash,ally);
+        Check(ally.Hp==0 && survivor.Hp==1000 && incoming.Outcome==BattleOutcome.None,"Enemy overkill stays on the defeated party member.");
+        Check(rolls==13 && ally.VitalChanges.Count(c=>c.IsCritical)==7,"Post-defeat hits retain their independent critical rolls.");
+        Check(ally.VitalChanges.All(c=>c.IsShielded) && ally.VitalChanges[0].Amount==-10
+            && ally.VitalChanges[1].Amount==-8 && ally.VitalChanges.Last().Amount==-28,"Defend and Shield mitigate the whole action, including overkill.");
+        var expectedLimit=new LimitGauge(); expectedLimit.AddDamage(7,ally.Definition.MaxHp);
+        Check(ally.Limit.Charge==expectedLimit.Charge,"Visual overkill grants no Limit beyond actual HP lost.");
+        Check(!ally.IsDefending && ally.ShieldTurns==0 && !ally.IsPoisoned,"Defeat clears conditions when the sequence finishes.");
+
+        var combo=new AbilityDefinition("combo","Combo","",7,10,AbilityEffect.PhysicalDamage,TargetRule.Enemy,hitCount:3,finalHitMultiplier:2);
+        var hero=Fighter("hero",CombatTeam.Party,30,combo);
+        var nextHero=Fighter("next-hero",CombatTeam.Party,20);
+        var first=Fighter("first",CombatTeam.Enemy,2,hp:5);
+        var second=Fighter("second",CombatTeam.Enemy,1);
+        var generic=Battle(hero,nextHero,first,second);
+        Act(generic,combo,first);
+        Check(first.VitalChanges.Select(c=>c.Amount).SequenceEqual(new[]{-30,-30,-60})
+            && first.VitalChanges.Select(c=>c.ActionHitIndex).SequenceEqual(new[]{1,2,3}),"Any multi-hit action records each overkill impact.");
+        Check(hero.Mp==23 && hero.TurnsTaken==1 && generic.CurrentActor==nextHero,"Overkill spends MP and a turn exactly once.");
+        Act(generic,MateriaResolver.Attack,first);
+        Check(first.VitalChanges.Count==3 && second.Hp==980,"The following action targets a survivor without adding corpse feedback.");
     }
     private static void TimingAndValidation()
     {
@@ -134,7 +178,7 @@ public static class UltimateChecks
     }
     public static void Main()
     {
-        Signatures(); Salvation(); Aegis(); Omnislash(); TimingAndValidation(); SpriteSequences();
+        Signatures(); Salvation(); Aegis(); Omnislash(); OverkillFeedback(); TimingAndValidation(); SpriteSequences();
         Console.WriteLine(checks+" ultimate checks passed: signature commands, 80% recovery/revive/cleanse, shield/AoE, single-target cuts, individual damage and aerial finish.");
     }
 

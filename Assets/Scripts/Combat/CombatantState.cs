@@ -63,15 +63,18 @@ namespace DragonQuest.Combat
         }
 
         internal void SpendMp(int cost) => Mp -= cost;
-        internal void TakeDamage(int amount, bool critical = false, bool damageOverTime = false, int actionHitIndex = 0)
+        internal void TakeDamage(int amount, bool critical = false, bool damageOverTime = false, int actionHitIndex = 0,
+            bool deferDefeatCleanup = false)
         {
             bool shielded = ShieldTurns > 0 && amount > 0;
             if (shielded) amount = (int)(((long)amount + 1) / 2);
             int previousHp = Hp;
             Hp = Math.Max(0, Hp - amount);
-            RecordVitalChange(Hp - previousHp, critical, shielded: shielded, damageOverTime: damageOverTime, actionHitIndex: actionHitIndex);
+            // Each combo impact displays its full damage, even after an earlier hit depleted HP.
+            RecordVitalChange(actionHitIndex > 0 ? -amount : Hp - previousHp, critical, shielded: shielded, damageOverTime: damageOverTime, actionHitIndex: actionHitIndex);
             if (Team == CombatTeam.Party) Limit.AddDamage(previousHp - Hp, Definition.MaxHp);
-            if (!IsAlive) ClearConditions();
+            // Keep mitigation consistent until the current multi-hit action finishes.
+            if (!IsAlive && !deferDefeatCleanup) ClearConditions();
         }
         internal void RecoverHp(int amount)
         {

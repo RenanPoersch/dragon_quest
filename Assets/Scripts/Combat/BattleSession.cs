@@ -129,7 +129,7 @@ namespace DragonQuest.Combat
             return null;
         }
 
-        // A stale enemy selection advances in formation order; damage never reaches a corpse.
+        // A new action advances a stale enemy selection in formation order.
         public CombatantState ResolveLivingEnemyTarget(AbilityDefinition ability, CombatantState target)
         {
             if (ability == null || CurrentActor == null || target == null || target.IsAlive
@@ -200,7 +200,7 @@ namespace DragonQuest.Combat
                     }
                     int total = 0, landed = 0, lastDamage = 0;
                     var hitReport = new StringBuilder();
-                    for (int hit = 1; hit <= ability.HitCount && recipient.IsAlive; hit++)
+                    for (int hit = 1; hit <= ability.HitCount; hit++)
                     {
                         hitReport.Clear();
                         lastDamage = ApplyDamage(actor, ability, recipient, false, hitReport, hit);
@@ -355,7 +355,8 @@ namespace DragonQuest.Combat
             if (critical) damage = damage * CombatantDefinition.CriticalDamagePercent / 100;
             if (target.IsDefending) damage = (damage + 1) / 2;
             int previousHp = target.Hp;
-            target.TakeDamage((int)Math.Min(int.MaxValue, damage), critical, actionHitIndex: hitIndex);
+            target.TakeDamage((int)Math.Min(int.MaxValue, damage), critical, actionHitIndex: hitIndex,
+                deferDefeatCleanup: hitIndex > 0 && hitIndex < ability.HitCount);
             report.Append(target.Definition.Name).Append(" -").Append(previousHp - target.Hp).Append(" HP");
             if (ability.Element != DamageElement.None)
             {
