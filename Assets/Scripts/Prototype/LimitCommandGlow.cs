@@ -3,13 +3,9 @@ using UnityEngine;
 
 namespace DragonQuest.Prototype
 {
-    // Animated rainbow and pulsing halo for the ready LIMIT battle command.
+    // A single rainbow text pass keeps the ready LIMIT command's strokes thin.
     public static class LimitCommandGlow
     {
-        private static readonly Vector2[] HaloOffsets =
-        {
-            Vector2.left, Vector2.right, Vector2.up, Vector2.down
-        };
         public static bool Button(Rect rect, string text, bool ready, GUIStyle style)
         {
             if (!ready) return GUI.Button(rect, text, style);
@@ -33,19 +29,6 @@ namespace DragonQuest.Prototype
             {
                 bool clicked = GUI.Button(rect, GUIContent.none, style);
                 GUI.backgroundColor = Color.clear;
-                // A faint one-pixel halo preserves the regular font's thin strokes.
-                if (Event.current.type == EventType.Repaint)
-                {
-                    GUI.color = new Color(previousColor.r, previousColor.g, previousColor.b,
-                        previousColor.a * (.035f + pulse * .035f));
-                    var content = new GUIContent(label);
-                    foreach (Vector2 offset in HaloOffsets)
-                    {
-                        Rect glow = rect;
-                        glow.position += offset;
-                        style.Draw(glow, content, false, false, false, false);
-                    }
-                }
                 GUI.color = previousColor;
                 GUI.Label(rect, label, style);
                 return clicked;
