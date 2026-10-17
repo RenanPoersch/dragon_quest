@@ -344,6 +344,14 @@ namespace DragonQuest.Prototype
 
         private void DrawArena()
         {
+            Matrix4x4 arenaMatrix = GUI.matrix;
+            bool spiritAction = controller.IsPresentingAction && controller.PresentingActor.Id == CastleBattleRules.SpiritId;
+            float spiritElapsed = Time.unscaledTime - controller.ActionStartedAt;
+            if (spiritAction)
+            {
+                Vector2 shake = SpiritAttackAnimation.ScreenOffset(controller.PresentingAbility, spiritElapsed);
+                GUI.matrix *= Matrix4x4.Translate(new Vector3(shake.x, shake.y, 0));
+            }
             GUI.BeginGroup(new Rect(0, 0, 1280, 416));
             Rect arena = new Rect(20, 20, 1240, 396);
             Color sky = new Color(.10f, .17f, .20f), ground = new Color(.18f, .23f, .18f);
@@ -357,6 +365,7 @@ namespace DragonQuest.Prototype
             }
             RectBox(arena, sky); RectBox(new Rect(20, 240, 1240, 176), ground);
             if (background != null) GUI.DrawTexture(arena, background, ScaleMode.ScaleAndCrop);
+            if (spiritAction) spiritAttacks.DrawBackdrop(arena, controller.PresentingAbility, spiritElapsed);
             bool ultimate = controller.IsPresentingAction && controller.IsPresentingUltimate;
             float ultimateElapsed = Time.unscaledTime - controller.ActionStartedAt;
             var ultimateAllies = new List<Rect>();
@@ -430,10 +439,13 @@ namespace DragonQuest.Prototype
                 foreach (CombatantState target in controller.PresentingTargets)
                     spellAnimation.Draw(FigureRect(target), controller.PresentingAbility,
                         Time.unscaledTime - controller.ActionStartedAt);
-            if (controller.IsPresentingAction && controller.PresentingActor.Id == CastleBattleRules.SpiritId)
-                foreach (CombatantState target in controller.PresentingTargets)
-                    spiritAttacks.DrawEffect(FigureRect(controller.PresentingActor), FigureRect(target),
-                        controller.PresentingAbility, Time.unscaledTime - controller.ActionStartedAt);
+            if (spiritAction)
+            {
+                var spiritTargets = new List<Rect>();
+                foreach (CombatantState target in controller.PresentingTargets) spiritTargets.Add(FigureRect(target));
+                spiritAttacks.DrawEffects(FigureRect(controller.PresentingActor), spiritTargets,
+                    controller.PresentingAbility, spiritElapsed);
+            }
             bool meteorAction = controller.IsPresentingAction
                 && CastleMeteorPresentation.IsMeteor(controller.PresentingActor.Id, controller.PresentingAbility);
             if (controller.IsCastleEncounter)
@@ -478,6 +490,7 @@ namespace DragonQuest.Prototype
                 foreach (CombatantState member in observedBattle.Combatants)
                     if (member.Id == CastleBattleRules.TyrantId) { DrawCastNumber(FigureRect(member)); break; }
             GUI.EndGroup();
+            GUI.matrix = arenaMatrix;
         }
 
         private void DrawCastNumber(Rect figure)
@@ -583,6 +596,14 @@ namespace DragonQuest.Prototype
             Color tint = FighterTint(participant);
             bool acting = controller.IsPresentingAction && controller.PresentingActor == participant;
             if (heroKnockouts.IsKnockedOut(participant) && knockoutSprites.Draw(rect, participant.Id)) return;
+            if (controller.IsPresentingAction && controller.PresentingActor.Id == CastleBattleRules.SpiritId)
+                foreach (CombatantState target in controller.PresentingTargets)
+                    if (target == participant)
+                    {
+                        rect.position += SpiritAttackAnimation.TargetOffset(controller.PresentingAbility,
+                            Time.unscaledTime - controller.ActionStartedAt);
+                        break;
+                    }
             if (controller.IsPresentingAction)
             {
                 float sinceImpact = controller.IsPresentingUltimate

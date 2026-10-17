@@ -114,14 +114,44 @@ internal static class SpiritAttackChecks
         Check(EnemyAI.ChooseAbility(battle) == PrototypeCastleBattleFactory.DrainLife, "IA inclui drenagem no ciclo.");
         foreach (var ability in new[] { Mind, Silence, PrototypeCastleBattleFactory.DrainLife,
             PrototypeCastleBattleFactory.Chains, PrototypeCastleBattleFactory.ChaosMagic })
-            Check(BattleAnimationCatalog.Resource("evil-spirit",ability) == "SpiritAttacks", "Cada ataque seleciona o atlas dedicado.");
+            Check(BattleAnimationCatalog.Resource("evil-spirit",ability) == SpiritAttackTimeline.Resource(ability), "Cada ataque seleciona seu atlas independente.");
         Check(BattleAnimationCatalog.Idle("evil-spirit") == "SpiritBattle"
-            && BattleAnimationCatalog.ImpactDelay("evil-spirit",Mind) == .7f, "Sprite idle e sincronismo do impacto ficam definidos.");
+            && BattleAnimationCatalog.ImpactDelay("evil-spirit",Mind) == SpiritAttackTimeline.Impact(Mind), "Sprite idle e sincronismo do impacto ficam definidos.");
+    }
+
+    private static void CheckPresentation()
+    {
+        var abilities = new[] { Mind, Silence, PrototypeCastleBattleFactory.DrainLife,
+            PrototypeCastleBattleFactory.Chains, PrototypeCastleBattleFactory.ChaosMagic };
+        Check(abilities.Select(SpiritAttackTimeline.Resource).Distinct().Count() == 5, "Habilidades nao compartilham sprites recoloridos.");
+        Check(abilities.Select(SpiritAttackTimeline.Duration).Distinct().Count() == 5, "Cada ritual tem seu proprio ritmo.");
+        foreach(var ability in abilities)
+        {
+            float impact=SpiritAttackTimeline.Impact(ability), end=SpiritAttackTimeline.Duration(ability);
+            Check(impact>SpiritAttackTimeline.EffectStart(ability)+.5f && end>impact+.7f,
+                "Antecipacao, impacto e recuperacao permanecem visiveis.");
+            Check(SpiritAttackTimeline.Opacity(ability,0)==0 && SpiritAttackTimeline.Opacity(ability,end)==0,
+                "Efeito nao vaza antes nem depois da acao.");
+            Check(SpiritAttackTimeline.Shake(ability,impact-.01f)==0 && SpiritAttackTimeline.Shake(ability,end)==0,
+                "Tremor acompanha apenas o impacto.");
+            Check(SpiritAttackTimeline.ActorFrame(ability,0)==0 && SpiritAttackTimeline.ActorFrame(ability,end)==3,
+                "Poses percorrem preparacao e recuperacao.");
+            int previous=-1;
+            for(int step=0;step<=100;step++)
+            {
+                int frame=SpiritAttackTimeline.EffectFrame(ability,end*step/100);
+                if(frame<previous||frame<0||frame>7) throw new Exception("Sequencia do efeito saltou para tras ou escapou do atlas.");
+                previous=frame;
+            }
+            Check(previous==7,"O ritual termina no ultimo sprite, sem repetir o impacto.");
+        }
+        Check(SpiritAttackTimeline.Impact(PrototypeCastleBattleFactory.DrainLife)>2,
+            "Cura de Sugar Vida espera as almas chegarem ao espirito.");
     }
 
     public static void Main()
     {
-        CheckMindControl(); CheckSilence(); CheckCleanupAndDrain(); CheckEnemyCycle();
+        CheckMindControl(); CheckSilence(); CheckCleanupAndDrain(); CheckEnemyCycle(); CheckPresentation();
         Console.WriteLine(checks + " verificacoes de mind control, silencio, drenagem e sprites passaram.");
     }
 }

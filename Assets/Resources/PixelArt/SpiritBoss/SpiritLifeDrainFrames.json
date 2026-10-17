@@ -1,0 +1,92 @@
+{
+  "width": 1448,
+  "height": 1086,
+  "casterHeight": 404,
+  "effectHeight": 341,
+  "frames": [
+    {
+      "x": 11,
+      "y": 26,
+      "width": 368,
+      "height": 384,
+      "pivotX": 189
+    },
+    {
+      "x": 395,
+      "y": 10,
+      "width": 365,
+      "height": 398,
+      "pivotX": 184
+    },
+    {
+      "x": 761,
+      "y": 11,
+      "width": 331,
+      "height": 396,
+      "pivotX": 175
+    },
+    {
+      "x": 1112,
+      "y": 7,
+      "width": 326,
+      "height": 404,
+      "pivotX": 158
+    },
+    {
+      "x": 25,
+      "y": 482,
+      "width": 356,
+      "height": 277,
+      "pivotX": 178.0
+    },
+    {
+      "x": 400,
+      "y": 446,
+      "width": 327,
+      "height": 313,
+      "pivotX": 163.5
+    },
+    {
+      "x": 743,
+      "y": 419,
+      "width": 320,
+      "height": 341,
+      "pivotX": 160.0
+    },
+    {
+      "x": 1105,
+      "y": 423,
+      "width": 325,
+      "height": 337,
+      "pivotX": 162.5
+    },
+    {
+      "x": 24,
+      "y": 797,
+      "width": 374,
+      "height": 249,
+      "pivotX": 187.0
+    },
+    {
+      "x": 398,
+      "y": 780,
+      "width": 344,
+      "height": 281,
+      "pivotX": 172.0
+    },
+    {
+      "x": 760,
+      "y": 777,
+      "width": 323,
+      "height": 288,
+      "pivotX": 161.5
+    },
+    {
+      "x": 1107,
+      "y": 775,
+      "width": 321,
+      "height": 296,
+      "pivotX": 160.5
+    }
+  ]
+}
