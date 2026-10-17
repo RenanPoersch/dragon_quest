@@ -86,7 +86,24 @@ namespace DragonQuest.Prototype
         }
 
         public void CityBuilding(string name, Vector2 size, string hex, Transform parent)
-            => ShowCityArt(name, CityPeripheryArt.Building(name, size, hex), parent);
+        {
+            ShowCityArt(name, CityPeripheryArt.Building(name, size, hex), parent);
+            if (name == "Castelo do tirano") CastleTorches(size, parent, PixelSprites.Material);
+        }
+
+        public static void CastleTorches(Vector2 size, Transform parent, Material spriteMaterial)
+        {
+            foreach (float x in new[] {-CastleFortressArt.TorchOffsetX, CastleFortressArt.TorchOffsetX})
+            {
+                var flame = new GameObject(x < 0 ? "Tocha oeste / chama animada" : "Tocha leste / chama animada");
+                flame.transform.SetParent(parent, false);
+                flame.transform.localPosition = CastleFortressArt.TorchFlamePosition(x, size);
+                flame.transform.localRotation = Quaternion.LookRotation(
+                    new Vector3(-ObliqueProjection.YawSin, ObliqueProjection.YawCos, 0), PixelSpriteLayout.UprightUp);
+                flame.transform.localScale = new Vector3(0.7f, 0.7f * PixelSpriteLayout.UprightScaleY, 1);
+                flame.AddComponent<RuinsFlameAnimation>().Initialize(spriteMaterial, x < 0 ? 0 : 0.3f);
+            }
+        }
 
         public void CityStreets(Transform parent) => ShowCityArt("Tubulacoes sobre as vielas", CityPeripheryArt.Streets(), parent);
 

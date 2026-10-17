@@ -11,10 +11,10 @@ namespace DragonQuest.Prototype
         private readonly Sprite[] frames = new Sprite[FrameCount];
         private readonly Texture2D[] textures = new Texture2D[FrameCount];
         private SpriteRenderer renderer;
-        private float elapsed;
+        private float elapsed, phaseOffset;
         public int CurrentFrame { get; private set; }
 
-        public void Initialize(Material material)
+        public void Initialize(Material material, float phaseOffset = 0)
         {
             var source=Resources.Load<Texture2D>("PixelArt/RuinsAltarFlame");
             if(source==null || !source.isReadable || source.width%Columns!=0 || source.height%Rows!=0)
@@ -39,7 +39,9 @@ namespace DragonQuest.Prototype
                 Vector2 pivot=FindFoot(original,source.width,left,bottom,width,height);
                 frames[frame]=Sprite.Create(texture,new Rect(0,0,PixelWidth,PixelHeight),pivot,48,0,SpriteMeshType.FullRect);
             }
-            ShowAt(0);
+            this.phaseOffset = float.IsNaN(phaseOffset) || float.IsInfinity(phaseOffset) ? 0
+                : Mathf.Repeat(phaseOffset, (float)FrameCount / FramesPerSecond);
+            elapsed = this.phaseOffset; ShowAt(elapsed);
         }
 
         public static int FrameAt(float seconds)
@@ -58,7 +60,7 @@ namespace DragonQuest.Prototype
             elapsed=Mathf.Repeat(elapsed+Time.deltaTime,(float)FrameCount/FramesPerSecond);
             ShowAt(elapsed);
         }
-        private void OnEnable() { elapsed=0;ShowAt(0); }
+        private void OnEnable() { elapsed=phaseOffset;ShowAt(elapsed); }
         private void OnDisable() { elapsed=0; }
 
         private static Vector2 FindFoot(Color32[] pixels,int stride,int left,int bottom,int width,int height)
