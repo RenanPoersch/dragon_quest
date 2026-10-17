@@ -5,7 +5,7 @@ namespace DragonQuest.Combat
     public enum AbilityEffect { PhysicalDamage, Heal, Defend, Cleanse, Revive, Taunt, Protect, MagicDamage, Prepare, Drain, Bind }
     public enum TargetRule { Enemy, Ally, Self, AllEnemies, AllAllies }
     public enum AbilityMenuGroup { Direct, Magic, Summon }
-    public enum PartyEffect { None, RestoreAndRevive, DamageShield }
+    public enum PartyEffect { None, RestoreAndRevive, DamageShield, RestoreCleanseAndRevive }
 
     public sealed class AbilityDefinition
     {
@@ -24,11 +24,14 @@ namespace DragonQuest.Combat
         public PartyEffect PartyEffect { get; }
         public int RecoveryPercent { get; }
         public int ShieldDuration { get; }
+        public int HitCount { get; }
+        public int FinalHitMultiplier { get; }
 
         public AbilityDefinition(string id, string name, string description, int mpCost, int power,
             AbilityEffect effect, TargetRule targets, int poisonTurns = 0, bool usesLimit = false, string sourceAbilityId = null,
             DamageElement element = DamageElement.None, AbilityMenuGroup menuGroup = AbilityMenuGroup.Direct,
-            PartyEffect partyEffect = PartyEffect.None, int recoveryPercent = 0, int shieldDuration = 0)
+            PartyEffect partyEffect = PartyEffect.None, int recoveryPercent = 0, int shieldDuration = 0,
+            int hitCount = 1, int finalHitMultiplier = 1)
         {
             if (string.IsNullOrWhiteSpace(id)) throw new ArgumentException("Habilidade precisa de ID.", nameof(id));
             if (mpCost < 0 || power < 0) throw new ArgumentOutOfRangeException(nameof(mpCost));
@@ -74,12 +77,20 @@ namespace DragonQuest.Combat
             if (!Enum.IsDefined(typeof(AbilityMenuGroup), menuGroup)) throw new ArgumentException("Grupo de menu desconhecido.");
             MenuGroup = menuGroup;
             if (!Enum.IsDefined(typeof(PartyEffect), partyEffect)
-                || (partyEffect != PartyEffect.None && effect != AbilityEffect.MagicDamage)
+                || (partyEffect == PartyEffect.RestoreAndRevive && effect != AbilityEffect.MagicDamage)
+                || (partyEffect == PartyEffect.DamageShield && effect != AbilityEffect.MagicDamage && effect != AbilityEffect.PhysicalDamage)
+                || (partyEffect == PartyEffect.RestoreCleanseAndRevive && (effect != AbilityEffect.Heal || targets != TargetRule.AllAllies || power != 0))
                 || (partyEffect == PartyEffect.None && (recoveryPercent != 0 || shieldDuration != 0))
-                || (partyEffect == PartyEffect.RestoreAndRevive && (recoveryPercent < 1 || recoveryPercent > 100 || shieldDuration != 0))
+                || ((partyEffect == PartyEffect.RestoreAndRevive || partyEffect == PartyEffect.RestoreCleanseAndRevive)
+                    && (recoveryPercent < 1 || recoveryPercent > 100 || shieldDuration != 0))
                 || (partyEffect == PartyEffect.DamageShield && (shieldDuration < 1 || shieldDuration > 99 || recoveryPercent != 0)))
                 throw new ArgumentException("Efeito de equipe invalido.");
             PartyEffect = partyEffect; RecoveryPercent = recoveryPercent; ShieldDuration = shieldDuration;
+            if (hitCount < 1 || hitCount > 32 || finalHitMultiplier < 1 || finalHitMultiplier > 10
+                || (hitCount == 1 && finalHitMultiplier != 1)
+                || (hitCount > 1 && (effect != AbilityEffect.PhysicalDamage || targets != TargetRule.Enemy)))
+                throw new ArgumentException("Sequencia de golpes exige dano fisico em um unico inimigo.");
+            HitCount = hitCount; FinalHitMultiplier = finalHitMultiplier;
         }
     }
 }

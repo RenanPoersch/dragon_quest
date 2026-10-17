@@ -71,8 +71,11 @@ namespace DragonQuest.Prototype
         public AbilityDefinition PresentingAbility { get; private set; }
         public System.Collections.Generic.IReadOnlyList<CombatantState> PresentingTargets { get; private set; } = new CombatantState[0];
         public System.Collections.Generic.IReadOnlyList<CombatantState> PresentingPartyTargets { get; private set; } = new CombatantState[0];
+        public System.Collections.Generic.IReadOnlyList<CombatantState> PresentingRevivedTargets { get; private set; } = new CombatantState[0];
+        public bool IsPresentingUltimate => UltimateTimeline.IsUltimate(PresentingAbility);
         public bool IsPresentingSummon => SummonAnimation.Resource(PresentingAbility) != null;
         public float ActionDuration => IsPresentingDragonAttack ? DragonAttackAnimation.Duration(PresentingAbility.Id)
+            : IsPresentingUltimate ? UltimateTimeline.Duration(PresentingAbility)
             : IsPresentingSummon ? SummonAnimation.Duration : IsPresentingSpell ? SpellAnimation.Duration
             : BattleAnimationCatalog.Duration(PresentingActor?.Id, PresentingAbility);
         public bool IsPresentingSpell => SpellAnimation.Resource(PresentingAbility) != null;
@@ -82,7 +85,8 @@ namespace DragonQuest.Prototype
         public float ActionEndsAt => DefeatedEnemyPresentation.EndOfAction(ActionStartedAt + ActionDuration, ActionImpactAt, PresentingTargets);
         public bool IsPresentingAction => IsActive && PresentingActor != null && Time.unscaledTime < ActionEndsAt;
         public float ActionImpactAt => ActionStartedAt
-            + (IsPresentingDragonAttack ? DragonAttackAnimation.ImpactDelay(PresentingAbility.Id) : IsPresentingSummon ? SummonAnimation.ImpactDelay
+            + (IsPresentingDragonAttack ? DragonAttackAnimation.ImpactDelay(PresentingAbility.Id)
+            : IsPresentingUltimate ? UltimateTimeline.ImpactDelay(PresentingAbility) : IsPresentingSummon ? SummonAnimation.ImpactDelay
             : IsPresentingSpell ? SpellAnimation.ImpactDelay : BattleAnimationCatalog.ImpactDelay(PresentingActor?.Id, PresentingAbility));
         public int AttackPose => BattleAnimationCatalog.Frame(BattleAnimationCatalog.Resource(PresentingActor?.Id, PresentingAbility),
             Time.unscaledTime - ActionStartedAt, ActionDuration);
@@ -211,6 +215,7 @@ namespace DragonQuest.Prototype
             RandomEncounter = RandomEncounterType.None;
             PresentingActor = null; PresentingAbility = null; PresentingTargets = new CombatantState[0];
             PresentingPartyTargets = new CombatantState[0];
+            PresentingRevivedTargets = new CombatantState[0];
             BattleLocationId = currentLocation();
             notifiedCompletion = false;
             IsActive = true;
@@ -238,6 +243,10 @@ namespace DragonQuest.Prototype
             else if (target != null)
                 effectTargets.Add(ability != null && ability.Effect == AbilityEffect.PhysicalDamage
                     && target.ProtectedBy != null && target.ProtectedBy.IsAlive ? target.ProtectedBy : target);
+            var revivedTargets = new System.Collections.Generic.List<CombatantState>();
+            if (ability?.PartyEffect == PartyEffect.RestoreCleanseAndRevive)
+                foreach (CombatantState ally in effectTargets)
+                    if (!ally.IsAlive) revivedTargets.Add(ally);
             bool accepted = Session.TryAct(actor, ability, target, out string message);
             ErrorMessage = accepted ? string.Empty : message;
             if (accepted)
@@ -247,6 +256,7 @@ namespace DragonQuest.Prototype
                     foreach (CombatantState ally in Session.Combatants)
                         if (ally.Team == actor.Team) partyTargets.Add(ally);
                 PresentingPartyTargets = partyTargets;
+                PresentingRevivedTargets = revivedTargets;
                 PresentAction(actor, ability, effectTargets);
                 AwardIfComplete();
             }

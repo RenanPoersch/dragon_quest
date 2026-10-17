@@ -173,7 +173,7 @@ internal static class CastleChecks
             else if(actor.Id=="lia"&&actor.Mp>=6)
             {
                 var wounded=battle.Combatants.Where(c=>c.Team==CombatTeam.Party&&c.IsAlive).OrderBy(c=>(double)c.Hp/c.Definition.MaxHp).First();
-                if(wounded.Hp*100<wounded.Definition.MaxHp*65) {ability=actor.Definition.Abilities.Single(a=>a.Effect==AbilityEffect.Heal);target=wounded;}
+                if(wounded.Hp*100<wounded.Definition.MaxHp*65) {ability=actor.Definition.Abilities.Single(a=>a.Effect==AbilityEffect.Heal&&!a.UsesLimit);target=wounded;}
                 else ability=actor.Definition.Abilities.Single(a=>a.Element==DamageElement.Ice);
             }
             else if(actor.Id=="aren"&&actor.Mp>=4) ability=actor.Definition.Abilities.FirstOrDefault(a=>a.SourceAbilityId=="heavy-strike")??ability;

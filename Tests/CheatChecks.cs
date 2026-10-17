@@ -33,7 +33,8 @@ internal static class CheatChecks
             var actor = battle.CurrentActor;
             bool ally = actor.Team == CombatTeam.Party;
             var command = ally ? actor.Definition.Abilities.First(a => a.UsesLimit) : MateriaResolver.Defend;
-            Check(battle.TryAct(actor, command, ally ? enemy : actor, out string message), "Repeated LIMIT action: " + message);
+            var target = battle.GetValidTargets(command)[0];
+            Check(battle.TryAct(actor, command, target, out string message), "Repeated LIMIT action: " + message);
             if (ally) { casts++; Check(actor.Limit.Charge == 100, "Spending LIMIT must keep it ready."); }
         }
         Check(casts == 6, "All three members can use LIMIT again next round.");

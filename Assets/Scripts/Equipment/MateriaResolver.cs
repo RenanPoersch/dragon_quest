@@ -8,7 +8,7 @@ namespace DragonQuest.Equipment
     {
         public static readonly AbilityDefinition Attack = new AbilityDefinition("attack", "Ataque", "Ataque basico, sem materia.", 0, 0, AbilityEffect.PhysicalDamage, TargetRule.Enemy);
         public static readonly AbilityDefinition Defend = new AbilityDefinition("defend", "Defender", "Reduz o dano recebido ate o proximo turno.", 0, 0, AbilityEffect.Defend, TargetRule.Self);
-        public static readonly AbilityDefinition LimitBreak = new AbilityDefinition("limit-break", "Limit Break", "Usa toda a barra de Limit para atingir todos os inimigos. Nao gasta MP.", 0, 35, AbilityEffect.PhysicalDamage, TargetRule.AllEnemies, usesLimit: true);
+        public static readonly AbilityDefinition LimitBreak = HeroUltimates.Omnislash;
 
         // A weapon has one basic-attack element; the first valid linked pair wins.
         public static DamageElement InfusedElement(EquipmentLoadout equipment)
@@ -38,7 +38,7 @@ namespace DragonQuest.Equipment
             var basicAttack = element == DamageElement.None ? Attack : new AbilityDefinition("attack", "Ataque",
                 "Ataque basico com Infusao de " + ElementalAffinities.NameOf(element) + ". Sem custo de MP.",
                 0, 0, AbilityEffect.PhysicalDamage, TargetRule.Enemy, element: element);
-            var commands = new List<AbilityDefinition> { basicAttack, Defend, LimitBreak };
+            var commands = new List<AbilityDefinition> { basicAttack, Defend, HeroUltimates.ForHero(member.Id) };
             foreach (EquipmentLoadout equipment in new[] { member.Weapon, member.Armor })
             {
                 if (equipment == null) continue;
@@ -77,7 +77,7 @@ namespace DragonQuest.Equipment
                             effect, targets, original.PoisonTurns, original.UsesLimit, original.SourceAbilityId, original.Element,
                             source.Definition.Type == MateriaType.Magic ? AbilityMenuGroup.Magic
                                 : source.Definition.Type == MateriaType.Summon ? AbilityMenuGroup.Summon : AbilityMenuGroup.Direct,
-                            original.PartyEffect, original.RecoveryPercent, original.ShieldDuration));
+                            original.PartyEffect, original.RecoveryPercent, original.ShieldDuration, original.HitCount, original.FinalHitMultiplier));
                     }
                 }
             }

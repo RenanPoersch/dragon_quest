@@ -146,6 +146,7 @@ namespace DragonQuest.Combat
 
         private static bool IsValidTarget(CombatantState actor, AbilityDefinition ability, CombatantState target)
         {
+            if (ability.PartyEffect == PartyEffect.RestoreCleanseAndRevive) return target.Team == actor.Team;
             if (ability.Effect == AbilityEffect.Revive) return target.Team == actor.Team && !target.IsAlive;
             if (!target.IsAlive) return false;
             if (ability.Targets == TargetRule.Self && target != actor) return false;
@@ -177,6 +178,8 @@ namespace DragonQuest.Combat
             actor.SpendMp(ability.MpCost);
             if (ability.UsesLimit) actor.Limit.Spend();
             if (Rules != null && Rules.TryResolveAction(this,actor,ability,out message)) { }
+            else if (ability.PartyEffect == PartyEffect.RestoreCleanseAndRevive)
+                message = actor.Definition.Name + " usou " + ability.Name + ": ";
             else if (ability.Effect == AbilityEffect.PhysicalDamage || ability.Effect == AbilityEffect.MagicDamage || ability.Effect == AbilityEffect.Drain)
             {
                 var report = new StringBuilder(actor.Definition.Name + " usou " + ability.Name + ": ");
@@ -185,6 +188,27 @@ namespace DragonQuest.Combat
                     // Custo e turno sao consumidos uma vez; protecao nao intercepta ataques em area.
                     foreach (CombatantState enemy in GetValidTargets(ability))
                         ApplyDamage(actor, ability, enemy, false, report);
+                }
+                else if (ability.HitCount > 1)
+                {
+                    // Protection intercepts the whole sequence once. Never spill cuts onto another enemy.
+                    CombatantState recipient = target;
+                    if (target.ProtectedBy != null && target.ProtectedBy.IsAlive)
+                    {
+                        recipient = target.ProtectedBy; target.ProtectedBy = null;
+                        report.Append(recipient.Definition.Name).Append(" interceptou a sequencia. ");
+                    }
+                    int total = 0, landed = 0, lastDamage = 0;
+                    var hitReport = new StringBuilder();
+                    for (int hit = 1; hit <= ability.HitCount && recipient.IsAlive; hit++)
+                    {
+                        hitReport.Clear();
+                        lastDamage = ApplyDamage(actor, ability, recipient, false, hitReport, hit);
+                        total += lastDamage; landed++;
+                    }
+                    report.Append(recipient.Definition.Name).Append(" -").Append(total).Append(" HP em ").Append(landed).Append(" cortes");
+                    if (landed == ability.HitCount) report.Append(" (final -").Append(lastDamage).Append(" HP)");
+                    report.Append(". ");
                 }
                 else
                 {
@@ -245,14 +269,16 @@ namespace DragonQuest.Combat
             foreach (CombatantState ally in combatants)
             {
                 if (ally.Team != actor.Team) continue;
-                if (ability.PartyEffect == PartyEffect.RestoreAndRevive)
+                if (ability.PartyEffect == PartyEffect.RestoreAndRevive || ability.PartyEffect == PartyEffect.RestoreCleanseAndRevive)
                 {
                     bool defeated = !ally.IsAlive;
                     if (defeated) ally.ClearConditions();
+                    if (ability.PartyEffect == PartyEffect.RestoreCleanseAndRevive) ally.ClearHarmfulConditions();
                     int before = ally.Hp;
                     ally.RecoverHp((int)(((long)ally.Definition.MaxHp * ability.RecoveryPercent + 99) / 100));
                     report.Append(ally.Definition.Name).Append(defeated ? " reviveu: +" : " +")
                         .Append(ally.Hp-before).Append(" HP. ");
+                    if (ability.PartyEffect == PartyEffect.RestoreCleanseAndRevive) report.Append("Purificado. ");
                 }
                 else if (ally.IsAlive)
                 {
@@ -310,7 +336,7 @@ namespace DragonQuest.Combat
         }
 
         private int ApplyDamage(CombatantState actor, AbilityDefinition ability, CombatantState target,
-            bool allowProtection, StringBuilder report)
+            bool allowProtection, StringBuilder report, int hitIndex = 0)
         {
             if (allowProtection && ability.Effect == AbilityEffect.PhysicalDamage && target.ProtectedBy != null && target.ProtectedBy.IsAlive)
             {
@@ -324,11 +350,12 @@ namespace DragonQuest.Combat
             int elementalPercent = target.Definition.Affinities.DamagePercent(ability.Element);
             // Defesa numerica, afinidade e critico (para baixo), depois Defender e Shield (para cima).
             damage = Math.Max(1L, damage * elementalPercent / 100);
+            if (hitIndex == ability.HitCount) damage *= ability.FinalHitMultiplier;
             bool critical = actor.Definition.CriticalChance > 0 && criticalRoll() < actor.Definition.CriticalChance;
             if (critical) damage = damage * CombatantDefinition.CriticalDamagePercent / 100;
             if (target.IsDefending) damage = (damage + 1) / 2;
             int previousHp = target.Hp;
-            target.TakeDamage((int)Math.Min(int.MaxValue, damage), critical);
+            target.TakeDamage((int)Math.Min(int.MaxValue, damage), critical, actionHitIndex: hitIndex);
             report.Append(target.Definition.Name).Append(" -").Append(previousHp - target.Hp).Append(" HP");
             if (ability.Element != DamageElement.None)
             {

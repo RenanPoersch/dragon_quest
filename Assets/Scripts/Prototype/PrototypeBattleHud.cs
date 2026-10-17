@@ -16,6 +16,7 @@ namespace DragonQuest.Prototype
         private PrototypeBattleSprites battleSprites;
         private readonly SpellAnimation spellAnimation = new SpellAnimation();
         private readonly HeroCastAnimation heroCastAnimation = new HeroCastAnimation();
+        private readonly UltimateAnimation ultimateAnimation = new UltimateAnimation();
         private readonly SummonAnimation summonAnimation = new SummonAnimation();
         private readonly BattleStatusIcons statusIcons = new BattleStatusIcons();
         private readonly CastleSpellAnimation castleSpells = new CastleSpellAnimation();
@@ -92,7 +93,10 @@ namespace DragonQuest.Prototype
                     int lane = 0;
                     foreach (FloatingNumber existing in numbers) if (existing.Target == participant) lane++;
                     numbers.Add(new FloatingNumber { Target = participant, Change = change,
-                        Started = controller.IsPresentingAction ? controller.ActionImpactAt : Time.unscaledTime, Lane = lane % 3 });
+                        Started = controller.IsPresentingAction
+                            ? UltimateTimeline.IsOmnislash(controller.PresentingAbility) && change.ActionHitIndex > 0
+                                ? controller.ActionStartedAt + UltimateTimeline.HitTime(change.ActionHitIndex) : controller.ActionImpactAt
+                            : Time.unscaledTime, Lane = lane % 3 });
                     seenChanges[participant] = change.Sequence;
                 }
             }
@@ -243,7 +247,18 @@ namespace DragonQuest.Prototype
             Matrix4x4 previous = GUI.matrix;
             GUI.matrix = Matrix4x4.TRS(new Vector3((Screen.width - 1280 * scale) / 2,
                 (Screen.height - 720 * scale) / 2, 0), Quaternion.identity, new Vector3(scale, scale, 1));
+            Matrix4x4 arenaMatrix = GUI.matrix;
+            if (controller.IsPresentingAction && controller.IsPresentingUltimate)
+            {
+                float impactAge = Time.unscaledTime - controller.ActionImpactAt;
+                if (impactAge >= 0 && impactAge < .3f && controller.PresentingAbility.Effect == AbilityEffect.PhysicalDamage)
+                {
+                    float strength = (1-impactAge/.3f)*7;
+                    GUI.matrix *= Matrix4x4.Translate(new Vector3(Mathf.Sin(impactAge*103)*strength,Mathf.Cos(impactAge*79)*strength*.5f,0));
+                }
+            }
             DrawArena();
+            GUI.matrix = arenaMatrix;
             Panel(new Rect(20, 426, 1240, 60));
             GUI.Label(new Rect(40, 438, 1200, 40), observedBattle.LastMessage, text);
             // Equal halves: all commands/target choices stay on the left, party status stays on the right.
@@ -275,6 +290,7 @@ namespace DragonQuest.Prototype
 
         private void DrawArena()
         {
+            GUI.BeginGroup(new Rect(0, 0, 1280, 416));
             Rect arena = new Rect(20, 20, 1240, 396);
             Color sky = new Color(.10f, .17f, .20f), ground = new Color(.18f, .23f, .18f);
             switch (controller.BattleLocationId)
@@ -287,6 +303,26 @@ namespace DragonQuest.Prototype
             }
             RectBox(arena, sky); RectBox(new Rect(20, 240, 1240, 176), ground);
             if (background != null) GUI.DrawTexture(arena, background, ScaleMode.ScaleAndCrop);
+            bool ultimate = controller.IsPresentingAction && controller.IsPresentingUltimate;
+            float ultimateElapsed = Time.unscaledTime - controller.ActionStartedAt;
+            var ultimateAllies = new List<Rect>();
+            var ultimateTargets = new List<Rect>();
+            var ultimateRevived = new List<bool>();
+            Rect ultimateCaster = ultimate ? FigureRect(controller.PresentingActor) : default;
+            Rect ultimateFocus = ultimate && controller.PresentingTargets.Count > 0 ? FigureRect(controller.PresentingTargets[0]) : ultimateCaster;
+            if (ultimate)
+            {
+                foreach (CombatantState ally in controller.PresentingPartyTargets)
+                {
+                    if (!ally.IsAlive) continue;
+                    ultimateAllies.Add(FigureRect(ally));
+                    bool revived = false;
+                    foreach (CombatantState fallen in controller.PresentingRevivedTargets) if (fallen == ally) revived = true;
+                    ultimateRevived.Add(revived);
+                }
+                foreach (CombatantState target in controller.PresentingTargets) ultimateTargets.Add(FigureRect(target));
+                ultimateAnimation.DrawBackdrop(controller.PresentingAbility, ultimateElapsed, ultimateCaster, ultimateAllies);
+            }
             IReadOnlyList<CombatantState> targets = Targets();
             foreach (CombatantState participant in observedBattle.Combatants)
             {
@@ -296,10 +332,12 @@ namespace DragonQuest.Prototype
                 float castStep = controller.IsPresentingAction && controller.PresentingActor == participant
                     && HeroCastAnimation.IsCasting(controller.PresentingAbility)
                     ? HeroCastAnimation.Step(Time.unscaledTime - controller.ActionStartedAt, controller.ActionDuration) : 0;
-                RectBox(new Rect(figure.x + castStep - 8, groundFigure.yMax - 8, figure.width + 16, 10),
-                    new Color(0, 0, 0, .25f * defeatedEnemies.Alpha(participant, Time.unscaledTime)));
+                bool omnislashActor = ultimate && UltimateTimeline.IsOmnislash(controller.PresentingAbility) && participant == controller.PresentingActor;
+                if (!omnislashActor)
+                    RectBox(new Rect(figure.x + castStep - 8, groundFigure.yMax - 8, figure.width + 16, 10),
+                        new Color(0, 0, 0, .25f * defeatedEnemies.Alpha(participant, Time.unscaledTime)));
                 DrawFighter(figure, participant);
-                if (participant.IsAlive && participant == (controller.IsPresentingAction ? controller.PresentingActor : observedActor))
+                if (!ultimate && participant.IsAlive && participant == (controller.IsPresentingAction ? controller.PresentingActor : observedActor))
                     DrawTurnArrow(figure.center.x + castStep, figure.y - 30 + Mathf.Sin(Time.unscaledTime * 5) * 3);
                 bool group = selected != null && (selected.Targets == TargetRule.AllEnemies || selected.Targets == TargetRule.AllAllies);
                 for (int i = 0; i < targets.Count; i++)
@@ -343,6 +381,9 @@ namespace DragonQuest.Prototype
                     castleSpells.DrawMeteor(target, rules.MeteorAbsorbed, Time.unscaledTime - controller.ActionStartedAt);
                 }
             }
+            if (ultimate)
+                ultimateAnimation.DrawEffects(controller.PresentingAbility, ultimateElapsed, ultimateCaster, ultimateFocus,
+                    ultimateTargets, ultimateAllies, ultimateRevived);
             foreach (FloatingNumber floating in numbers)
             {
                 Rect figure = FigureRect(floating.Target);
@@ -352,10 +393,14 @@ namespace DragonQuest.Prototype
                     && !floating.Change.IsMp && floating.Change.Amount < 0)
                     castleSpells.DrawShieldHit(figure, elapsed);
                 Color color = BattleStatusColors.VitalChange(floating.Change);
-                color.a = Mathf.Clamp01((1.4f - elapsed) / .35f);
+                bool swordHit = floating.Change.ActionHitIndex > 0;
+                float numberDuration = swordHit ? .72f : 1.4f;
+                if (elapsed >= numberDuration) continue;
+                color.a = Mathf.Clamp01((numberDuration - elapsed) / .25f);
                 string label = (floating.Change.Amount > 0 ? "+" : "") + System.Math.Abs(floating.Change.Amount)
                     + (floating.Change.IsMp ? " MP" : "");
-                Rect rect = new Rect(figure.center.x - 90 + floating.Lane * 16, figure.y - 10 - elapsed * 40 - floating.Lane * 22, 180, 45);
+                Rect rect = new Rect(figure.center.x - 90 + floating.Lane * (swordHit ? 40 : 16),
+                    figure.y - 10 - elapsed * (swordHit ? 95 : 40) - floating.Lane * 22, 180, 45);
                 number.normal.textColor = new Color(0, 0, 0, color.a);
                 GUI.Label(new Rect(rect.x + 2, rect.y + 2, rect.width, rect.height), label, number);
                 number.normal.textColor = color; GUI.Label(rect, label, number);
@@ -364,6 +409,7 @@ namespace DragonQuest.Prototype
                 && castCounter.IsVisible(Time.unscaledTime))
                 foreach (CombatantState member in observedBattle.Combatants)
                     if (member.Id == CastleBattleRules.TyrantId) { DrawCastNumber(FigureRect(member)); break; }
+            GUI.EndGroup();
         }
 
         private void DrawCastNumber(Rect figure)
@@ -468,11 +514,19 @@ namespace DragonQuest.Prototype
             bool acting = controller.IsPresentingAction && controller.PresentingActor == participant;
             if (controller.IsPresentingAction)
             {
-                float sinceImpact = Time.unscaledTime - controller.ActionImpactAt;
+                float sinceImpact = controller.IsPresentingUltimate
+                    ? UltimateTimeline.HitAge(controller.PresentingAbility, Time.unscaledTime - controller.ActionStartedAt)
+                    : Time.unscaledTime - controller.ActionImpactAt;
                 foreach (CombatantState target in controller.PresentingTargets)
                     if (target == participant && sinceImpact >= 0 && sinceImpact < .22f
                         && controller.PresentingAbility.Effect != AbilityEffect.Prepare)
-                    { rect.x += Mathf.Sin(sinceImpact * 75f) * 5f; break; }
+                    { rect.x += Mathf.Sin(sinceImpact * 75f) * (controller.IsPresentingUltimate ? 9 : 5); break; }
+            }
+            if (acting && controller.IsPresentingUltimate && battleSprites != null)
+            {
+                Rect focus = controller.PresentingTargets.Count > 0 ? FigureRect(controller.PresentingTargets[0]) : rect;
+                if (ultimateAnimation.DrawActor(rect, focus, participant.Id, controller.PresentingAbility,
+                    Time.unscaledTime - controller.ActionStartedAt, tint, battleSprites, heroCastAnimation)) return;
             }
             bool meteorPresentation = controller.IsPresentingAction
                 && CastleMeteorPresentation.IsMeteor(controller.PresentingActor.Id, controller.PresentingAbility);
@@ -551,6 +605,9 @@ namespace DragonQuest.Prototype
         {
             if (participant.Team == CombatTeam.Party)
             {
+                if (controller.IsPresentingAction && controller.IsPresentingUltimate && Time.unscaledTime < controller.ActionImpactAt)
+                    foreach (CombatantState fallen in controller.PresentingRevivedTargets)
+                        if (fallen == participant) return new Color(.4f, .4f, .4f);
                 bool beforeMeteorImpact = controller.IsPresentingAction
                     && CastleMeteorPresentation.IsMeteor(controller.PresentingActor.Id, controller.PresentingAbility)
                     && Time.unscaledTime < controller.ActionImpactAt;

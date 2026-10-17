@@ -6,10 +6,10 @@ namespace DragonQuest.Combat
 
     public readonly struct CombatVitalChange
     {
-        public readonly int Sequence, Amount;
+        public readonly int Sequence, Amount, ActionHitIndex;
         public readonly bool IsCritical, IsMp, IsShielded, IsDamageOverTime;
-        public CombatVitalChange(int sequence, int amount, bool critical, bool mp, bool shielded = false, bool damageOverTime = false)
-        { Sequence = sequence; Amount = amount; IsCritical = critical; IsMp = mp; IsShielded = shielded; IsDamageOverTime = damageOverTime; }
+        public CombatVitalChange(int sequence, int amount, bool critical, bool mp, bool shielded = false, bool damageOverTime = false, int actionHitIndex = 0)
+        { Sequence = sequence; Amount = amount; IsCritical = critical; IsMp = mp; IsShielded = shielded; IsDamageOverTime = damageOverTime; ActionHitIndex = actionHitIndex; }
     }
 
     public sealed class CombatantState
@@ -20,11 +20,11 @@ namespace DragonQuest.Combat
         private readonly System.Collections.Generic.List<CombatVitalChange> vitalChanges = new System.Collections.Generic.List<CombatVitalChange>();
         private int vitalSequence;
         public System.Collections.Generic.IReadOnlyList<CombatVitalChange> VitalChanges => vitalChanges.AsReadOnly();
-        private void RecordVitalChange(int amount, bool critical = false, bool mp = false, bool shielded = false, bool damageOverTime = false)
+        private void RecordVitalChange(int amount, bool critical = false, bool mp = false, bool shielded = false, bool damageOverTime = false, int actionHitIndex = 0)
         {
             if (amount == 0) return;
             if (vitalChanges.Count == 64) vitalChanges.RemoveAt(0);
-            vitalChanges.Add(new CombatVitalChange(++vitalSequence, amount, critical, mp, shielded, damageOverTime));
+            vitalChanges.Add(new CombatVitalChange(++vitalSequence, amount, critical, mp, shielded, damageOverTime, actionHitIndex));
         }
         public int Hp { get; private set; }
         public int Mp { get; private set; }
@@ -63,13 +63,13 @@ namespace DragonQuest.Combat
         }
 
         internal void SpendMp(int cost) => Mp -= cost;
-        internal void TakeDamage(int amount, bool critical = false, bool damageOverTime = false)
+        internal void TakeDamage(int amount, bool critical = false, bool damageOverTime = false, int actionHitIndex = 0)
         {
             bool shielded = ShieldTurns > 0 && amount > 0;
             if (shielded) amount = (int)(((long)amount + 1) / 2);
             int previousHp = Hp;
             Hp = Math.Max(0, Hp - amount);
-            RecordVitalChange(Hp - previousHp, critical, shielded: shielded, damageOverTime: damageOverTime);
+            RecordVitalChange(Hp - previousHp, critical, shielded: shielded, damageOverTime: damageOverTime, actionHitIndex: actionHitIndex);
             if (Team == CombatTeam.Party) Limit.AddDamage(previousHp - Hp, Definition.MaxHp);
             if (!IsAlive) ClearConditions();
         }
@@ -112,6 +112,11 @@ namespace DragonQuest.Combat
             TauntTurns = 0;
             TauntedBy = null;
             ProtectedBy = null;
+        }
+
+        internal void ClearHarmfulConditions()
+        {
+            PoisonTurns = 0; BoundActions = 0; TauntTurns = 0; TauntedBy = null;
         }
 
         internal void GrantDamageShield(int turns, bool castingAction)

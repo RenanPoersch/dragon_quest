@@ -202,11 +202,11 @@ internal static class ElementalChecks
 
     private static void CheckUnrelatedEffectsAndSnapshots()
     {
-        CombatantState hero = Caster(MateriaResolver.LimitBreak), enemy = Target("enemy", Weak(DamageElement.Fire));
+        CombatantState hero = Caster(MateriaResolver.LimitBreak), enemy = Target("enemy", Weak(DamageElement.Fire), hp: 500);
         hero.Limit.AddDamage(100, 100);
         var battle = new BattleSession(hero, enemy);
         Act(battle, MateriaResolver.LimitBreak, enemy);
-        Assert(enemy.Hp == 66 && hero.Limit.Charge == 0, "Limit sem elemento nao recebe multiplicador elemental.");
+        Assert(enemy.Hp == 365 && hero.Limit.Charge == 0, "Omnislash sem elemento nao recebe multiplicador elemental nos 13 cortes.");
 
         hero = Caster(MateriaResolver.Defend);
         enemy = Target("enemy", ElementalAffinities.Neutral);

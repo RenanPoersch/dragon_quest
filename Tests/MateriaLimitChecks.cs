@@ -244,7 +244,7 @@ internal static class MateriaLimitChecks
         PartyMember member = Member(party, "aren");
         var hero = member.CreateCombatant(); var enemy = Enemy("enemy", attack: 25);
         var battle = new BattleSession(hero, enemy);
-        AbilityDefinition limit = Command(hero, "limit-break");
+        AbilityDefinition limit = Command(hero, "omnislash");
         AbilityDefinition oldMateriaCommand = Command(hero, "heavy-strike");
         Assert(!battle.TryAct(hero, limit, enemy, out _) && hero.Limit.Charge == 0 && hero.TurnsTaken == 0,
             "Limit incompleto nao pode consumir turno, MP ou carga.");
@@ -259,15 +259,15 @@ internal static class MateriaLimitChecks
         next.TakeDamage(10000);
         Assert(next.Hp == 0 && member.Limit.Charge == 100, "Overkill deve considerar HP realmente perdido e limitar carga a 100.");
         next = member.CreateCombatant(); enemy = Enemy("enemy");
-        battle = new BattleSession(next, enemy);
+        battle = new BattleSession(() => 1, null, new DragonQuest.Inventory.ItemInventory(), next, enemy);
         var foreign = Enemy("foreign");
         Assert(!battle.TryAct(next, oldMateriaCommand, enemy, out _), "Comando de materia de snapshot anterior nao pode ser aceito automaticamente.");
         // O comando basico Limit e compartilhado; o alvo estrangeiro permanece invalido.
-        limit = Command(next, "limit-break");
+        limit = Command(next, "omnislash");
         Assert(!battle.TryAct(next, limit, foreign, out _) && next.Limit.Charge == 100, "Alvo invalido nao pode gastar Limit cheio.");
         int previousMp = next.Mp;
         Act(battle, limit, enemy);
-        Assert(next.Limit.Charge == 0 && next.Mp == previousMp && enemy.Hp == 937, "Limit deve consumir toda a carga, sem MP, e aplicar o golpe.");
+        Assert(next.Limit.Charge == 0 && next.Mp == previousMp && enemy.Hp == 430, "Omnislash consome toda a carga, sem MP: 12 cortes de 38 e final de 114.");
         Assert(member.CreateCombatant().Limit.Charge == 0, "Limit gasto deve permanecer gasto no proximo encontro.");
         Assert(!battle.TryAct(battle.CurrentActor, limit, next, out _), "Outro combatente nao recebe comandos nem carga da equipe.");
         Assert(Member(PrototypePartyFactory.CreateTestParty(), "aren").Limit.Charge == 0, "Uma nova sessao deve ter barras independentes.");
