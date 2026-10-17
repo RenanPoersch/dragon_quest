@@ -155,6 +155,15 @@ namespace DragonQuest.Prototype
         {
             if (store == null) return;
             intro?.Update(Time.unscaledDeltaTime);
+            bool titleVisible = IsMenuVisible && page == MenuPage.Title && voyage == null
+                && !IsMenuFadingIn && (intro == null || !intro.BlocksMenuInput);
+            if (!titleVisible) achievementScreen.Dismiss();
+            else if (GameInput.IsFocused)
+            {
+                var notification = PrototypeAchievements.TakeNotification();
+                if (notification != null) achievementScreen.Show(notification, PrototypeAchievements.Progress.Counter);
+                achievementScreen.Update(Time.unscaledDeltaTime);
+            }
             if (voyage != null)
             {
                 if (GameInput.IsFocused) voyage.Update(Time.unscaledDeltaTime);
@@ -277,7 +286,7 @@ namespace DragonQuest.Prototype
             lastMousePosition = Event.current.mousePosition;
             if (page == MenuPage.Title)
             {
-                achievementScreen.Draw(PrototypeAchievements.Progress);
+                achievementScreen.Draw();
                 if (scaleSprite != null)
                     GUI.DrawTexture(new Rect(440, 160, 400, 400), scaleSprite, ScaleMode.ScaleToFit, true);
                 if (MenuButton(new Rect(490, 562, 300, 48), "New game", 0, titleButtonStyle)) NewGame();

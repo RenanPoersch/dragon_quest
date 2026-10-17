@@ -8,6 +8,7 @@ namespace DragonQuest.Prototype
     public static class PrototypeAchievements
     {
         private static EndingAchievementStore store;
+        private static EndingAchievement pendingNotification;
         private static EndingAchievementStore Store => store ?? (store = new EndingAchievementStore(
             Path.Combine(Application.persistentDataPath, "Achievements")));
 
@@ -15,11 +16,23 @@ namespace DragonQuest.Prototype
         public static string LastError => Store.LastError;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        private static void ResetSession() { store = null; }
+        private static void ResetSession() { store = null; pendingNotification = null; }
 
         public static void Complete(GameEnding ending)
         {
+            bool wasUnlocked = Store.Progress.Has(ending);
             if (!Store.TryUnlock(ending, out string error)) Debug.LogWarning(error);
+            if (wasUnlocked || !Store.Progress.Has(ending)) return;
+            foreach (var achievement in EndingAchievements.All)
+                if (achievement.Ending == ending) { pendingNotification = achievement; break; }
+        }
+
+        // The unlock survives the ending scene reload; the notification is consumed once.
+        public static EndingAchievement TakeNotification()
+        {
+            var notification = pendingNotification;
+            pendingNotification = null;
+            return notification;
         }
     }
 }

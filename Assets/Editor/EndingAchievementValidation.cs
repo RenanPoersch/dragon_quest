@@ -39,7 +39,7 @@ public static class EndingAchievementValidation
             && !EndingAchievementPresentation.Bounds.Overlaps(resume), "Panel keeps title art and both buttons clear.");
         for (int i = 0; i < EndingAchievements.Total; i++)
         {
-            Rect icon = EndingAchievementPresentation.IconRect(i), label = EndingAchievementPresentation.NameRect(i);
+            Rect icon = EndingAchievementPresentation.IconBounds, label = EndingAchievementPresentation.NameBounds;
             Assert(Contains(EndingAchievementPresentation.Bounds, icon)
                 && Contains(EndingAchievementPresentation.Bounds, label) && !icon.Overlaps(label), "Badge and name fit row.");
             string name = EndingAchievements.All[i].Name;
@@ -58,7 +58,7 @@ public static class EndingAchievementValidation
         Assert(endingSource.Split(new[] { "SceneManager.LoadScene(" }, StringSplitOptions.None).Length == 2,
             "There is one shared scene reload path.");
         string titleSource = File.ReadAllText("Assets/Scripts/Prototype/PrototypeSaveController.cs");
-        Assert(titleSource.Contains("achievementScreen.Draw(PrototypeAchievements.Progress);"),
+        Assert(titleSource.Contains("achievementScreen.Draw();"),
             "The title uses persistent achievement progress.");
         Debug.Log("ENDING_ACHIEVEMENT_UNITY_OK: three imported icons, pixel settings, transparency, font widths, layout and ending/menu hooks.");
     }
@@ -99,7 +99,9 @@ public sealed class EndingAchievementPreview : EditorWindow
         style.normal.textColor = Color.white;
         GUI.Label(new Rect(490, 562, 300, 48), "New game", style);
         GUI.Label(new Rect(490, 620, 300, 48), "Continue", style);
-        presentation.Draw(progress);
+        if (count > 0) presentation.Show(EndingAchievements.All[count - 1], progress.Counter);
+        else presentation.Dismiss();
+        presentation.Draw();
         GUI.color = color; GUI.matrix = previous;
     }
 }

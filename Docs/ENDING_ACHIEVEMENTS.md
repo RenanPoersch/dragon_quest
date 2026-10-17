@@ -7,11 +7,14 @@
 | The ugly | Espírito possui Aren após a queda do tirano | Coroa e olho violeta |
 
 Cada conquista é liberada ao concluir a sequência do respectivo final, antes de voltar
-à tela inicial. O painel aparece à direita da escama após o primeiro final.
-Mostra os três nomes, ícones coloridos para as conquistas liberadas, ícones escurecidos para
-as bloqueadas e o contador 1/3, 2/3 ou 3/3. A interface contém apenas os nomes
-The good, The bad e The ugly e o contador, sem título, subtítulos ou descrições.
-O painel acompanha a escala e o fade da tela inicial e não recebe foco de navegação.
+à tela inicial. Uma notificação no canto inferior direito da tela título mostra somente
+o achievement recém-liberado: seu ícone, The good, The bad ou The ugly, e o contador 1/3,
+2/3 ou 3/3. Não há lista de conquistas ou ícones bloqueados.
+
+A notificação começa quando a abertura e o fade da tela título terminam. Permanece por
+seis segundos e desaparece com fade; não recebe foco nem bloqueia os botões. Ao sair da
+tela título, é descartada. Não reaparece ao reabrir o jogo, iniciar outra partida ou
+repetir um final já registrado. O tempo pausa quando o jogo perde o foco.
 
 O arquivo `Application.persistentDataPath/Achievements/endings.json` acumula os três finais
 entre partidas e reinícios, independentemente dos slots de jornada. Novo jogo, sobrescrever
@@ -37,9 +40,9 @@ Validação automática:
 - `Tools/Test-EndingAchievements.ps1 -UnityIntegration`: executa as mesmas validações
   de importação e integração em um projeto temporário, sem fechar o Editor aberto.
 - `Tools > Dragon Quest > Validate Ending Achievements`: importadores, alpha, fonte, layout e hooks.
-- `Tools > Dragon Quest > Preview Ending Achievements`: prévia de 0/3 a 3/3 sem alterar o perfil.
+- `Tools > Dragon Quest > Preview Ending Achievements`: prévia de uma notificação por vez, sem alterar o perfil.
 
-Conferência em Play: concluir cada final, esperar o retorno à tela inicial e observar o
-ícone correspondente e a contagem. Reabrir o jogo e iniciar/carregar outra jornada para
-confirmar a permanência. Repetir um final deve conservar a contagem; derrota comum não
-deve acrescentar conquistas. Conferir também em janela estreita e com controle.
+Conferência em Play: concluir um final ainda não registrado, esperar o retorno à tela
+título e observar somente a nova conquista e a contagem. A notificação desaparece após
+seis segundos. Reabrir o jogo ou repetir o mesmo final não deve exibi-la novamente.
+Os finais registrados continuam salvos entre jornadas; derrota comum não libera conquistas.

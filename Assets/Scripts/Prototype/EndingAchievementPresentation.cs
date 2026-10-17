@@ -3,54 +3,69 @@ using UnityEngine;
 
 namespace DragonQuest.Prototype
 {
-    // Coordinates share the title menu's centered 1280 x 720 canvas.
+    // A single temporary notification on the title menu's 1280 x 720 canvas.
     public sealed class EndingAchievementPresentation
     {
-        public static readonly Rect Bounds = new Rect(910, 248, 326, 300);
-        private readonly Texture2D[] icons = new Texture2D[EndingAchievements.Total];
+        public const float Duration = 6f;
+        private const float FadeOutDuration = .5f;
+        public static readonly Rect Bounds = new Rect(910, 580, 326, 104);
+        public static readonly Rect IconBounds = new Rect(922, 593, 78, 78);
+        public static readonly Rect NameBounds = new Rect(1012, 596, 212, 32);
+        public static readonly Rect CounterBounds = new Rect(1012, 636, 212, 30);
+        private EndingAchievement achievement;
+        private Texture2D icon;
+        private string counter;
+        private float elapsed;
+        private bool hasDrawn;
         private GUIStyle counterStyle, nameStyle;
-        private static readonly Color Gold = new Color(.96f, .8f, .48f);
-        private static readonly Color Muted = new Color(.50f, .53f, .59f);
+        public bool IsVisible => achievement != null;
 
-        public static Rect IconRect(int index) => new Rect(922, 300 + index * 78, 78, 78);
-        public static Rect NameRect(int index) => new Rect(1012, 324 + index * 78, 212, 30);
-
-        public void Draw(EndingAchievements progress)
+        public void Show(EndingAchievement unlocked, string total)
         {
-            if (progress.Count == 0) return;
+            achievement = unlocked;
+            counter = total;
+            elapsed = 0;
+            hasDrawn = false;
+            icon = unlocked == null ? null : Resources.Load<Texture2D>(unlocked.IconResource);
+            if (icon != null) icon.filterMode = FilterMode.Point;
+        }
+
+        public void Update(float unscaledDeltaTime)
+        {
+            if (!IsVisible || !hasDrawn) return;
+            elapsed += Mathf.Max(0, unscaledDeltaTime);
+            if (elapsed >= Duration) Dismiss();
+        }
+
+        public void Dismiss()
+        { achievement = null; icon = null; }
+
+        public void Draw()
+        {
+            if (!IsVisible) return;
             EnsureStyles();
             Color previous = GUI.color;
-            GUI.color = new Color(.055f, .065f, .085f);
+            float alpha = Mathf.Clamp01((Duration - elapsed) / FadeOutDuration) * previous.a;
+            GUI.color = new Color(.055f, .065f, .085f, .96f * alpha);
             GUI.DrawTexture(Bounds, Texture2D.whiteTexture);
-            GUI.color = new Color(.32f, .26f, .15f);
+            GUI.color = new Color(.32f, .26f, .15f, alpha);
             GUI.DrawTexture(new Rect(Bounds.x, Bounds.y, Bounds.width, 2), Texture2D.whiteTexture);
-            GUI.color = Color.white;
-            GUI.Label(new Rect(930, 261, 286, 32), progress.Counter, counterStyle);
-            for (int i = 0; i < EndingAchievements.Total; i++)
-            {
-                var achievement = EndingAchievements.All[i];
-                bool unlocked = progress.Has(achievement.Ending);
-                GUI.color = unlocked ? Color.white : new Color(.30f, .30f, .30f);
-                if (icons[i] != null) GUI.DrawTexture(IconRect(i), icons[i], ScaleMode.ScaleToFit, true);
-                GUI.color = Color.white;
-                nameStyle.normal.textColor = unlocked ? Gold : Muted;
-                GUI.Label(NameRect(i), achievement.Name, nameStyle);
-            }
+            GUI.color = new Color(1, 1, 1, alpha);
+            if (icon != null) GUI.DrawTexture(IconBounds, icon, ScaleMode.ScaleToFit, true);
+            GUI.Label(NameBounds, achievement.Name, nameStyle);
+            GUI.Label(CounterBounds, counter, counterStyle);
             GUI.color = previous;
+            if (Event.current.type == EventType.Repaint) hasDrawn = true;
         }
 
         private void EnsureStyles()
         {
             if (counterStyle != null) return;
-            counterStyle = PrototypeTypography.Style(GUI.skin.label, 28, true);
-            counterStyle.normal.textColor = Gold;
-            counterStyle.alignment = TextAnchor.MiddleCenter;
+            counterStyle = PrototypeTypography.Style(GUI.skin.label, 24, true);
+            counterStyle.normal.textColor = Color.white;
+            counterStyle.alignment = TextAnchor.MiddleLeft;
             nameStyle = PrototypeTypography.Style(GUI.skin.label, 28, true);
-            for (int i = 0; i < icons.Length; i++)
-            {
-                icons[i] = Resources.Load<Texture2D>(EndingAchievements.All[i].IconResource);
-                if (icons[i] != null) icons[i].filterMode = FilterMode.Point;
-            }
+            nameStyle.normal.textColor = new Color(.96f, .8f, .48f);
         }
     }
 }
