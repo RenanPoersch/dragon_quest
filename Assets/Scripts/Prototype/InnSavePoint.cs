@@ -1,29 +1,33 @@
 using System;
 using System.Collections.Generic;
 using DragonQuest.Exploration;
-using DragonQuest.Interactions;
 using UnityEngine;
 
 namespace DragonQuest.Prototype
 {
     // O circulo marca o chao sem bloquear a passagem. A arte anima em oito quadros, com a base registrada.
-    public sealed class InnSavePoint : Interactable
+    public sealed class InnSavePoint : MonoBehaviour
     {
         public const int Columns=4, Rows=2, FrameCount=8;
         public const float FramesPerSecond=6f, Height=.95f;
         private readonly Sprite[] frames=new Sprite[FrameCount];
         private SpriteRenderer view;
         private Material material;
-        private Action save;
+        private Action openSaveMenu;
+        private PlayerMovement player;
+        private Func<bool> isBlocked;
+        private bool wasOnPoint, hasPlayerSample;
+        private int teleportRevision;
+        public const float ActivationRadius = .4f;
         private float elapsed;
         public Texture2D Source { get; private set; }
         public int CurrentFrame { get; private set; }
         public IReadOnlyList<Sprite> Frames => frames;
 
-        public void Initialize(Action manualSave)
+        public void Initialize(PlayerMovement hero, Func<bool> blocked, Action showSaveMenu)
         {
             if(view!=null) throw new InvalidOperationException("Ponto de salvamento ja inicializado.");
-            save=manualSave;
+            player=hero;isBlocked=blocked;openSaveMenu=showSaveMenu;
             Source=Resources.Load<Texture2D>("PixelArt/InnSavePoint");
             var shader=Resources.Load<Shader>("PixelCharacter");
             if(Source==null||shader==null||!Source.isReadable||Source.width%Columns!=0||Source.height%Rows!=0)
@@ -85,9 +89,29 @@ namespace DragonQuest.Prototype
             CurrentFrame=FrameAt(seconds);
             if(view.sprite!=frames[CurrentFrame]) view.sprite=frames[CurrentFrame];
         }
-        private void OnEnable(){elapsed=0;ShowAt(0);}
+        private void OnEnable(){elapsed=0;hasPlayerSample=false;wasOnPoint=false;ShowAt(0);}
         private void Update(){elapsed=Mathf.Repeat(elapsed+Time.deltaTime,FrameCount/FramesPerSecond);ShowAt(elapsed);}
-        public override void Interact(InteractionContext context) => save?.Invoke();
+        private bool Contains(Vector2 ground) => (ground-(Vector2)transform.position).sqrMagnitude <= ActivationRadius*ActivationRadius;
+        private void LateUpdate()
+        {
+            if(player==null) return;
+            Vector2 ground=player.transform.position;
+            // Carregar ou viajar para cima do cristal nao conta como pisar nele.
+            if(!hasPlayerSample||teleportRevision!=player.TeleportRevision)
+            {
+                hasPlayerSample=true;teleportRevision=player.TeleportRevision;wasOnPoint=Contains(ground);
+                return;
+            }
+            CheckPlayerStep(ground,!Application.isFocused||(isBlocked?.Invoke()??false));
+        }
+        public void CheckPlayerStep(Vector2 ground,bool blocked)
+        {
+            if(!isActiveAndEnabled) return;
+            bool onPoint=Contains(ground),entered=onPoint&&!wasOnPoint;
+            wasOnPoint=onPoint;
+            // Fechar ou cancelar a tela exige sair do circulo antes de abrir outra vez.
+            if(entered&&!blocked) openSaveMenu?.Invoke();
+        }
         private void OnDestroy()
         {
             foreach(Sprite frame in frames) if(frame!=null){if(Application.isPlaying)Destroy(frame);else DestroyImmediate(frame);}

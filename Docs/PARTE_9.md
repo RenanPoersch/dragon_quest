@@ -6,7 +6,8 @@ Novo jogo inicia na ilha com o kit econômico, sem gravar arquivos, e usa o prim
 
 ## Quando salva
 
-- Somente manualmente: E na hospedeira → Salvar jornada, ou **F5** no mapa global ou na hospedaria, fora de diálogo/menu/combate.
+- Na hospedaria, andar sobre o círculo do cristal abre a seleção dos três slots. Só escolher um slot grava a jornada; slots ocupados pedem confirmação. Ao salvar ou cancelar, saia do círculo e volte para reabrir a tela.
+- Também é possível salvar manualmente com E na hospedeira → Salvar jornada, ou **F5** no mapa global ou na hospedaria, fora de diálogo/menu/combate.
 - Vitórias, segredos, baús, entrega, compras, vendas, equipamentos, matérias e finais não gravam arquivos.
 - Os três slots, saves existentes e backups continuam funcionando no mesmo formato.
 

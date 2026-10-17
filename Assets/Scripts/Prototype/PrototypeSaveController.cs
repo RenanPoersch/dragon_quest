@@ -121,6 +121,13 @@ namespace DragonQuest.Prototype
             }
             if (Write("Jornada salva")) awaitingFirstSave = false;
         }
+        public void OpenInnSaveMenu()
+        {
+            if (IsMenuVisible || dialogue.IsOpen || battle.IsBusy || locations.LocationId != PrototypeTravel.Inn) return;
+            IsMenuVisible = true;
+            player.SetMovementEnabled(false);
+            OpenPage(MenuPage.Save);
+        }
         private void SaveToSlot(int slot)
         {
             int previousSlot = ActiveSlot;

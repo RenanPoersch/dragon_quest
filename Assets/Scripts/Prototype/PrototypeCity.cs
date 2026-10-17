@@ -17,6 +17,7 @@ namespace DragonQuest.Prototype
         private PrototypeBattleController battle;
         private TyrantAudience audience;
         private PrototypeSaveController saves;
+        private InnSavePoint innSavePoint;
         private ExplorationProgress progress;
         private readonly DragonProgress dragon = new DragonProgress();
 
@@ -144,6 +145,7 @@ namespace DragonQuest.Prototype
                 locations.Restore(journey.Data.Map, new Vector2(journey.Data.X, journey.Data.Y));
             });
             cheats.Initialize(player.GetComponent<PlayerMovement>(), battle, saves, progress);
+            innSavePoint.Initialize(player.GetComponent<PlayerMovement>(), () => dialogue.IsOpen || battle.IsBusy, saves.OpenInnSaveMenu);
         }
 
         private Transform Group(string groupName, Transform parent = null)
@@ -345,9 +347,7 @@ namespace DragonQuest.Prototype
             InnInteraction reception=Entity("Recepcao / falar com a hospedeira",PrototypeInnLayout.Reception,inn).AddComponent<InnInteraction>();
             reception.Initialize(() => saves.SaveManual());
             interactions.Add(reception);
-            InnSavePoint savePoint=Entity("Cristal de salvamento",PrototypeInnLayout.SavePoint,inn).AddComponent<InnSavePoint>();
-            savePoint.Initialize(() => saves.SaveManual());
-            interactions.Add(savePoint);
+            innSavePoint=Entity("Cristal de salvamento",PrototypeInnLayout.SavePoint,inn).AddComponent<InnSavePoint>();
             return inn;
         }
 

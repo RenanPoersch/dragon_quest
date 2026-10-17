@@ -55,10 +55,11 @@ public static class InnValidation
             dialogue.Choose(0); Assert(saves == 1,"keeper save callback remains functional");
             var saveObject=new GameObject("Cristal de salvamento / validacao");saveObject.transform.SetParent(root.transform,false);
             saveObject.transform.localPosition=PrototypeInnLayout.SavePoint;
-            var savePoint=saveObject.AddComponent<InnSavePoint>();savePoint.Initialize(()=>saves++);
+            var savePoint=saveObject.AddComponent<InnSavePoint>();int menuOpens=0;
+            savePoint.Initialize(hero.gameObject.AddComponent<PlayerMovement>(),()=>false,()=>menuOpens++);
             Assert(savePoint.Source.filterMode==FilterMode.Point&&savePoint.Source.mipmapCount==1&&savePoint.Frames.Count==8,"save crystal has eight sharp animation frames");
             Assert(saveObject.GetComponents<Collider2D>().Length==0&&PrototypeInnLayout.IsWalkable(PrototypeInnLayout.SavePoint),"save crystal does not block the floor");
-            Assert(Vector2.Distance(PrototypeInnLayout.SavePoint,PrototypeInnLayout.SaveApproach)<1.6f,"save crystal can be reached within interaction range");
+            Assert(Vector2.Distance(PrototypeInnLayout.SavePoint,PrototypeInnLayout.SaveApproach)>InnSavePoint.ActivationRadius,"approaching the crystal does not open its menu");
             var pixels=savePoint.Source.GetPixels32();var signatures=new HashSet<uint>();float spriteScale=savePoint.Frames[0].pixelsPerUnit;
             for(int i=0;i<InnSavePoint.FrameCount;i++)
             {
@@ -68,10 +69,37 @@ public static class InnValidation
                     &&savePoint.Frames[i].pivot.y>0&&savePoint.Frames[i].pivot.y<savePoint.Frames[i].rect.height,"save crystal has registered floor anchor");
                 signatures.Add(FrameSignature(savePoint.Frames[i],pixels,savePoint.Source.width));
             }
-            Assert(signatures.Count==8&&saves==1,"all eight frames are distinct and animation never saves automatically");
+            Assert(signatures.Count==8&&saves==1&&menuOpens==0,"all eight frames are distinct and animation never opens the menu or saves");
             savePoint.ShowAt(InnSavePoint.FrameCount/InnSavePoint.FramesPerSecond);Assert(savePoint.CurrentFrame==0,"animation wraps to its first frame");
-            savePoint.Interact(new InteractionContext(null,new ExplorationProgress(),_=>{}));
-            Assert(saves==2,"save crystal invokes manual save exactly once per interaction");
+            savePoint.CheckPlayerStep(PrototypeInnLayout.SaveApproach,false);
+            Assert(menuOpens==0,"walking nearby does not open the save menu");
+            savePoint.CheckPlayerStep(PrototypeInnLayout.SavePoint,false);
+            Assert(menuOpens==1&&saves==1,"stepping onto the circle opens the menu without saving");
+            savePoint.CheckPlayerStep(PrototypeInnLayout.SavePoint,false);
+            savePoint.CheckPlayerStep(PrototypeInnLayout.SavePoint,true);
+            savePoint.CheckPlayerStep(PrototypeInnLayout.SavePoint,false);
+            Assert(menuOpens==1,"remaining on the circle after saving or cancelling does not reopen the menu");
+            savePoint.CheckPlayerStep(PrototypeInnLayout.SaveApproach,false);
+            savePoint.CheckPlayerStep(PrototypeInnLayout.SavePoint,false);
+            Assert(menuOpens==2,"leaving and stepping onto the circle opens the menu again");
+            savePoint.CheckPlayerStep(PrototypeInnLayout.SaveApproach,false);
+            savePoint.CheckPlayerStep(PrototypeInnLayout.SavePoint,true);
+            savePoint.CheckPlayerStep(PrototypeInnLayout.SavePoint,false);
+            Assert(menuOpens==2,"dialogue, inventory, combat, menus and lost focus prevent activation");
+            savePoint.enabled=false;
+            savePoint.CheckPlayerStep(PrototypeInnLayout.SaveApproach,false);
+            savePoint.CheckPlayerStep(PrototypeInnLayout.SavePoint,false);
+            Assert(menuOpens==2,"inactive save points cannot open menus");
+            savePoint.enabled=true;
+            var movement=hero.GetComponent<PlayerMovement>();InvokePrivate(movement,"Awake");InvokePrivate(savePoint,"LateUpdate");
+            movement.Teleport(PrototypeInnLayout.SavePoint);InvokePrivate(savePoint,"LateUpdate");
+            savePoint.CheckPlayerStep(PrototypeInnLayout.SavePoint,false);
+            Assert(menuOpens==2,"loading or teleporting onto the crystal does not reopen the menu");
+            savePoint.CheckPlayerStep(PrototypeInnLayout.SaveApproach,false);
+            savePoint.CheckPlayerStep(PrototypeInnLayout.SavePoint,false);
+            Assert(menuOpens==3,"walking back after loading can open the menu");
+            hero.localPosition=PrototypeInnLayout.Spawn;
+            CheckSaveSelection(root,movement,dialogue,output);
             savePoint.ShowAt(0);
 
             foreach (Vector2Int resolution in new[] { new Vector2Int(1280,720),new Vector2Int(1280,800),new Vector2Int(960,720) })
@@ -106,8 +134,8 @@ public static class InnValidation
                 }
                 finally { camera.targetTexture = null; target.Release(); UnityEngine.Object.DestroyImmediate(target); }
             }
-            File.WriteAllText(Path.Combine(output,"result.txt"),"INN_VALIDATION_OK: full painting, depth contours, navigation, movement limits, animated save crystal, direct manual-save interaction, travel and complete framing at 16:9, 16:10 and 4:3.");
-            Debug.Log("INN_VALIDATION_OK: complete painted inn, eight-frame save crystal, navigation, depth, save interactions and three display aspects.");
+            File.WriteAllText(Path.Combine(output,"result.txt"),"INN_VALIDATION_OK: full painting, depth contours, navigation, movement limits, animated save crystal, step-on save menu without automatic writes, travel and complete framing at 16:9, 16:10 and 4:3.");
+            Debug.Log("INN_VALIDATION_OK: complete painted inn, eight-frame save crystal, navigation, depth, step-on save menu and three display aspects.");
         }
         finally
         {
@@ -119,6 +147,32 @@ public static class InnValidation
             }
         }
     }
+
+    private static void CheckSaveSelection(GameObject root,PlayerMovement hero,DialogueController dialogue,string output)
+    {
+        var controller=root.AddComponent<PrototypeSaveController>();
+        var combat=root.AddComponent<PrototypeBattleController>();
+        var maps=root.AddComponent<PrototypeLocations>();
+        var travel=new PrototypeTravel();travel.TryTravel(PrototypeTravel.City,out _);travel.TryTravel(PrototypeTravel.Inn,out _);
+        var store=new DragonQuest.Persistence.SaveStore(Path.Combine(output,"step-on-save-checks"));
+        SetPrivate(maps,"navigation",travel);
+        SetPrivate(controller,"store",store);SetPrivate(controller,"battle",combat);
+        SetPrivate(controller,"locations",maps);SetPrivate(controller,"player",hero);SetPrivate(controller,"dialogue",dialogue);
+        SetPrivate(controller,"<ActiveSlot>k__BackingField",2);
+        SetPrivate(controller,"<IsMenuVisible>k__BackingField",false);
+        controller.OpenInnSaveMenu();
+        Assert(controller.IsMenuVisible && controller.ActiveSlot==2,"crystal opens slot selection even when a current slot is assigned");
+        Assert(!store.Exists(1)&&!store.Exists(2)&&!store.Exists(3),"opening slot selection never writes a save");
+        InvokePrivate(controller,"CloseSaveMenu");
+        dialogue.Open("Hospedeira","Conversa em andamento.");controller.OpenInnSaveMenu();
+        Assert(!controller.IsMenuVisible,"dialogue blocks the save selection");dialogue.Close();
+        travel.TryTravel(PrototypeTravel.City,out _);controller.OpenInnSaveMenu();
+        Assert(!controller.IsMenuVisible,"save crystal menu is restricted to the inn");
+    }
+    private static void InvokePrivate(object target,string method)
+        => target.GetType().GetMethod(method,System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Instance).Invoke(target,null);
+    private static void SetPrivate(object target,string field,object value)
+        => target.GetType().GetField(field,System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Instance).SetValue(target,value);
 
     private static void CheckNavigation()
     {
