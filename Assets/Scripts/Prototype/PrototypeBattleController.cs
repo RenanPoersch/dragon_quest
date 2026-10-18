@@ -115,7 +115,8 @@ namespace DragonQuest.Prototype
             HasChainBreak ? ActionImpactAt + ChainPrisonAnimation.BreakDuration : 0);
         public bool IsPresentingAction => IsActive && PresentingActor != null && Time.unscaledTime < ActionEndsAt;
         public float ActionImpactAt => ActionStartedAt
-            + (IsPresentingDragonAttack ? DragonAttackAnimation.ImpactDelay(PresentingAbility.Id)
+            + (IsDestructiveMeteor ? CastleMeteorPresentation.ThrowImpactAt
+            : IsPresentingDragonAttack ? DragonAttackAnimation.ImpactDelay(PresentingAbility.Id)
             : IsPresentingUltimate ? UltimateTimeline.ImpactDelay(PresentingAbility) : IsPresentingSummon ? SummonAnimation.ImpactDelay
             : IsPresentingSpell ? SpellAnimation.ImpactDelay : BattleAnimationCatalog.ImpactDelay(PresentingActor?.Id, PresentingAbility));
         public int AttackPose => BattleAnimationCatalog.Frame(BattleAnimationCatalog.Resource(PresentingActor?.Id, PresentingAbility),

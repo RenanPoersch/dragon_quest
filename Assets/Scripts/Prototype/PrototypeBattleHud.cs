@@ -351,6 +351,10 @@ namespace DragonQuest.Prototype
             {
                 GUI.matrix = Matrix4x4.identity;
                 RectBox(new Rect(0, 0, Screen.width, Screen.height), Color.white);
+                GUI.matrix = arenaMatrix;
+                GUI.BeginGroup(new Rect(0, 0, 1280, 416));
+                DrawFloatingNumbers(true);
+                GUI.EndGroup();
                 GUI.matrix = previous;
             }
         }
@@ -479,8 +483,22 @@ namespace DragonQuest.Prototype
             if (ultimate)
                 ultimateAnimation.DrawEffects(controller.PresentingAbility, ultimateElapsed, ultimateCaster, ultimateFocus,
                     ultimateTargets, ultimateAllies, ultimateRevived);
+            DrawFloatingNumbers();
+            if (controller.IsCastleEncounter && (controller.CastleRules.Ending == GameEnding.None || meteorAction)
+                && castCounter.IsVisible(Time.unscaledTime))
+                foreach (CombatantState member in observedBattle.Combatants)
+                    if (member.Id == CastleBattleRules.TyrantId) { DrawCastNumber(FigureRect(member)); break; }
+            GUI.EndGroup();
+            GUI.matrix = arenaMatrix;
+        }
+
+        private void DrawFloatingNumbers(bool meteorOnly = false)
+        {
             foreach (FloatingNumber floating in numbers)
             {
+                if (meteorOnly && (floating.DisplayAmount != -CastleMeteorPresentation.MeteorDamageDisplay
+                    || floating.Change.IsMp || floating.Change.IsDamageOverTime
+                    || floating.Started < controller.ActionImpactAt - .01f)) continue;
                 Rect figure = FigureRect(floating.Target);
                 float elapsed = Time.unscaledTime - floating.Started;
                 if (elapsed < 0) continue;
@@ -500,12 +518,6 @@ namespace DragonQuest.Prototype
                 GUI.Label(new Rect(rect.x + 2, rect.y + 2, rect.width, rect.height), label, number);
                 number.normal.textColor = color; GUI.Label(rect, label, number);
             }
-            if (controller.IsCastleEncounter && (controller.CastleRules.Ending == GameEnding.None || meteorAction)
-                && castCounter.IsVisible(Time.unscaledTime))
-                foreach (CombatantState member in observedBattle.Combatants)
-                    if (member.Id == CastleBattleRules.TyrantId) { DrawCastNumber(FigureRect(member)); break; }
-            GUI.EndGroup();
-            GUI.matrix = arenaMatrix;
         }
 
         private void DrawCastNumber(Rect figure)

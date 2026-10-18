@@ -10,14 +10,28 @@ namespace DragonQuest.Prototype
         public const float AbsorptionEnd = 2.65f, AbsorberReturn = 2.8f;
         public const int MeteorDamageDisplay = 9999;
         public const float WhiteHold = .25f;
-        public const float CinematicCutAt = ImpactDelay + WhiteHold;
+        // O lancamento destrutivo tem seu proprio relogio; a absorcao preserva os tempos anteriores.
+        public const float ThrowRaiseAt = .4f, ThrowWindupAt = 1.65f, ThrowReleaseAt = 2.35f, ThrowImpactAt = 3.15f;
+        public const float CinematicCutAt = ThrowImpactAt + WhiteHold;
+        private static float Clamp01(float value) => Math.Max(0, Math.Min(1, value));
+        private static float Smooth(float value) { float t = Clamp01(value); return t * t * (3 - 2 * t); }
+        public static int ThrowPose(float elapsed) => elapsed < ThrowRaiseAt ? 0
+            : elapsed < ThrowWindupAt ? 1 : elapsed < ThrowReleaseAt ? 2 : 3;
+        public static float ThrowRaiseProgress(float elapsed) => Smooth(elapsed / ThrowRaiseAt);
+        public static float ThrowWindupProgress(float elapsed)
+            => Smooth((elapsed - ThrowWindupAt) / (ThrowReleaseAt - ThrowWindupAt));
+        public static float ThrowFlightProgress(float elapsed)
+        {
+            float t = Clamp01((elapsed - ThrowReleaseAt) / (ThrowImpactAt - ThrowReleaseAt));
+            return t * t;
+        }
         public static float ReleaseProgress(float elapsed)
         {
-            float t = Math.Max(0, Math.Min(1, elapsed / ImpactDelay));
+            float t = Math.Max(0, Math.Min(1, elapsed / ThrowWindupAt));
             return t * t * (3 - 2 * t);
         }
         public static float FireballScale(float elapsed) => 1 + .8f * ReleaseProgress(elapsed);
-        public static float WhiteOpacity(float elapsed) => elapsed >= ImpactDelay ? 1 : 0;
+        public static float WhiteOpacity(float elapsed) => elapsed >= ThrowImpactAt ? 1 : 0;
         public static bool ShouldCutToCinematic(float elapsed) => elapsed >= CinematicCutAt;
         public const float ProtectDuration = 1.2f, ShieldHitDuration = .55f;
         public static bool IsMeteor(string actorId, AbilityDefinition ability)

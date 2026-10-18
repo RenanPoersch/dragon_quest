@@ -18,7 +18,7 @@ Copy-Item -LiteralPath (Join-Path $WorkDirectory 'Runtime/DragonQuest.Scripts.dl
 Copy-Item -LiteralPath (Join-Path $meteorRoot 'Tests/MeteorReleaseUnityChecks.cs') -Destination (Join-Path $meteorProject 'Assets/Editor')
 Copy-Item -LiteralPath (Join-Path $meteorRoot 'Assets/Editor/MeteorAbsorptionValidation.cs') -Destination (Join-Path $meteorProject 'Assets/Editor')
 Copy-Item -LiteralPath (Join-Path $meteorRoot 'ProjectSettings/ProjectVersion.txt') -Destination (Join-Path $meteorProject 'ProjectSettings')
-foreach ($meteorSprite in @('ArenMeteorDraconic', 'DraconicAbsorptionAura', 'TyrantFireballRelease', 'MeteorFireRibbons', 'TyrantProtect', 'TyrantShieldHit')) {
+foreach ($meteorSprite in @('ArenMeteorDraconic', 'DraconicAbsorptionAura', 'TyrantFireballRelease', 'TyrantMeteorThrow', 'MeteorFireRibbons', 'TyrantProtect', 'TyrantShieldHit')) {
     foreach ($meteorSuffix in @('.png', '.png.meta')) {
         Copy-Item -LiteralPath (Join-Path $meteorRoot ('Assets/Resources/PixelArt/' + $meteorSprite + $meteorSuffix)) -Destination (Join-Path $meteorProject 'Assets/Resources/PixelArt')
     }

@@ -28,17 +28,25 @@ public static class CastlePresentationChecks
     private static void CheckReleaseTiming()
     {
         Check(CastleMeteorPresentation.FireballScale(0)==1
-            &&CastleMeteorPresentation.FireballScale(CastleMeteorPresentation.ImpactDelay)==1.8f,
-            "A bola aumenta na mao ate o fim da carga.");
+            &&CastleMeteorPresentation.FireballScale(CastleMeteorPresentation.ThrowWindupAt)==1.8f,
+            "A esfera cresce antes de o rei preparar o arremesso.");
+        Check(CastleMeteorPresentation.ThrowPose(0)==0
+            &&CastleMeteorPresentation.ThrowPose(CastleMeteorPresentation.ThrowRaiseAt)==1
+            &&CastleMeteorPresentation.ThrowPose(CastleMeteorPresentation.ThrowWindupAt)==2
+            &&CastleMeteorPresentation.ThrowPose(CastleMeteorPresentation.ThrowReleaseAt)==3,
+            "Preparar, erguer duas maos, recuar e arremessar sao poses distintas.");
+        Check(CastleMeteorPresentation.ThrowFlightProgress(CastleMeteorPresentation.ThrowReleaseAt)==0
+            &&CastleMeteorPresentation.ThrowFlightProgress(CastleMeteorPresentation.ThrowImpactAt)==1,
+            "A esfera so viaja depois do movimento para tras e chega antes do dano.");
         float previous=0;
-        for(int frame=0;frame<=126;frame++)
+        for(int frame=0;frame<=216;frame++)
         {
             float time=frame/60f, scale=CastleMeteorPresentation.FireballScale(time);
             Check(scale>=previous&&scale<=1.8f,"A carga cresce continuamente."); previous=scale;
-            Check(CastleMeteorPresentation.WhiteOpacity(time)==(time>=CastleMeteorPresentation.ImpactDelay?1:0),
+            Check(CastleMeteorPresentation.WhiteOpacity(time)==(time>=CastleMeteorPresentation.ThrowImpactAt?1:0),
                 "O clarao comeca apenas no instante do dano.");
         }
-        Check(!CastleMeteorPresentation.ShouldCutToCinematic(CastleMeteorPresentation.ImpactDelay)
+        Check(!CastleMeteorPresentation.ShouldCutToCinematic(CastleMeteorPresentation.ThrowImpactAt)
             &&CastleMeteorPresentation.ShouldCutToCinematic(CastleMeteorPresentation.CinematicCutAt),
             "O corte automatico vem logo depois do clarao.");
     }

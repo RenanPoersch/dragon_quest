@@ -10,7 +10,7 @@ public static class MeteorAbsorptionValidation
     [MenuItem("Tools/Dragon Quest/Validate Comet Absorption")]
     public static void Run()
     {
-        foreach (string resource in new[] { "ArenMeteorDraconic", "DraconicAbsorptionAura", "TyrantFireballRelease", "MeteorFireRibbons" })
+        foreach (string resource in new[] { "ArenMeteorDraconic", "DraconicAbsorptionAura", "TyrantFireballRelease", "MeteorFireRibbons", "TyrantMeteorThrow" })
         {
             Texture2D texture = Resources.Load<Texture2D>("PixelArt/" + resource);
             Assert(texture != null, "Missing absorption sprite: " + resource);
@@ -77,13 +77,23 @@ public static class MeteorAbsorptionValidation
             Assert(spells.DrawMeteorCaster(king, time, Color.white), "Release keeps the king visible.");
             spells.DrawMeteor(king, ground, false, time);
             Assert(!drawn.Contains("TyrantFlamingMeteor"), "No falling meteor in the battle.");
-            Assert(drawn.Count == (time < CastleMeteorPresentation.ImpactDelay ? 2 : 1),
+            Assert(drawn.Contains("TyrantMeteorThrow"), "Four new poses use both hands to throw the sphere.");
+            Assert(drawn.Count == (time < CastleMeteorPresentation.ThrowImpactAt ? 2 : 1),
                 "Only the king and his growing orb appear before the flash.");
+            Assert(Mathf.Abs(bounds[0].yMax - king.yMax) < .01f, "Every throwing pose keeps the feet grounded.");
             if (bounds.Count == 2)
-                Assert(Mathf.Abs(bounds[1].yMax - (king.y + king.height * .26f)) < .01f
-                    && Mathf.Abs(bounds[1].center.x - (king.center.x + king.height * .43f)) < .01f,
-                    "The fireball grows upward from the palm without covering the king.");
+            {
+                Assert(Vector2.Distance(bounds[1].center, CastleSpellAnimation.ThrowFireballCenter(king, time)) < .01f,
+                    "The sphere follows the lifted hands, windup and flight.");
+                Assert(bounds[1].xMin > 20 && bounds[1].xMax < 1260 && bounds[1].yMin >= 0 && bounds[1].yMax < 416,
+                    "The complete sphere stays inside the arena.");
+            }
         }
+        Assert(CastleSpellAnimation.ThrowFireballCenter(king, CastleMeteorPresentation.ThrowReleaseAt).x
+            < CastleSpellAnimation.ThrowFireballCenter(king, CastleMeteorPresentation.ThrowWindupAt).x - 40,
+            "Both hands pull the sphere behind the king before release.");
+        Assert(Vector2.Distance(CastleSpellAnimation.ThrowFireballCenter(king, CastleMeteorPresentation.ThrowImpactAt),
+            CastleSpellAnimation.ThrowImpactPoint) < .01f, "The thrown sphere arrives in the middle of the arena.");
         Rect arrived = MeteorAbsorptionAnimation.BearerRect(ground, 1.5f);
         Rect landed = MeteorAbsorptionAnimation.BearerRect(ground, CastleMeteorPresentation.Duration);
         Assert(arrived.x < ground.x - 200 && arrived.y < ground.y - 95 && landed == ground,
@@ -91,7 +101,7 @@ public static class MeteorAbsorptionValidation
 
         string output = Environment.GetEnvironmentVariable("DQ_COMET_OUTPUT");
         if (!string.IsNullOrEmpty(output)) RenderPreview(output, king, ground);
-        Debug.Log("COMET_ABSORPTION_UNITY_OK: sprite imports, 216 rendered frames, draconic armor, layered absorption aura, fire transfer and growing casting orb and no battle comet.");
+        Debug.Log("COMET_ABSORPTION_UNITY_OK: sprite imports, 216 rendered frames, draconic armor, layered absorption aura, fire transfer and two-handed overhead throw, central impact and no battle comet.");
     }
 
     private static void RenderPreview(string output, Rect king, Rect ground)
@@ -124,7 +134,7 @@ public static class MeteorAbsorptionValidation
                 File.WriteAllBytes(Path.Combine(output, "comet-" + time.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture) + ".png"), capture.EncodeToPNG());
                 UnityEngine.Object.DestroyImmediate(capture);
             }
-            foreach (float time in new[] { 0f, .7f, 1.4f, 2.09f, 2.1f })
+            foreach (float time in new[] { 0f, .4f, 1.2f, 1.65f, 2.2f, 2.35f, 2.65f, 2.95f, 3.14f, 3.15f })
             {
                 RenderTexture.active = target;
                 GL.Clear(true, true, new Color(.08f, .07f, .13f));

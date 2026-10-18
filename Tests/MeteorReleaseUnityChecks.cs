@@ -66,6 +66,11 @@ public static class MeteorReleaseUnityChecks
                 "The displayed one leaves the battle open.");
             BeforeKing(battle);
             int[] hp = battle.Combatants.Select(c => c.Hp).ToArray();
+            var hud = fixture.AddComponent<PrototypeBattleHud>(); hud.Initialize(controller);
+            // Only observe combat events here; the isolated project omits unrelated Ultimate atlases.
+            typeof(PrototypeBattleHud).GetField("observedBattle", BindingFlags.Instance | BindingFlags.NonPublic)
+                .SetValue(hud, battle);
+            Call(hud, "ObserveBattle");
             Call(controller, "Update");
             typeof(PrototypeBattleController).GetField("enemyActionTime", BindingFlags.Instance | BindingFlags.NonPublic)
                 .SetValue(controller, Time.unscaledTime - 1);
@@ -75,13 +80,22 @@ public static class MeteorReleaseUnityChecks
                 && controller.MeteorWhiteOpacity == 0, "Starting the animation cannot damage or flash early.");
             if (!longFrame)
             {
-                Age(controller, CastleMeteorPresentation.ImpactDelay - .02f); Call(controller, "Update");
+                Age(controller, CastleMeteorPresentation.ThrowReleaseAt + .05f); Call(controller, "Update");
+                Check(hp.SequenceEqual(battle.Combatants.Select(c => c.Hp)) && controller.MeteorWhiteOpacity == 0,
+                    "Releasing the sphere cannot damage before it reaches the center.");
+                Age(controller, CastleMeteorPresentation.ThrowImpactAt - .02f); Call(controller, "Update");
                 Check(hp.SequenceEqual(battle.Combatants.Select(c => c.Hp)) && controller.MeteorWhiteOpacity == 0,
                     "HP and the screen remain intact throughout the growing fireball.");
-                Age(controller, CastleMeteorPresentation.ImpactDelay + .01f); Call(controller, "Update");
+                Age(controller, CastleMeteorPresentation.ThrowImpactAt + .01f); Call(controller, "Update");
                 Check(battle.Combatants.All(c => !c.IsAlive) && controller.MeteorWhiteOpacity == 1,
                     "Damage and full-screen white begin together after the charge.");
                 Check(completions == 1 && endings == 0 && controller.IsActive, "The white frame precedes the automatic cut.");
+                Call(hud, "ObserveBattle");
+                var displayed = ((System.Collections.IEnumerable)typeof(PrototypeBattleHud)
+                    .GetField("numbers", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(hud)).Cast<object>();
+                Check(displayed.Count(value => (int)value.GetType().GetField("DisplayAmount").GetValue(value)
+                    == -CastleMeteorPresentation.MeteorDamageDisplay) == battle.Combatants.Count,
+                    "Every target has a visible 9999 number ready to draw over the white screen.");
             }
             Age(controller, CastleMeteorPresentation.CinematicCutAt + .01f); Call(controller, "Update");
             Check(battle.Combatants.All(c => !c.IsAlive) && completions == 1 && endings == 1
