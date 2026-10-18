@@ -64,7 +64,7 @@ namespace DragonQuest.Combat
             if (effect == AbilityEffect.Drain && targets != TargetRule.Enemy)
                 throw new ArgumentException("Drenar vida exige um inimigo individual.");
             if (effect == AbilityEffect.Bind && (targets != TargetRule.Enemy || power != 1))
-                throw new ArgumentException("Correntes exige um inimigo e impede exatamente uma acao.");
+                throw new ArgumentException("Correntes exige um inimigo e uma prisao quebravel por acerto.");
             if ((effect == AbilityEffect.MindControl || effect == AbilityEffect.Silence)
                 && (targets != TargetRule.Enemy || power != 1))
                 throw new ArgumentException("Controle mental e silencio exigem um inimigo e duram exatamente uma acao.");

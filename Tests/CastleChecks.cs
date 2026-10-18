@@ -153,9 +153,9 @@ internal static class CastleChecks
         hero=new CombatantState("hero",new CombatantDefinition("Heroi","Aliado",100,20,1,0,0,5,PrototypeBattleFactory.Attack),CombatTeam.Party);
         spirit=new CombatantState("spirit",new CombatantDefinition("Espirito","Inimigo",100,0,0,0,0,20,PrototypeCastleBattleFactory.Chains),CombatTeam.Enemy);
         battle=new BattleSession(hero,spirit);
-        Assert(EnemyAI.TryTakeTurn(battle,out _)&&hero.TurnsTaken==1&&hero.BoundActions==0&&hero.Mp==20&&hero.Limit.Charge==0,"Correntes pula uma acao sem gastar MP nem Limit.");
-        Assert(battle.LastMessage.Contains("Correntes")&&battle.CurrentActor==spirit,"Perda de acao deve ter feedback e avancar ordem de turnos.");
-        hero.BoundActions=1;hero.TakeDamage(100);hero.RecoverHp(30);
+        Assert(EnemyAI.TryTakeTurn(battle,out _)&&hero.TurnsTaken==1&&hero.IsBound&&hero.Mp==20&&hero.Limit.Charge==0,"Correntes impede a acao e permanece sem gastar MP nem Limit.");
+        Assert(battle.LastMessage.Contains("acorrentado")&&battle.CurrentActor==spirit,"Perda de acao deve ter feedback e avancar ordem de turnos.");
+        hero.BoundActions=1;hero.TakeDamage(100,damageOverTime:true);hero.RecoverHp(30);
         Assert(hero.BoundActions==0,"Morte e reviver nao podem herdar correntes antigas.");
     }
     private static void CheckFullGoodAndDefeat()

@@ -31,7 +31,15 @@ namespace DragonQuest.Combat
         public bool IsAlive => Hp > 0;
         public bool IsDefending { get; internal set; }
         public bool IsCharging { get; internal set; }
+        // Saved as 0/1 for compatibility; chains persist until struck, never tick down.
         public int BoundActions { get; internal set; }
+        public bool IsBound => BoundActions > 0;
+        internal bool TryBreakChains()
+        {
+            if (!IsBound) return false;
+            BoundActions = 0;
+            return true;
+        }
         public int MindControlTurns { get; internal set; }
         public int SilenceTurns { get; internal set; }
         public bool IsSilenced => SilenceTurns > 0;
@@ -69,6 +77,9 @@ namespace DragonQuest.Combat
         internal void TakeDamage(int amount, bool critical = false, bool damageOverTime = false, int actionHitIndex = 0,
             bool deferDefeatCleanup = false)
         {
+            // A direct hit is absorbed by the chains even when its damage is zero.
+            // Poison is a condition tick, not a hit on the prison.
+            if (!damageOverTime && TryBreakChains()) return;
             bool shielded = ShieldTurns > 0 && amount > 0;
             if (shielded) amount = (int)(((long)amount + 1) / 2);
             int previousHp = Hp;

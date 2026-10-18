@@ -137,6 +137,7 @@ internal sealed class SpiritBossPreviewScene
 {
     private readonly Action<Texture2D, Rect, Rect, Color> draw;
     private readonly Texture2D background;
+    private readonly ChainPrisonAnimation chainPrisons;
     private readonly Texture2D[] actors = new Texture2D[4];
     private readonly Rect[] uv = new Rect[4];
     private readonly float[] aspect = new float[4];
@@ -145,6 +146,7 @@ internal sealed class SpiritBossPreviewScene
     public SpiritBossPreviewScene(Action<Texture2D, Rect, Rect, Color> draw)
     {
         this.draw = draw;
+        chainPrisons = new ChainPrisonAnimation(draw);
         background = Resources.Load<Texture2D>("BattleBackgrounds/castle");
         string[] resources = { "SpiritBattle", "ArenBattle", "LiaBattle", "BramBattle" };
         for (int i = 0; i < resources.Length; i++)
@@ -165,7 +167,7 @@ internal sealed class SpiritBossPreviewScene
         float width = area.height * aspect[index];
         draw(actors[index], new Rect(area.center.x-width/2, area.y, width, area.height), uv[index], Color.white);
     }
-    public void Draw(SpiritAttackAnimation animation, AbilityDefinition skill, float time)
+    public void Draw(SpiritAttackAnimation animation, AbilityDefinition skill, float time, float breakAt = float.PositiveInfinity)
     {
         Rect arena = new Rect(20, 20, 1240, 396);
         if (background != null) draw(background, arena, new Rect(0,0,1,1), Color.white);
@@ -179,6 +181,8 @@ internal sealed class SpiritBossPreviewScene
             Rect home = heroes[hero];
             if (active && (skill.Targets == TargetRule.AllEnemies || hero == selected)) home.position += SpiritAttackAnimation.TargetOffset(skill, time);
             Actor(hero+1, home);
+            if (SpiritAttackTimeline.Skill(skill) == 3 && hero == selected && time >= SpiritAttackTimeline.Impact(skill))
+                chainPrisons.Draw(home, time < breakAt, time, time - breakAt);
         }
         if (active) animation.DrawEffects(caster, targets, skill, time);
     }

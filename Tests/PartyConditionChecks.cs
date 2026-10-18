@@ -35,7 +35,7 @@ internal static class PartyConditionChecks
         var nextBattle = PrototypeBattleFactory.CreateEncounter(party);
         Check(nextBattle.GetValidItemTargets(PrototypePartyFactory.PhoenixFeather).Contains(Find(nextBattle, "bram")), "Aliado que entrou derrotado pode ser revivido na batalha.");
         Check(nextBattle.TryAct(nextBattle.CurrentActor, MateriaResolver.Defend, nextBattle.CurrentActor, out _), "Aliado vivo age com companheiro derrotado.");
-        Check(Find(nextBattle, "lia").BoundActions == 0 && Find(nextBattle, "lia").TurnsTaken == 1, "Correntes herdadas consomem a proxima acao.");
+        Check(Find(nextBattle, "lia").IsBound && Find(nextBattle, "lia").TurnsTaken == 1, "Correntes herdadas continuam impedindo acoes ate um acerto.");
         Check(party.Members[0].Hp == hp && aren.Hp == hp, "Instancias de encontros e estado do mapa permanecem independentes.");
         var revival = PrototypeBattleFactory.CreateEncounter(party);
         Check(revival.TryUseItem(revival.CurrentActor, PrototypePartyFactory.PhoenixFeather, Find(revival, "bram"), out _)

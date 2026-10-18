@@ -16,6 +16,7 @@ namespace DragonQuest.Combat
         private readonly List<CombatantState> combatants;
         private readonly List<CombatantState> turnOrder = new List<CombatantState>();
         private int turnIndex;
+        private bool skippingBoundTurns;
         private readonly Func<double> criticalRoll;
 
         public IReadOnlyList<CombatantState> Combatants { get; }
@@ -69,6 +70,7 @@ namespace DragonQuest.Combat
             if (target.Team != actor.Team) return false;
             if (item.Effect == ItemEffect.Revive) return !target.IsAlive;
             if (!target.IsAlive) return false;
+            if (target.IsBound) return true;
             if (item.Effect == ItemEffect.RestoreHp) return target.Hp < target.Definition.MaxHp;
             if (item.Effect == ItemEffect.RestoreMp) return target.Mp < target.Definition.MaxMp;
             return target.PoisonTurns > 0;
@@ -79,12 +81,15 @@ namespace DragonQuest.Combat
             if (Outcome != BattleOutcome.None) { message = "A batalha ja terminou."; return false; }
             if (actor == null || actor != CurrentActor || actor.Team != CombatTeam.Party)
             { message = "Itens so podem ser usados no turno de um aliado."; return false; }
+            if (actor.IsBound) { message = "Este personagem esta acorrentado."; return false; }
             if (actor.MindControlTurns > 0) { message = "O controle mental obriga um ataque aleatorio."; return false; }
             if (item == null || Inventory.QuantityOf(item) == 0) { message = "Item indisponivel no inventario."; return false; }
             if (target == null || !combatants.Contains(target) || !IsValidItemTarget(actor, item, target))
             { message = "Este alvo nao precisa ou nao pode receber o item."; return false; }
             if (!Inventory.TryConsume(item)) { message = "Item esgotado."; return false; }
+            bool brokeChains = target.TryBreakChains();
             message = actor.Definition.Name + " usou " + item.Name + ": " + target.Definition.Name;
+            if (brokeChains) message += " (correntes quebradas)";
             if (item.Effect == ItemEffect.RestoreHp)
             {
                 int before = target.Hp;
@@ -154,10 +159,14 @@ namespace DragonQuest.Combat
             if (ability.Effect == AbilityEffect.Revive) return target.Team == actor.Team && !target.IsAlive;
             if (!target.IsAlive) return false;
             if (ability.Targets == TargetRule.Self && target != actor) return false;
+            if (ability.Effect == AbilityEffect.Bind && target.IsBound) return false;
+            // The prison is an offensive target over its ally. Area attacks also hit these prisons.
+            if ((ability.Targets == TargetRule.Enemy || ability.Targets == TargetRule.AllEnemies)
+                && target != actor && target.IsBound && ability.Effect != AbilityEffect.Bind) return true;
             if ((ability.Targets == TargetRule.Enemy || ability.Targets == TargetRule.AllEnemies) && target.Team == actor.Team) return false;
             if ((ability.Targets == TargetRule.Ally || ability.Targets == TargetRule.AllAllies) && target.Team != actor.Team) return false;
-            if (ability.Effect == AbilityEffect.Heal && target.Hp >= target.Definition.MaxHp) return false;
-            if (ability.Effect == AbilityEffect.Cleanse && target.PoisonTurns == 0) return false;
+            if (ability.Effect == AbilityEffect.Heal && target.Hp >= target.Definition.MaxHp && !target.IsBound) return false;
+            if (ability.Effect == AbilityEffect.Cleanse && target.PoisonTurns == 0 && !target.IsBound) return false;
             if (ability.Effect == AbilityEffect.Protect && target == actor) return false;
             if ((ability.Effect == AbilityEffect.PhysicalDamage || ability.Effect == AbilityEffect.MagicDamage || ability.Effect == AbilityEffect.Drain || ability.Effect == AbilityEffect.Bind
                 || ability.Effect == AbilityEffect.MindControl || ability.Effect == AbilityEffect.Silence) && ability.Targets == TargetRule.Enemy
@@ -173,6 +182,7 @@ namespace DragonQuest.Combat
             foreach (AbilityDefinition known in actor.Definition.Abilities)
                 if (known == ability) knownAbility = true;
             if (!knownAbility) { message = "Habilidade indisponivel para este personagem."; return false; }
+            if (actor.IsBound) { message = "Este personagem esta acorrentado."; return false; }
             if (actor.MindControlTurns > 0) { message = "O controle mental obriga um ataque aleatorio."; return false; }
             if (actor.IsSilenced && ability.IsMagic) { message = "Silencio: nao pode usar magia neste turno."; return false; }
             if(Rules!=null&&!Rules.ValidateAction(actor,ability,out message)) return false;
@@ -184,7 +194,15 @@ namespace DragonQuest.Combat
 
             actor.SpendMp(ability.MpCost);
             if (ability.UsesLimit) actor.Limit.Spend();
-            if (Rules != null && Rules.TryResolveAction(this,actor,ability,out message)) { }
+            if (ability.Targets == TargetRule.Enemy && ability.Effect != AbilityEffect.Bind && target.IsBound)
+            {
+                // One action breaks one prison. Multi-hit attacks never spill onto the freed ally.
+                target.TryBreakChains();
+                actor.IsCharging = false;
+                message = actor.Definition.Name + " usou " + ability.Name + ": correntes de "
+                    + target.Definition.Name + " quebradas!";
+            }
+            else if (Rules != null && Rules.TryResolveAction(this,actor,ability,out message)) { }
             else if (ability.PartyEffect == PartyEffect.RestoreCleanseAndRevive)
                 message = actor.Definition.Name + " usou " + ability.Name + ": ";
             else if (ability.Effect == AbilityEffect.PhysicalDamage || ability.Effect == AbilityEffect.MagicDamage || ability.Effect == AbilityEffect.Drain)
@@ -205,14 +223,16 @@ namespace DragonQuest.Combat
                         recipient = target.ProtectedBy; target.ProtectedBy = null;
                         report.Append(recipient.Definition.Name).Append(" interceptou a sequencia. ");
                     }
+                    bool prisonIntercepted = recipient.IsBound;
                     int total = 0, landed = 0, lastDamage = 0;
                     var hitReport = new StringBuilder();
-                    for (int hit = 1; hit <= ability.HitCount; hit++)
+                    for (int hit = 1; hit <= (prisonIntercepted ? 1 : ability.HitCount); hit++)
                     {
                         hitReport.Clear();
                         lastDamage = ApplyDamage(actor, ability, recipient, false, hitReport, hit);
                         total += lastDamage; landed++;
                     }
+                    if (prisonIntercepted) report.Append("Correntes de ").Append(recipient.Definition.Name).Append(" quebradas. ");
                     report.Append(recipient.Definition.Name).Append(" -").Append(total).Append(" HP em ").Append(landed).Append(" cortes");
                     if (landed == ability.HitCount) report.Append(" (final -").Append(lastDamage).Append(" HP)");
                     report.Append(". ");
@@ -265,12 +285,14 @@ namespace DragonQuest.Combat
             else if(ability.Effect==AbilityEffect.Bind)
             {
                 target.BoundActions=1;
-                message=actor.Definition.Name+" usou Correntes: "+target.Definition.Name+" perdera sua proxima acao.";
+                message=actor.Definition.Name+" usou Correntes: "+target.Definition.Name+" esta acorrentado.";
             }
             else
             {
+                bool brokeChains = target.TryBreakChains();
                 target.ProtectedBy = actor;
-                message = actor.Definition.Name + " protegera " + target.Definition.Name + " do proximo golpe individual, ate seu proximo turno.";
+                message = (brokeChains ? "Correntes de " + target.Definition.Name + " quebradas. " : "")
+                    + actor.Definition.Name + " protegera " + target.Definition.Name + " do proximo golpe individual, ate seu proximo turno.";
             }
 
             if (ability.PartyEffect != PartyEffect.None)
@@ -285,7 +307,7 @@ namespace DragonQuest.Combat
         {
             target = null; message = string.Empty;
             CombatantState actor = CurrentActor;
-            if (actor == null || !actor.IsAlive || actor.MindControlTurns <= 0) return false;
+            if (actor == null || !actor.IsAlive || actor.IsBound || actor.MindControlTurns <= 0) return false;
             if (double.IsNaN(targetRoll) || targetRoll < 0 || targetRoll >= 1)
                 throw new ArgumentOutOfRangeException(nameof(targetRoll));
             var candidates = new List<CombatantState>();
@@ -294,7 +316,7 @@ namespace DragonQuest.Combat
             if (candidates.Count == 0) return false;
             target = candidates[(int)(targetRoll * candidates.Count)];
             CombatantState intended = target;
-            if (target.ProtectedBy != null && target.ProtectedBy.IsAlive) target = target.ProtectedBy;
+            if (!target.IsBound && target.ProtectedBy != null && target.ProtectedBy.IsAlive) target = target.ProtectedBy;
             var report = new StringBuilder(actor.Definition.Name + " esta confuso! ");
             ApplyDamage(actor, MindControlAttack, intended, true, report);
             message = report.ToString();
@@ -308,6 +330,7 @@ namespace DragonQuest.Combat
             foreach (CombatantState ally in combatants)
             {
                 if (ally.Team != actor.Team) continue;
+                ReportBrokenChains(ally, report);
                 if (ability.PartyEffect == PartyEffect.RestoreAndRevive || ability.PartyEffect == PartyEffect.RestoreCleanseAndRevive)
                 {
                     bool defeated = !ally.IsAlive;
@@ -356,6 +379,7 @@ namespace DragonQuest.Combat
 
         private static void ApplyRecovery(CombatantState actor, AbilityDefinition ability, CombatantState target, StringBuilder report)
         {
+            ReportBrokenChains(target, report);
             report.Append(target.Definition.Name);
             if (ability.Effect == AbilityEffect.Heal)
             {
@@ -379,6 +403,7 @@ namespace DragonQuest.Combat
         private int ApplyDamage(CombatantState actor, AbilityDefinition ability, CombatantState target,
             bool allowProtection, StringBuilder report, int hitIndex = 0)
         {
+            if (ReportBrokenChains(target, report)) return 0;
             if (allowProtection && ability.Effect == AbilityEffect.PhysicalDamage && target.ProtectedBy != null && target.ProtectedBy.IsAlive)
             {
                 CombatantState protector = target.ProtectedBy;
@@ -386,6 +411,7 @@ namespace DragonQuest.Combat
                 report.Append(protector.Definition.Name).Append(" protegeu ").Append(target.Definition.Name).Append(". ");
                 target = protector;
             }
+            if (ReportBrokenChains(target, report)) return 0;
             int offense = ability.Effect == AbilityEffect.MagicDamage || ability.Effect == AbilityEffect.Drain ? actor.Definition.Magic : actor.Definition.Attack;
             long damage = Math.Max(1L, (long)offense + ability.Power - target.Definition.Defense);
             int elementalPercent = target.Definition.Affinities.DamagePercent(ability.Element);
@@ -427,17 +453,39 @@ namespace DragonQuest.Combat
             }
         }
 
+        private static bool ReportBrokenChains(CombatantState target, StringBuilder report)
+        {
+            if (!target.TryBreakChains()) return false;
+            report.Append("Correntes de ").Append(target.Definition.Name).Append(" quebradas! ");
+            return true;
+        }
+
+        public bool TryTakeBoundTurn(out string message)
+        {
+            message = string.Empty;
+            if (CurrentActor == null || !CurrentActor.IsBound) return false;
+            CombatantState actor = CurrentActor;
+            message = actor.Definition.Name + " nao pode agir: esta acorrentado.";
+            CompleteAction(actor, ref message);
+            return true;
+        }
+
         private void StartTurn()
         {
             CurrentActor.IsDefending = false;
             foreach (CombatantState participant in combatants)
                 if (participant.ProtectedBy == CurrentActor) participant.ProtectedBy = null;
-            if(CurrentActor.BoundActions>0)
+            if (skippingBoundTurns) return;
+            skippingBoundTurns = true;
+            try
             {
-                CombatantState actor=CurrentActor;actor.BoundActions--;
-                string message=actor.Definition.Name+" perdeu sua acao por Correntes. As correntes se desfazem.";
-                CompleteAction(actor,ref message);
+                // Iterate instead of nesting CompleteAction calls when several heroes are chained.
+                // If every participant is bound, yield after one pass so the controller can advance safely.
+                int skipped = 0;
+                while (CurrentActor != null && CurrentActor.IsBound && skipped++ < combatants.Count)
+                    TryTakeBoundTurn(out _);
             }
+            finally { skippingBoundTurns = false; }
         }
 
         private void CheckOutcome()

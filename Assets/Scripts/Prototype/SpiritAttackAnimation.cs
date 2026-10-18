@@ -117,7 +117,9 @@ namespace DragonQuest.Prototype
                         sheet.DrawEffect(point, Mathf.Lerp(42, 24, progress), frame, soulTint);
                     }
                 }
-                else if (skill == 3) sheet.DrawEffect(new Vector2(target.center.x, Mathf.Min(target.center.y, 310)), 210, frame, tint);
+                else if (skill == 3 && time < SpiritAttackTimeline.Impact(ability))
+                    sheet.DrawEffect(new Vector2(target.center.x, Mathf.Min(target.center.y, 310)), 125,
+                        Mathf.Min(frame, 2), tint);
             }
         }
     }

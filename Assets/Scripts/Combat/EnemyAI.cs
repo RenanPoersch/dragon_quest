@@ -60,6 +60,7 @@ namespace DragonQuest.Combat
             CombatantState actor = battle.CurrentActor;
             if (actor == null || actor.Team != CombatTeam.Enemy)
             { message = "Nao e o turno do inimigo."; return false; }
+            if (actor.IsBound) return battle.TryTakeBoundTurn(out message);
             AbilityDefinition ability = ChooseAbility(battle);
             if (ability != null)
             {

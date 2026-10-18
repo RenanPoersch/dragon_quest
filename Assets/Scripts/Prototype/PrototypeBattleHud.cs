@@ -22,6 +22,7 @@ namespace DragonQuest.Prototype
         private readonly UltimateAnimation ultimateAnimation = new UltimateAnimation();
         private readonly SummonAnimation summonAnimation = new SummonAnimation();
         private readonly SpiritAttackAnimation spiritAttacks = new SpiritAttackAnimation();
+        private readonly ChainPrisonAnimation chainPrisons = new ChainPrisonAnimation();
         private readonly BattleStatusIcons statusIcons = new BattleStatusIcons();
         private readonly CastleSpellAnimation castleSpells = new CastleSpellAnimation();
         private readonly CastleCastCounter castCounter = new CastleCastCounter();
@@ -402,6 +403,7 @@ namespace DragonQuest.Prototype
                     RectBox(new Rect(shadowFigure.x + castStep - 8, groundFigure.yMax - 8, figure.width + 16, 10),
                         new Color(0, 0, 0, .25f * defeatedEnemies.Alpha(participant, Time.unscaledTime)));
                 DrawFighter(figure, participant);
+                chainPrisons.Draw(figure, controller.ChainsVisible(participant), Time.unscaledTime, controller.ChainBreakAge(participant));
                 if (participant.IsAlive)
                     statusIcons.DrawOverhead(figure, participant.MindControlTurns > 0
                         || controller.IsPresentingAction && controller.IsPresentingConfusedAction && controller.PresentingActor == participant,
@@ -542,7 +544,8 @@ namespace DragonQuest.Prototype
             bool group = selected != null && (selected.Targets == TargetRule.AllEnemies || selected.Targets == TargetRule.AllAllies);
             targetsScroll = GUI.BeginScrollView(new Rect(333, 542, 280, 88), targetsScroll, new Rect(0, 0, 253, (group ? 1 : targets.Count) * 36));
             for (int i = 0; i < (group ? Mathf.Min(1, targets.Count) : targets.Count); i++)
-                if (CommandButton(new Rect(0, i * 36, 253, 34), group ? "Todos os alvos (" + targets.Count + ")" : targets[i].Definition.Name,
+                if (CommandButton(new Rect(0, i * 36, 253, 34), group ? "Todos os alvos (" + targets.Count + ")" : (selected != null && (selected.Targets == TargetRule.Enemy || selected.Targets == TargetRule.AllEnemies)
+                        && targets[i].Team == observedActor.Team && targets[i].IsBound ? "Correntes - " : "") + targets[i].Definition.Name,
                     group || targetIndex == i, true)) { targetIndex = i; ExecuteTarget(targets[i]); break; }
             GUI.EndScrollView();
             if (targets.Count == 0) GUI.Label(new Rect(337, 546, 270, 78), "Nenhum alvo valido para esta acao.", small);
@@ -610,7 +613,7 @@ namespace DragonQuest.Prototype
                     ? UltimateTimeline.HitAge(controller.PresentingAbility, Time.unscaledTime - controller.ActionStartedAt)
                     : Time.unscaledTime - controller.ActionImpactAt;
                 foreach (CombatantState target in controller.PresentingTargets)
-                    if (target == participant && sinceImpact >= 0 && sinceImpact < .22f
+                    if (target == participant && !controller.IsChainBreakTarget(participant) && sinceImpact >= 0 && sinceImpact < .22f
                         && (controller.PresentingAbility.Effect == AbilityEffect.PhysicalDamage
                             || controller.PresentingAbility.Effect == AbilityEffect.MagicDamage
                             || controller.PresentingAbility.Effect == AbilityEffect.Drain))

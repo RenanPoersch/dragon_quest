@@ -104,7 +104,9 @@ namespace DragonQuest.Prototype
         public float ActionStartedAt { get; private set; }
         public bool IsPresentingDragonAttack => PresentingActor?.Id == DragonProgress.EnemyId
             && DragonAttackAnimation.Resource(PresentingAbility?.Id) != null;
-        public float ActionEndsAt => DefeatedEnemyPresentation.EndOfAction(ActionStartedAt + ActionDuration, ActionImpactAt, PresentingTargets);
+        public float ActionEndsAt => Mathf.Max(
+            DefeatedEnemyPresentation.EndOfAction(ActionStartedAt + ActionDuration, ActionImpactAt, PresentingTargets),
+            HasChainBreak ? ActionImpactAt + ChainPrisonAnimation.BreakDuration : 0);
         public bool IsPresentingAction => IsActive && PresentingActor != null && Time.unscaledTime < ActionEndsAt;
         public float ActionImpactAt => ActionStartedAt
             + (IsPresentingDragonAttack ? DragonAttackAnimation.ImpactDelay(PresentingAbility.Id)
@@ -266,7 +268,7 @@ namespace DragonQuest.Prototype
                 effectTargets.AddRange(Session.GetValidTargets(ability));
             else if (target != null)
                 effectTargets.Add(ability != null && ability.Effect == AbilityEffect.PhysicalDamage
-                    && target.ProtectedBy != null && target.ProtectedBy.IsAlive ? target.ProtectedBy : target);
+                    && !target.IsBound && target.ProtectedBy != null && target.ProtectedBy.IsAlive ? target.ProtectedBy : target);
             var revivedTargets = new System.Collections.Generic.List<CombatantState>();
             salvationBeforeCast.Clear();
             if (ability?.PartyEffect == PartyEffect.RestoreCleanseAndRevive)
@@ -275,6 +277,7 @@ namespace DragonQuest.Prototype
                     salvationBeforeCast.Add(ally, new SalvationCastState(ally));
                     if (!ally.IsAlive) revivedTargets.Add(ally);
                 }
+            CaptureChains();
             bool accepted = Session.TryAct(actor, ability, target, out string message);
             ErrorMessage = accepted ? string.Empty : message;
             if (accepted)
@@ -296,6 +299,7 @@ namespace DragonQuest.Prototype
             if (IsCheatMenuBlocking) return false;
             if (!IsActive || IsPresentingAction || Session.CurrentActor == null || Session.CurrentActor.Team != CombatTeam.Party) return false;
             CombatantState actor = Session.CurrentActor;
+            CaptureChains();
             bool accepted = Session.TryUseItem(actor, item, target, out string message);
             ErrorMessage = accepted ? string.Empty : message;
             if (accepted)
@@ -306,6 +310,29 @@ namespace DragonQuest.Prototype
             }
             return accepted;
         }
+
+        private readonly System.Collections.Generic.Dictionary<CombatantState, bool> chainsBeforeAction
+            = new System.Collections.Generic.Dictionary<CombatantState, bool>();
+        private void CaptureChains()
+        {
+            chainsBeforeAction.Clear();
+            foreach (CombatantState member in Session.Combatants) chainsBeforeAction[member] = member.IsBound;
+        }
+        private bool HasChainBreak
+        {
+            get
+            {
+                foreach (var before in chainsBeforeAction)
+                    if (before.Value && !before.Key.IsBound) return true;
+                return false;
+            }
+        }
+        public bool ChainsVisible(CombatantState member) => IsPresentingAction && Time.unscaledTime < ActionImpactAt
+            && chainsBeforeAction.TryGetValue(member, out bool before) ? before : member.IsBound;
+        public float ChainBreakAge(CombatantState member) => IsPresentingAction && !member.IsBound
+            && chainsBeforeAction.TryGetValue(member, out bool before) && before ? Time.unscaledTime - ActionImpactAt : -1;
+        public bool IsChainBreakTarget(CombatantState member) => IsPresentingAction && !member.IsBound
+            && chainsBeforeAction.TryGetValue(member, out bool before) && before;
 
         private void PresentAction(CombatantState actor, AbilityDefinition ability,
             System.Collections.Generic.IReadOnlyList<CombatantState> targets)
@@ -343,8 +370,11 @@ namespace DragonQuest.Prototype
         {
             if (IsCheatMenuBlocking) { pendingEnemy = null; return; }
             if (IsPresentingAction) return;
+            if (IsActive && Session.CurrentActor?.IsBound == true)
+            { Session.TryTakeBoundTurn(out _); AwardIfComplete(); return; }
             if (IsActive && Session.CurrentActor?.MindControlTurns > 0)
             {
+                CaptureChains();
                 CombatantState confused = Session.CurrentActor;
                 if (Session.TryTakeMindControlTurn(System.Math.Min(UnityEngine.Random.value, .999999d), out var victim, out _))
                 {
@@ -386,7 +416,7 @@ namespace DragonQuest.Prototype
                 if (ability.Targets == TargetRule.AllEnemies || ability.Targets == TargetRule.AllAllies) effectTargets.AddRange(valid);
                 else if (selectedTarget != null)
                     effectTargets.Add(ability.Effect == AbilityEffect.PhysicalDamage
-                        && selectedTarget.ProtectedBy != null && selectedTarget.ProtectedBy.IsAlive ? selectedTarget.ProtectedBy : selectedTarget);
+                        && !selectedTarget.IsBound && selectedTarget.ProtectedBy != null && selectedTarget.ProtectedBy.IsAlive ? selectedTarget.ProtectedBy : selectedTarget);
             }
             if (CastleMeteorPresentation.IsMeteor(actor.Id, ability))
             {
@@ -397,6 +427,7 @@ namespace DragonQuest.Prototype
                 else effectTargets.AddRange(Session.Combatants);
             }
             string message = "Inimigo sem acao valida.";
+            CaptureChains();
             bool accepted = ability != null && selectedTarget != null && Session.TryAct(actor, ability, selectedTarget, out message);
             ErrorMessage = accepted ? string.Empty : message;
             if (accepted)

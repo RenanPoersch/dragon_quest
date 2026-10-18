@@ -22,7 +22,7 @@ namespace DragonQuest.Combat
             if (member.IsDefending) result.Add(new StatusIndicator(CombatStatus.Defending, "Defender: -50% de dano de ataques ate o proximo turno"));
             if (member.ProtectedBy != null) result.Add(new StatusIndicator(CombatStatus.Protected, "Protegido por " + member.ProtectedBy.Definition.Name));
             if (member.TauntTurns > 0) result.Add(new StatusIndicator(CombatStatus.Taunted, "Provocado", member.TauntTurns));
-            if (member.BoundActions > 0) result.Add(new StatusIndicator(CombatStatus.Bound, "Correntes: perde a proxima acao", member.BoundActions));
+            if (member.BoundActions > 0) result.Add(new StatusIndicator(CombatStatus.Bound, "Acorrentado"));
             if (member.MindControlTurns > 0) result.Add(new StatusIndicator(CombatStatus.MindControlled,
                 "Confusao: ataca automaticamente um aliado ou inimigo aleatorio", member.MindControlTurns));
             if (member.SilenceTurns > 0) result.Add(new StatusIndicator(CombatStatus.Silenced,

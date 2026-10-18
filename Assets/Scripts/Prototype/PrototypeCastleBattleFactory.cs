@@ -16,7 +16,7 @@ namespace DragonQuest.Prototype
             "Impede um heroi de usar magias e invocacoes por uma acao. Ataque, defesa e itens continuam disponiveis.",
             0, 1, AbilityEffect.Silence, TargetRule.Enemy);
         public static readonly AbilityDefinition Chains=new AbilityDefinition("chains","Correntes",
-            "Prende um aliado e impede sua proxima acao. As correntes desaparecem em seguida.",0,1,AbilityEffect.Bind,TargetRule.Enemy);
+            "Prende o alvo e impede suas acoes ate as correntes receberem qualquer acerto, independentemente do dano.",0,1,AbilityEffect.Bind,TargetRule.Enemy);
         public static readonly AbilityDefinition ChaosMagic=new AbilityDefinition("chaos-magic","Caos Magic",
             "Dano magico sem elemento em toda a equipe.",0,5,AbilityEffect.MagicDamage,TargetRule.AllEnemies);
 
