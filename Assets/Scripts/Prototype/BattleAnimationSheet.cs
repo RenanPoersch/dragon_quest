@@ -14,9 +14,12 @@ namespace DragonQuest.Prototype
         private readonly float[] frameScale;
         private readonly Texture2D[] frameTextures;
         private readonly float referenceHeight;
+        private readonly Action<Texture2D, Rect, Rect, Color> drawTexture;
 
-        public BattleAnimationSheet(string resource, int columns, int rows, bool useIdleHeight)
+        public BattleAnimationSheet(string resource, int columns, int rows, bool useIdleHeight,
+            Action<Texture2D, Rect, Rect, Color> drawTexture = null)
         {
+            this.drawTexture = drawTexture ?? DrawGui;
             texture = Resources.Load<Texture2D>(resource);
             uv = new Rect[columns * rows]; size = new Vector2[uv.Length]; anchor = new float[uv.Length];
             feet = new float[uv.Length]; frameScale = new float[uv.Length]; frameTextures = new Texture2D[uv.Length];
@@ -114,10 +117,45 @@ namespace DragonQuest.Prototype
             float scale = height / referenceHeight * frameScale[frame];
             Rect rect = new Rect(foot.x - anchor[frame] * scale, foot.y - size[frame].y * scale,
                 size[frame].x * scale, size[frame].y * scale);
-            Color previous = GUI.color; GUI.color = tint;
-            GUI.DrawTextureWithTexCoords(rect, frameTextures[frame] ?? texture, uv[frame], true);
-            GUI.color = previous;
+            drawTexture(frameTextures[frame] ?? texture, rect, uv[frame], tint);
             return true;
+        }
+
+        public bool DrawCentered(Vector2 center, float height, int frame, Color tint)
+        {
+            frame = Math.Max(0, Math.Min(frame, uv.Length - 1));
+            if (texture == null || referenceHeight <= 0 || size[frame].y <= 0 || height <= 0) return false;
+            Vector2 dimensions = size[frame] * (height / referenceHeight * frameScale[frame]);
+            drawTexture(frameTextures[frame] ?? texture,
+                new Rect(center - dimensions * .5f, dimensions), uv[frame], tint);
+            return true;
+        }
+
+        // Sprite slices follow the 2D line from caster to receiver without a mesh or particles.
+        public bool DrawBetween(Vector2 source, Vector2 target, float height, int frame, Color tint)
+        {
+            frame = Math.Max(0, Math.Min(frame, uv.Length - 1));
+            if (texture == null || size[frame].y <= 0 || target.x <= source.x || height <= 0) return false;
+            const int slices = 64;
+            Rect coordinates = uv[frame];
+            float width = (target.x - source.x) / slices;
+            for (int i = 0; i < slices; i++)
+            {
+                float progress = (i + .5f) / slices;
+                Rect rect = new Rect(source.x + i * width,
+                    Mathf.Lerp(source.y, target.y, progress) - height * .5f, width + .25f, height);
+                Rect section = new Rect(coordinates.x + coordinates.width * i / slices,
+                    coordinates.y, coordinates.width / slices, coordinates.height);
+                drawTexture(frameTextures[frame] ?? texture, rect, section, tint);
+            }
+            return true;
+        }
+
+        private static void DrawGui(Texture2D texture, Rect rect, Rect coordinates, Color tint)
+        {
+            Color previous = GUI.color; GUI.color = tint;
+            GUI.DrawTextureWithTexCoords(rect, texture, coordinates, true);
+            GUI.color = previous;
         }
     }
 }

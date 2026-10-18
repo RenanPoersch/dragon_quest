@@ -11,6 +11,7 @@ public static class CastlePresentationChecks
     {
         checks=CastleChecks.Run();
         CheckCastCounter();
+        CheckMeteorDisplayAndAbsorption();
         var rules=new CastleBattleRules(PrototypePartyFactory.Create());
         Check(!CastleMeteorPresentation.HoldCastPose(rules,false)&&CastleMeteorPresentation.HoldCastPose(rules,true),"A queda preserva a pose mesmo apos resolver o combate.");
         Check(BattleAnimationCatalog.Resource("tyrant",CastleBattleRules.Protect)=="TyrantBattle","Shield usa a postura normal antes da conjuracao.");
@@ -22,6 +23,41 @@ public static class CastlePresentationChecks
         Check(CastleMeteorPresentation.AbsorptionStart<CastleMeteorPresentation.ImpactDelay
             &&CastleMeteorPresentation.Duration>CastleMeteorPresentation.ImpactDelay+1,"Absorcao e impacto conservam sua duracao.");
         Console.WriteLine(checks+" verificacoes do castelo, contagem e sequencia Shield/meteoro passaram.");
+    }
+    private static void CheckMeteorDisplayAndAbsorption()
+    {
+        var fatal = new CombatVitalChange(1, -120, false, false);
+        Check(CastleMeteorPresentation.DisplayedAmount(fatal, true) == -9999,
+            "O impacto do cometa mostra 9999 mesmo quando o alvo tinha menos HP.");
+        Check(CastleMeteorPresentation.DisplayedAmount(fatal, false) == -120,
+            "Outros golpes preservam o dano real.");
+        var poison = new CombatVitalChange(2, -10, false, false, damageOverTime: true);
+        var mana = new CombatVitalChange(3, -7, false, true);
+        var heal = new CombatVitalChange(4, 25, false, false);
+        Check(CastleMeteorPresentation.DisplayedAmount(poison, true) == -10
+            && CastleMeteorPresentation.DisplayedAmount(mana, true) == -7
+            && CastleMeteorPresentation.DisplayedAmount(heal, true) == 25,
+            "Veneno, MP e cura nao viram dano do cometa.");
+        Check(CastleMeteorPresentation.AbsorberAdvance(0) == 0
+            && CastleMeteorPresentation.AbsorberAdvance(CastleMeteorPresentation.Duration) == 0,
+            "O portador parte de sua posicao e termina nela.");
+        Check(CastleMeteorPresentation.AbsorberAdvance(.7f) == 1
+            && CastleMeteorPresentation.AbsorberAdvance(CastleMeteorPresentation.AbsorptionEnd) == 1,
+            "O heroi chega ao ar antes da transferencia e sustenta a pose ate absorver tudo.");
+        Check(CastleMeteorPresentation.AbsorptionProgress(CastleMeteorPresentation.AbsorptionStart) == 0
+            && CastleMeteorPresentation.AbsorptionProgress(CastleMeteorPresentation.AbsorptionEnd) == 1,
+            "A bola de fogo e totalmente consumida antes da descida.");
+        Check(CastleMeteorPresentation.AbsorberPose(1.5f) == 2
+            && CastleMeteorPresentation.AbsorberPose(3.2f) == 3,
+            "A pose de peito aberto antecede a recuperacao.");
+        for (int frame = 0; frame <= 240; frame++)
+        {
+            float time = CastleMeteorPresentation.Duration * frame / 240;
+            float advance = CastleMeteorPresentation.AbsorberAdvance(time);
+            float previous = CastleMeteorPresentation.AbsorberAdvance(time - .015f);
+            Check(advance >= 0 && advance <= 1 && Math.Abs(advance - previous) < .04f,
+                "Avanco, flutuacao e retorno sao continuos, sem teleporte.");
+        }
     }
     private static void CheckCastCounter()
     {

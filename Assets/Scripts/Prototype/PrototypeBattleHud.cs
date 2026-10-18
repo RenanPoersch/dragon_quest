@@ -60,6 +60,7 @@ namespace DragonQuest.Prototype
         {
             public CombatantState Target;
             public CombatVitalChange Change;
+            public int DisplayAmount;
             public float Started;
             public int Lane;
         }
@@ -116,6 +117,10 @@ namespace DragonQuest.Prototype
                     int lane = 0;
                     foreach (FloatingNumber existing in numbers) if (existing.Target == participant) lane++;
                     numbers.Add(new FloatingNumber { Target = participant, Change = change,
+                        DisplayAmount = CastleMeteorPresentation.DisplayedAmount(change,
+                            controller.IsPresentingAction
+                            && CastleMeteorPresentation.IsMeteor(controller.PresentingActor.Id, controller.PresentingAbility)
+                            && controller.CastleRules?.Ending == GameEnding.CastleDestroyed),
                         Started = controller.IsPresentingAction
                             ? UltimateTimeline.IsOmnislash(controller.PresentingAbility) && change.ActionHitIndex > 0
                                 ? controller.ActionStartedAt + UltimateTimeline.HitTime(change.ActionHitIndex) : controller.ActionImpactAt
@@ -460,7 +465,8 @@ namespace DragonQuest.Prototype
                     Rect target = new Rect(740, 170, 160, 205);
                     foreach (CombatantState member in observedBattle.Combatants)
                         if (member.Id == rules.MeteorAbsorberId) { target = FigureRect(member); break; }
-                    castleSpells.DrawMeteor(target, rules.MeteorAbsorbed, Time.unscaledTime - controller.ActionStartedAt);
+                    castleSpells.DrawMeteor(FigureRect(controller.PresentingActor), target,
+                        rules.MeteorAbsorbed, Time.unscaledTime - controller.ActionStartedAt);
                 }
             }
             if (ultimate)
@@ -479,7 +485,7 @@ namespace DragonQuest.Prototype
                 float numberDuration = swordHit ? .72f : 1.4f;
                 if (elapsed >= numberDuration) continue;
                 color.a = Mathf.Clamp01((numberDuration - elapsed) / .25f);
-                string label = (floating.Change.Amount > 0 ? "+" : "") + System.Math.Abs(floating.Change.Amount)
+                string label = (floating.DisplayAmount > 0 ? "+" : "") + System.Math.Abs(floating.DisplayAmount)
                     + (floating.Change.IsMp ? " MP" : "");
                 Rect rect = new Rect(figure.center.x - 90 + floating.Lane * (swordHit ? 40 : 16),
                     figure.y - 10 - elapsed * (swordHit ? 95 : 40) - floating.Lane * 22, 180, 45);
@@ -513,8 +519,13 @@ namespace DragonQuest.Prototype
             int index = 0;
             foreach (CombatantState other in observedBattle.Combatants)
             { if (other == participant) break; if (other.Team == participant.Team) index++; }
-            if (participant.Team == CombatTeam.Party) return new Rect(925 + (index % 2) * 60,
-                background != null ? 125 + index * 78 : 103 + index * 83, 64, 90);
+            if (participant.Team == CombatTeam.Party)
+            {
+                Rect ground = new Rect(925 + (index % 2) * 60,
+                    background != null ? 125 + index * 78 : 103 + index * 83, 64, 90);
+                return floating && IsMeteorAbsorber(participant)
+                    ? MeteorAbsorptionAnimation.BearerRect(ground, Time.unscaledTime - controller.ActionStartedAt) : ground;
+            }
             if (participant.Id == DragonProgress.EnemyId) return new Rect(160, 110, 350, 250);
             if (participant.Id == CastleBattleRules.SpiritId)
             {
@@ -599,6 +610,8 @@ namespace DragonQuest.Prototype
             Color tint = FighterTint(participant);
             bool acting = controller.IsPresentingAction && controller.PresentingActor == participant;
             if (heroKnockouts.IsKnockedOut(participant) && knockoutSprites.Draw(rect, participant.Id)) return;
+            if (IsMeteorAbsorber(participant) && castleSpells.DrawAbsorber(rect, participant.Id,
+                Time.unscaledTime - controller.ActionStartedAt, tint)) return;
             if (controller.IsPresentingAction && controller.PresentingActor.Id == CastleBattleRules.SpiritId)
                 foreach (CombatantState target in controller.PresentingTargets)
                     if (target == participant)
@@ -613,7 +626,8 @@ namespace DragonQuest.Prototype
                     ? UltimateTimeline.HitAge(controller.PresentingAbility, Time.unscaledTime - controller.ActionStartedAt)
                     : Time.unscaledTime - controller.ActionImpactAt;
                 foreach (CombatantState target in controller.PresentingTargets)
-                    if (target == participant && !controller.IsChainBreakTarget(participant) && sinceImpact >= 0 && sinceImpact < .22f
+                    if (target == participant && !IsMeteorAbsorber(participant)
+                        && !controller.IsChainBreakTarget(participant) && sinceImpact >= 0 && sinceImpact < .22f
                         && (controller.PresentingAbility.Effect == AbilityEffect.PhysicalDamage
                             || controller.PresentingAbility.Effect == AbilityEffect.MagicDamage
                             || controller.PresentingAbility.Effect == AbilityEffect.Drain))
@@ -631,6 +645,8 @@ namespace DragonQuest.Prototype
                 && controller.PresentingAbility == CastleBattleRules.Protect;
             if (participant.Id == CastleBattleRules.TyrantId && battleSprites != null)
             {
+                if (meteorPresentation && controller.CastleRules.MeteorAbsorbed
+                    && castleSpells.DrawAbsorbingCaster(rect, Time.unscaledTime - controller.ActionStartedAt, tint)) return;
                 // Shield termina sobre a postura normal; so entao aparece o sprite de conjuracao.
                 if (protectPresentation && DrawEnemySprite(rect, participant, 0, tint)) return;
                 if (CastleMeteorPresentation.HoldCastPose(controller.CastleRules, meteorPresentation, protectPresentation)
@@ -698,6 +714,11 @@ namespace DragonQuest.Prototype
             RectBox(new Rect(rect.x + rect.width * 0.12f, rect.y + rect.height * 0.78f, rect.width * 0.3f, rect.height * 0.22f), clothes);
             RectBox(new Rect(rect.x + rect.width * 0.58f, rect.y + rect.height * 0.78f, rect.width * 0.3f, rect.height * 0.22f), clothes);
         }
+
+        private bool IsMeteorAbsorber(CombatantState participant)
+            => controller.IsPresentingAction
+                && CastleMeteorPresentation.IsMeteor(controller.PresentingActor.Id, controller.PresentingAbility)
+                && controller.CastleRules.MeteorAbsorbed && participant.Id == controller.CastleRules.MeteorAbsorberId;
 
         private bool DrawEnemySprite(Rect rect, CombatantState participant, int frame, Color tint,
             AbilityDefinition ability = null, string dragonResource = null)

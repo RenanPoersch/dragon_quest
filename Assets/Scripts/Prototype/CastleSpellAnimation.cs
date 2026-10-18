@@ -4,15 +4,19 @@ namespace DragonQuest.Prototype
 {
     public sealed class CastleSpellAnimation
     {
-        private BattleAnimationSheet protect, shieldHit, absorption, meteor;
+        private BattleAnimationSheet protect, shieldHit, meteor;
+        private readonly MeteorAbsorptionAnimation absorption;
+        private readonly System.Action<Texture2D, Rect, Rect, Color> drawTexture;
+        public CastleSpellAnimation(System.Action<Texture2D, Rect, Rect, Color> drawTexture = null)
+        { this.drawTexture = drawTexture; absorption = new MeteorAbsorptionAnimation(drawTexture); }
         public void Prepare() => Load();
         private void Load()
         {
             if (meteor != null) return;
-            meteor = new BattleAnimationSheet("PixelArt/TyrantFlamingMeteor", 4, 1, false);
-            protect = new BattleAnimationSheet("PixelArt/TyrantProtect", 4, 1, false);
-            shieldHit = new BattleAnimationSheet("PixelArt/TyrantShieldHit", 4, 1, false);
-            absorption = new BattleAnimationSheet("PixelArt/MeteorAbsorption", 4, 1, false);
+            meteor = new BattleAnimationSheet("PixelArt/TyrantFlamingMeteor", 4, 1, false, drawTexture);
+            protect = new BattleAnimationSheet("PixelArt/TyrantProtect", 4, 1, false, drawTexture);
+            shieldHit = new BattleAnimationSheet("PixelArt/TyrantShieldHit", 4, 1, false, drawTexture);
+            absorption.Prepare();
         }
         public void DrawProtect(Rect king, float elapsed)
         {
@@ -28,26 +32,17 @@ namespace DragonQuest.Prototype
             shieldHit.Draw(new Vector2(target.center.x, target.yMax + 10), target.height * 1.6f,
                 CastleMeteorPresentation.EffectFrame(elapsed, CastleMeteorPresentation.ShieldHitDuration), Color.white);
         }
-        public void DrawMeteor(Rect target, bool absorbed, float elapsed)
+        public bool DrawAbsorber(Rect target, string id, float elapsed, Color tint)
+        { Load(); return absorption.DrawBearer(target, id, elapsed, tint); }
+        public bool DrawAbsorbingCaster(Rect king, float elapsed, Color tint)
+        { Load(); return absorption.DrawCaster(king, elapsed, tint); }
+        public void DrawMeteor(Rect king, Rect target, bool absorbed, float elapsed)
         {
             if (elapsed < 0 || elapsed >= CastleMeteorPresentation.Duration) return;
             Load();
             if (absorbed)
             {
-                float travel = Mathf.Clamp01(elapsed / CastleMeteorPresentation.ImpactDelay);
-                Vector2 end = new Vector2(target.center.x, target.center.y + 25);
-                Vector2 foot = Vector2.Lerp(new Vector2(510, 134), end, travel);
-                float shrink = 1 - Mathf.Clamp01((elapsed - CastleMeteorPresentation.AbsorptionStart)
-                    / (CastleMeteorPresentation.ImpactDelay - CastleMeteorPresentation.AbsorptionStart));
-                if (elapsed < CastleMeteorPresentation.ImpactDelay)
-                    meteor.Draw(foot, Mathf.Lerp(180, 250, travel) * shrink, 0, Color.white);
-                if (elapsed >= CastleMeteorPresentation.AbsorptionStart)
-                {
-                    float sinceAbsorb = elapsed - CastleMeteorPresentation.AbsorptionStart;
-                    absorption.Draw(new Vector2(target.center.x, target.yMax + 18), target.height * 2.2f,
-                        CastleMeteorPresentation.EffectFrame(sinceAbsorb,
-                            CastleMeteorPresentation.Duration - CastleMeteorPresentation.AbsorptionStart), Color.white);
-                }
+                absorption.DrawTransfer(king, target, elapsed);
                 return;
             }
             if (elapsed < CastleMeteorPresentation.ImpactDelay)

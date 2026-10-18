@@ -6,7 +6,9 @@ namespace DragonQuest.Prototype
 {
     public static class CastleMeteorPresentation
     {
-        public const float Duration = 3.6f, ImpactDelay = 2.1f, AbsorptionStart = 1.4f;
+        public const float Duration = 3.6f, ImpactDelay = 2.1f, AbsorptionStart = .8f;
+        public const float AbsorptionEnd = 2.65f, AbsorberReturn = 2.8f;
+        public const int MeteorDamageDisplay = 9999;
         public const float ProtectDuration = 1.2f, ShieldHitDuration = .55f;
         public static bool IsMeteor(string actorId, AbilityDefinition ability)
             => actorId == CastleBattleRules.TyrantId && ability?.SourceAbilityId == "flaming-meteor";
@@ -21,6 +23,21 @@ namespace DragonQuest.Prototype
         public static int MeteorFrame(float elapsed)
             => elapsed < ImpactDelay ? (elapsed < ImpactDelay * .55f ? 0 : 1)
                 : elapsed < ImpactDelay + .65f ? 2 : 3;
+        public static int DisplayedAmount(CombatVitalChange change, bool destructiveMeteor)
+            => destructiveMeteor && change.Amount < 0 && !change.IsMp && !change.IsDamageOverTime
+                ? -MeteorDamageDisplay : change.Amount;
+        public static float AbsorberAdvance(float elapsed)
+        {
+            if (elapsed <= 0 || elapsed >= Duration) return 0;
+            float value = elapsed < AbsorberReturn ? elapsed / .7f
+                : (Duration - elapsed) / (Duration - AbsorberReturn);
+            value = Math.Max(0, Math.Min(1, value));
+            return value * value * (3 - 2 * value);
+        }
+        public static float AbsorptionProgress(float elapsed)
+            => Math.Max(0, Math.Min(1, (elapsed - AbsorptionStart) / (AbsorptionEnd - AbsorptionStart)));
+        public static int AbsorberPose(float elapsed) => elapsed < .35f ? 0
+            : elapsed < .7f ? 1 : elapsed < AbsorberReturn ? 2 : 3;
         public static bool HoldCastPose(CastleBattleRules rules, bool meteorPresentation, bool protectPresentation = false)
             => !protectPresentation && (meteorPresentation || rules != null && rules.MeteorStarted
                 && rules.ProtectCast && !rules.MeteorAbsorbed && rules.Ending == GameEnding.None);
