@@ -2,6 +2,7 @@ using System;
 using DragonQuest.Combat;
 using DragonQuest.Equipment;
 using UnityEngine;
+using DragonQuest.Audio;
 
 namespace DragonQuest.Prototype
 {
@@ -141,12 +142,14 @@ namespace DragonQuest.Prototype
             Rect inner = new Rect(rect.x + inset, rect.y + inset, rect.width - inset * 2, rect.height - inset * 2);
             Fill(inner, new Color(.14f, .14f, .21f)); inner.width *= Mathf.Clamp01(fraction); Fill(inner, color);
         }
-        private static bool Click(Rect rect, bool enabled)
+        private static bool Click(Rect rect, bool enabled, MenuSound sound = MenuSound.Navigate)
         {
             EventType type = Event.current.type;
             bool previous = GUI.enabled; GUI.enabled = previous && enabled;
             bool clicked = GUI.Button(rect, GUIContent.none, GUIStyle.none);
-            GUI.enabled = previous; return clicked && type == EventType.MouseUp;
+            GUI.enabled = previous;
+            if (clicked && type == EventType.MouseUp) { MenuSounds.Play(sound); return true; }
+            return false;
         }
     }
 }

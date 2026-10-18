@@ -1,4 +1,5 @@
 using UnityEngine;
+using DragonQuest.Audio;
 using DragonQuest.Input;
 using DragonQuest.Progression;
 
@@ -16,7 +17,12 @@ namespace DragonQuest.Prototype
             if (controller == null || !controller.IsPostBattleOpen || !GameInput.IsFocused) return;
             if (controller.IsCheatMenuBlocking) return;
             if (GameInput.ConfirmPressed || GameInput.CancelPressed)
-            { controller.ReturnToCity(); GameInput.ConsumeGamepadFrame(); }
+            {
+                bool cancel = GameInput.CancelPressed;
+                controller.ReturnToCity();
+                if (!controller.IsPostBattleOpen) MenuSounds.Play(cancel ? MenuSound.Cancel : MenuSound.Confirm);
+                GameInput.ConsumeGamepadFrame();
+            }
         }
         private void OnGUI()
         {

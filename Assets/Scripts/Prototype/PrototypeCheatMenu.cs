@@ -1,4 +1,5 @@
 using UnityEngine;
+using DragonQuest.Audio;
 using DragonQuest.Input;
 using DragonQuest.Exploration;
 
@@ -34,14 +35,16 @@ namespace DragonQuest.Prototype
             if (GameInput.CheatsPressed)
             {
                 if (IsOpen) Close();
-                else { IsOpen = true; player.SetMovementEnabled(false); }
+                else { IsOpen = true; player.SetMovementEnabled(false); MenuSounds.Play(MenuSound.Confirm); }
             }
             else if (IsOpen && GameInput.CancelPressed) Close();
             else if (IsOpen)
             {
+                int previous = selected;
                 MenuDirection direction = GameInput.Navigation;
                 if (direction == MenuDirection.Up || direction == MenuDirection.Left) selected = (selected + OptionCount - 1) % OptionCount;
                 else if (direction == MenuDirection.Down || direction == MenuDirection.Right) selected = (selected + 1) % OptionCount;
+                MenuSounds.Navigate(previous, selected);
                 if (GameInput.ConfirmPressed) Activate(selected);
             }
             if (BlocksInput) GameInput.ConsumeGamepadFrame();
@@ -49,6 +52,7 @@ namespace DragonQuest.Prototype
 
         private void Close()
         {
+            MenuSounds.Play(MenuSound.Cancel);
             IsOpen = false;
             closedFrame = Time.frameCount;
             // Exploration resumes on the next frame, after the close key has been consumed.
@@ -57,6 +61,7 @@ namespace DragonQuest.Prototype
 
         private void Activate(int option)
         {
+            if (option < OptionCount-1) MenuSounds.Play(MenuSound.Confirm);
             if (option == 0)
             {
                 battle.Party.SetInfiniteLimit(!battle.Party.HasInfiniteLimit);
@@ -122,7 +127,7 @@ namespace DragonQuest.Prototype
             {
                 Rect rect = new Rect(30, 111 + i * 64, 600, 52);
                 if ((current.type == EventType.MouseMove || current.type == EventType.MouseDown)
-                    && rect.Contains(current.mousePosition)) selected = i;
+                    && rect.Contains(current.mousePosition)) MenuSounds.Select(ref selected, i);
                 GUI.color = selected == i ? new Color(1, .85f, .52f) : Color.white;
                 if (GUI.Button(rect, (selected == i ? "> " : "") + labels[i], button)) Activate(i);
             }

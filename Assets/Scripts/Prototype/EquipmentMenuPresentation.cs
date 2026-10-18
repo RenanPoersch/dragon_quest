@@ -1,6 +1,7 @@
 using System;
 using DragonQuest.Equipment;
 using UnityEngine;
+using DragonQuest.Audio;
 
 namespace DragonQuest.Prototype
 {
@@ -34,12 +35,12 @@ namespace DragonQuest.Prototype
             for (int i = 0; i < categories.Length; i++)
             {
                 Rect tab = new Rect(52 + i * 292, 10, 280, 48);
-                if (Click(tab, canInteract)) session.SelectCategory((EquipmentMenuCategory)i, party);
+                if (Click(tab, canInteract, MenuSound.Navigate)) session.SelectCategory((EquipmentMenuCategory)i, party);
                 Label(tab, categories[i], heading, (int)session.Category == i ? cyan.normal.textColor : Color.white);
                 if ((int)session.Category == i) Fill(new Rect(tab.x, 58, heading.CalcSize(new GUIContent(categories[i])).x, 2), cyan.normal.textColor);
             }
             Label(new Rect(982, 10, 164, 48), "Equip", heading);
-            if (Button(new Rect(1158, 14, 108, 44), "Voltar", text, canInteract)) back();
+            if (Button(new Rect(1158, 14, 108, 44), "Voltar", text, canInteract, MenuSound.Cancel)) back();
             var selected = session.SelectedItem;
             string description = session.Message;
             if (description.Length == 0) description = !session.HasSelection ? "" : selected == null
@@ -52,8 +53,8 @@ namespace DragonQuest.Prototype
             {
                 theme.DrawPortrait(new Rect(48, 174, 140, 140), member);
                 Label(new Rect(212, 174, 260, 42), member.Name, heading);
-                if (Button(new Rect(506, 174, 30, 42), "<", heading, canInteract)) session.ChangeMember(-1, party);
-                if (Button(new Rect(548, 174, 30, 42), ">", heading, canInteract)) session.ChangeMember(1, party);
+                if (Button(new Rect(506, 174, 30, 42), "<", heading, canInteract, MenuSound.Navigate)) session.ChangeMember(-1, party);
+                if (Button(new Rect(548, 174, 30, 42), ">", heading, canInteract, MenuSound.Navigate)) session.ChangeMember(1, party);
                 Equipped(new Rect(212, 222, 356, 28), "Wpn:", member.Weapon, session.Category == EquipmentMenuCategory.Weapons);
                 Equipped(new Rect(212, 252, 356, 28), "Arm:", member.Armor, session.Category == EquipmentMenuCategory.Armor);
                 Equipped(new Rect(212, 282, 356, 28), "Acc:", member.Accessory, session.Category == EquipmentMenuCategory.Accessories);
@@ -91,8 +92,9 @@ namespace DragonQuest.Prototype
             {
                 var item = session.Items[i]; Rect row = new Rect(64, i * rowHeight, 556, rowHeight - 2);
                 bool equipped = party.IsEquipped(item);
-                if (canInteract && moved && row.Contains(localMouse)) session.SelectItem(i);
-                if (Click(row, canInteract)) session.SelectItem(i);
+                if (canInteract && moved && row.Contains(localMouse))
+                { int before = session.ItemIndex; session.SelectItem(i); MenuSounds.Navigate(before, session.ItemIndex); }
+                if (Click(row, canInteract, MenuSound.Navigate)) session.SelectItem(i);
                 InventoryPixelArt.Draw(new Rect(72, row.y + 8, 48, 48), InventoryPixelArt.Texture(item?.Definition));
                 FitLabel(new Rect(132, row.y, 474, 36), item?.Definition.Name
                     ?? "Remover " + singular[(int)session.Category], text, equipped ? equippedText : Color.white);
@@ -128,15 +130,15 @@ namespace DragonQuest.Prototype
             for (int i = 0; i < 7; i++) Fill(new Rect(rect.x + 8 - i, rises ? rect.y + i : rect.yMax - i - 1, 2 + i * 2, 1), color);
             Fill(new Rect(rect.x + 6, rises ? rect.y + 7 : rect.y, 6, 11), color);
         }
-        private bool Click(Rect rect, bool enabled)
+        private bool Click(Rect rect, bool enabled, MenuSound sound = MenuSound.Confirm)
         {
             EventType type = Event.current.type; bool previous = GUI.enabled; GUI.enabled = previous && enabled;
             bool clicked = GUI.Button(rect, GUIContent.none, GUIStyle.none); GUI.enabled = previous;
             if (!clicked || type != EventType.MouseUp || activatedFrame == Time.frameCount) return false;
-            activatedFrame = Time.frameCount; return true;
+            activatedFrame = Time.frameCount; MenuSounds.Play(sound); return true;
         }
-        private bool Button(Rect rect, string value, GUIStyle style, bool enabled)
-        { Label(rect, value, style, enabled ? Color.white : new Color(.52f, .56f, .66f)); return Click(rect, enabled); }
+        private bool Button(Rect rect, string value, GUIStyle style, bool enabled, MenuSound sound = MenuSound.Confirm)
+        { Label(rect, value, style, enabled ? Color.white : new Color(.52f, .56f, .66f)); return Click(rect, enabled, sound); }
         private static void FitLabel(Rect rect, string value, GUIStyle style, Color? color = null)
         {
             int size = style.fontSize; float width = style.CalcSize(new GUIContent(value)).x;

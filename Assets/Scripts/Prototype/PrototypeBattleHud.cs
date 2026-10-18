@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using DragonQuest.Audio;
 using UnityEngine.InputSystem;
 using DragonQuest.Input;
 using DragonQuest.Combat;
@@ -144,7 +145,7 @@ namespace DragonQuest.Prototype
             if (!GameInput.IsFrameAvailable) return;
             if (observedBattle.Outcome != BattleOutcome.None)
             {
-                if (GameInput.ConfirmPressed) { controller.ReturnToCity(); GameInput.ConsumeGamepadFrame(); }
+                if (GameInput.ConfirmPressed) { MenuSounds.Play(MenuSound.Confirm); controller.ReturnToCity(); GameInput.ConsumeGamepadFrame(); }
                 return;
             }
             if (observedActor == null || observedActor.Team != CombatTeam.Party || observedActor.MindControlTurns > 0) return;
@@ -158,19 +159,20 @@ namespace DragonQuest.Prototype
             {
                 if (!targeting && CanOpenDefendMenu)
                 {
-                    defendMode = true;
+                    defendMode = true; MenuSounds.Play(MenuSound.Navigate);
                 }
                 else if (targeting || InSubmenu) Cancel();
                 GameInput.ConsumeGamepadFrame(); return;
             }
             if (rightPressed && !targeting && !InSubmenu && defendMode && commandIndex == 0)
-            { defendMode = false; GameInput.ConsumeGamepadFrame(); return; }
+            { defendMode = false; MenuSounds.Play(MenuSound.Navigate); GameInput.ConsumeGamepadFrame(); return; }
             int count = targeting ? TargetRowCount() : CommandCount();
             if (targeting) targetIndex = Mathf.Clamp(targetIndex, 0, Mathf.Max(0, count - 1));
             int delta = navigation == MenuDirection.Down || keys?.downArrowKey.wasPressedThisFrame == true || keys?.sKey.wasPressedThisFrame == true ? 1
                 : navigation == MenuDirection.Up || keys?.upArrowKey.wasPressedThisFrame == true || keys?.wKey.wasPressedThisFrame == true ? -1 : 0;
             if (count > 0 && delta != 0)
             {
+                if (count > 1) MenuSounds.Play(MenuSound.Navigate);
                 if (targeting)
                 {
                     targetIndex = (targetIndex + delta + count) % count;
@@ -230,6 +232,7 @@ namespace DragonQuest.Prototype
             ? Mathf.Min(1, Targets().Count) : Targets().Count;
         private void Cancel()
         {
+            if (selected != null || selectedItem != null || InSubmenu || defendMode) MenuSounds.Play(MenuSound.Cancel);
             if (selected != null || selectedItem != null) { selected = null; selectedItem = null; targetIndex = 0; }
             else if (InSubmenu)
             {
@@ -251,7 +254,8 @@ namespace DragonQuest.Prototype
                 menuGroup = kind == BattleCommandKind.Magic ? AbilityMenuGroup.Magic
                     : kind == BattleCommandKind.Summon ? AbilityMenuGroup.Summon : AbilityMenuGroup.Direct;
                 groupAbilities = itemMode ? new List<AbilityDefinition>() : BattleCommandMenu.Group(observedActor, menuGroup);
-                commandIndex = 0; actionsScroll = Vector2.zero; return;
+                commandIndex = 0; actionsScroll = Vector2.zero;
+                MenuSounds.Play(navigateOnly ? MenuSound.Navigate : MenuSound.Confirm); return;
             }
             if (itemMode)
             {
@@ -269,6 +273,7 @@ namespace DragonQuest.Prototype
                 }
                 else selected = ability;
             }
+            MenuSounds.Play(navigateOnly ? MenuSound.Navigate : MenuSound.Confirm);
             targetIndex = 0; targetsScroll = Vector2.zero;
             if (selected != null && selected.Targets == TargetRule.Enemy && preferredEnemyTarget != null)
             {
@@ -285,6 +290,7 @@ namespace DragonQuest.Prototype
                 : controller.TryPlayerAction(selected, target);
             if (accepted)
             {
+                MenuSounds.Play(MenuSound.Confirm);
                 if (actualTarget != null && actualTarget.Team == CombatTeam.Enemy)
                     preferredEnemyTarget = actualTarget.IsAlive ? actualTarget : observedBattle.NextLivingEnemyAfter(actualTarget);
                 selected = null; selectedItem = null;
@@ -616,7 +622,7 @@ namespace DragonQuest.Prototype
             InventoryPixelArt.Draw(new Rect(rect.x + 50, rect.center.y - 14, 28, 28), icon);
             GUI.enabled = previous;
             if (focused) DrawHand(new Rect(rect.x + 2, rect.center.y - 15, 44, 30));
-            if (clicked) GameInput.ConsumeGamepadFrame();
+            if (clicked) { MenuSounds.Play(MenuSound.Confirm); GameInput.ConsumeGamepadFrame(); }
             return clicked;
         }
         private void DrawTurnArrow(float x, float y)

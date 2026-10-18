@@ -1,4 +1,5 @@
 using UnityEngine;
+using DragonQuest.Audio;
 using System.Collections.Generic;
 using DragonQuest.Exploration;
 using DragonQuest.Interactions;
@@ -24,6 +25,7 @@ namespace DragonQuest.Prototype
 
         private void Awake()
         {
+            new GameObject("Menu sounds").AddComponent<MenuSoundController>();
             framePacing = new PrototypeFramePacing();
             saves = gameObject.AddComponent<PrototypeSaveController>();
             navigation = new PrototypeTravel(secrets);

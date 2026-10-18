@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using DragonQuest.Input;
 using UnityEngine;
+using DragonQuest.Audio;
 
 namespace DragonQuest.Prototype
 {
@@ -29,7 +30,9 @@ namespace DragonQuest.Prototype
             MenuDirection direction = GameInput.Navigation;
             if (direction != MenuDirection.None)
             {
+                int previous = focus.Selected;
                 focus.Move(direction == MenuDirection.Up || direction == MenuDirection.Left ? -1 : 1);
+                MenuSounds.Navigate(previous, focus.Selected);
                 revealIndex = focus.Selected;
             }
         }
@@ -37,7 +40,7 @@ namespace DragonQuest.Prototype
         {
             if (Event.current.type == EventType.Repaint) focus.SetButtons(buttons);
         }
-        public bool Button(Rect area, string label, GUIStyle style)
+        public bool Button(Rect area, string label, GUIStyle style, MenuSound sound = MenuSound.Confirm)
         {
             int index = buttonIndex++;
             bool selected = index == focus.Selected;
@@ -64,7 +67,7 @@ namespace DragonQuest.Prototype
             bool activate = selected && confirm && GUI.enabled && activatedFrame != Time.frameCount
                 && Event.current.type == EventType.Repaint;
             if (activate || clicked)
-            { activatedFrame = Time.frameCount; confirm = false; GameInput.ConsumeGamepadFrame(); }
+            { activatedFrame = Time.frameCount; confirm = false; MenuSounds.Play(sound); GameInput.ConsumeGamepadFrame(); }
             return clicked || activate;
         }
         public Vector2 BeginScrollView(Rect viewport, Vector2 scroll, Rect content)

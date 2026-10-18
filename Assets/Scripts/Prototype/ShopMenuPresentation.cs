@@ -2,6 +2,7 @@ using System;
 using DragonQuest.Equipment;
 using DragonQuest.Shops;
 using UnityEngine;
+using DragonQuest.Audio;
 
 namespace DragonQuest.Prototype
 {
@@ -60,7 +61,7 @@ namespace DragonQuest.Prototype
                 for (int i = 0; i < filters.Length; i++)
                 {
                     Rect tab = new Rect(list.x + 34 + i * 266, list.y + 12, 250, 38);
-                    if (Click(tab, interactive && !quantity)) menu.SelectFilter((ShopEquipmentFilter)i);
+                    if (Click(tab, interactive && !quantity, MenuSound.Navigate)) menu.SelectFilter((ShopEquipmentFilter)i);
                     Label(tab, filters[i], small, (int)menu.Filter == i ? cyan : muted);
                     if ((int)menu.Filter == i) Fill(new Rect(tab.x, tab.yMax - 2, small.CalcSize(new GUIContent(filters[i])).x, 2), cyan);
                 }
@@ -74,7 +75,7 @@ namespace DragonQuest.Prototype
             if (quantity)
             {
                 if (Button(new Rect(76, 664, 300, 42), menu.Selling ? "Vender" : "Comprar", text, interactive && menu.Maximum > 0)) menu.Confirm();
-                if (Button(new Rect(1040, 664, 210, 42), "Cancelar", text, interactive)) back();
+                if (Button(new Rect(1040, 664, 210, 42), "Cancelar", text, interactive, sound: MenuSound.Cancel)) back();
             }
             else
             {
@@ -84,7 +85,7 @@ namespace DragonQuest.Prototype
                     Rect rect = ActionRect(i);
                     string label = i == 0 ? "Comprar" : i == 1 ? "Vender" : "Sair";
                     bool active = i < 2 && (i == 1) == menu.Selling;
-                    if (Button(rect, label, text, interactive, active ? cyan : Color.white)) action(i);
+                    if (Button(rect, label, text, interactive, active ? cyan : Color.white, i == 2 ? MenuSound.Cancel : MenuSound.Confirm)) action(i);
                     if (menu.Phase == ShopMenuPhase.Actions && actionIndex == i) theme.DrawHand(rect);
                 }
             }
@@ -116,7 +117,8 @@ namespace DragonQuest.Prototype
             {
                 var entry = menu.Entries[i]; Rect row = new Rect(0, i * rowHeight - scroll.y, clip.width, rowHeight);
                 if (row.yMax < 0 || row.y >= clip.height) continue;
-                if (interactive && menu.Phase == ShopMenuPhase.Browse && moved && row.Contains(Event.current.mousePosition)) menu.Select(i);
+                if (interactive && menu.Phase == ShopMenuPhase.Browse && moved && row.Contains(Event.current.mousePosition))
+                { int before = menu.Index; menu.Select(i); MenuSounds.Navigate(before, menu.Index); }
                 if (Click(row, interactive))
                 {
                     if (menu.Phase == ShopMenuPhase.Actions) menu.Browse(menu.Selling);
@@ -157,9 +159,9 @@ namespace DragonQuest.Prototype
         {
             float x = rect.x + 32, y = rect.y + 18;
             Label(new Rect(x, y, 190, 38), "Quantidade", small, cyan);
-            if (Button(new Rect(x + 202, y, 32, 38), "-", text, interactive && menu.Quantity > 1)) menu.AdjustQuantity(-1);
+            if (Button(new Rect(x + 202, y, 32, 38), "-", text, interactive && menu.Quantity > 1, sound: MenuSound.Navigate)) menu.AdjustQuantity(-1);
             Fit(new Rect(x + 238, y, 72, 38), menu.Quantity.ToString(), number);
-            if (Button(new Rect(x + 318, y, 32, 38), "+", text, interactive && menu.Quantity < menu.Maximum)) menu.AdjustQuantity(1);
+            if (Button(new Rect(x + 318, y, 32, 38), "+", text, interactive && menu.Quantity < menu.Maximum, sound: MenuSound.Navigate)) menu.AdjustQuantity(1);
             Label(new Rect(x, y + 48, 180, 34), "Total", small, cyan);
             Fit(new Rect(x + 170, y + 48, 180, 34), menu.Total.ToString(), number);
             Label(new Rect(x, y + 92, 215, 34), "Ouro restante", small, cyan);
@@ -173,7 +175,7 @@ namespace DragonQuest.Prototype
                 Label(new Rect(x, y + 246, 190, 38), "Ouro", text, cyan);
                 Fit(new Rect(x + 170, y + 246, 180, 38), menu.Service.Progress.Gold.ToString(), number);
             }
-            if (Button(new Rect(x + 245, rect.yMax - 48, 108, 32), "Maximo", small, interactive && menu.Maximum > 1)) menu.SetMaximum();
+            if (Button(new Rect(x + 245, rect.yMax - 48, 108, 32), "Maximo", small, interactive && menu.Maximum > 1, sound: MenuSound.Navigate)) menu.SetMaximum();
         }
         private void DrawComparisons(InventoryMenuPresentation theme, ShopMenuSession menu)
         {
@@ -203,16 +205,16 @@ namespace DragonQuest.Prototype
         }
         private static Texture2D Texture(ShopMenuEntry entry) => entry.Item != null ? InventoryPixelArt.Texture(entry.Item)
             : entry.Equipment != null ? InventoryPixelArt.Texture(entry.Equipment) : InventoryPixelArt.Texture(entry.Materia);
-        private bool Click(Rect rect, bool enabled)
+        private bool Click(Rect rect, bool enabled, MenuSound sound = MenuSound.Confirm)
         {
             if (!enabled) return false;
             EventType type = Event.current.type;
             bool clicked = GUI.Button(rect, GUIContent.none, GUIStyle.none);
             if (!clicked || type != EventType.MouseUp || activatedFrame == Time.frameCount) return false;
-            activatedFrame = Time.frameCount; return true;
+            activatedFrame = Time.frameCount; MenuSounds.Play(sound); return true;
         }
-        private bool Button(Rect rect, string value, GUIStyle style, bool enabled, Color? color = null)
-        { Fit(rect, value, style, enabled ? color ?? Color.white : muted); return Click(rect, enabled); }
+        private bool Button(Rect rect, string value, GUIStyle style, bool enabled, Color? color = null, MenuSound sound = MenuSound.Confirm)
+        { Fit(rect, value, style, enabled ? color ?? Color.white : muted); return Click(rect, enabled, sound); }
         private static void Fit(Rect rect, string value, GUIStyle style, Color? color = null)
         {
             int size = style.fontSize; float width = style.CalcSize(new GUIContent(value)).x;

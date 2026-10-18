@@ -1,6 +1,7 @@
 using System;
 using DragonQuest.Equipment;
 using UnityEngine;
+using DragonQuest.Audio;
 
 namespace DragonQuest.Prototype
 {
@@ -34,8 +35,8 @@ namespace DragonQuest.Prototype
             if (Button(new Rect(276, 10, 190, 48), "Remove", canInteract)) session.BeginRemove(party);
             if (Button(new Rect(522, 10, 238, 48), "Arrange", canInteract))
             { session.Arrange(party); scroll = Vector2.zero; revealedIndex = -1; }
-            if (Button(new Rect(982, 10, 164, 48), "Materia", canInteract)) back();
-            if (Button(new Rect(1158, 14, 108, 44), "Voltar", canInteract, text))
+            if (Button(new Rect(982, 10, 164, 48), "Materia", canInteract, sound: MenuSound.Cancel)) back();
+            if (Button(new Rect(1158, 14, 108, 44), "Voltar", canInteract, text, MenuSound.Cancel))
             { if (session.ChoosingSocket) session.CancelSocket(); else back(); }
             var described = session.Removing ? session.SelectedSocket?.Equipment.Sockets[session.SelectedSocket.Index] : session.SelectedMateria;
             FitLabel(new Rect(28, 86, 1224, 48), session.Message.Length > 0 ? session.Message : described?.Definition.Description ?? "", text);
@@ -69,7 +70,8 @@ namespace DragonQuest.Prototype
             {
                 var materia = session.Materias[i]; Rect row = new Rect(64, i * RowHeight, 556, RowHeight - 2);
                 bool equipped = party.IsEquipped(materia);
-                if (canInteract && moved && !session.ChoosingSocket && row.Contains(localMouse)) session.SelectMateria(i);
+                if (canInteract && moved && !session.ChoosingSocket && row.Contains(localMouse))
+                { int before = session.MateriaIndex; session.SelectMateria(i); MenuSounds.Navigate(before, session.MateriaIndex); }
                 if (Click(row, canInteract)) { session.SelectMateria(i); session.BeginEquip(party); }
                 MateriaSocketArt.DrawMateria(new Rect(72, row.y + 10, 40, 40), materia.Definition);
                 FitLabel(new Rect(130, row.y, 476, 34), materia.Definition.Name, equipped ? muted : text);
@@ -100,20 +102,21 @@ namespace DragonQuest.Prototype
                 int target = -1;
                 for (int j = 0; j < session.Sockets.Count; j++)
                     if (session.Sockets[j].Equipment == gear && session.Sockets[j].Index == i) { target = j; break; }
-                if (enabled && moved && rect.Contains(Event.current.mousePosition)) session.SelectSocket(target);
+                if (enabled && moved && rect.Contains(Event.current.mousePosition))
+                { int before = session.SocketIndex; session.SelectSocket(target); MenuSounds.Navigate(before, session.SocketIndex); }
                 if (Click(rect, enabled)) { session.SelectSocket(target); session.ConfirmSocket(party); }
             }
         }
-        private bool Click(Rect rect, bool enabled)
+        private bool Click(Rect rect, bool enabled, MenuSound sound = MenuSound.Confirm)
         {
             EventType type = Event.current.type;
             bool previous = GUI.enabled; GUI.enabled = previous && enabled;
             bool clicked = GUI.Button(rect, GUIContent.none, GUIStyle.none); GUI.enabled = previous;
             if (!clicked || type != EventType.MouseUp || activatedFrame == Time.frameCount) return false;
-            activatedFrame = Time.frameCount; return true;
+            activatedFrame = Time.frameCount; MenuSounds.Play(sound); return true;
         }
-        private bool Button(Rect rect, string value, bool enabled, GUIStyle style = null)
-        { Label(rect, value, style ?? heading); return Click(rect, enabled); }
+        private bool Button(Rect rect, string value, bool enabled, GUIStyle style = null, MenuSound sound = MenuSound.Confirm)
+        { Label(rect, value, style ?? heading); return Click(rect, enabled, sound); }
         private static void FitLabel(Rect rect, string value, GUIStyle style)
         {
             int size = style.fontSize; float width = style.CalcSize(new GUIContent(value)).x;

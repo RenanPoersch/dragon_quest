@@ -1,4 +1,5 @@
 using UnityEngine;
+using DragonQuest.Audio;
 using UnityEngine.InputSystem;
 using DragonQuest.Input;
 using DragonQuest.Exploration;
@@ -30,6 +31,7 @@ namespace DragonQuest.Prototype
             if (battle.IsBusy || dialogue.IsOpen) return;
             ShopInventory shop = Service.FindShop(id);
             if (shop == null) return;
+            MenuSounds.Play(MenuSound.Confirm);
             ActiveShop = shop; Menu.Open(Service, shop); ActionIndex = 0;
             movement.SetMovementEnabled(false); GameInput.ConsumeGamepadFrame();
         }
@@ -40,6 +42,7 @@ namespace DragonQuest.Prototype
         }
         public void Back()
         {
+            MenuSounds.Play(MenuSound.Cancel);
             if (Menu.Back()) Close();
             ActionIndex = Menu.Selling ? 1 : 0;
             GameInput.ConsumeGamepadFrame();
@@ -47,6 +50,7 @@ namespace DragonQuest.Prototype
         public void ChooseAction(int index)
         {
             if (!IsOpen || IsInputBlocked) return;
+            MenuSounds.Play(index == 2 ? MenuSound.Cancel : MenuSound.Confirm);
             ActionIndex = index;
             if (index == 0 || index == 1) Menu.Browse(index == 1);
             else Close();
@@ -68,6 +72,7 @@ namespace DragonQuest.Prototype
         {
             if (!IsOpen || IsInputBlocked || !GameInput.IsFrameAvailable) return;
             if (GameInput.CancelPressed) { Back(); return; }
+            var before = (ActionIndex, Menu.Index, Menu.Filter, Menu.Quantity);
             var keys = Keyboard.current;
             MenuDirection direction = GameInput.Navigation;
             int horizontal = direction == MenuDirection.Left || keys?.leftArrowKey.wasPressedThisFrame == true || keys?.aKey.wasPressedThisFrame == true ? -1
@@ -95,6 +100,8 @@ namespace DragonQuest.Prototype
                 if (keys?.endKey.wasPressedThisFrame == true) Menu.SetMaximum();
                 if (GameInput.ConfirmPressed) Menu.Confirm();
             }
+            MenuSounds.Navigate(before, (ActionIndex, Menu.Index, Menu.Filter, Menu.Quantity));
+            if (GameInput.ConfirmPressed) MenuSounds.Play(MenuSound.Confirm);
             if (horizontal != 0 || vertical != 0 || GameInput.ConfirmPressed) GameInput.ConsumeGamepadFrame();
         }
     }

@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using DragonQuest.Audio;
 using DragonQuest.Input;
 using DragonQuest.Exploration;
 using DragonQuest.Interactions;
@@ -95,6 +96,7 @@ namespace DragonQuest.Prototype
         private void NewGame()
         {
             if (voyage != null || startingNewGame) return;
+            MenuSounds.Play(MenuSound.NewGame);
             startingNewGame = true;
             newGameFadeOutElapsed = 0;
             newGameBlackHasDrawn = false;
@@ -144,6 +146,7 @@ namespace DragonQuest.Prototype
         }
         private void SaveToSlot(int slot)
         {
+            MenuSounds.Play(MenuSound.Confirm);
             int previousSlot = ActiveSlot;
             ActiveSlot = slot;
             if (Write("Jornada salva"))
@@ -161,6 +164,7 @@ namespace DragonQuest.Prototype
         }
         private void Back()
         {
+            MenuSounds.Play(MenuSound.Cancel);
             if (page == MenuPage.Save) CloseSaveMenu();
             else OpenPage(MenuPage.Title);
         }
@@ -228,11 +232,13 @@ namespace DragonQuest.Prototype
         }
         private void OpenPage(MenuPage next)
         {
+            if (next == MenuPage.Continue) MenuSounds.Play(MenuSound.Confirm);
             page = next; selectedOption = 0; overwriteSlot = 0; message = null;
             if (next != MenuPage.Title) RefreshSlots();
         }
         private void SelectSlot(int slot)
         {
+            MenuSounds.Play(MenuSound.Confirm);
             if (page == MenuPage.Continue)
             {
                 if (previews[slot - 1] != null) Continue(slot);
@@ -244,7 +250,7 @@ namespace DragonQuest.Prototype
         {
             if (key == KeyCode.Escape)
             {
-                if (overwriteSlot != 0) overwriteSlot = 0;
+                if (overwriteSlot != 0) CancelOverwrite();
                 else if (page != MenuPage.Title) Back();
                 return;
             }
@@ -256,7 +262,7 @@ namespace DragonQuest.Prototype
             if (overwriteSlot != 0)
             {
                 if (selectedOption == 0) SaveToSlot(overwriteSlot);
-                else overwriteSlot = 0;
+                else CancelOverwrite();
             }
             else if (page == MenuPage.Title)
             {
@@ -268,14 +274,18 @@ namespace DragonQuest.Prototype
         }
         private bool OptionEnabled(int option) => page != MenuPage.Continue || overwriteSlot != 0
             || option == SaveStore.SlotCount || previews[option] != null;
+        private void CancelOverwrite()
+        { overwriteSlot = 0; MenuSounds.Play(MenuSound.Cancel); }
         private void MoveSelection(int direction)
         {
+            int previous = selectedOption;
             int count = page == MenuPage.Title || overwriteSlot != 0 ? 2 : SaveStore.SlotCount + 1;
             for (int i = 0; i < count; i++)
             {
                 selectedOption = (selectedOption + direction + count) % count;
                 if (OptionEnabled(selectedOption)) break;
             }
+            MenuSounds.Navigate(previous, selectedOption);
         }
         private void ShowMessage(string text)
         { message = text; messageUntil = Time.unscaledTime + 8f; }
@@ -342,7 +352,7 @@ namespace DragonQuest.Prototype
                     saveScreen.Panel(new Rect(280, 245, 720, 205));
                     GUI.Label(new Rect(310, 265, 660, 74), "Salvar a jornada no slot " + overwriteSlot + " e substituir o progresso anterior?", textStyle);
                     if (MenuButton(new Rect(310, 365, 320, 48), "Salvar jornada", 0, buttonStyle)) SaveToSlot(overwriteSlot);
-                    if (MenuButton(new Rect(650, 365, 320, 48), "Cancelar", 1, buttonStyle)) overwriteSlot = 0;
+                    if (MenuButton(new Rect(650, 365, 320, 48), "Cancelar", 1, buttonStyle)) CancelOverwrite();
                 }
             }
             DrawSelectedHand();
@@ -388,7 +398,7 @@ namespace DragonQuest.Prototype
             if (!startingNewGame && GUI.enabled && (Event.current.type == EventType.MouseMove
                 || Event.current.type == EventType.MouseDrag || Event.current.type == EventType.MouseDown)
                 && rect.Contains(Event.current.mousePosition))
-                selectedOption = option;
+                MenuSounds.Select(ref selectedOption, option);
             Color previous = GUI.color;
             if (GUI.enabled && selectedOption == option) GUI.color = new Color(0.96f, 0.8f, 0.48f);
             bool clicked = GUI.Button(rect, label, style);
