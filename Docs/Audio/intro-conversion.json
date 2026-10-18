@@ -1,0 +1,10 @@
+{
+  "seconds": 171.15428571428572,
+  "notes": 1763,
+  "rate": 44100,
+  "channels": 2,
+  "peak_db": -1.9,
+  "rms_db": -16.52,
+  "source_sha256": "aa6902f6ba21b8d771209d69a772f7a719a5f6ab916b4578b33e027e8f04c559",
+  "output_sha256": "f95fce05e6472295dabe029d43b4553df555a269c1c49e471ef11be94a2073e6"
+}
