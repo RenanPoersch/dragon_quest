@@ -62,6 +62,12 @@ public static class ControllerUnityChecks
         for (int command = 0; command < InventoryMenuPresentation.Commands.Length; command++)
         {
             open.Invoke(inventory, new object[] { command });
+            if (InventoryMenuPresentation.Commands[command] == "Save")
+            {
+                Check(battle.IsMenuOpen && (int)page.GetValue(inventory) == -1,
+                    "Disabled Save cannot open without an initialized save controller.");
+                continue;
+            }
             State(new GamepadState().WithButton(GamepadButton.East)); Call(battle, "Update");
             Check(battle.IsMenuOpen && (int)page.GetValue(inventory) == -1 && !GameInput.CancelPressed,
                 "Circle returns from " + InventoryMenuPresentation.Commands[command] + " to the inventory overview.");

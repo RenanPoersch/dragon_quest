@@ -9,7 +9,7 @@ namespace DragonQuest.Prototype
     // Coordinates use the same 1280 x 720 canvas as the other game menus.
     public sealed class InventoryMenuPresentation : IDisposable
     {
-        public static readonly string[] Commands = { "Item", "Magic", "Equip", "Status", "Config" };
+        public static readonly string[] Commands = { "Item", "Materia", "Equip", "Status", "Magic", "Config", "Save" };
         public static readonly Rect PartyRect = new Rect(32, 72, 1050, 574);
         public static Rect CommandRect(int index) => new Rect(1070, 62 + index * 48, 164, 46);
         private readonly Texture2D gradient, hand;
@@ -82,7 +82,7 @@ namespace DragonQuest.Prototype
             EnsureStyles();
             Panel(PartyRect);
             for (int i = 0; i < party.Members.Count; i++) DrawMember(party.Members[i], 100 + i * 174);
-            Panel(new Rect(1034, 40, 214, 352));
+            Panel(new Rect(1034, 40, 214, 376));
             Panel(new Rect(1034, 514, 214, 116));
             Text(new Rect(1052, 530, 72, 34), "Time", label);
             DrawValue(new Rect(1120, 530, 110, 34), FormatTime(seconds), 28);

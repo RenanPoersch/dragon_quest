@@ -228,6 +228,63 @@ namespace DragonQuest.Equipment
             return true;
         }
 
+        public static bool IsFieldMagic(AbilityDefinition ability) => ability != null
+            && ability.MenuGroup == AbilityMenuGroup.Magic && !ability.UsesLimit
+            && (ability.Targets == TargetRule.Ally || ability.Targets == TargetRule.AllAllies)
+            && (ability.Effect == AbilityEffect.Heal || ability.Effect == AbilityEffect.Cleanse || ability.Effect == AbilityEffect.Revive);
+
+        public bool CanCastMagic(PartyMember caster, string abilityId, out AbilityDefinition ability, out string message)
+        {
+            ability = null;
+            if (caster == null || !members.Contains(caster) || !caster.IsAlive || caster.BoundActions > 0)
+            { message = "Este personagem nao pode conjurar."; return false; }
+            // Resolve again so unequipping a materia also revokes its field spell and linked cost.
+            foreach (var command in MateriaResolver.Resolve(caster))
+                if (command.Id == abilityId && IsFieldMagic(command)) { ability = command; break; }
+            if (ability == null) { message = "Magia indisponivel."; return false; }
+            if (caster.Mp < ability.MpCost) { message = "MP insuficiente."; return false; }
+            message = ""; return true;
+        }
+
+        public static bool IsMagicTarget(AbilityDefinition ability, PartyMember target)
+        {
+            if (!IsFieldMagic(ability) || target == null) return false;
+            if (ability.Effect == AbilityEffect.Revive) return !target.IsAlive;
+            return target.IsAlive && (target.BoundActions > 0 || (ability.Effect == AbilityEffect.Heal
+                ? target.Hp < target.MaxHp : target.IsPoisoned));
+        }
+
+        public bool TryCastMagic(PartyMember caster, string abilityId, PartyMember target, out string message)
+        {
+            if (!CanCastMagic(caster, abilityId, out var ability, out message)) return false;
+            if (target == null || !members.Contains(target))
+            { message = "Personagem indisponivel."; return false; }
+            var targets = new List<PartyMember>();
+            foreach (var member in members)
+                if ((ability.Targets == TargetRule.AllAllies || member == target) && IsMagicTarget(ability, member)) targets.Add(member);
+            if (targets.Count == 0) { message = "Nenhum alvo precisa desta magia."; return false; }
+
+            foreach (var member in targets)
+            {
+                var state = member.CreateCombatant();
+                state.TryBreakChains();
+                if (ability.Effect == AbilityEffect.Heal)
+                    state.RecoverHp((int)Math.Min(int.MaxValue, (long)ability.Power + caster.Magic));
+                else if (ability.Effect == AbilityEffect.Cleanse) state.PoisonTurns = 0;
+                else
+                {
+                    state.ClearConditions();
+                    state.RecoverHp((int)(((long)state.Definition.MaxHp * ability.Power + 99) / 100));
+                }
+                member.CaptureVitals(state);
+            }
+            // Subtract after recovery, including when the caster is one of the targets.
+            caster.RestoreVitals(caster.Hp, caster.Mp - ability.MpCost, caster.IsPoisoned, caster.BoundActions);
+            message = ability.Name + " / " + (ability.Targets == TargetRule.AllAllies ? "Equipe" : target.Name);
+            Changed?.Invoke();
+            return true;
+        }
+
         // Usado somente depois de validar um snapshot, em uma equipe ainda fora do jogo.
         internal void RestoreInventory(EquipmentLoadout[] gear, MateriaInstance[] materia, ItemInventory items)
         {

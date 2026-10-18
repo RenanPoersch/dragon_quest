@@ -125,9 +125,24 @@ namespace DragonQuest.Prototype
             ShowMessage(warning ?? "Jornada carregada / slot " + slot);
             battle.RestoreEnding((GameEnding)journey.Data.Ending);
         }
+        public bool CanSaveManually => store != null && !IsMenuVisible && battle != null
+            && !battle.IsActive && !battle.HasEnded && !battle.IsCheatMenuBlocking
+            && dialogue != null && !dialogue.IsOpen && (shops == null || !shops.IsOpen)
+            && locations != null && (locations.LocationId == PrototypeTravel.Inn || locations.LocationId == PrototypeTravel.World);
+
+        public bool OpenManualSaveMenu()
+        {
+            if (!CanSaveManually) return false;
+            battle.CloseMenu();
+            IsMenuVisible = true;
+            player.SetMovementEnabled(false);
+            OpenPage(MenuPage.Save);
+            return true;
+        }
+
         public void SaveManual()
         {
-            if (IsMenuVisible || battle.IsActive || battle.HasEnded || (locations.LocationId != PrototypeTravel.Inn && locations.LocationId != PrototypeTravel.World))
+            if (!CanSaveManually)
             { ShowMessage("O salvamento manual fica disponivel no mapa global ou na hospedaria, fora de combate."); return; }
             if (ActiveSlot == 0 || awaitingFirstSave && store.Exists(ActiveSlot))
             {

@@ -18,6 +18,8 @@ namespace DragonQuest.Prototype
         private InventoryMenuPresentation presentation;
         private readonly ItemMenuSession itemMenu = new ItemMenuSession();
         private readonly ItemMenuPresentation itemScreen = new ItemMenuPresentation();
+        private readonly MagicMenuSession magicMenu = new MagicMenuSession();
+        private readonly MagicMenuPresentation magicScreen = new MagicMenuPresentation();
         private readonly StatusMenuPresentation statusScreen = new StatusMenuPresentation();
         private readonly MateriaMenuSession materiaMenu = new MateriaMenuSession();
         private readonly MateriaMenuPresentation materiaScreen = new MateriaMenuPresentation();
@@ -43,6 +45,7 @@ namespace DragonQuest.Prototype
                 if (materiaMenu.ChoosingSocket) materiaMenu.CancelSocket(); else page = -1;
                 return true;
             }
+            if (page == 5) { if (!magicMenu.Cancel()) page = -1; return true; }
             if (page == 1 || page == 3 || page == 4) { page = -1; return true; }
             if (page != 2) return false;
             if (itemMenu.ChoosingTarget) itemMenu.CancelTarget(); else page = -1;
@@ -59,6 +62,7 @@ namespace DragonQuest.Prototype
             if (page == 1) { UpdateEquipmentInput(); return; }
             if (page == 2) { UpdateItemInput(); return; }
             if (page == 3) { UpdateStatusInput(); return; }
+            if (page == 5) { UpdateMagicInput(); return; }
             if (page >= 0) return;
             MenuDirection direction = GameInput.Navigation;
             Keyboard keys = Keyboard.current;
@@ -69,7 +73,13 @@ namespace DragonQuest.Prototype
                 if (keys.upArrowKey.wasPressedThisFrame || keys.wKey.wasPressedThisFrame) step = -1;
                 else if (keys.downArrowKey.wasPressedThisFrame || keys.sKey.wasPressedThisFrame) step = 1;
             }
-            MenuSounds.Select(ref selectedMenu, (selectedMenu + step + InventoryMenuPresentation.Commands.Length) % InventoryMenuPresentation.Commands.Length);
+            if (step != 0)
+            {
+                int next = selectedMenu;
+                do { next = (next + step + InventoryMenuPresentation.Commands.Length) % InventoryMenuPresentation.Commands.Length; }
+                while (!CommandEnabled(next) && next != selectedMenu);
+                MenuSounds.Select(ref selectedMenu, next);
+            }
             if (GameInput.ConfirmPressed) { OpenCommand(selectedMenu); GameInput.ConsumeGamepadFrame(); }
         }
 
@@ -84,12 +94,49 @@ namespace DragonQuest.Prototype
 
         private void OpenCommand(int index)
         {
+            if (!CommandEnabled(index)) return;
             MenuSounds.Play(MenuSound.Confirm);
-            page = index == 0 ? 2 : index == 1 ? 0 : index == 2 ? 1 : index;
+            if (index == 6)
+            {
+                GetComponent<PrototypeSaveController>().OpenManualSaveMenu();
+                return;
+            }
+            page = index == 0 ? 2 : index == 1 ? 0 : index == 2 ? 1 : index == 4 ? 5 : index == 5 ? 4 : index;
             if (page == 0) { materiaMenu.Reset(controller.Party); materiaScreen.Reset(); }
             if (page == 1) { equipmentMenu.Reset(controller.Party, memberIndex); equipmentScreen.Reset(); }
             if (page == 2) { itemMenu.Reset(controller.Party); itemScreen.Reset(); }
             if (page == 3) statusScreen.Reset();
+            if (page == 5) { magicMenu.Reset(controller.Party); magicScreen.Reset(); }
+        }
+
+        private bool CommandEnabled(int index) => index >= 0 && index < InventoryMenuPresentation.Commands.Length
+            && (index != 6 || GetComponent<PrototypeSaveController>()?.CanSaveManually == true);
+
+        private void UpdateMagicInput()
+        {
+            magicMenu.Refresh(controller.Party);
+            if (!GameInput.IsFrameAvailable || GameInput.CancelPressed || GameInput.InventoryPressed) return;
+            MenuDirection direction = GameInput.Navigation;
+            Keyboard keys = Keyboard.current;
+            int step = direction == MenuDirection.Up || direction == MenuDirection.Left ? -1
+                : direction == MenuDirection.Down || direction == MenuDirection.Right ? 1 : 0;
+            if (keys != null)
+            {
+                if (keys.upArrowKey.wasPressedThisFrame || keys.wKey.wasPressedThisFrame) step = -1;
+                else if (keys.downArrowKey.wasPressedThisFrame || keys.sKey.wasPressedThisFrame) step = 1;
+            }
+            if (step != 0)
+            {
+                var before = (magicMenu.CasterIndex, magicMenu.SpellIndex, magicMenu.TargetIndex);
+                magicMenu.Move(step, controller.Party);
+                MenuSounds.Navigate(before, (magicMenu.CasterIndex, magicMenu.SpellIndex, magicMenu.TargetIndex));
+            }
+            if (!GameInput.ConfirmPressed) return;
+            MenuSounds.Play(MenuSound.Confirm);
+            if (magicMenu.ChoosingCaster) magicMenu.ConfirmCaster();
+            else if (magicMenu.ChoosingTarget) magicMenu.ConfirmTarget(controller.Party);
+            else magicMenu.BeginUse(controller.Party);
+            GameInput.ConsumeGamepadFrame();
         }
 
         private void ChangeStatusMember(int step)
@@ -241,6 +288,11 @@ namespace DragonQuest.Prototype
                 statusScreen.Draw(presentation, party.Members[memberIndex], acceptsInput, BackToOverview);
                 GUI.matrix = previous; GUI.enabled = previousEnabled; return;
             }
+            if (page == 5)
+            {
+                magicScreen.Draw(presentation, magicMenu, party, acceptsInput, BackToOverview);
+                GUI.matrix = previous; GUI.enabled = previousEnabled; return;
+            }
             navigation.Begin(!acceptsInput);
             Panel(new Rect(30, 20, 1220, 82));
             GUI.Label(new Rect(48, 30, 850, 30), "Config", title);
@@ -263,11 +315,14 @@ namespace DragonQuest.Prototype
             for (int i = 0; i < InventoryMenuPresentation.Commands.Length; i++)
             {
                 Rect rect = InventoryMenuPresentation.CommandRect(i);
-                if (acceptsInput && moved && rect.Contains(pointer)) MenuSounds.Select(ref selectedMenu, i);
-                bool enabled = GUI.enabled; GUI.enabled = enabled && acceptsInput;
+                bool available = CommandEnabled(i);
+                if (acceptsInput && available && moved && rect.Contains(pointer)) MenuSounds.Select(ref selectedMenu, i);
+                bool enabled = GUI.enabled; GUI.enabled = enabled && acceptsInput && available;
                 bool clicked = GUI.Button(rect, GUIContent.none, presentation.CommandStyle);
                 GUI.enabled = enabled;
+                Color color = GUI.color; if (!available) GUI.color = new Color(.48f, .5f, .64f);
                 GUI.Label(rect, InventoryMenuPresentation.Commands[i], presentation.CommandStyle);
+                GUI.color = color;
                 if (clicked)
                 { selectedMenu = i; OpenCommand(i); GameInput.ConsumeGamepadFrame(); }
             }
