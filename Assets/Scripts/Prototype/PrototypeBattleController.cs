@@ -397,6 +397,9 @@ namespace DragonQuest.Prototype
                 && CastleMeteorPresentation.ShouldCutToCinematic(Time.unscaledTime - ActionStartedAt))
             { FinishCastleBattle(); return; }
             if (IsPresentingAction) return;
+            // The final action finishes before the cinematic; no result confirmation interrupts it.
+            if (IsActive && IsCastleEncounter && Session.Outcome == BattleOutcome.Completed)
+            { FinishCastleBattle(); return; }
             if (IsActive && Session.CurrentActor?.IsBound == true)
             { Session.TryTakeBoundTurn(out _); AwardIfComplete(); return; }
             if (IsActive && Session.CurrentActor?.MindControlTurns > 0)

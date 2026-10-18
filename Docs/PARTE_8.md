@@ -35,7 +35,7 @@ Provocar pode direcionar as ações individuais; Caos Magic continua atingindo t
 
 Matar tirano e espírito no mesmo ataque em área também dá o terceiro final, pois o rei precisa sobreviver para ser libertado. O meteoro destrutivo tem prioridade sobre essa regra, produzindo o final de destruição.
 
-Os finais encerram o combate e não recebem recompensa de vitória comum. Clique em **Ver final** para abrir a cena com três páginas de narrativa. E, Espaço, Enter ou Continuar avançam. Desde a parte 9, o desfecho fica salvo e a última página oferece **Voltar ao menu**. Continuar reapresenta esse final; Novo jogo cria uma jornada com os estados iniciais no slot escolhido.
+Os três finais começam automaticamente após sua condição específica. A libertação do rei e a possessão de Aren aguardam a animação da ação final e o desaparecimento do inimigo; em seguida, abrem a cena final sem tela de resultado ou confirmação. A experiência do final bom continua sendo concedida uma única vez. No meteoro destrutivo, o impacto e o clarão antecedem o corte automático para a cena do castelo. As cenas avançam sozinhas até o retorno ao menu e o registro da conquista. Continuar reapresenta um desfecho salvo; Novo jogo cria uma jornada com os estados iniciais no slot escolhido.
 
 Uma derrota por golpes normais, antes de qualquer desfecho, retorna à hospedaria. A equipe se recupera para tentar novamente; Limit e progresso permanecem, e consumíveis gastos continuam gastos. Essa derrota não conta como um dos três finais.
 
@@ -43,15 +43,15 @@ Uma derrota por golpes normais, antes de qualquer desfecho, retorna à hospedari
 
 1. Pare Play, aguarde a importação e abra `Assets/Scenes/CidadePrototipo.unity`. Reinicie Play, escolha Novo jogo no menu e confira o Console.
 2. Sem a armadura, entre no castelo e use E no tirano. Teste Esc para cancelar. Conclua a conversa: apenas o tirano deve ser inimigo; ele deve começar com golpes físicos, sem meteoros antecipados.
-3. Ataque até o HP chegar a 120 ou menos. Confira Shield completo antes da pose de cast, somente o sprite do rei durante a carga, números flutuantes de 5 a 1 e escudo ao receber golpes. Use Defender para não matar o rei. No quinto turno dele, observe queda, impacto e dissipação; toda a batalha deve ser aniquilada e o resultado deve indicar Cinzas do castelo. Clique em Ver final, leia as páginas e reinicie.
+3. Ataque até o HP chegar a 120 ou menos. Confira Shield completo antes da pose de cast, somente o sprite do rei durante a carga, números flutuantes de 5 a 1 e escudo ao receber golpes. Use Defender para não matar o rei. Após a contagem, observe o lançamento, o impacto e o clarão; toda a batalha deve ser aniquilada e a cena de Cinzas do castelo deve começar automaticamente, sem confirmação.
 4. Em outra tentativa, mate o tirano antes do lançamento para conferir o terceiro final, com Aren possuído. O desfecho deve acontecer imediatamente, sem permitir continuar atacando.
 5. Para o caminho bom, resolva os três segredos, vença o dragão e equipe sua armadura em qualquer aliado. Recoloque as matérias retiradas pela troca. Leve cura, éteres e uma forma de reviver.
 6. Volte ao salão: o espírito deve ficar visível. O inventário pode trocar o portador antes da luta, e o início do confronto deve usar a configuração final. Na batalha, confira os dois alvos, turnos independentes, drenagem, perda de ação por Correntes e dano em área.
-7. Ataque o espírito preservando o rei. Golpes em área e Limit atingem os dois inimigos. Ao derrotar a sombra, a batalha termina com o rei vivo e qualquer meteoro pendente cancelado. Confira o agradecimento do rei no final bom.
+7. Ataque o espírito preservando o rei. Golpes em área e Limit atingem os dois inimigos. Ao derrotar a sombra, a batalha termina com o rei vivo e qualquer meteoro pendente cancelado. Sem apertar teclas ou clicar, aguarde a animação do golpe e confira o início automático do agradecimento do rei, sem parada na tela de experiência.
 8. Para testar a absorção, enfraqueça o tirano até 20% e mantenha o espírito vivo. Aguarde até o quinto turno. Com o portador vivo, o meteoro deve se contrair até ele e exibir a absorção na escama vermelha, sem tirar HP de ninguém; o confronto deve continuar.
 9. Teste também o portador derrotado: reviva-o antes do lançamento para absorver; deixá-lo derrotado deve levar à destruição. Outra pessoa não absorve somente por ter resistência a Fogo.
 10. Teste uma derrota comum sem atingir 20% do HP do tirano. Volte à hospedaria, confira Limit e itens gastos, saia e retorne ao castelo para outra tentativa. Nenhum final deve ter sido registrado.
-11. Em cada cena final, confira os controles de páginas, pausa da exploração e Voltar ao menu. Continuar deve reapresentar o mesmo desfecho. Ao criar Novo jogo, confirme a ilha inicial, 50 moedas, 2 poções, 1 antídoto, segredos ocultos e ausência da armadura da jornada anterior.
+11. Em cada final, deixe teclado, mouse e controle sem entrada: confira a transição automática após o gatilho, a pausa da exploração e o retorno automático ao menu ao terminar a cena. Continuar deve reapresentar o mesmo desfecho. Ao criar Novo jogo, confirme a ilha inicial, 50 moedas, 2 poções, 1 antídoto, segredos ocultos e ausência da armadura da jornada anterior.
 
 ## Código e validação
 
@@ -66,3 +66,5 @@ Uma derrota por golpes normais, antes de qualquer desfecho, retorna à hospedari
 Passaram 1.983 verificações de combate/inventário/lojas/progresso, 58 de caminhos da periferia, 269 de ilha/interiores/viagens e 1.750 de câmera/malhas. A compilação usa as bibliotecas da Unity 6000.6.5f1. Os testes cobrem limiar exato e cruzado por golpe, cinco turnos com Protect, rejeição de lançamento antecipado, absorção em qualquer classe, portador derrotado/revivido, drenagem real, Correntes, ataques em área, prioridade dos finais, batalhas completas com final bom e derrota comum, e recuperação na hospedaria.
 
 Os retratos e as prévias técnicas foram conferidos a partir das malhas originais. Prévias não são capturas da Unity. Aparência com shader, importação das imagens, cliques, diálogo, câmera final e retorno ao menu ainda precisam do roteiro em Play. Modelos, interface, efeitos de batalha e cenas são provisórios; acabamento e executável continuam para as próximas entregas. Salvamento em disco foi adicionado na parte 9.
+
+Validação dos gatilhos automáticos: execute `Tools/Test-AutomaticEndings.ps1`. O teste compila os scripts e usa um projeto Unity temporário para conferir os três finais sem entrada do jogador, espera pela animação, frames longos, transição única, experiência do final bom e manutenção da tela de experiência nas vitórias comuns.
