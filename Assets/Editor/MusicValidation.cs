@@ -5,6 +5,7 @@ using DragonQuest.Audio;
 using DragonQuest.Combat;
 using DragonQuest.Interactions;
 using DragonQuest.Prototype;
+using DragonQuest.Progression;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -25,6 +26,8 @@ public static class MusicValidation
     private static DragonInteraction dragon;
     private static DialogueController dialogue;
     private static AudioSource preludeVoice;
+    private static InnRestController rest;
+    private static PrototypeEndingController endings;
 
     static MusicValidation()
     {
@@ -58,6 +61,14 @@ public static class MusicValidation
                 MusicCue.Forest => 171.1543f,
                 MusicCue.Ruins => 134.1417f,
                 MusicCue.Quarry => 167.1140f,
+                MusicCue.Voyage => 190.1714f,
+                MusicCue.Sleep => 9.1951f,
+                MusicCue.Defeat => 36.1302f,
+                MusicCue.DragonFreed => 299.1427f,
+                MusicCue.GoodEnding => 155.1557f,
+                MusicCue.MindControlEnding => 196.1622f,
+                MusicCue.MeteorEnding => 241.1160f,
+                MusicCue.Throne => 242.1609f,
                 _ => throw new InvalidOperationException("Missing source duration for " + cue)
             };
             Check(clip.channels == 2 && clip.frequency == 44100 && Math.Abs(clip.length-expectedSeconds)<.05f,
@@ -70,9 +81,20 @@ public static class MusicValidation
         }
         Check(MusicCuePolicy.Select(true,true,false,false,false,false,false,false,"world") == MusicCue.Intro, "intro takes priority over front end");
         Check(MusicCuePolicy.Select(false,true,false,false,false,false,false,false,"world") == MusicCue.Silence, "title and load stay silent");
-        Check(MusicCuePolicy.Select(false,false,true,true,false,true,false,false,"castle") == MusicCue.Silence, "ending stays silent");
-        Check(Enum.GetValues(typeof(MusicCue)).Cast<MusicCue>().Count(MusicCuePolicy.IsAvailable) == 10, "all ten supplied recordings are enabled");
-        Check(Resources.LoadAll<AudioClip>("Music").Length == 10, "only supplied recordings are present");
+        Check(Enum.GetValues(typeof(MusicCue)).Cast<MusicCue>().Count(MusicCuePolicy.IsAvailable) == 18, "all eighteen supplied recordings are enabled");
+        Check(Resources.LoadAll<AudioClip>("Music").Length == 18, "only supplied recordings are present");
+        Check(!MusicCuePolicy.ShouldLoop(MusicCue.Sleep),"sleep jingle plays once");
+        Check(MusicCuePolicy.Select(false,true,false,false,false,false,false,false,"world",story:new MusicStoryState(voyage:true)) == MusicCue.Voyage,
+            "the voyage has music while title and normal load selection stay silent");
+        Check(MusicCuePolicy.Select(false,false,false,true,false,false,false,true,"world") == MusicCue.Defeat,
+            "defeat has its own continue-screen theme");
+        Check(MusicCuePolicy.Select(false,false,false,false,false,false,false,false,"volcano",story:new MusicStoryState(dragonDefeated:true)) == MusicCue.DragonFreed,
+            "liberated dragon lair has its own aftermath theme");
+        Check(MusicCuePolicy.Select(false,false,false,false,false,false,false,false,"castle") == MusicCue.Throne,
+            "throne room has exploration music separate from its battle");
+        foreach (GameEnding result in new[] { GameEnding.KingFreed,GameEnding.HeroPossessed,GameEnding.CastleDestroyed })
+            Check(MusicCuePolicy.Select(false,false,true,false,false,false,false,false,"castle",story:new MusicStoryState(ending:result)) == MusicCuePolicy.EndingCue(result),
+                "ending music follows " + result);
         Check(MusicCuePolicy.Select(false,false,false,false,false,false,false,false,"volcano") == MusicCue.Silence,
             "exploring the dragon lair stays silent");
         Check(MusicCuePolicy.Select(false,false,false,false,false,false,false,false,"volcano",true) == MusicCue.Dragon,
@@ -120,12 +142,13 @@ public static class MusicValidation
     private static AudioSource VillageVoice => music.GetComponentsInChildren<AudioSource>().First(s => s.clip?.name == "village" && s.isPlaying);
     private static AudioSource Voice(MusicCue cue) => music.GetComponentsInChildren<AudioSource>()
         .First(s => s.clip?.name == cue.ToString().ToLowerInvariant() && s.isPlaying);
+    private static float VoiceDuration(MusicCue cue) => Resources.Load<AudioClip>(MusicCuePolicy.ResourceName(cue)).length;
     private static void CuePlays(MusicCue cue)
     {
         Check(music.CurrentCue == cue,"expected " + cue + " at step " + step);
         AudioSource voice = Voice(cue);
-        Check(voice.timeSamples > 0 && voice.loop && voice.volume > 0 && voice.spatialBlend == 0,
-            cue + " plays the supplied recording as an audible 2D loop");
+        Check(voice.timeSamples > 0 && voice.loop == MusicCuePolicy.ShouldLoop(cue) && voice.volume > 0 && voice.spatialBlend == 0,
+            cue + " plays the supplied recording with its intended loop setting");
         Check(music.GetComponentsInChildren<AudioSource>().All(s => s == voice || !s.isPlaying),
             "previous music stops after switching to " + cue);
     }
@@ -184,19 +207,29 @@ public static class MusicValidation
         Check(music.CurrentCue == MusicCue.Silence, "expected silence at step " + step);
         Check(music.GetComponentsInChildren<AudioSource>().All(s => !s.isPlaying), "both music sources stop at step " + step);
     }
+    private static void ClearEnding()
+    {
+        // Reuse the real scene's ending controller without returning to the title between fixtures.
+        foreach (string field in new[] { "aftermath","possession","liberation" })
+        {
+            ((IDisposable)Field(endings,field))?.Dispose();
+            typeof(PrototypeEndingController).GetField(field,Private).SetValue(endings,null);
+        }
+        typeof(PrototypeEndingController).GetField("pages",Private).SetValue(endings,null);
+    }
 
     private static void Tick()
     {
         if (!EditorApplication.isPlaying || EditorApplication.isCompiling) return;
         double now = EditorApplication.timeSinceStartup;
         if (began == 0) { began = now; nextAt = now + 2; }
-        if (now - began > 180) { Finish(new Exception("Music playback timed out at step " + step)); return; }
+        if (now - began > 240) { Finish(new Exception("Music playback timed out at step " + step)); return; }
         // Resume only this isolated test if startup diagnostics trigger Console Error Pause.
         if (EditorApplication.isPaused) { EditorApplication.isPaused = false; nextAt = now + 1; return; }
         if (now < nextAt || Time.frameCount < nextFrame) return;
         // Streaming can start asynchronously after a first import. Wait briefly for the
         // selected recording to advance before sampling it; failed playback still fails.
-        if (music != null && music.CurrentCue != MusicCue.Silence && now < nextAt + 5
+        if (music != null && music.CurrentCue != MusicCue.Silence && music.CurrentCue != MusicCue.Sleep && now < nextAt + 5
             && !music.GetComponentsInChildren<AudioSource>().Any(s => s.clip?.name == music.CurrentCue.ToString().ToLowerInvariant()
                 && s.isPlaying && s.timeSamples > 0 && s.volume > 0)) return;
         try
@@ -227,7 +260,8 @@ public static class MusicValidation
                 case 3: Silent(); Page("Continue"); break;
                 case 4: Silent(); Page("Title"); Call(saves,"StartNewGameVoyage"); break;
                 case 5:
-                    Silent();
+                    CuePlays(MusicCue.Voyage);
+                    Check(saves.IsVoyagePlaying,"voyage music follows the actual boat introduction");
                     Check(saves.IsFrontEndVisible, "new game voyage remains a front-end screen");
                     ((NewGameVoyagePresentation)Field(saves,"voyage")).Dispose();
                     typeof(PrototypeSaveController).GetField("voyage",Private).SetValue(saves,null);
@@ -332,7 +366,7 @@ public static class MusicValidation
                     BattlePlays(); Set(battle.Session,"Outcome",BattleOutcome.Defeat);
                     break;
                 case 24:
-                    Silent(); ClearCombat(); Restore("west-forest");
+                    CuePlays(MusicCue.Defeat); ClearCombat(); Restore("west-forest");
                     break;
                 case 25:
                     CuePlays(MusicCue.Quarry);
@@ -420,24 +454,126 @@ public static class MusicValidation
                     Set(battle,"PostBattleStartedAt",Time.unscaledTime-10); battle.ReturnToCity();
                     break;
                 case 41:
-                    Silent(); dialogue.Close(); dragon.Interact(new InteractionContext(dialogue,null,_ => { }));
-                    Check(dialogue.Title == "Essencia liberta" && !dragon.IsBattlePrelude,"liberated essence conversation has no battle music");
+                    CuePlays(MusicCue.DragonFreed);
+                    Check(Voice(MusicCue.DragonFreed).timeSamples < Voice(MusicCue.DragonFreed).clip.frequency*2,"dragon aftermath begins after victory results");
+                    dialogue.Close(); dragon.Interact(new InteractionContext(dialogue,null,_ => { }));
+                    Check(dialogue.Title == "Essencia liberta" && !dragon.IsBattlePrelude,"liberated essence conversation keeps the aftermath track");
+                    Voice(MusicCue.DragonFreed).timeSamples = Voice(MusicCue.DragonFreed).clip.samples - Voice(MusicCue.DragonFreed).clip.frequency/3;
                     break;
                 case 42:
-                    Silent(); dialogue.Close(); ClearCombat(); Restore("castle"); battle.StartCastleBattle();
+                    CuePlays(MusicCue.DragonFreed);
+                    Check(Voice(MusicCue.DragonFreed).timeSamples < Voice(MusicCue.DragonFreed).clip.frequency*2,"dragon aftermath recording loops");
+                    dialogue.Close(); ClearCombat(); Restore("castle");
                     break;
                 case 43:
+                    CuePlays(MusicCue.Throne);
+                    Check(!battle.IsActive,"throne music plays before starting combat");
+                    Voice(MusicCue.Throne).timeSamples = Voice(MusicCue.Throne).clip.samples - Voice(MusicCue.Throne).clip.frequency/3;
+                    break;
+                case 44:
+                    CuePlays(MusicCue.Throne);
+                    Check(Voice(MusicCue.Throne).timeSamples < Voice(MusicCue.Throne).clip.frequency*2,"throne room recording loops");
+                    battle.StartCastleBattle();
+                    break;
+                case 45:
                     CuePlays(MusicCue.FinalBoss);
                     Check(Voice(MusicCue.FinalBoss).timeSamples < Voice(MusicCue.FinalBoss).clip.frequency*2,"tyrant battle starts its own recording from the beginning");
                     Voice(MusicCue.FinalBoss).timeSamples = Voice(MusicCue.FinalBoss).clip.samples - Voice(MusicCue.FinalBoss).clip.frequency/3;
                     break;
-                case 44:
+                case 46:
                     CuePlays(MusicCue.FinalBoss);
                     Check(Voice(MusicCue.FinalBoss).timeSamples < Voice(MusicCue.FinalBoss).clip.frequency*2,"full tyrant recording loops during battle");
                     Set(battle.Session,"Outcome",BattleOutcome.Defeat);
                     break;
-                case 45:
-                    Silent(); ClearCombat(); Set(battle,"HasEnded",true); music.enabled = false;
+                case 47:
+                    CuePlays(MusicCue.Defeat);
+                    Voice(MusicCue.Defeat).timeSamples = Voice(MusicCue.Defeat).clip.samples - Voice(MusicCue.Defeat).clip.frequency/3;
+                    break;
+                case 48:
+                    CuePlays(MusicCue.Defeat);
+                    Check(Voice(MusicCue.Defeat).timeSamples < Voice(MusicCue.Defeat).clip.frequency*2,"defeat theme loops while awaiting continue");
+                    battle.ReturnToCity();
+                    break;
+                case 49:
+                    VillagePlays();
+                    Check(maps.LocationId == "inn" && !battle.IsActive,"continuing after defeat returns to the inn theme");
+                    dialogue.Close();
+                    rest = music.GetComponent<InnRestController>(); rest.enabled = false;
+                    Check(Math.Abs(rest.SleepMusicSeconds-VoiceDuration(MusicCue.Sleep)) < .05f,"rest timing uses the full supplied jingle duration");
+                    rest.Begin();
+                    for (int i=0;i<100 && rest.IsPlaying && !rest.IsSleeping;i++) Call(rest,"Advance",.25f);
+                    Check(rest.IsPlaying && rest.IsSleeping,"party walks to bed before sleep music starts");
+                    break;
+                case 50:
+                    CuePlays(MusicCue.Sleep);
+                    Check(!Voice(MusicCue.Sleep).loop,"sleep jingle is a one-shot");
+                    Call(rest,"Advance",InnRestController.FadeDuration+.1f);
+                    break;
+                case 51:
+                    CuePlays(MusicCue.Sleep);
+                    Call(rest,"Advance",InnRestController.NightDuration+.1f);
+                    Check(rest.IsSleeping && rest.BlackOpacity >= 1,"night stays black while the longer jingle plays");
+                    Voice(MusicCue.Sleep).timeSamples = Voice(MusicCue.Sleep).clip.samples - Voice(MusicCue.Sleep).clip.frequency/3;
+                    break;
+                case 52:
+                    Check(music.CurrentCue == MusicCue.Sleep && !music.GetComponentsInChildren<AudioSource>().Any(s => s.isPlaying),
+                        "sleep jingle finishes without looping or restarting");
+                    Call(rest,"Advance",rest.SleepMusicSeconds);
+                    Check(rest.IsPlaying && !rest.IsSleeping,"waking begins after the complete rest interval");
+                    break;
+                case 53:
+                    VillagePlays(); Call(rest,"Advance",InnRestController.FadeDuration+.1f);
+                    Check(!rest.IsPlaying,"rest finishes and restores exploration");
+                    Set(saves,"IsMenuVisible",true); Call(saves,"StartNewGameVoyage");
+                    break;
+                case 54:
+                    CuePlays(MusicCue.Voyage);
+                    Check(Voice(MusicCue.Voyage).timeSamples < Voice(MusicCue.Voyage).clip.frequency*2,"a new boat introduction restarts its track");
+                    Voice(MusicCue.Voyage).timeSamples = Voice(MusicCue.Voyage).clip.samples - Voice(MusicCue.Voyage).clip.frequency/3;
+                    break;
+                case 55:
+                    CuePlays(MusicCue.Voyage);
+                    Check(Voice(MusicCue.Voyage).timeSamples < Voice(MusicCue.Voyage).clip.frequency*2,"complete boat recording loops during its introduction");
+                    ((NewGameVoyagePresentation)Field(saves,"voyage")).Sequence.Advance(NewGameVoyageSequence.CompleteAt);
+                    Call(saves,"Update");
+                    break;
+                case 56:
+                    VillagePlays(); Check(!saves.IsVoyagePlaying && !saves.IsMenuVisible,"completing the voyage restores map music");
+                    endings = music.GetComponent<PrototypeEndingController>(); endings.enabled = false;
+                    battle.RestoreEnding(GameEnding.KingFreed);
+                    break;
+                case 57:
+                    CuePlays(MusicCue.GoodEnding);
+                    Check(endings.CurrentEnding == GameEnding.KingFreed,"good-ending cue follows the actual ending presentation");
+                    Voice(MusicCue.GoodEnding).timeSamples = Voice(MusicCue.GoodEnding).clip.samples - Voice(MusicCue.GoodEnding).clip.frequency/3;
+                    break;
+                case 58:
+                    CuePlays(MusicCue.GoodEnding);
+                    Check(Voice(MusicCue.GoodEnding).timeSamples < Voice(MusicCue.GoodEnding).clip.frequency*2,"good-ending track loops");
+                    ClearEnding(); battle.RestoreEnding(GameEnding.HeroPossessed);
+                    break;
+                case 59:
+                    CuePlays(MusicCue.MindControlEnding);
+                    Check(endings.CurrentEnding == GameEnding.HeroPossessed,"mind-control cue follows its ending presentation");
+                    Voice(MusicCue.MindControlEnding).timeSamples = Voice(MusicCue.MindControlEnding).clip.samples - Voice(MusicCue.MindControlEnding).clip.frequency/3;
+                    break;
+                case 60:
+                    CuePlays(MusicCue.MindControlEnding);
+                    Check(Voice(MusicCue.MindControlEnding).timeSamples < Voice(MusicCue.MindControlEnding).clip.frequency*2,"mind-control ending track loops");
+                    ClearEnding(); battle.RestoreEnding(GameEnding.CastleDestroyed);
+                    break;
+                case 61:
+                    CuePlays(MusicCue.MeteorEnding);
+                    Check(endings.CurrentEnding == GameEnding.CastleDestroyed,"meteor cue follows its ending presentation");
+                    Voice(MusicCue.MeteorEnding).timeSamples = Voice(MusicCue.MeteorEnding).clip.samples - Voice(MusicCue.MeteorEnding).clip.frequency/3;
+                    break;
+                case 62:
+                    CuePlays(MusicCue.MeteorEnding);
+                    Check(Voice(MusicCue.MeteorEnding).timeSamples < Voice(MusicCue.MeteorEnding).clip.frequency*2,"meteor ending track loops");
+                    ClearEnding(); ClearCombat(); Set(saves,"IsMenuVisible",true); Page("Title");
+                    break;
+                case 63:
+                    Silent(); music.enabled = false;
                     Check(music.GetComponentsInChildren<AudioSource>().All(s => !s.isPlaying), "disabling the controller stops audio");
                     Finish(null); return;
             }
@@ -451,7 +587,7 @@ public static class MusicValidation
     {
         SessionState.SetBool(Running,false); EditorApplication.update -= Tick;
         if (error != null) Debug.LogException(error);
-        else Debug.Log("MUSIC PLAYBACK PASS: " + checks + " checks for all ten supplied recordings, region loops, normal battles, victory, quiet dragon lair, cancelled speech, uninterrupted dragon prelude and tyrant battle.");
+        else Debug.Log("MUSIC PLAYBACK PASS: " + checks + " checks for all eighteen recordings, regions, combat, boat, one-shot sleep, defeat, dragon aftermath, throne room and all three endings.");
         if (Application.isBatchMode) EditorApplication.Exit(error == null ? 0 : 1);
         else EditorApplication.ExitPlaymode();
     }

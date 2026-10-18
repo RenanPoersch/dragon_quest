@@ -37,6 +37,10 @@ namespace DragonQuest.Prototype
         private int teleportRevision;
         public bool IsPlaying { get; private set; }
         public float BlackOpacity { get; private set; }
+        public bool IsSleeping => IsPlaying && (phase == Phase.FadeOut || phase == Phase.Night);
+        public float SleepMusicSeconds { get; private set; }
+        public void ConfigureSleepMusic(float seconds)
+            => SleepMusicSeconds = float.IsNaN(seconds) || float.IsInfinity(seconds) ? 0 : Mathf.Max(0,seconds);
 
         public void Initialize(PlayerMovement hero, Func<PartyProgress> party, ObliqueScenery models,
             Func<bool> isAtInn, Func<bool> isBlocked)
@@ -126,7 +130,7 @@ namespace DragonQuest.Prototype
             }
             else if (phase==Phase.Night)
             {
-                if (elapsed<NightDuration) return;
+                if (elapsed<Mathf.Max(NightDuration,SleepMusicSeconds-FadeDuration)) return;
                 phase=Phase.FadeIn; elapsed=0;
             }
             else

@@ -18,6 +18,8 @@ namespace DragonQuest.Audio
         private PrototypeLocations locations;
         private PrototypeBattleController battle;
         private DragonInteraction dragon;
+        private InnRestController rest;
+        private PrototypeEndingController endings;
         private int current = -1;
         private float elapsed, duration;
         public MusicCue CurrentCue { get; private set; }
@@ -26,7 +28,14 @@ namespace DragonQuest.Audio
         {
             saves = menus; locations = maps; battle = combat;
             dragon = GetComponentInChildren<DragonInteraction>(true);
+            rest = GetComponent<InnRestController>();
+            endings = GetComponent<PrototypeEndingController>();
             if (sources[0] != null) return;
+            if (rest != null)
+            {
+                var sleep = Resources.Load<AudioClip>(MusicCuePolicy.ResourceName(MusicCue.Sleep));
+                if (sleep != null) { clips[MusicCue.Sleep] = sleep; rest.ConfigureSleepMusic(sleep.length); }
+            }
             for (int i = 0; i < sources.Length; i++)
             {
                 var voice = new GameObject("Music " + (i + 1));
@@ -47,7 +56,10 @@ namespace DragonQuest.Audio
             var cue = MusicCuePolicy.Select(saves.IsIntroPlaying, saves.IsFrontEndVisible, battle.HasEnded,
                 battle.IsActive, battle.IsDragonEncounter, battle.IsCastleEncounter, battle.IsPostBattleOpen,
                 battle.Session?.Outcome == BattleOutcome.Defeat && !battle.IsPresentingAction, locations.LocationId,
-                dragon != null && dragon.IsBattlePrelude);
+                dragon != null && dragon.IsBattlePrelude,
+                new MusicStoryState(saves.IsVoyagePlaying, rest != null && rest.IsSleeping,
+                    battle.Dragon != null && battle.Dragon.IsDefeated,
+                    endings != null ? endings.CurrentEnding : DragonQuest.Progression.GameEnding.None));
             if (!MusicCuePolicy.IsAvailable(cue)) cue = MusicCue.Silence;
             TransitionTo(cue);
             Advance(Time.unscaledDeltaTime);
@@ -59,7 +71,7 @@ namespace DragonQuest.Audio
             CurrentCue = cue;
             for (int i = 0; i < 2; i++) { from[i] = sources[i].volume; target[i] = 0; }
             elapsed = 0;
-            duration = cue == MusicCue.Silence ? .12f : cue == MusicCue.Victory ? .18f : .65f;
+            duration = cue == MusicCue.Silence || cue == MusicCue.Sleep ? .12f : cue == MusicCue.Victory ? .18f : .65f;
             if (cue == MusicCue.Silence) { current = -1; return; }
             if (!clips.TryGetValue(cue, out AudioClip clip))
             {
@@ -71,6 +83,7 @@ namespace DragonQuest.Audio
             int next = current == 0 ? 1 : current == 1 ? 0 : sources[0].volume <= sources[1].volume ? 0 : 1;
             AudioSource voice = sources[next];
             voice.Stop(); voice.clip = clip; voice.volume = from[next] = 0;
+            voice.loop = MusicCuePolicy.ShouldLoop(cue);
             voice.timeSamples = 0;
             target[next] = MusicVolume;
             current = next;
@@ -84,7 +97,7 @@ namespace DragonQuest.Audio
             for (int i = 0; i < 2; i++)
             {
                 float gain = Mathf.Lerp(from[i], target[i], blend);
-                // The intro's visual fade also controls its music; title and load stay silent.
+                // The title and load selection stay silent; the opening follows its visual fade.
                 if (CurrentCue == MusicCue.Intro && i == current) gain *= saves.IntroMusicGain;
                 sources[i].volume = gain;
                 if (blend >= 1 && target[i] == 0 && sources[i].isPlaying) sources[i].Stop();

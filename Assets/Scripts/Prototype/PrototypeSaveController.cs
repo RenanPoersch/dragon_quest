@@ -50,6 +50,7 @@ namespace DragonQuest.Prototype
         private bool IsMenuFadingIn => menuFadeInElapsed < MenuFadeInDuration;
         public bool IsMenuVisible { get; private set; } = true;
         public bool IsIntroPlaying => IsMenuVisible && intro != null && intro.IsPlaying;
+        public bool IsVoyagePlaying => IsMenuVisible && voyage != null && voyage.IsPlaying;
         public bool IsFrontEndVisible => IsMenuVisible && page != MenuPage.Save;
         public float IntroMusicGain => IsIntroPlaying ? intro.Sequence.Opacity : 0;
         public int ActiveSlot { get; private set; }
