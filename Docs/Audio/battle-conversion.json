@@ -1,0 +1,11 @@
+{
+  "seconds": 166.11555555555555,
+  "notes": 1730,
+  "percussion_events": 2161,
+  "rate": 44100,
+  "channels": 2,
+  "peak_db": -0.7,
+  "rms_db": -17.55,
+  "source_sha256": "7fa3b08fc80006c3d09a3921edc5a7368cdb8908394188f786b8b8187f208b20",
+  "output_sha256": "7b12f50ce81e528a0313684697aff2d5e2bd06c8dd4764578280443cda6c5a16"
+}

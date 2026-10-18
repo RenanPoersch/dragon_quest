@@ -11,9 +11,11 @@ import logging
 from pathlib import Path
 import subprocess
 import tempfile
+from functools import lru_cache
 import numpy as np
 import soundfile as sf
-from scipy.ndimage import uniform_filter1d
+from scipy.ndimage import uniform_filter1d, median_filter
+from scipy import signal
 
 RATE = 44100
 
@@ -67,7 +69,67 @@ def oscillator(pitch, count, kind):
     return (np.round(result * 127) / 127).astype(np.float32)
 
 
-def render(events, source):
+def extract_percussion(source):
+    # Separate broadband transients from sustained harmonic ridges, then retain
+    # their recorded hit times. There is no generated beat grid or replacement rhythm.
+    mono = signal.resample_poly(source.mean(axis=1), 1, 2)
+    rate, hop = RATE // 2, 220
+    frequencies, times, spectrum = signal.stft(mono, rate, nperseg=1024, noverlap=1024-hop)
+    magnitude = abs(spectrum).astype(np.float32)
+    harmonic = median_filter(magnitude, size=(1,17))
+    percussive = median_filter(magnitude, size=(17,1))
+    magnitude *= percussive**2 / (percussive**2 + 2*harmonic**2 + 1e-15)
+    flux = np.maximum(np.diff(magnitude, axis=1, prepend=magnitude[:,:1]), 0)
+    result = []
+    bands = {'kick': (35,180,.15), 'snare': (350,4500,.14), 'hat': (5500,10500,.065)}
+    for kind, (low, high, spacing) in bands.items():
+        envelope = np.sqrt(np.sum(flux[(frequencies>=low)&(frequencies<high)]**2,axis=0))
+        envelope = uniform_filter1d(envelope, 3)
+        reference = float(np.percentile(envelope,95))
+        if reference < 1e-7: continue
+        peaks, _ = signal.find_peaks(envelope, height=reference*.32, prominence=reference*.22,
+                                    distance=max(1,round(spacing*rate/hop)))
+        for peak in peaks:
+            time = float(times[peak])
+            if time >= len(source)/RATE: continue
+            result.append(dict(time=round(time,6),kind=kind,
+                               amplitude=round(float(np.clip(envelope[peak]/reference,.15,1)),6)))
+    # A snare's broadband attack also occupies the hat band; keep that overlap quiet.
+    snare_times = np.array([e['time'] for e in result if e['kind']=='snare'])
+    for event in result:
+        if event['kind']=='hat' and len(snare_times) and np.min(abs(snare_times-event['time']))<.035:
+            event['amplitude'] = round(event['amplitude']*.25,6)
+    return sorted(result,key=lambda e:e['time'])
+
+
+@lru_cache(maxsize=3)
+def chip_drum(kind):
+    length = {'kick':.24,'snare':.18,'hat':.065}[kind]
+    t = np.arange(round(length*RATE))/RATE
+    if kind == 'kick':
+        phase = 2*np.pi*(47*t+3.8*(1-np.exp(-t*33)))
+        wave = (2/np.pi)*np.arcsin(np.sin(phase))*np.exp(-t*23)
+        gain = .27
+    else:
+        # Fifteen-bit shift-register noise, as used for chip percussion.
+        state = 1
+        bits = np.empty(round(length*12000)+2,np.float32)
+        for i in range(len(bits)):
+            state = (state>>1)|(((state^(state>>1))&1)<<14)
+            bits[i] = 1 if state&1 else -1
+        noise = bits[np.minimum((t*12000).astype(int),len(bits)-1)]
+        noise -= uniform_filter1d(noise,7)
+        if kind=='snare':
+            wave = (noise*.7 + np.sin(2*np.pi*175*t)*.3)*np.exp(-t*29)
+            gain = .19
+        else:
+            wave = noise*np.exp(-t*85)
+            gain = .075
+    wave *= np.minimum(t/.0015,1)*np.minimum((length-t)/.008,1)
+    return (np.round(wave*gain*127)/127).astype(np.float32)
+
+
+def render(events, source, percussion=()):
     mix = np.zeros_like(source, dtype=np.float32)
     active = np.zeros(len(source), np.float32)
     for event in events:
@@ -94,6 +156,13 @@ def render(events, source):
     # Gentle voice balancing and the original performance's loudness contour.
     balance = np.sqrt(np.maximum(1, uniform_filter1d(active, round(RATE * .05)) * 3))
     mix /= balance[:, None]
+    for event in percussion:
+        start = round(event['time']*RATE)
+        wave = chip_drum(event['kind'])[:max(0,len(source)-start)]*event['amplitude']
+        if start < 0 or start >= len(source): continue
+        pan = .18 if event['kind']=='hat' else 0
+        mix[start:start+len(wave),0] += wave*np.sqrt((1-pan)/2)
+        mix[start:start+len(wave),1] += wave*np.sqrt((1+pan)/2)
     source_env = np.sqrt(np.maximum(0, uniform_filter1d(np.mean(source**2, axis=1), round(RATE * .08))))
     synth_env = np.sqrt(np.maximum(0, uniform_filter1d(np.mean(mix**2, axis=1), round(RATE * .08))))
     gain = np.clip(source_env / np.maximum(synth_env, .006), .15, 2.5)
@@ -123,6 +192,7 @@ def main():
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--metadata-dir', type=Path)
     parser.add_argument('--preview', type=Path)
+    parser.add_argument('--percussion', action='store_true', help='Resynthesize detected drum attacks with chip noise and triangle waves')
     args = parser.parse_args()
     source = decode(args.source)
     if args.notes:
@@ -142,7 +212,11 @@ def main():
                 events = extract(wav)
         record = dict(source_sha256=hashlib.sha256(args.source.read_bytes()).hexdigest(),
                       source_file=args.source.name, seconds=len(source) / RATE, notes=events)
-    samples = render(events, source)
+    percussion = record.get('percussion', [])
+    if args.percussion and not percussion:
+        percussion = extract_percussion(source)
+        record['percussion'] = percussion
+    samples = render(events, source, percussion)
     write_ogg(args.output, samples)
     decoded, rate = sf.read(args.output, dtype='float32')
     assert rate == RATE and decoded.shape == samples.shape and np.isfinite(decoded).all()
@@ -150,7 +224,7 @@ def main():
     metadata_dir = args.metadata_dir or args.output.parent
     metadata_dir.mkdir(parents=True, exist_ok=True)
     (metadata_dir / (args.output.stem + '-notes.json')).write_text(json.dumps(record, indent=2) + '\n', encoding='utf-8')
-    stats = dict(seconds=len(decoded) / rate, notes=len(events), rate=rate, channels=2,
+    stats = dict(seconds=len(decoded) / rate, notes=len(events), percussion_events=len(percussion), rate=rate, channels=2,
         peak_db=round(20 * np.log10(float(np.max(abs(decoded)))),2),
         rms_db=round(20 * np.log10(float(np.sqrt(np.mean(decoded**2)))),2),
         source_sha256=record['source_sha256'], output_sha256=hashlib.sha256(args.output.read_bytes()).hexdigest())

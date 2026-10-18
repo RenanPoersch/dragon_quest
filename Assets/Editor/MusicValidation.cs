@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Reflection;
 using DragonQuest.Audio;
+using DragonQuest.Combat;
 using DragonQuest.Prototype;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -13,11 +14,12 @@ public static class MusicValidation
     private const string Running = "DragonQuest.MusicPlaybackValidation";
     private const string CheckCount = Running + ".Checks";
     private const BindingFlags Private = BindingFlags.Instance | BindingFlags.NonPublic;
-    private static int checks, step;
+    private static int checks, step, nextFrame;
     private static double nextAt, began;
     private static PrototypeSaveController saves;
     private static PrototypeBattleController battle;
     private static PrototypeMusicController music;
+    private static PrototypeLocations maps;
     private static PrototypeIntroPresentation intro;
 
     static MusicValidation()
@@ -40,18 +42,26 @@ public static class MusicValidation
             AssetDatabase.ImportAsset("Assets/Resources/" + resource + ".ogg", ImportAssetOptions.ForceUpdate);
             AudioClip clip = Resources.Load<AudioClip>(resource);
             Check(clip != null, resource + " exists");
-            Check(clip.channels == 2 && clip.frequency == 44100 && clip.length > 160 && clip.length < 180,
-                "the full supplied intro is imported in stereo at 44.1 kHz");
+            float expectedSeconds = cue == MusicCue.Intro ? 171.1543f : 166.1156f;
+            Check(clip.channels == 2 && clip.frequency == 44100 && Math.Abs(clip.length-expectedSeconds)<.05f,
+                resource + " preserves the full supplied recording in stereo at 44.1 kHz");
             var importer = (AudioImporter)AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(clip));
             Check(importer.defaultSampleSettings.loadType == AudioClipLoadType.Streaming
                 && !importer.defaultSampleSettings.preloadAudioData && !importer.forceToMono,
-                "intro streams without preloading the full PCM clip");
+                resource + " streams without preloading the full PCM clip");
         }
         Check(MusicCuePolicy.Select(true,true,false,false,false,false,false,false,"world") == MusicCue.Intro, "intro takes priority over front end");
         Check(MusicCuePolicy.Select(false,true,false,false,false,false,false,false,"world") == MusicCue.Silence, "title and load stay silent");
         Check(MusicCuePolicy.Select(false,false,true,true,false,true,false,false,"castle") == MusicCue.Silence, "ending stays silent");
-        Check(Enum.GetValues(typeof(MusicCue)).Cast<MusicCue>().Count(MusicCuePolicy.IsAvailable) == 1, "only the supplied intro is enabled");
-        Check(Resources.LoadAll<AudioClip>("Music").Length == 1, "rejected replacement compositions are absent");
+        Check(Enum.GetValues(typeof(MusicCue)).Cast<MusicCue>().Count(MusicCuePolicy.IsAvailable) == 2, "only supplied intro and battle are enabled");
+        Check(Resources.LoadAll<AudioClip>("Music").Length == 2, "rejected replacement compositions are absent");
+        foreach (string map in new[] { "world","city","west-forest","east-forest","ancient-ruins" })
+            Check(MusicCuePolicy.Select(false,false,false,true,false,false,false,false,map) == MusicCue.Battle,
+                "normal battles share the supplied theme in " + map);
+        Check(MusicCuePolicy.Select(false,false,false,true,true,false,false,false,"volcano") == MusicCue.Dragon,
+            "dragon keeps its own cue");
+        Check(MusicCuePolicy.Select(false,false,false,true,false,true,false,false,"castle") == MusicCue.FinalBoss,
+            "final boss keeps its own cue");
         Debug.Log("MUSIC ASSETS PASS: " + checks + " checks.");
     }
 
@@ -69,12 +79,32 @@ public static class MusicValidation
     private static object Field(object instance, string field) => instance.GetType().GetField(field, Private).GetValue(instance);
     private static void Call(object instance, string method, params object[] args)
         => instance.GetType().GetMethod(method, Private).Invoke(instance, args);
+    private static void Set(object instance, string property, object value)
+        => instance.GetType().GetField("<"+property+">k__BackingField",Private).SetValue(instance,value);
     private static void Page(string page)
     {
         var type = typeof(PrototypeSaveController).GetNestedType("MenuPage", BindingFlags.NonPublic);
         Call(saves,"OpenPage",Enum.Parse(type,page));
     }
     private static AudioSource IntroVoice => music.GetComponentsInChildren<AudioSource>().First(s => s.clip?.name == "intro");
+    private static AudioSource BattleVoice => music.GetComponentsInChildren<AudioSource>().First(s => s.clip?.name == "battle" && s.isPlaying);
+    private static void BattlePlays()
+    {
+        Check(music.CurrentCue == MusicCue.Battle, "battle theme is selected at step " + step);
+        Check(BattleVoice.timeSamples > 0 && BattleVoice.loop && BattleVoice.volume > 0 && BattleVoice.spatialBlend == 0,
+            "battle audio plays and advances in a 2D loop at step " + step + " (samples=" + BattleVoice.timeSamples
+            + ", loop=" + BattleVoice.loop + ", volume=" + BattleVoice.volume + ", spatial=" + BattleVoice.spatialBlend
+            + ", state=" + BattleVoice.clip.loadState + ")");
+    }
+    private static void ClearCombat()
+    {
+        Set(battle,"IsActive",false); Set(battle,"IsPostBattleOpen",false); Set(battle,"HasEnded",false);
+    }
+    private static void Restore(string map)
+    {
+        var definition = new PrototypeTravel().Maps.First(m => m.Id == map);
+        maps.Restore(map,definition.Spawn);
+    }
     private static void Silent()
     {
         Check(music.CurrentCue == MusicCue.Silence, "expected silence at step " + step);
@@ -89,7 +119,7 @@ public static class MusicValidation
         if (now - began > 100) { Finish(new Exception("Music playback timed out")); return; }
         // Resume only this isolated test if startup diagnostics trigger Console Error Pause.
         if (EditorApplication.isPaused) { EditorApplication.isPaused = false; nextAt = now + 1; return; }
-        if (now < nextAt) return;
+        if (now < nextAt || Time.frameCount < nextFrame) return;
         try
         {
             switch (step)
@@ -98,7 +128,8 @@ public static class MusicValidation
                     saves = UnityEngine.Object.FindAnyObjectByType<PrototypeSaveController>();
                     battle = UnityEngine.Object.FindAnyObjectByType<PrototypeBattleController>();
                     music = UnityEngine.Object.FindAnyObjectByType<PrototypeMusicController>();
-                    Check(saves != null && battle != null && music != null, "scene wires music dependencies");
+                    maps = UnityEngine.Object.FindAnyObjectByType<PrototypeLocations>();
+                    Check(saves != null && battle != null && music != null && maps != null, "scene wires music dependencies");
                     Check(music.CurrentCue == MusicCue.Intro, "intro is selected in the real scene");
                     Check(music.GetComponentsInChildren<AudioSource>().Length == 2, "only two music sources");
                     intro = (PrototypeIntroPresentation)Field(saves,"intro");
@@ -123,14 +154,56 @@ public static class MusicValidation
                     typeof(PrototypeSaveController).GetField("voyage",Private).SetValue(saves,null);
                     typeof(PrototypeSaveController).GetField("<IsMenuVisible>k__BackingField",Private).SetValue(saves,false);
                     saves.enabled = false; battle.enabled = false;
+                    maps.enabled = false; battle.SetRandomEncountersEnabled(true);
                     break;
                 case 6: Silent(); battle.StartBattle(); break;
                 case 7:
-                    Silent(); music.enabled = false;
+                    BattlePlays();
+                    BattleVoice.timeSamples = BattleVoice.clip.samples - BattleVoice.clip.frequency/3;
+                    break;
+                case 8:
+                    BattlePlays();
+                    Check(BattleVoice.timeSamples < BattleVoice.clip.frequency*2,"full battle track loops to its beginning");
+                    BattleVoice.timeSamples = BattleVoice.clip.frequency*15;
+                    break;
+                case 9:
+                    BattlePlays();
+                    Check(BattleVoice.timeSamples > BattleVoice.clip.frequency*15,"unchanged combat does not restart the track");
+                    Set(battle,"IsPostBattleOpen",true);
+                    break;
+                case 10:
+                    Silent(); ClearCombat(); Restore("world");
+                    Check(battle.StartRandomBattle(),"world random encounter starts");
+                    break;
+                case 11:
+                    BattlePlays();
+                    Check(BattleVoice.timeSamples < BattleVoice.clip.frequency*2,"each new encounter restarts battle music");
+                    ClearCombat(); Restore("west-forest");
+                    Check(battle.StartRandomBattle(),"quarry random encounter starts");
+                    break;
+                case 12:
+                    BattlePlays(); ClearCombat(); Restore("east-forest");
+                    Check(battle.StartRandomBattle(),"forest random encounter starts");
+                    break;
+                case 13:
+                    BattlePlays(); Set(battle.Session,"Outcome",BattleOutcome.Defeat);
+                    break;
+                case 14:
+                    Silent(); ClearCombat();
+                    Call(battle,"StartEncounter",PrototypeBattleFactory.CreateDragonEncounter(battle.Party),true);
+                    break;
+                case 15:
+                    Silent(); ClearCombat();
+                    Call(battle,"StartEncounter",PrototypeCastleBattleFactory.Create(battle.Party),false);
+                    break;
+                case 16:
+                    Silent(); ClearCombat(); Set(battle,"HasEnded",true); music.enabled = false;
                     Check(music.GetComponentsInChildren<AudioSource>().All(s => !s.isPlaying), "disabling the controller stops audio");
                     Finish(null); return;
             }
-            step++; nextAt = now + 1.15;
+            // Editor updates can run while synchronous resources finish loading. Give the
+            // game loop actual frames to apply the new cue before inspecting the sources.
+            step++; nextAt = now + 1.15; nextFrame = Time.frameCount + 3;
         }
         catch (Exception error) { Finish(error); }
     }
@@ -138,7 +211,7 @@ public static class MusicValidation
     {
         SessionState.SetBool(Running,false); EditorApplication.update -= Tick;
         if (error != null) Debug.LogException(error);
-        else Debug.Log("MUSIC PLAYBACK PASS: " + checks + " checks for supplied intro, loop, fades and silent front end.");
+        else Debug.Log("MUSIC PLAYBACK PASS: " + checks + " checks for supplied intro, normal encounters, loops, results, defeat and separate bosses.");
         if (Application.isBatchMode) EditorApplication.Exit(error == null ? 0 : 1);
         else EditorApplication.ExitPlaymode();
     }
