@@ -70,8 +70,20 @@ public static class MeteorAbsorptionValidation
             }
         }
         drawn.Clear();
-        spells.DrawMeteor(king, ground, false, CastleMeteorPresentation.ImpactDelay);
-        Assert(drawn.Count == 1 && drawn[0] == "TyrantFlamingMeteor", "Destructive impact keeps its existing sprite.");
+        for (int frame = 0; frame < 216; frame++)
+        {
+            float time = frame / 60f;
+            drawn.Clear(); bounds.Clear();
+            Assert(spells.DrawMeteorCaster(king, time, Color.white), "Release keeps the king visible.");
+            spells.DrawMeteor(king, ground, false, time);
+            Assert(!drawn.Contains("TyrantFlamingMeteor"), "No falling meteor in the battle.");
+            Assert(drawn.Count == (time < CastleMeteorPresentation.ImpactDelay ? 2 : 1),
+                "Only the king and his growing orb appear before the flash.");
+            if (bounds.Count == 2)
+                Assert(Mathf.Abs(bounds[1].yMax - (king.y + king.height * .26f)) < .01f
+                    && Mathf.Abs(bounds[1].center.x - (king.center.x + king.height * .43f)) < .01f,
+                    "The fireball grows upward from the palm without covering the king.");
+        }
         Rect arrived = MeteorAbsorptionAnimation.BearerRect(ground, 1.5f);
         Rect landed = MeteorAbsorptionAnimation.BearerRect(ground, CastleMeteorPresentation.Duration);
         Assert(arrived.x < ground.x - 200 && arrived.y < ground.y - 95 && landed == ground,
@@ -79,7 +91,7 @@ public static class MeteorAbsorptionValidation
 
         string output = Environment.GetEnvironmentVariable("DQ_COMET_OUTPUT");
         if (!string.IsNullOrEmpty(output)) RenderPreview(output, king, ground);
-        Debug.Log("COMET_ABSORPTION_UNITY_OK: sprite imports, 216 rendered frames, draconic armor, layered absorption aura, fire transfer and preserved destructive impact.");
+        Debug.Log("COMET_ABSORPTION_UNITY_OK: sprite imports, 216 rendered frames, draconic armor, layered absorption aura, fire transfer and growing casting orb and no battle comet.");
     }
 
     private static void RenderPreview(string output, Rect king, Rect ground)
@@ -110,6 +122,22 @@ public static class MeteorAbsorptionValidation
                 var capture = new Texture2D(1280, 420, TextureFormat.RGBA32, false);
                 capture.ReadPixels(new Rect(0, 0, 1280, 420), 0, 0); capture.Apply();
                 File.WriteAllBytes(Path.Combine(output, "comet-" + time.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture) + ".png"), capture.EncodeToPNG());
+                UnityEngine.Object.DestroyImmediate(capture);
+            }
+            foreach (float time in new[] { 0f, .7f, 1.4f, 2.09f, 2.1f })
+            {
+                RenderTexture.active = target;
+                GL.Clear(true, true, new Color(.08f, .07f, .13f));
+                GL.PushMatrix(); GL.LoadPixelMatrix(0, 1280, 420, 0);
+                if (background != null) Graphics.DrawTexture(new Rect(20, 20, 1240, 396), background,
+                    new Rect(0, 0, 1, 1), 0, 0, 0, 0, Color.white, material);
+                spells.DrawMeteorCaster(king, time, Color.white);
+                spells.DrawMeteor(king, ground, false, time);
+                GL.PopMatrix();
+                if (CastleMeteorPresentation.WhiteOpacity(time) > 0) GL.Clear(true, true, Color.white);
+                var capture = new Texture2D(1280, 420, TextureFormat.RGBA32, false);
+                capture.ReadPixels(new Rect(0, 0, 1280, 420), 0, 0); capture.Apply();
+                File.WriteAllBytes(Path.Combine(output, "release-" + time.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture) + ".png"), capture.EncodeToPNG());
                 UnityEngine.Object.DestroyImmediate(capture);
             }
         }

@@ -4,7 +4,7 @@ namespace DragonQuest.Prototype
 {
     public sealed class CastleSpellAnimation
     {
-        private BattleAnimationSheet protect, shieldHit, meteor;
+        private BattleAnimationSheet protect, shieldHit, fireball;
         private readonly MeteorAbsorptionAnimation absorption;
         private readonly System.Action<Texture2D, Rect, Rect, Color> drawTexture;
         public CastleSpellAnimation(System.Action<Texture2D, Rect, Rect, Color> drawTexture = null)
@@ -12,8 +12,8 @@ namespace DragonQuest.Prototype
         public void Prepare() => Load();
         private void Load()
         {
-            if (meteor != null) return;
-            meteor = new BattleAnimationSheet("PixelArt/TyrantFlamingMeteor", 4, 1, false, drawTexture);
+            if (fireball != null) return;
+            fireball = new BattleAnimationSheet("PixelArt/TyrantFireballRelease", 2, 1, false, drawTexture);
             protect = new BattleAnimationSheet("PixelArt/TyrantProtect", 4, 1, false, drawTexture);
             shieldHit = new BattleAnimationSheet("PixelArt/TyrantShieldHit", 4, 1, false, drawTexture);
             absorption.Prepare();
@@ -36,6 +36,8 @@ namespace DragonQuest.Prototype
         { Load(); return absorption.DrawBearer(target, id, elapsed, tint); }
         public bool DrawAbsorbingCaster(Rect king, float elapsed, Color tint)
         { Load(); return absorption.DrawCaster(king, elapsed, tint); }
+        public bool DrawMeteorCaster(Rect king, float elapsed, Color tint)
+        { Load(); return fireball.Draw(new Vector2(king.center.x, king.yMax), king.height, 0, tint); }
         public void DrawMeteor(Rect king, Rect target, bool absorbed, float elapsed)
         {
             if (elapsed < 0 || elapsed >= CastleMeteorPresentation.Duration) return;
@@ -45,18 +47,10 @@ namespace DragonQuest.Prototype
                 absorption.DrawTransfer(king, target, elapsed);
                 return;
             }
+            // A bola permanece na mao e cresce; a queda aparece apenas na cena externa.
             if (elapsed < CastleMeteorPresentation.ImpactDelay)
-            {
-                float travel = Mathf.Clamp01(elapsed / CastleMeteorPresentation.ImpactDelay);
-                Vector2 foot = Vector2.Lerp(new Vector2(510, 134), new Vector2(820, 375), travel * travel);
-                meteor.Draw(foot, Mathf.Lerp(180, 330, travel), CastleMeteorPresentation.MeteorFrame(elapsed), Color.white);
-            }
-            else
-            {
-                float fade = 1 - Mathf.Clamp01((elapsed - CastleMeteorPresentation.ImpactDelay - .8f) / .7f);
-                meteor.Draw(new Vector2(820, 390), 340, CastleMeteorPresentation.MeteorFrame(elapsed),
-                    new Color(1, 1, 1, fade));
-            }
+                fireball.Draw(new Vector2(king.center.x + king.height * .43f, king.y + king.height * .26f),
+                    king.height * CastleMeteorPresentation.FireballScale(elapsed), 1, Color.white);
         }
     }
 }

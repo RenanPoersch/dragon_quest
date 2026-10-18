@@ -7,11 +7,11 @@ Folhas originais criadas com ImageGen, com quatro quadros sequenciais em uma lin
 | royal-strike | TyrantRoyalStrike.png | Preparação, movimento, impacto, retorno |
 | royal-heavy | TyrantRoyalHeavy.png | Elevação, descida, impacto esmagador, retorno |
 | prepare-meteor | TyrantMeteorCharge.png | Concentração crescente em quatro etapas |
-| flaming-meteor | TyrantFlamingMeteor.png | Queda inicial, aproximação, explosão, dissipação |
+| flaming-meteor | TyrantFireballRelease.png | Rei com a palma aberta e bola de fogo em camada separada |
 
 Os quadros têm larguras variáveis. A leitura encontra os intervalos transparentes, preservando o PNG integral. Importação Point/Clamp, alpha e leitura habilitados, sem compressão, mipmaps ou redução. As folhas estão ligadas ao controlador de combate.
 
-## Meteoro em cinco turnos
+## Contagem de cinco turnos e lançamento no sexto
 
 Aos 20% de HP do tirano, o rei aguarda Shield em sua postura normal. A animação de Shield termina por completo antes de começar a pose de conjuração, que permanece durante as ações dos outros participantes. Durante a carga fica apenas o sprite do rei: não há meteoro separado acima da arena. Um número flutuante, de 5 a 1 e sem rótulo, aparece uma vez por turno próprio do tirano. Usa fonte 44 (dano: 40), subida de 40 unidades por segundo, sombra e dissipação de 1,4 segundo, como os danos. O primeiro número aguarda Shield terminar; os demais surgem ao apresentar a ação do turno. A contagem considera apenas os turnos próprios do tirano:
 
@@ -19,15 +19,16 @@ Aos 20% de HP do tirano, o rei aguarda Shield em sua postura normal. A animaçã
 2. Aumenta a carga.
 3. Aumenta novamente a carga.
 4. Completa a carga.
-5. Lança o meteoro.
+5. Exibe **1** e mantém a preparação. A equipe ainda recebe um turno completo.
+6. Lança o meteoro, sem repetir o número 1 nem mostrar zero.
 
-Protect reduz todo dano recebido pela metade, com arredondamento para cima nos valores ímpares. Dura até a resolução do quinto turno. O evento de dano registra se houve escudo para exibir `TyrantShieldHit`, mesmo num golpe fatal. Protect usa sua própria folha `TyrantProtect` e não altera a habilidade de proteção de Bram.
+Protect reduz todo dano recebido pela metade, com arredondamento para cima nos valores ímpares. Dura até a resolução do sexto turno. O evento de dano registra se houve escudo para exibir `TyrantShieldHit`, mesmo num golpe fatal. Protect usa sua própria folha `TyrantProtect` e não altera a habilidade de proteção de Bram.
 
-`CastleSpellAnimation` apresenta a aproximação do meteoro, a explosão e a dissipação de `TyrantFlamingMeteor` quando não há portador vivo. O impacto exibe **9999** sobre cada atingido, mantendo a perda real de HP e Limit do combate. Veneno, cura e variações de MP conservam seus números.
+`CastleSpellAnimation` usa o rei de palma aberta e a bola separada de `TyrantFireballRelease` quando não há portador vivo. A bola cresce continuamente para cima, apoiada na mão, durante 2,1 segundos. O sprite de meteoro não aparece na batalha. O impacto exibe **9999** sobre cada atingido, mantendo a perda real de HP e Limit do combate. Veneno, cura e variações de MP conservam seus números.
 
 Com portador vivo da Armadura dracônica, a absorção usa a bola de fogo do casting do Tirano, separada em camada própria de `TyrantFireballRelease`. Não desenha `TyrantFlamingMeteor` nem o antigo emblema `MeteorAbsorption`. O portador avança 215 unidades e sobe 100; Aren usa os quatro sprites de `ArenMeteorDraconic`, com o peito projetado para a esquerda e os braços para trás. As tiras animadas de `MeteorFireRibbons` ligam a bola de fogo ao peito em 2D, enquanto a bola diminui até desaparecer. O portador sustenta a posição até terminar a transferência e retorna ao ponto inicial antes do próximo turno. Outros portadores mantêm sua identidade e também avançam e flutuam. Ninguém perde HP nessa sequência. Sem portador vivo, o impacto derrota todos, inclusive personagens protegidos por Shield/Protect. Reviver o portador antes do lançamento restaura a absorção; derrotar o espírito antes disso interrompe a conjuração.
 
-O lançamento dura 3,6 segundos, com dano, números e desaparecimento sincronizados ao impacto em 2,1 segundos. Foram retirados o texto sobre a cabeça, a previsão da próxima habilidade, o painel textual de aviso do meteoro e os nomes de ações inimigas durante a luta do castelo. Os efeitos mostram o progresso visualmente.
+No lançamento destrutivo, o controlador adia a resolução real do dano até terminar a carga em 2,1 segundos. Nesse instante os HP caem e toda a tela, inclusive os painéis e barras externas, fica branca. Após 0,25 segundo de branco, o controlador abre automaticamente a cena externa do meteoro, sem confirmação ou painel de desfecho. A absorção mantém sua duração de 3,6 segundos. Foram retirados o texto sobre a cabeça, a previsão da próxima habilidade, o painel textual de aviso do meteoro e os nomes de ações inimigas durante a luta do castelo. Os efeitos mostram o progresso visualmente.
 
 A absorção preserva os 3,6 segundos: avanço até 0,7 s, transferência de 0,8 a 2,65 s e retorno a partir de 2,8 s. Todas as camadas são sprites com alpha e filtro Point; não há objetos 3D, malhas, feixes sólidos ou sistemas de partículas. As três artes desta revisão foram criadas com a ferramenta integrada ImageGen; prompts finais em `Docs/ArtInputs/CometAbsorption.prompts.json`.
 
@@ -44,3 +45,5 @@ Validação: executar `Tools/Test-Castle.ps1`, `Tools/Test-Combat.ps1` e `Tools/
 Nesta revisão passaram 605 verificações do castelo/contagem/sequência e a compilação dos scripts com as bibliotecas da Unity. A validação cobre os cinco turnos reais, redução de dano, finais, número único por turno, ausência de repetição entre quadros, reinício em nova batalha e ordem Shield → pose de conjuração/primeiro número. As imagens anteriores são preservadas integralmente. A conferência nativa em Play permanece pendente.
 
 Revisão da absorção: uma cópia limpa de HEAD com apenas esta atividade passou 874 verificações do castelo e compilou todos os scripts com as bibliotecas da Unity. A validação nativa `MeteorAbsorptionValidation.Run` passou em projeto isolado, verificando importação e 216 instantes da sequência e renderizando seis prévias com as mesmas funções de desenho do jogo. Confirmou ausência do sprite do cometa/emblema na absorção, transferência em sprites e preservação do impacto destrutivo. A suíte geral `Test-Combat.ps1` continua falhando em `AbilityChecks.CheckEncounterStrategies` com “Habilidade indisponível para este personagem”; seus arquivos de combate não são alterados nesta atividade.
+
+Validação da revisão do lançamento: `Tools/Test-MeteorRelease.ps1` executa as regras do castelo, compila os scripts e abre um projeto Unity isolado. Confere os cinco turnos de preparação, dano adiado, clarão simultâneo, corte automático único inclusive em quadro longo, absorção e prévias renderizadas da bola crescente.

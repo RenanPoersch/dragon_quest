@@ -12,6 +12,7 @@ public static class CastlePresentationChecks
         checks=CastleChecks.Run();
         CheckCastCounter();
         CheckMeteorDisplayAndAbsorption();
+        CheckReleaseTiming();
         var rules=new CastleBattleRules(PrototypePartyFactory.Create());
         Check(!CastleMeteorPresentation.HoldCastPose(rules,false)&&CastleMeteorPresentation.HoldCastPose(rules,true),"A queda preserva a pose mesmo apos resolver o combate.");
         Check(BattleAnimationCatalog.Resource("tyrant",CastleBattleRules.Protect)=="TyrantBattle","Shield usa a postura normal antes da conjuracao.");
@@ -23,6 +24,23 @@ public static class CastlePresentationChecks
         Check(CastleMeteorPresentation.AbsorptionStart<CastleMeteorPresentation.ImpactDelay
             &&CastleMeteorPresentation.Duration>CastleMeteorPresentation.ImpactDelay+1,"Absorcao e impacto conservam sua duracao.");
         Console.WriteLine(checks+" verificacoes do castelo, contagem e sequencia Shield/meteoro passaram.");
+    }
+    private static void CheckReleaseTiming()
+    {
+        Check(CastleMeteorPresentation.FireballScale(0)==1
+            &&CastleMeteorPresentation.FireballScale(CastleMeteorPresentation.ImpactDelay)==1.8f,
+            "A bola aumenta na mao ate o fim da carga.");
+        float previous=0;
+        for(int frame=0;frame<=126;frame++)
+        {
+            float time=frame/60f, scale=CastleMeteorPresentation.FireballScale(time);
+            Check(scale>=previous&&scale<=1.8f,"A carga cresce continuamente."); previous=scale;
+            Check(CastleMeteorPresentation.WhiteOpacity(time)==(time>=CastleMeteorPresentation.ImpactDelay?1:0),
+                "O clarao comeca apenas no instante do dano.");
+        }
+        Check(!CastleMeteorPresentation.ShouldCutToCinematic(CastleMeteorPresentation.ImpactDelay)
+            &&CastleMeteorPresentation.ShouldCutToCinematic(CastleMeteorPresentation.CinematicCutAt),
+            "O corte automatico vem logo depois do clarao.");
     }
     private static void CheckMeteorDisplayAndAbsorption()
     {
@@ -90,7 +108,7 @@ public static class CastlePresentationChecks
                 Check(counter.StartedAt==start+CastleMeteorPresentation.ProtectDuration,"Shield termina antes do primeiro numero.");
             }
             else Check(counter.StartedAt==start,"Turnos seguintes mostram o numero na apresentacao da acao.");
-            if(turn<5)
+            if(turn<=5)
             {
                 Check(CastleMeteorPresentation.HoldCastPose(rules,false),"A pose do rei persiste apos Shield.");
                 Check(CastleMeteorPresentation.ChargePose(rules)==Math.Min(3,turn-1),"O sprite do rei acompanha a contagem sem meteoro separado.");
@@ -100,7 +118,20 @@ public static class CastlePresentationChecks
             Check(counter.StartedAt==scheduled,"Observacoes repetidas nao reiniciam o numero flutuante.");
             Check(counter.IsVisible(scheduled+.5f)&&!counter.IsVisible(scheduled+1.5f),"O numero sobe e desaparece na janela dos danos.");
         }
-        Check(counter.Value==5&&counter.DisplayValue==1&&rules.Ending==GameEnding.CastleDestroyed,"O numero um precede a conclusao do meteoro.");
+        Check(counter.Value==5&&counter.DisplayValue==1&&rules.Ending==GameEnding.None
+            &&king.IsAlive&&king.IsCharging,"O numero um ainda e preparacao, sem dano nem final.");
+        while(battle.CurrentActor.Id!=CastleBattleRules.TyrantId)
+        {
+            var actor=battle.CurrentActor;
+            Check(battle.TryAct(actor,actor.Definition.Abilities.Single(a=>a.Effect==AbilityEffect.Defend),actor,out _),
+                "A equipe recebe um turno completo depois do numero um.");
+        }
+        Check(EnemyAI.ChooseAbility(battle)==CastleBattleRules.Meteor,"So o turno seguinte lanca o meteoro.");
+        Check(EnemyAI.TryTakeTurn(battle,out _)&&rules.MeteorTurnsElapsed==6
+            &&rules.Ending==GameEnding.CastleDestroyed,"O sexto turno resolve o meteoro.");
+        float lastNumberAt=counter.StartedAt;
+        counter.Observe(CastleBattleRules.TyrantId,CastleBattleRules.Meteor,6,60);
+        Check(counter.StartedAt==lastNumberAt&&!counter.IsVisible(60),"O lancamento nao repete o numero um nem mostra zero.");
         counter.Reset();
         Check(counter.Value==0&&counter.DisplayValue==0&&!counter.IsVisible(100),"Nova batalha limpa numeros pendentes.");
         counter.Observe("aren",CastleBattleRules.Protect,1,100);

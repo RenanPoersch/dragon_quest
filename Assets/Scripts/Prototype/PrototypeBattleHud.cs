@@ -346,6 +346,13 @@ namespace DragonQuest.Prototype
             if (!string.IsNullOrEmpty(GUI.tooltip)) GUI.Label(new Rect(660, 683, 585, 18), GUI.tooltip, small);
             GUI.skin = previousSkin;
             GUI.matrix = previous;
+            // Cobre tambem os paineis e as barras externas no mesmo instante do dano.
+            if (controller.MeteorWhiteOpacity > 0)
+            {
+                GUI.matrix = Matrix4x4.identity;
+                RectBox(new Rect(0, 0, Screen.width, Screen.height), Color.white);
+                GUI.matrix = previous;
+            }
         }
 
         private void DrawArena()
@@ -645,6 +652,8 @@ namespace DragonQuest.Prototype
                 && controller.PresentingAbility == CastleBattleRules.Protect;
             if (participant.Id == CastleBattleRules.TyrantId && battleSprites != null)
             {
+                if (meteorPresentation && !controller.CastleRules.MeteorAbsorbed
+                    && castleSpells.DrawMeteorCaster(rect, Time.unscaledTime - controller.ActionStartedAt, tint)) return;
                 if (meteorPresentation && controller.CastleRules.MeteorAbsorbed
                     && castleSpells.DrawAbsorbingCaster(rect, Time.unscaledTime - controller.ActionStartedAt, tint)) return;
                 // Shield termina sobre a postura normal; so entao aparece o sprite de conjuracao.

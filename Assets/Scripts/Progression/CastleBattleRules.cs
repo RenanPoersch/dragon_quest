@@ -9,7 +9,7 @@ namespace DragonQuest.Progression
     public sealed class CastleBattleRules : IBattleRules
     {
         public const string TyrantId="tyrant", SpiritId="evil-spirit";
-        // Protect ocupa o primeiro turno; o meteoro cai no quinto turno proprio do tirano.
+        // Protect inicia a contagem 5 a 1; o lancamento ocupa o turno seguinte do tirano.
         public const int MeteorCastTurns=5;
         public static readonly AbilityDefinition RoyalStrike=new AbilityDefinition("royal-strike","Golpe do tirano",
             "Golpe fisico forte, sem elemento.",0,8,AbilityEffect.PhysicalDamage,TargetRule.Enemy);
@@ -64,7 +64,7 @@ namespace DragonQuest.Progression
             if(ability==Protect&&(!casting||ProtectCast))
             {message="Protect so pode iniciar a conjuracao uma vez.";return false;}
             if(ability==Meteor&&(!casting||!ProtectCast||PreparationsRemaining!=0))
-            {message="O meteoro so pode cair no quinto turno da conjuracao.";return false;}
+            {message="O meteoro so pode ser lancado no turno seguinte ao fim da contagem.";return false;}
             if(ability==PrepareMeteor&&(!casting||!ProtectCast||PreparationsRemaining<=0))
             {message="Nao ha preparacao de meteoro pendente.";return false;}
             if(casting&&ability!=Protect&&ability!=PrepareMeteor&&ability!=Meteor)
@@ -82,7 +82,7 @@ namespace DragonQuest.Progression
                 if(ability==Protect)
                 {
                     ProtectCast=true;
-                    actor.GrantDamageShield(MeteorCastTurns-1,true);
+                    actor.GrantDamageShield(MeteorCastTurns,true);
                 }
                 if(PreparationsRemaining>0) PreparationsRemaining--;
                 message=ability==Protect?"O tirano conjura Protect.":"O tirano continua a conjuracao.";
@@ -116,7 +116,7 @@ namespace DragonQuest.Progression
             CombatantState tyrant=Find(battle,TyrantId);
             if(Ending==GameEnding.None&&!MeteorStarted&&tyrant!=null&&tyrant.IsAlive
                 &&(long)tyrant.Hp*100<=(long)tyrant.Definition.MaxHp*20)
-            {MeteorStarted=true;PreparationsRemaining=MeteorCastTurns-1;tyrant.IsCharging=true;}
+            {MeteorStarted=true;PreparationsRemaining=MeteorCastTurns;tyrant.IsCharging=true;}
         }
         public BattleOutcome EvaluateOutcome(BattleSession battle)
         {

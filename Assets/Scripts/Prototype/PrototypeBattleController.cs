@@ -24,6 +24,7 @@ namespace DragonQuest.Prototype
         }
         private CombatantState pendingEnemy;
         private float enemyActionTime;
+        private bool pendingMeteorImpact;
         private DialogueController dialogue;
         private PrototypeCheatMenu cheatMenu;
         public bool IsCheatMenuBlocking => cheatMenu != null && cheatMenu.BlocksInput;
@@ -100,6 +101,11 @@ namespace DragonQuest.Prototype
             : IsPresentingUltimate ? UltimateTimeline.Duration(PresentingAbility)
             : IsPresentingSummon ? SummonAnimation.Duration : IsPresentingSpell ? SpellAnimation.Duration
             : BattleAnimationCatalog.Duration(PresentingActor?.Id, PresentingAbility);
+        public bool IsDestructiveMeteor => IsActive
+            && CastleMeteorPresentation.IsMeteor(PresentingActor?.Id, PresentingAbility)
+            && (pendingMeteorImpact || CastleRules?.Ending == GameEnding.CastleDestroyed);
+        public float MeteorWhiteOpacity => IsDestructiveMeteor
+            ? CastleMeteorPresentation.WhiteOpacity(Time.unscaledTime - ActionStartedAt) : 0;
         public bool IsPresentingSpell => SpellAnimation.Resource(PresentingAbility) != null;
         public float ActionStartedAt { get; private set; }
         public bool IsPresentingDragonAttack => PresentingActor?.Id == DragonProgress.EnemyId
@@ -242,6 +248,7 @@ namespace DragonQuest.Prototype
             PresentingPartyTargets = new CombatantState[0];
             PresentingRevivedTargets = new CombatantState[0];
             salvationBeforeCast.Clear();
+            pendingMeteorImpact = false;
             BattleLocationId = currentLocation();
             notifiedCompletion = false;
             IsActive = true;
@@ -366,9 +373,29 @@ namespace DragonQuest.Prototype
             notifiedCompletion = true; EncounterCompleted?.Invoke(Session.Outcome);
         }
 
+        private void ResolveMeteorImpact()
+        {
+            if (!IsActive || !pendingMeteorImpact || Time.unscaledTime < ActionImpactAt) return;
+            pendingMeteorImpact = false;
+            if (Session.TryAct(PresentingActor, PresentingAbility, PresentingActor, out string message))
+            { ErrorMessage = string.Empty; AwardIfComplete(); }
+            else ErrorMessage = message;
+        }
+
+        private void FinishCastleBattle()
+        {
+            IsActive = false; HasEnded = true; pendingEnemy = null;
+            movement.SetMovementEnabled(false);
+            showEnding?.Invoke(CastleRules.Ending);
+        }
+
         private void Update()
         {
             if (IsCheatMenuBlocking) { pendingEnemy = null; return; }
+            ResolveMeteorImpact();
+            if (IsDestructiveMeteor && CastleRules.Ending == GameEnding.CastleDestroyed
+                && CastleMeteorPresentation.ShouldCutToCinematic(Time.unscaledTime - ActionStartedAt))
+            { FinishCastleBattle(); return; }
             if (IsPresentingAction) return;
             if (IsActive && Session.CurrentActor?.IsBound == true)
             { Session.TryTakeBoundTurn(out _); AwardIfComplete(); return; }
@@ -428,6 +455,14 @@ namespace DragonQuest.Prototype
             }
             string message = "Inimigo sem acao valida.";
             CaptureChains();
+            if (CastleMeteorPresentation.IsMeteor(actor.Id, ability) && CastleRules.LivingArmorBearer(Session) == null)
+            {
+                // O HP e o resultado so mudam quando a carga termina, junto com o clarao.
+                pendingMeteorImpact = true;
+                PresentAction(actor, ability, effectTargets);
+                pendingEnemy = null;
+                return;
+            }
             bool accepted = ability != null && selectedTarget != null && Session.TryAct(actor, ability, selectedTarget, out message);
             ErrorMessage = accepted ? string.Empty : message;
             if (accepted)
@@ -446,8 +481,7 @@ namespace DragonQuest.Prototype
             IsPostBattleOpen = false;
             if(IsCastleEncounter&&Session.Outcome==BattleOutcome.Completed)
             {
-                IsActive=false;HasEnded=true;pendingEnemy=null;movement.SetMovementEnabled(false);
-                showEnding?.Invoke(CastleRules.Ending);return;
+                FinishCastleBattle(); return;
             }
             AwardIfComplete();
             IsActive = false;

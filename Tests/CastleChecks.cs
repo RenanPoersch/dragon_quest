@@ -55,15 +55,15 @@ internal static class CastleChecks
     private static void PrepareUntilMeteor(BattleSession battle)
     {
         Threshold(battle);
-        for(int turn=0;turn<CastleBattleRules.MeteorCastTurns-1;turn++)
+        for(int turn=0;turn<CastleBattleRules.MeteorCastTurns;turn++)
         {
             BeforeKing(battle);
             Assert(EnemyAI.ChooseAbility(battle)==(turn==0?CastleBattleRules.Protect:CastleBattleRules.PrepareMeteor),"Protect inicia a conjuracao; os turnos seguintes mantem a carga.");
             if(turn==0) Assert(!battle.TryAct(battle.CurrentActor,CastleBattleRules.PrepareMeteor,battle.CurrentActor,out _),"Preparacao nao pode pular Protect.");
             Assert(!battle.TryAct(battle.CurrentActor,CastleBattleRules.Meteor,battle.CurrentActor,out _),"Lancamento antecipado deve ser recusado.");
-            Assert(EnemyAI.TryTakeTurn(battle,out _)&&Rules(battle).PreparationsRemaining==CastleBattleRules.MeteorCastTurns-2-turn&&battle.Outcome==BattleOutcome.None,"Preparar nao pode explodir o castelo.");
+            Assert(EnemyAI.TryTakeTurn(battle,out _)&&Rules(battle).PreparationsRemaining==CastleBattleRules.MeteorCastTurns-1-turn&&battle.Outcome==BattleOutcome.None,"Preparar nao pode explodir o castelo.");
             Assert(Find(battle,CastleBattleRules.TyrantId).IsCharging,"Pose de cast persiste entre todos os turnos.");
-            Assert(Find(battle,CastleBattleRules.TyrantId).ShieldTurns==CastleBattleRules.MeteorCastTurns-1-turn,"Protect cobre cada turno anterior ao impacto.");
+            Assert(Find(battle,CastleBattleRules.TyrantId).ShieldTurns==CastleBattleRules.MeteorCastTurns-turn,"Protect cobre cada turno anterior ao impacto.");
             Assert(Rules(battle).MeteorTurnsElapsed==turn+1,"Contagem incrementa uma vez por turno proprio da conjuracao.");
             int remaining=Rules(battle).PreparationsRemaining;
             Rules(battle).AfterAction(battle);
@@ -79,7 +79,7 @@ internal static class CastleChecks
         king.TakeDamage(479);Rules(battle).AfterAction(battle);
         Assert(king.Hp==121&&!Rules(battle).MeteorStarted,"Acima de 20% nao inicia o meteoro.");
         king.TakeDamage(1);Rules(battle).AfterAction(battle);
-        Assert(Rules(battle).MeteorStarted&&Rules(battle).PreparationsRemaining==4&&king.IsCharging,"Em exatamente 20% inicia a conjuracao de cinco turnos.");
+        Assert(Rules(battle).MeteorStarted&&Rules(battle).PreparationsRemaining==5&&king.IsCharging,"Em exatamente 20% inicia a conjuracao de cinco turnos.");
         for(int bearer=0;bearer<3;bearer++)
         {
             battle=Create(Party(true,bearer));
@@ -101,8 +101,8 @@ internal static class CastleChecks
     private static void CheckMeteor()
     {
         var battle=Create(Party(false));PrepareUntilMeteor(battle);BeforeKing(battle);
-        Assert(EnemyAI.ChooseAbility(battle)==CastleBattleRules.Meteor&&EnemyAI.TryTakeTurn(battle,out _),"Quinto turno do tirano lanca o meteoro.");
-        Assert(Rules(battle).MeteorTurnsElapsed==5,"O quinto turno e registrado antes da animacao de queda.");
+        Assert(EnemyAI.ChooseAbility(battle)==CastleBattleRules.Meteor&&EnemyAI.TryTakeTurn(battle,out _),"Sexto turno do tirano lanca o meteoro depois do numero um.");
+        Assert(Rules(battle).MeteorTurnsElapsed==6,"O sexto turno e registrado ao resolver o lancamento.");
         Assert(battle.Outcome==BattleOutcome.Completed&&Rules(battle).Ending==GameEnding.CastleDestroyed
             &&battle.Combatants.All(c=>!c.IsAlive),"Meteoro ignora defender e derrota inclusive o tirano, com final de destruicao.");
         Assert(!new BattleRewards(new ExplorationProgress()).TryClaim(battle,out _),"Fim da historia nao pode pagar vitoria comum.");
@@ -112,7 +112,7 @@ internal static class CastleChecks
             var hp=battle.Combatants.Select(c=>c.Hp).ToArray();
             Assert(EnemyAI.TryTakeTurn(battle,out _)&&Rules(battle).MeteorAbsorbed&&Rules(battle).Ending==GameEnding.None
                 &&hp.SequenceEqual(battle.Combatants.Select(c=>c.Hp)),"Portador vivo absorve tudo sem dano aos participantes ou ao castelo.");
-            Assert(!Find(battle,CastleBattleRules.TyrantId).IsCharging&&Find(battle,CastleBattleRules.TyrantId).ShieldTurns==0,"Absorcao encerra conjuracao e Protect no quinto turno.");
+            Assert(!Find(battle,CastleBattleRules.TyrantId).IsCharging&&Find(battle,CastleBattleRules.TyrantId).ShieldTurns==0,"Absorcao encerra conjuracao e Protect no sexto turno.");
             Assert(Rules(battle).MeteorAbsorberId==partyBearerId(bearer),"Animacao de absorcao aponta ao portador real.");
             BeforeKing(battle);
             Assert(EnemyAI.ChooseAbility(battle)!=CastleBattleRules.Meteor&&EnemyAI.ChooseAbility(battle)!=CastleBattleRules.PrepareMeteor,"Meteoro nao reinicia em loop abaixo de 20%.");

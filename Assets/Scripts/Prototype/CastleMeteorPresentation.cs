@@ -9,6 +9,16 @@ namespace DragonQuest.Prototype
         public const float Duration = 3.6f, ImpactDelay = 2.1f, AbsorptionStart = .8f;
         public const float AbsorptionEnd = 2.65f, AbsorberReturn = 2.8f;
         public const int MeteorDamageDisplay = 9999;
+        public const float WhiteHold = .25f;
+        public const float CinematicCutAt = ImpactDelay + WhiteHold;
+        public static float ReleaseProgress(float elapsed)
+        {
+            float t = Math.Max(0, Math.Min(1, elapsed / ImpactDelay));
+            return t * t * (3 - 2 * t);
+        }
+        public static float FireballScale(float elapsed) => 1 + .8f * ReleaseProgress(elapsed);
+        public static float WhiteOpacity(float elapsed) => elapsed >= ImpactDelay ? 1 : 0;
+        public static bool ShouldCutToCinematic(float elapsed) => elapsed >= CinematicCutAt;
         public const float ProtectDuration = 1.2f, ShieldHitDuration = .55f;
         public static bool IsMeteor(string actorId, AbilityDefinition ability)
             => actorId == CastleBattleRules.TyrantId && ability?.SourceAbilityId == "flaming-meteor";
@@ -47,7 +57,7 @@ namespace DragonQuest.Prototype
     public sealed class CastleCastCounter
     {
         public int Value { get; private set; }
-        public int DisplayValue => Value > 0 ? CastleBattleRules.MeteorCastTurns - Value + 1 : 0;
+        public int DisplayValue => Value > 0 ? Math.Max(0, CastleBattleRules.MeteorCastTurns - Value + 1) : 0;
         public float StartedAt { get; private set; }
         public void Reset() { Value = 0; StartedAt = 0; }
         public void Observe(string actorId, AbilityDefinition ability, int elapsedTurns, float actionStartedAt)
@@ -55,7 +65,7 @@ namespace DragonQuest.Prototype
             if (actorId != CastleBattleRules.TyrantId || ability == null || elapsedTurns <= Value
                 || elapsedTurns > CastleBattleRules.MeteorCastTurns) return;
             string action = ability.SourceAbilityId;
-            if (action != "tyrant-protect" && action != "prepare-meteor" && action != "flaming-meteor") return;
+            if (action != "tyrant-protect" && action != "prepare-meteor") return;
             Value = elapsedTurns;
             StartedAt = actionStartedAt + CastleMeteorPresentation.TurnNumberDelay(ability);
         }
