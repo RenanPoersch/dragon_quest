@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using DragonQuest.Audio;
@@ -43,7 +42,14 @@ public static class MusicValidation
             AssetDatabase.ImportAsset("Assets/Resources/" + resource + ".wav", ImportAssetOptions.ForceUpdate);
             AudioClip clip = Resources.Load<AudioClip>(resource);
             Check(clip != null, resource + " exists");
-            float expectedSeconds = cue == MusicCue.Intro ? 171.1543f : cue == MusicCue.Battle ? 166.1156f : 54.1257f;
+            float expectedSeconds = cue switch
+            {
+                MusicCue.Intro => 171.1543f,
+                MusicCue.Battle => 166.1156f,
+                MusicCue.Victory => 54.1257f,
+                MusicCue.World => 410.4591f,
+                _ => throw new InvalidOperationException("Missing source duration for " + cue)
+            };
             Check(clip.channels == 2 && clip.frequency == 44100 && Math.Abs(clip.length-expectedSeconds)<.05f,
                 resource + " preserves the full supplied recording in stereo at 44.1 kHz");
             var importer = (AudioImporter)AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(clip));
@@ -55,8 +61,8 @@ public static class MusicValidation
         Check(MusicCuePolicy.Select(true,true,false,false,false,false,false,false,"world") == MusicCue.Intro, "intro takes priority over front end");
         Check(MusicCuePolicy.Select(false,true,false,false,false,false,false,false,"world") == MusicCue.Silence, "title and load stay silent");
         Check(MusicCuePolicy.Select(false,false,true,true,false,true,false,false,"castle") == MusicCue.Silence, "ending stays silent");
-        Check(Enum.GetValues(typeof(MusicCue)).Cast<MusicCue>().Count(MusicCuePolicy.IsAvailable) == 3, "only supplied intro, battle and victory are enabled");
-        Check(Resources.LoadAll<AudioClip>("Music").Length == 3, "only supplied recordings are present");
+        Check(Enum.GetValues(typeof(MusicCue)).Cast<MusicCue>().Count(MusicCuePolicy.IsAvailable) == 4, "only supplied intro, battle, victory and world are enabled");
+        Check(Resources.LoadAll<AudioClip>("Music").Length == 4, "only supplied recordings are present");
         foreach (string map in new[] { "world","city","west-forest","east-forest","ancient-ruins" })
             Check(MusicCuePolicy.Select(false,false,false,true,false,false,false,false,map) == MusicCue.Battle,
                 "normal battles share the supplied theme in " + map);
@@ -91,7 +97,7 @@ public static class MusicValidation
     private static AudioSource IntroVoice => music.GetComponentsInChildren<AudioSource>().First(s => s.clip?.name == "intro");
     private static AudioSource BattleVoice => music.GetComponentsInChildren<AudioSource>().First(s => s.clip?.name == "battle" && s.isPlaying);
     private static AudioSource VictoryVoice => music.GetComponentsInChildren<AudioSource>().First(s => s.clip?.name == "victory" && s.isPlaying);
-    private static AudioSource CurrentVoice => ((AudioSource[])Field(music,"sources"))[(int)Field(music,"current")];
+    private static AudioSource WorldVoice => music.GetComponentsInChildren<AudioSource>().First(s => s.clip?.name == "world" && s.isPlaying);
     private static void BattlePlays()
     {
         Check(music.CurrentCue == MusicCue.Battle, "battle theme is selected at step " + step);
@@ -111,6 +117,15 @@ public static class MusicValidation
             "supplied victory recording plays and advances in a 2D loop");
         Check(music.GetComponentsInChildren<AudioSource>().All(s => s.clip?.name != "battle" || !s.isPlaying),
             "battle theme stops after transitioning to victory");
+    }
+    private static void WorldPlays()
+    {
+        Check(!battle.IsActive && maps.LocationId == "world" && music.CurrentCue == MusicCue.World,
+            "world theme follows exploration at step " + step);
+        Check(WorldVoice.timeSamples > 0 && WorldVoice.loop && WorldVoice.volume > 0 && WorldVoice.spatialBlend == 0,
+            "supplied world recording plays and advances in a 2D loop");
+        Check(music.GetComponentsInChildren<AudioSource>().All(s => s.clip?.name == "world" || !s.isPlaying),
+            "other music stops after returning to the world");
     }
     private static void Restore(string map)
     {
@@ -167,94 +182,94 @@ public static class MusicValidation
                     typeof(PrototypeSaveController).GetField("<IsMenuVisible>k__BackingField",Private).SetValue(saves,false);
                     saves.enabled = false; battle.enabled = false;
                     maps.enabled = false; battle.SetRandomEncountersEnabled(true);
+                    Restore("world");
                     break;
-                case 6: Silent(); battle.StartBattle(); break;
+                case 6:
+                    WorldPlays();
+                    Check(WorldVoice.timeSamples < WorldVoice.clip.frequency*2,"entering the world starts its music from the beginning");
+                    WorldVoice.timeSamples = WorldVoice.clip.samples - WorldVoice.clip.frequency/3;
+                    break;
                 case 7:
-                    BattlePlays();
-                    BattleVoice.timeSamples = BattleVoice.clip.samples - BattleVoice.clip.frequency/3;
+                    WorldPlays();
+                    Check(WorldVoice.timeSamples < WorldVoice.clip.frequency*2,"full world recording loops to its beginning");
+                    WorldVoice.timeSamples = WorldVoice.clip.frequency*15;
                     break;
                 case 8:
+                    WorldPlays();
+                    Check(WorldVoice.timeSamples > WorldVoice.clip.frequency*15,"ongoing exploration does not restart world music");
+                    battle.StartBattle();
+                    break;
+                case 9:
+                    BattlePlays();
+                    Check(BattleVoice.timeSamples < BattleVoice.clip.frequency*2,"battle replaces the world theme from the beginning");
+                    BattleVoice.timeSamples = BattleVoice.clip.samples - BattleVoice.clip.frequency/3;
+                    break;
+                case 10:
                     BattlePlays();
                     Check(BattleVoice.timeSamples < BattleVoice.clip.frequency*2,"full battle track loops to its beginning");
                     BattleVoice.timeSamples = BattleVoice.clip.frequency*15;
                     break;
-                case 9:
+                case 11:
                     BattlePlays();
                     Check(BattleVoice.timeSamples > BattleVoice.clip.frequency*15,"unchanged combat does not restart the track");
                     Set(battle.Session,"Outcome",BattleOutcome.Victory);
                     Call(battle,"AwardIfComplete"); Call(battle,"Update");
                     Check(battle.PostBattle.IsComplete && battle.IsPostBattleOpen,"winning opens the real post-battle results");
                     break;
-                case 10:
+                case 12:
                     VictoryPlays();
                     Check(VictoryVoice.timeSamples < VictoryVoice.clip.frequency*2,"post-victory music starts from the beginning");
                     VictoryVoice.timeSamples = VictoryVoice.clip.samples - VictoryVoice.clip.frequency/3;
                     break;
-                case 11:
+                case 13:
                     VictoryPlays();
                     Check(VictoryVoice.timeSamples < VictoryVoice.clip.frequency*2,"full victory recording loops to its beginning");
                     VictoryVoice.timeSamples = VictoryVoice.clip.frequency*15;
                     break;
-                case 12:
+                case 14:
                     VictoryPlays();
                     Check(VictoryVoice.timeSamples > VictoryVoice.clip.frequency*15,"remaining on results does not restart victory music");
                     Set(battle,"PostBattleStartedAt",Time.unscaledTime-10);
                     battle.ReturnToCity();
                     Check(!battle.IsActive && !battle.IsPostBattleOpen,"continuing closes the results screen");
                     break;
-                case 13:
+                case 15:
+                    WorldPlays();
+                    Check(WorldVoice.timeSamples < WorldVoice.clip.frequency*2,"returning from victory restarts the original world recording");
+                    Restore("city");
+                    break;
+                case 16:
                     Silent(); Restore("world");
+                    break;
+                case 17:
+                    WorldPlays();
+                    Check(WorldVoice.timeSamples < WorldVoice.clip.frequency*2,"reentering the world after silence restarts its music");
                     Check(battle.StartRandomBattle(),"world random encounter starts");
                     break;
-                case 14:
+                case 18:
                     BattlePlays();
                     Check(BattleVoice.timeSamples < BattleVoice.clip.frequency*2,"each new encounter restarts battle music");
                     ClearCombat(); Restore("west-forest");
                     Check(battle.StartRandomBattle(),"quarry random encounter starts");
                     break;
-                case 15:
+                case 19:
                     BattlePlays(); ClearCombat(); Restore("east-forest");
                     Check(battle.StartRandomBattle(),"forest random encounter starts");
                     break;
-                case 16:
+                case 20:
                     BattlePlays(); Set(battle.Session,"Outcome",BattleOutcome.Defeat);
                     break;
-                case 17:
+                case 21:
                     Silent(); ClearCombat();
                     Call(battle,"StartEncounter",PrototypeBattleFactory.CreateDragonEncounter(battle.Party),true);
                     break;
-                case 18:
+                case 22:
                     Silent(); ClearCombat();
                     Call(battle,"StartEncounter",PrototypeCastleBattleFactory.Create(battle.Party),false);
                     break;
-                case 19:
+                case 23:
                     Silent(); ClearCombat(); Set(battle,"HasEnded",true); music.enabled = false;
                     Check(music.GetComponentsInChildren<AudioSource>().All(s => !s.isPlaying), "disabling the controller stops audio");
-                    // Reuse supplied audio only in this isolated test to exercise a world cue
-                    // before its own recording is available. Drive transitions with routing disabled.
-                    ((Dictionary<MusicCue,AudioClip>)Field(music,"clips"))[MusicCue.World] = Resources.Load<AudioClip>("Music/intro");
-                    Call(music,"TransitionTo",MusicCue.World); Call(music,"Advance",1f);
-                    break;
-                case 20:
-                    Check(CurrentVoice.isPlaying && CurrentVoice.timeSamples > 0,"world test track advances");
-                    CurrentVoice.timeSamples = CurrentVoice.clip.frequency*15;
-                    Call(music,"TransitionTo",MusicCue.Battle); Call(music,"Advance",1f);
-                    break;
-                case 21:
-                    BattlePlays();
-                    Call(music,"TransitionTo",MusicCue.World); Call(music,"Advance",1f);
-                    break;
-                case 22:
-                    Check(music.CurrentCue == MusicCue.World && CurrentVoice.isPlaying && CurrentVoice.timeSamples > 0
-                        && CurrentVoice.timeSamples < CurrentVoice.clip.frequency*2,"returning from battle restarts exploration music");
-                    CurrentVoice.timeSamples = CurrentVoice.clip.frequency*15;
-                    Call(music,"TransitionTo",MusicCue.Silence); Call(music,"Advance",1f); Silent();
-                    Call(music,"TransitionTo",MusicCue.World); Call(music,"Advance",1f);
-                    break;
-                case 23:
-                    Check(music.CurrentCue == MusicCue.World && CurrentVoice.isPlaying && CurrentVoice.timeSamples > 0
-                        && CurrentVoice.timeSamples < CurrentVoice.clip.frequency*2,"returning after silence restarts exploration music");
-                    Call(music,"TransitionTo",MusicCue.Silence); Call(music,"Advance",1f); Silent();
                     Finish(null); return;
             }
             // Editor updates can run while synchronous resources finish loading. Give the

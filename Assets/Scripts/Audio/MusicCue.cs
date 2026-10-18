@@ -30,7 +30,8 @@ namespace DragonQuest.Audio
         }
 
         // Enable each remaining cue when its source recording has been supplied and converted.
-        public static bool IsAvailable(MusicCue cue) => cue == MusicCue.Intro || cue == MusicCue.Battle || cue == MusicCue.Victory;
+        public static bool IsAvailable(MusicCue cue) => cue == MusicCue.Intro || cue == MusicCue.Battle
+            || cue == MusicCue.Victory || cue == MusicCue.World;
         public static string ResourceName(MusicCue cue) => IsAvailable(cue) ? "Music/" + cue.ToString().ToLowerInvariant() : null;
     }
 }
