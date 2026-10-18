@@ -40,7 +40,7 @@ public static class MusicValidation
         {
             if (!MusicCuePolicy.IsAvailable(cue)) continue;
             string resource = MusicCuePolicy.ResourceName(cue);
-            AssetDatabase.ImportAsset("Assets/Resources/" + resource + ".ogg", ImportAssetOptions.ForceUpdate);
+            AssetDatabase.ImportAsset("Assets/Resources/" + resource + ".wav", ImportAssetOptions.ForceUpdate);
             AudioClip clip = Resources.Load<AudioClip>(resource);
             Check(clip != null, resource + " exists");
             float expectedSeconds = cue == MusicCue.Intro ? 171.1543f : 166.1156f;
@@ -48,8 +48,9 @@ public static class MusicValidation
                 resource + " preserves the full supplied recording in stereo at 44.1 kHz");
             var importer = (AudioImporter)AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(clip));
             Check(importer.defaultSampleSettings.loadType == AudioClipLoadType.Streaming
+                && importer.defaultSampleSettings.compressionFormat == AudioCompressionFormat.PCM
                 && !importer.defaultSampleSettings.preloadAudioData && !importer.forceToMono,
-                resource + " streams without preloading the full PCM clip");
+                resource + " streams the original PCM audio without lossy recompression or full preloading");
         }
         Check(MusicCuePolicy.Select(true,true,false,false,false,false,false,false,"world") == MusicCue.Intro, "intro takes priority over front end");
         Check(MusicCuePolicy.Select(false,true,false,false,false,false,false,false,"world") == MusicCue.Silence, "title and load stay silent");
