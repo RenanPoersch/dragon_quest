@@ -48,6 +48,7 @@ public static class MusicValidation
                 MusicCue.Battle => 166.1156f,
                 MusicCue.Victory => 54.1257f,
                 MusicCue.World => 410.4591f,
+                MusicCue.Village => 157.1527f,
                 _ => throw new InvalidOperationException("Missing source duration for " + cue)
             };
             Check(clip.channels == 2 && clip.frequency == 44100 && Math.Abs(clip.length-expectedSeconds)<.05f,
@@ -61,8 +62,11 @@ public static class MusicValidation
         Check(MusicCuePolicy.Select(true,true,false,false,false,false,false,false,"world") == MusicCue.Intro, "intro takes priority over front end");
         Check(MusicCuePolicy.Select(false,true,false,false,false,false,false,false,"world") == MusicCue.Silence, "title and load stay silent");
         Check(MusicCuePolicy.Select(false,false,true,true,false,true,false,false,"castle") == MusicCue.Silence, "ending stays silent");
-        Check(Enum.GetValues(typeof(MusicCue)).Cast<MusicCue>().Count(MusicCuePolicy.IsAvailable) == 4, "only supplied intro, battle, victory and world are enabled");
-        Check(Resources.LoadAll<AudioClip>("Music").Length == 4, "only supplied recordings are present");
+        Check(Enum.GetValues(typeof(MusicCue)).Cast<MusicCue>().Count(MusicCuePolicy.IsAvailable) == 5, "only supplied intro, battle, victory, world and village are enabled");
+        Check(Resources.LoadAll<AudioClip>("Music").Length == 5, "only supplied recordings are present");
+        foreach (string map in new[] { "city","inn","item-shop","materia-shop","equipment-shop" })
+            Check(MusicCuePolicy.Select(false,false,false,false,false,false,false,false,map) == MusicCue.Village,
+                "village recording follows the town and its interiors in " + map);
         foreach (string map in new[] { "world","city","west-forest","east-forest","ancient-ruins" })
             Check(MusicCuePolicy.Select(false,false,false,true,false,false,false,false,map) == MusicCue.Battle,
                 "normal battles share the supplied theme in " + map);
@@ -98,6 +102,7 @@ public static class MusicValidation
     private static AudioSource BattleVoice => music.GetComponentsInChildren<AudioSource>().First(s => s.clip?.name == "battle" && s.isPlaying);
     private static AudioSource VictoryVoice => music.GetComponentsInChildren<AudioSource>().First(s => s.clip?.name == "victory" && s.isPlaying);
     private static AudioSource WorldVoice => music.GetComponentsInChildren<AudioSource>().First(s => s.clip?.name == "world" && s.isPlaying);
+    private static AudioSource VillageVoice => music.GetComponentsInChildren<AudioSource>().First(s => s.clip?.name == "village" && s.isPlaying);
     private static void BattlePlays()
     {
         Check(music.CurrentCue == MusicCue.Battle, "battle theme is selected at step " + step);
@@ -126,6 +131,14 @@ public static class MusicValidation
             "supplied world recording plays and advances in a 2D loop");
         Check(music.GetComponentsInChildren<AudioSource>().All(s => s.clip?.name == "world" || !s.isPlaying),
             "other music stops after returning to the world");
+    }
+    private static void VillagePlays()
+    {
+        Check(!battle.IsActive && music.CurrentCue == MusicCue.Village,"village theme follows the town at step " + step);
+        Check(VillageVoice.timeSamples > 0 && VillageVoice.loop && VillageVoice.volume > 0 && VillageVoice.spatialBlend == 0,
+            "supplied village recording plays and advances in a 2D loop");
+        Check(music.GetComponentsInChildren<AudioSource>().All(s => s.clip?.name == "village" || !s.isPlaying),
+            "other music stops after entering the village");
     }
     private static void Restore(string map)
     {
@@ -239,35 +252,55 @@ public static class MusicValidation
                     Restore("city");
                     break;
                 case 16:
-                    Silent(); Restore("world");
+                    VillagePlays();
+                    Check(VillageVoice.timeSamples < VillageVoice.clip.frequency*2,"entering the village starts its recording from the beginning");
+                    VillageVoice.timeSamples = VillageVoice.clip.samples - VillageVoice.clip.frequency/3;
                     break;
                 case 17:
-                    WorldPlays();
-                    Check(WorldVoice.timeSamples < WorldVoice.clip.frequency*2,"reentering the world after silence restarts its music");
-                    Check(battle.StartRandomBattle(),"world random encounter starts");
+                    VillagePlays();
+                    Check(VillageVoice.timeSamples < VillageVoice.clip.frequency*2,"full village recording loops to its beginning");
+                    VillageVoice.timeSamples = VillageVoice.clip.frequency*15;
+                    Restore("inn");
                     break;
                 case 18:
+                    VillagePlays();
+                    Check(maps.LocationId == "inn" && VillageVoice.timeSamples > VillageVoice.clip.frequency*15,
+                        "entering the inn continues the same village track");
+                    Restore("city");
+                    break;
+                case 19:
+                    VillagePlays();
+                    Check(maps.LocationId == "city" && VillageVoice.timeSamples > VillageVoice.clip.frequency*16,
+                        "returning from the inn continues village music");
+                    Restore("world");
+                    break;
+                case 20:
+                    WorldPlays();
+                    Check(WorldVoice.timeSamples < WorldVoice.clip.frequency*2,"returning from the village restarts world music");
+                    Check(battle.StartRandomBattle(),"world random encounter starts");
+                    break;
+                case 21:
                     BattlePlays();
                     Check(BattleVoice.timeSamples < BattleVoice.clip.frequency*2,"each new encounter restarts battle music");
                     ClearCombat(); Restore("west-forest");
                     Check(battle.StartRandomBattle(),"quarry random encounter starts");
                     break;
-                case 19:
+                case 22:
                     BattlePlays(); ClearCombat(); Restore("east-forest");
                     Check(battle.StartRandomBattle(),"forest random encounter starts");
                     break;
-                case 20:
+                case 23:
                     BattlePlays(); Set(battle.Session,"Outcome",BattleOutcome.Defeat);
                     break;
-                case 21:
+                case 24:
                     Silent(); ClearCombat();
                     Call(battle,"StartEncounter",PrototypeBattleFactory.CreateDragonEncounter(battle.Party),true);
                     break;
-                case 22:
+                case 25:
                     Silent(); ClearCombat();
                     Call(battle,"StartEncounter",PrototypeCastleBattleFactory.Create(battle.Party),false);
                     break;
-                case 23:
+                case 26:
                     Silent(); ClearCombat(); Set(battle,"HasEnded",true); music.enabled = false;
                     Check(music.GetComponentsInChildren<AudioSource>().All(s => !s.isPlaying), "disabling the controller stops audio");
                     Finish(null); return;

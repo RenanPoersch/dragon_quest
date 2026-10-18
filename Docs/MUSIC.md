@@ -1,4 +1,4 @@
-# Música da intro, batalhas, vitória e mundo aberto
+# Músicas do jogo
 
 O jogo usa as gravações originais fornecidas pelo usuário. Os M4A foram decodificados para WAV PCM de 16 bits, em estéreo a 44,1 kHz, mantendo a gravação completa, seus timbres, andamento e dinâmica. Não há transcrição de notas, ressíntese ou tratamento 8-bit nos áudios usados pelo jogo. A Unity importa essas faixas em PCM com streaming, sem outra compressão com perdas e sem carregar a faixa inteira antecipadamente.
 
@@ -8,6 +8,7 @@ O jogo usa as gravações originais fornecidas pelo usuário. Os M4A foram decod
 - Batalha normal: `videoplayback (2).m4a` → `Assets/Resources/Music/battle.wav`, com 166,116 segundos. SHA-256 da origem: `7fa3b08fc80006c3d09a3921edc5a7368cdb8908394188f786b8b8187f208b20`.
 - Pós-vitória: `videoplayback (3).m4a` → `Assets/Resources/Music/victory.wav`, com 54,126 segundos. SHA-256 da origem: `780fda0406faf78663ad47cbfdc50f508f48329b0d6e105b5c11af1e8a7f33ed`.
 - Mundo aberto: `videoplayback (4).m4a` → `Assets/Resources/Music/world.wav`, com 410,459 segundos. SHA-256 da origem: `02d06a0ade6c1346bf11e03f8db4988982c1799a28d58a8441042225fafb6166`.
+- Vila ao redor do castelo: `videoplayback (5).m4a` → `Assets/Resources/Music/village.wav`, com 157,153 segundos. SHA-256 da origem: `cea1d7eb1810280baf12fcaf455ad03e16c58b97ab6c4677fb0889c331029e45`.
 
 As versões 8-bit foram removidas dos assets. Os scripts e relatórios da experiência anterior permanecem apenas como histórico e não participam da reprodução.
 
@@ -21,9 +22,11 @@ Quando a tela de resultados da vitória aparece, `victory.wav` começa do iníci
 
 `world.wav` toca ao explorar o mapa global (`world`). A gravação completa usa loop e cede lugar à batalha quando um encontro começa. Ao continuar depois dos resultados de vitória, ou sair e voltar ao mapa global, a faixa recomeça do início. Ela não toca nos menus New game / Continue nem nas outras regiões.
 
+`village.wav` toca na vila ao redor do castelo (`city`, Periferia do Castelo) e nos seus interiores: hospedaria, loja de itens, loja de matérias e loja de equipamentos. A faixa completa usa loop. Entrar em um interior e voltar à vila mantém a mesma música em andamento; ao sair para outra região e retornar, ela começa do início. A sala do trono mantém seu próprio roteamento.
+
 Toda troca de faixa inicia a nova música do começo. Ao voltar a uma faixa anterior, inclusive após silêncio ou combate, ela reinicia sem guardar a posição anterior. Enquanto a mesma faixa continua selecionada, ela segue normalmente. O loop repete cada gravação completa, incluindo seu encerramento original.
 
-Intro, batalha comum, vitória e mundo aberto estão habilitados em `MusicCuePolicy.IsAvailable`. As demais músicas aguardam os arquivos de referência correspondentes. O roteamento das outras regiões e dos chefes está preparado para as próximas gravações.
+Intro, batalha comum, vitória, mundo aberto e vila estão habilitados em `MusicCuePolicy.IsAvailable`. As demais músicas aguardam os arquivos de referência correspondentes. O roteamento das outras regiões e dos chefes está preparado para as próximas gravações.
 
 ## Reprodução da importação
 
@@ -34,8 +37,9 @@ ffmpeg -i 'caminho/videoplayback (1).m4a' -map 0:a:0 -map_metadata -1 -c:a pcm_s
 ffmpeg -i 'caminho/videoplayback (2).m4a' -map 0:a:0 -map_metadata -1 -c:a pcm_s16le -fflags +bitexact -flags:a +bitexact Assets/Resources/Music/battle.wav
 ffmpeg -i 'caminho/videoplayback (3).m4a' -map 0:a:0 -map_metadata -1 -c:a pcm_s16le -fflags +bitexact -flags:a +bitexact Assets/Resources/Music/victory.wav
 ffmpeg -i 'caminho/videoplayback (4).m4a' -map 0:a:0 -map_metadata -1 -c:a pcm_s16le -fflags +bitexact -flags:a +bitexact Assets/Resources/Music/world.wav
+ffmpeg -i 'caminho/videoplayback (5).m4a' -map 0:a:0 -map_metadata -1 -c:a pcm_s16le -fflags +bitexact -flags:a +bitexact Assets/Resources/Music/village.wav
 ```
 
 ## Validação
 
-`Tools/Test-Music.ps1` compila os scripts e testa uma cópia isolada da cena completa, preservando o Editor principal e os saves. Verifica importação PCM, duração completa, estéreo, reprodução real, avanço de amostras, loops, fade, interrupção ao pular a intro e silêncio no título, Continue e New game. Também testa a gravação real do mundo aberto, seu loop completo, continuidade durante a exploração e reinício ao voltar da vitória ou reentrar no mapa após silêncio. Confere patrulha, encontros aleatórios das três regiões, reinício a cada encontro, continuidade no mesmo combate, transição para a música de vitória na tela real de resultados, loop e continuidade nessa tela, parada ao continuar e na derrota, separação dos chefes e encerramento das fontes. `Tools > Dragon Quest > Validate Music Assets` confere as importações no Editor.
+`Tools/Test-Music.ps1` compila os scripts e testa uma cópia isolada da cena completa, preservando o Editor principal e os saves. Verifica importação PCM, duração completa, estéreo, reprodução real, avanço de amostras, loops, fade, interrupção ao pular a intro e silêncio no título, Continue e New game. Também testa o mundo aberto, seu loop completo, continuidade durante a exploração e reinício ao voltar da vitória ou da vila. Confere a gravação da vila, seu loop completo, continuidade na hospedaria e no retorno à rua, além do roteamento das lojas. Inclui patrulha, encontros aleatórios das três regiões, reinício a cada encontro, continuidade no mesmo combate, transição para a música de vitória na tela real de resultados, loop e continuidade nessa tela, parada ao continuar e na derrota, separação dos chefes e encerramento das fontes. `Tools > Dragon Quest > Validate Music Assets` confere as importações no Editor.
