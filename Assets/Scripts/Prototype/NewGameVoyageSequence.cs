@@ -58,6 +58,7 @@ namespace DragonQuest.Prototype
         public static float RevealAt => BlackAt + BlackHold;
         public static float CompleteAt => RevealAt + RevealDuration;
         public float Elapsed { get; private set; }
+        public float MusicGain => 1 - Smooth((Elapsed - FadeOutAt) / FadeOutDuration);
         public float AnimationElapsed => Math.Max(0, Elapsed - FadeInDelay - FadeInDuration);
         public bool IsPlaying => Elapsed < CompleteAt;
         public bool ShowsScene => Elapsed < RevealAt;

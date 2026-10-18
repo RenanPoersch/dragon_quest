@@ -98,8 +98,15 @@ namespace DragonQuest.Audio
             for (int i = 0; i < 2; i++)
             {
                 float gain = Mathf.Lerp(from[i], target[i], blend);
-                // The title and load selection stay silent; the opening follows its visual fade.
-                if (CurrentCue == MusicCue.Intro && i == current) gain *= saves.IntroMusicGain;
+                // Cinematic clocks drive the final fade, including the black hold.
+                // Only the ending's last fade affects music; cuts/dissolves keep playing.
+                if (i == current)
+                {
+                    if (CurrentCue == MusicCue.Intro) gain *= saves.IntroMusicGain;
+                    else if (CurrentCue == MusicCue.Voyage) gain *= saves.VoyageMusicGain;
+                    else if (CurrentCue == MusicCue.GoodEnding || CurrentCue == MusicCue.MindControlEnding
+                        || CurrentCue == MusicCue.MeteorEnding) gain *= endings != null ? endings.MusicGain : 1;
+                }
                 sources[i].volume = gain;
                 if (blend >= 1 && target[i] == 0 && sources[i].isPlaying) sources[i].Stop();
             }

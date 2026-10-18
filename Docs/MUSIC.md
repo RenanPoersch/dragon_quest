@@ -30,7 +30,7 @@ As versões 8-bit foram removidas dos assets. Os scripts e relatórios da experi
 
 ## Integração
 
-`PrototypeCity` cria `PrototypeMusicController`, com duas fontes 2D na própria cena. O volume acompanha o fade visual da intro. Pular a intro encerra a música antes da tela New game / Continue; a seleção de saves continua em silêncio. A intro na nau usa `voyage.wav` enquanto `IsVoyagePlaying` está ativo. Ao destruir a cena, as fontes também são destruídas.
+`PrototypeCity` cria `PrototypeMusicController`, com duas fontes 2D na própria cena. O volume acompanha o fade visual da intro. Pular a intro encerra a música antes da tela New game / Continue; a seleção de saves continua em silêncio. A intro na nau usa `voyage.wav` enquanto `IsVoyagePlaying` está ativo. Nos últimos 3 segundos do fade visual, `NewGameVoyageSequence.MusicGain` reduz o volume suavemente até zero. O silêncio é mantido no preto e durante a revelação do mapa; a música da exploração entra quando a travessia termina. A intro do título mantém o fade de saída já sincronizado com sua imagem. Ao destruir a cena, as fontes também são destruídas.
 
 A gravação de batalha toca na patrulha e nos encontros aleatórios do mapa global, pedreira e floresta. Cada combate começa a música do início e usa loop. Ela termina ao abrir os resultados, na derrota ou ao encerrar o combate. Dragão e tirano usam suas gravações próprias.
 
@@ -52,7 +52,7 @@ O covil (`volcano`) usa `dragonlair.wav` durante a exploração e as primeiras f
 
 Ao passar a noite, a música da vila continua durante a caminhada até as camas. `sleep.wav` entra no fade para dormir e toca uma única vez. `InnRestController` mantém a noite até completar os 9,195 segundos da gravação, retomando a música da vila no despertar. Um novo descanso começa o jingle do início.
 
-`PrototypeEndingController.CurrentEnding` seleciona a trilha do desfecho: `goodending.wav` para `KingFreed`, `mindcontrolending.wav` para `HeroPossessed` e `meteorending.wav` para `CastleDestroyed`. Cada faixa cobre sua apresentação e repete enquanto o final estiver aberto. Ao voltar ao título, as fontes da cena são encerradas.
+`PrototypeEndingController.CurrentEnding` seleciona a trilha do desfecho: `goodending.wav` para `KingFreed`, `mindcontrolending.wav` para `HeroPossessed` e `meteorending.wav` para `CastleDestroyed`. Cada faixa cobre sua apresentação e repete até o fade final. Os relógios de `KingFreedSequence`, `HeroPossessedSequence` e `CastleDestroyedSequence` reduzem `MusicGain` de 1 a 0 durante os mesmos 3 segundos do fade visual, mantendo zero durante o segundo de preto antes do retorno ao título. O fade do final do meteoro usa o relógio do epílogo na colina: o impacto, o clarão branco e a entrada desse epílogo mantêm a música. O dissolve do final bom também mantém o volume. Ao voltar ao título, as fontes da cena são encerradas.
 
 Toda troca de faixa inicia a nova música do começo. Ao voltar a uma faixa anterior, inclusive após silêncio ou combate, ela reinicia sem guardar a posição anterior. Enquanto a mesma faixa continua selecionada, ela segue normalmente. Os loops das faixas completas incluem seu encerramento original; o ambiente da sala do dragão repete somente o ciclo recortado.
 
@@ -100,3 +100,5 @@ A validação conjunta também cobre as três novas regiões e seus loops, o loo
 A validação do lote 11–18 cobre a nau e seu término, derrota e retorno à hospedaria, a música da essência após o dragão, a sala do trono e sua troca para combate, o jingle de descanso sem loop e a espera antes do despertar, além dos três finais reais e o silêncio ao voltar ao título.
 
 O ambiente recortado também é validado na cena real: início no grave, loop completo, continuidade durante a conversa, troca para a música de batalha no final da fala, retorno ao ambiente ao cancelar e continuidade ininterrupta ao abrir a luta. O script de recorte verifica a emenda contra duas amostras adjacentes reais e a preservação do PCM fora dos 40 ms de união.
+
+A validação de fade acompanha o volume real de `AudioSource` no início, no meio e no fim do fade da nau e dos três finais, mantendo a mesma fonte e a posição de reprodução. Confere também o silêncio durante o preto/revelação do mapa, a continuidade nas transições internas dos finais e a entrada normal da próxima música. Os WAV originais não são alterados pelo fade.

@@ -14,6 +14,7 @@ namespace DragonQuest.Prototype
         public const float EndHold = 1.8f, FadeOutDuration = 3, BlackHold = 1;
         public int LineCount { get; }
         public float Elapsed { get; private set; }
+        public float MusicGain => 1 - Smooth((Elapsed - FadeOutAt) / FadeOutDuration);
         public float TextEndAt => TextStart + (TextWindowHeight + LineCount * LineHeight) / ScrollSpeed;
         public float FadeOutAt => TextEndAt + EndHold;
         public float BlackAt => FadeOutAt + FadeOutDuration;

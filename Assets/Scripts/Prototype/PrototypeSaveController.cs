@@ -54,6 +54,7 @@ namespace DragonQuest.Prototype
         public bool IsVoyagePlaying => IsMenuVisible && voyage != null && voyage.IsPlaying;
         public bool IsFrontEndVisible => IsMenuVisible && page != MenuPage.Save;
         public float IntroMusicGain => IsIntroPlaying ? intro.Sequence.Opacity : 0;
+        public float VoyageMusicGain => IsVoyagePlaying ? voyage.Sequence.MusicGain : 0;
         public int ActiveSlot { get; private set; }
         public long PlaySeconds => (long)playSeconds;
 

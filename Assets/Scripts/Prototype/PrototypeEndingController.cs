@@ -23,6 +23,8 @@ namespace DragonQuest.Prototype
         private HeroPossessedPresentation possession;
         private KingFreedPresentation liberation;
         public GameEnding CurrentEnding => pages != null ? ending : GameEnding.None;
+        public float MusicGain => liberation?.Sequence.MusicGain ?? possession?.Sequence.MusicGain
+            ?? aftermath?.Aftermath.Sequence.MusicGain ?? 1f;
 
         public void Initialize(Dictionary<string,GameObject> roots,PlayerMovement hero,Camera camera,CameraFollow cameraFollow,ObliqueScenery models)
         {maps=roots;player=hero;view=camera;follow=cameraFollow;scenery=models;}
