@@ -19,7 +19,7 @@ namespace DragonQuest.Prototype
         private GameEnding ending;
         private Texture2D pixel;
         private GUIStyle titleStyle,textStyle,smallStyle,buttonStyle;
-        private CastleDestroyedPresentation aftermath;
+        private CastleDestroyedEndingPresentation aftermath;
         private HeroPossessedPresentation possession;
         private KingFreedPresentation liberation;
 
@@ -33,7 +33,7 @@ namespace DragonQuest.Prototype
             player.SetMovementEnabled(false);player.gameObject.SetActive(false);follow.enabled=false;
             if(result==GameEnding.CastleDestroyed)
             {
-                aftermath=new CastleDestroyedPresentation();
+                aftermath=new CastleDestroyedEndingPresentation();
                 return;
             }
             if(result==GameEnding.HeroPossessed)
@@ -76,7 +76,7 @@ namespace DragonQuest.Prototype
             if(aftermath!=null)
             {
                 aftermath.Update(Time.unscaledDeltaTime);
-                if(aftermath.Sequence.IsComplete) ReturnToMenu();
+                if(aftermath.IsComplete) ReturnToMenu();
                 return;
             }
             if(pages==null||Time.frameCount<=shownFrame||!GameInput.IsFocused) return;

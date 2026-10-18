@@ -12,10 +12,12 @@ namespace DragonQuest.Prototype
         private readonly Texture2D background, foreground, shade;
         private GUIStyle story, caption;
         private bool hasDrawn;
+        private readonly bool enterFromWhite;
         public CastleDestroyedSequence Sequence { get; }
 
-        public CastleDestroyedPresentation()
+        public CastleDestroyedPresentation(bool enterFromWhite = false)
         {
+            this.enterFromWhite = enterFromWhite;
             Sequence = new CastleDestroyedSequence(lines.Length);
             Texture2D panorama = Load(BackgroundResource);
             foreground = Load(ForegroundResource);
@@ -69,7 +71,10 @@ namespace DragonQuest.Prototype
                 DrawNarrative();
                 GUI.EndGroup();
                 GUI.matrix = Matrix4x4.identity;
-                Fill(viewport, new Color(0, 0, 0, Sequence.BlackOpacity));
+                Color fade = enterFromWhite && Sequence.Elapsed < CastleDestroyedSequence.FadeInDuration
+                    ? Color.white : Color.black;
+                fade.a = Sequence.BlackOpacity;
+                Fill(viewport, fade);
             }
             finally { GUI.matrix = previousMatrix; GUI.color = previousColor; GUI.depth = previousDepth; }
         }
