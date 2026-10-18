@@ -38,8 +38,7 @@ namespace DragonQuest.Prototype
             if (Button(new Rect(982, 10, 164, 48), "Materia", canInteract, sound: MenuSound.Cancel)) back();
             if (Button(new Rect(1158, 14, 108, 44), "Voltar", canInteract, text, MenuSound.Cancel))
             { if (session.ChoosingSocket) session.CancelSocket(); else back(); }
-            var described = session.Removing ? session.SelectedSocket?.Equipment.Sockets[session.SelectedSocket.Index] : session.SelectedMateria;
-            FitLabel(new Rect(28, 86, 1224, 48), session.Message.Length > 0 ? session.Message : described?.Definition.Description ?? "", text);
+            FitLabel(new Rect(28, 86, 1224, 48), session.Message, text);
             Vector2 mouse = Event.current.mousePosition;
             bool moved = pointer.x >= 0 && (mouse - pointer).sqrMagnitude > .1f;
             for (int i = 0; i < party.Members.Count; i++)

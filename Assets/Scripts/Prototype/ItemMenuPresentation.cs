@@ -43,9 +43,7 @@ namespace DragonQuest.Prototype
             if (Button(new Rect(994, 10, 110, 48), "Item", canInteract, MenuSound.Cancel)) back();
             if (Button(new Rect(1128, 16, 124, 40), "Voltar", canInteract, MenuSound.Cancel))
             { if (session.ChoosingTarget) session.CancelTarget(); else back(); }
-            Label(new Rect(28, 86, 1224, 48), session.Message.Length > 0 ? session.Message
-                : session.ShowingKeyItems ? hasScale ? "Escama ancestral: objeto de historia, protegido contra venda." : "Nenhum objeto de historia."
-                : session.SelectedItem?.Description ?? "Nenhum item no inventario.", text);
+            Label(new Rect(28, 86, 1224, 48), session.Message, text);
 
             Vector2 mouse = Event.current.mousePosition;
             bool moved = pointer.x >= 0 && (mouse - pointer).sqrMagnitude > .1f;

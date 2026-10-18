@@ -164,7 +164,7 @@ namespace DragonQuest.Prototype
 
         public void DrawHand(Rect rect)
         {
-            if (hand == null) { Text(new Rect(rect.x - 40, rect.y, 40, rect.height), ">", CommandStyle); return; }
+            if (hand == null) { Fill(new Rect(rect.x - 24, rect.center.y - 6, 12, 12), new Color(.1f, 1, .91f)); return; }
             float width = Mathf.Min(58, 34 * handAspect), height = width / handAspect;
             GUI.DrawTextureWithTexCoords(new Rect(rect.x - width - 7, rect.center.y - height / 2, width, height), hand, handUv, true);
         }

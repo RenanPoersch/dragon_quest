@@ -47,7 +47,7 @@ namespace DragonQuest.Prototype
             Label(new Rect(30, 10, 848, 54), prompt, heading);
             Fit(new Rect(930, 10, 320, 54), menu.Shop.Name, heading);
             theme.Panel(new Rect(0, 76, 1280, 76));
-            string detail = menu.Message.Length > 0 ? menu.Message : menu.Selected?.BlockReason ?? menu.Selected?.Description ?? "";
+            string detail = menu.Message;
             description.fontSize = detail.Length > 125 ? 25 : 30;
             Label(new Rect(30, 86, 1220, 54), detail, description);
 
@@ -197,10 +197,6 @@ namespace DragonQuest.Prototype
         {
             Label(new Rect(rect.x, rect.y, 40, rect.height), name, text, cyan);
             Fit(new Rect(rect.x + 44, rect.y, 82, rect.height), before.ToString(), number);
-            // A small pixel arrow matches the reference's cyan stat arrows.
-            float x = rect.x + 151, y = rect.y + 10;
-            Fill(new Rect(x - 8, y + 5, 14, 6), cyan);
-            for (int i = 0; i < 8; i++) Fill(new Rect(x + i, y + i, 2, 16 - i * 2), cyan);
             Fit(new Rect(rect.x + 178, rect.y, 90, rect.height), after.ToString(), number, after > before ? gain : after < before ? loss : Color.white);
         }
         private static Texture2D Texture(ShopMenuEntry entry) => entry.Item != null ? InventoryPixelArt.Texture(entry.Item)

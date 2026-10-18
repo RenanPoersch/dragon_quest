@@ -42,19 +42,12 @@ namespace DragonQuest.Prototype
             Label(new Rect(982, 10, 164, 48), "Equip", heading);
             if (Button(new Rect(1158, 14, 108, 44), "Voltar", text, canInteract, MenuSound.Cancel)) back();
             var selected = session.SelectedItem;
-            string description = session.Message;
-            if (description.Length == 0) description = !session.HasSelection ? "" : selected == null
-                ? categories[(int)session.Category] + ": --"
-                : selected.Definition.Name + "  /  ATQ +" + selected.Definition.AttackBonus + "  DEF +" + selected.Definition.DefenseBonus
-                    + "  MAG +" + selected.Definition.MagicBonus;
-            FitLabel(new Rect(28, 86, 1224, 48), description, text);
+            FitLabel(new Rect(28, 86, 1224, 48), session.Message, text);
             var member = session.Member;
             if (member != null)
             {
                 theme.DrawPortrait(new Rect(48, 174, 140, 140), member);
                 Label(new Rect(212, 174, 260, 42), member.Name, heading);
-                if (Button(new Rect(506, 174, 30, 42), "<", heading, canInteract, MenuSound.Navigate)) session.ChangeMember(-1, party);
-                if (Button(new Rect(548, 174, 30, 42), ">", heading, canInteract, MenuSound.Navigate)) session.ChangeMember(1, party);
                 Equipped(new Rect(212, 222, 356, 28), "Wpn:", member.Weapon, session.Category == EquipmentMenuCategory.Weapons);
                 Equipped(new Rect(212, 252, 356, 28), "Arm:", member.Armor, session.Category == EquipmentMenuCategory.Armor);
                 Equipped(new Rect(212, 282, 356, 28), "Acc:", member.Accessory, session.Category == EquipmentMenuCategory.Accessories);
@@ -69,7 +62,6 @@ namespace DragonQuest.Prototype
                     Label(new Rect(32, y, 196, 38), stats[i], text, cyan.normal.textColor);
                     FitLabel(new Rect(234, y, 90, 38), current[i].ToString(), number);
                     FitLabel(new Rect(344, y, 90, 38), preview[i].ToString(), number, color);
-                    if (delta != 0) Arrow(new Rect(460, y + 10, 18, 18), delta > 0, color);
                     FitLabel(new Rect(482, y, 92, 38), (delta > 0 ? "+" : "") + delta, number,
                         delta == 0 ? new Color(.62f, .66f, .75f) : color);
                 }
@@ -109,7 +101,6 @@ namespace DragonQuest.Prototype
             FitLabel(new Rect(736, 556, 502, 40), selected?.Definition.Name ?? "--", text);
             if (selected != null)
             {
-                FitLabel(new Rect(736, 594, 502, 26), selected.Definition.Affinities.Description, small);
                 for (int i = 0; i < selected.Sockets.Count; i += 2)
                     MateriaSocketArt.DrawLinked(new Rect(736 + i * 44, 630, 36, 36), new Rect(780 + i * 44, 630, 36, 36));
                 if (selected == session.CurrentItem)
@@ -124,11 +115,6 @@ namespace DragonQuest.Prototype
             Label(new Rect(rect.x, rect.y, 64, rect.height), title, cyan);
             FitLabel(new Rect(rect.x + 66, rect.y, rect.width - 66, rect.height), item?.Definition.Name ?? "--", small,
                 active ? cyan.normal.textColor : Color.white);
-        }
-        private static void Arrow(Rect rect, bool rises, Color color)
-        {
-            for (int i = 0; i < 7; i++) Fill(new Rect(rect.x + 8 - i, rises ? rect.y + i : rect.yMax - i - 1, 2 + i * 2, 1), color);
-            Fill(new Rect(rect.x + 6, rises ? rect.y + 7 : rect.y, 6, 11), color);
         }
         private bool Click(Rect rect, bool enabled, MenuSound sound = MenuSound.Confirm)
         {

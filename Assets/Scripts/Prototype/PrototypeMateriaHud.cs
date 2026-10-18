@@ -238,7 +238,7 @@ namespace DragonQuest.Prototype
             }
             if (page == 3)
             {
-                statusScreen.Draw(presentation, party.Members[memberIndex], acceptsInput, ChangeStatusMember, BackToOverview);
+                statusScreen.Draw(presentation, party.Members[memberIndex], acceptsInput, BackToOverview);
                 GUI.matrix = previous; GUI.enabled = previousEnabled; return;
             }
             navigation.Begin(!acceptsInput);

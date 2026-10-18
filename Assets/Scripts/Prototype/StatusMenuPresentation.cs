@@ -10,7 +10,7 @@ namespace DragonQuest.Prototype
     public sealed class StatusMenuPresentation
     {
         public static readonly Rect BodyRect = new Rect(4, 38, 1272, 654);
-        private GUIStyle text, cyan, number, right, caption, condition;
+        private GUIStyle text, cyan, number, right, condition;
         private Vector2 commandsScroll;
 
         public void Reset() { commandsScroll = Vector2.zero; }
@@ -24,11 +24,10 @@ namespace DragonQuest.Prototype
             cyan = new GUIStyle(text); cyan.normal.textColor = new Color(.05f, 1, .91f);
             number = PrototypeTypography.Style(text, 34, true);
             right = new GUIStyle(number) { alignment = TextAnchor.UpperRight };
-            caption = PrototypeTypography.Style(text, 20);
             condition = PrototypeTypography.Style(text, 28); condition.normal.textColor = new Color(1, .4f, .72f);
         }
 
-        public void Draw(InventoryMenuPresentation theme, PartyMember member, bool canInteract, Action<int> changeMember, Action back)
+        public void Draw(InventoryMenuPresentation theme, PartyMember member, bool canInteract, Action back)
         {
             EnsureStyles(); theme.Panel(BodyRect);
             theme.DrawPortrait(new Rect(34, 54, 168, 146), member);
@@ -69,12 +68,6 @@ namespace DragonQuest.Prototype
             Label(new Rect(644, 620, 132, 40), "Acc:", cyan);
             InventoryPixelArt.Draw(new Rect(774, 620, 40, 40), InventoryPixelArt.Texture(member.Accessory?.Definition));
             FitLabel(new Rect(824, 620, 386, 40), member.Accessory?.Definition.Name ?? "--", text);
-            FitLabel(new Rect(644, 660, 584, 22), member.Affinities.Description, caption);
-
-            if (Click(new Rect(32, 696, 62, 24), canInteract)) changeMember(-1);
-            if (Click(new Rect(100, 696, 62, 24), canInteract)) changeMember(1);
-            Label(new Rect(48, 696, 46, 24), "<", caption);
-            Label(new Rect(116, 696, 46, 24), ">", caption);
         }
 
         private void Stat(float y, string title, string value)
