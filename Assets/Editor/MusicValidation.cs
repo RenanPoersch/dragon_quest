@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using DragonQuest.Audio;
@@ -88,6 +89,7 @@ public static class MusicValidation
     }
     private static AudioSource IntroVoice => music.GetComponentsInChildren<AudioSource>().First(s => s.clip?.name == "intro");
     private static AudioSource BattleVoice => music.GetComponentsInChildren<AudioSource>().First(s => s.clip?.name == "battle" && s.isPlaying);
+    private static AudioSource CurrentVoice => ((AudioSource[])Field(music,"sources"))[(int)Field(music,"current")];
     private static void BattlePlays()
     {
         Check(music.CurrentCue == MusicCue.Battle, "battle theme is selected at step " + step);
@@ -199,6 +201,31 @@ public static class MusicValidation
                 case 16:
                     Silent(); ClearCombat(); Set(battle,"HasEnded",true); music.enabled = false;
                     Check(music.GetComponentsInChildren<AudioSource>().All(s => !s.isPlaying), "disabling the controller stops audio");
+                    // Reuse supplied audio only in this isolated test to exercise a world cue
+                    // before its own recording is available. Drive transitions with routing disabled.
+                    ((Dictionary<MusicCue,AudioClip>)Field(music,"clips"))[MusicCue.World] = Resources.Load<AudioClip>("Music/intro");
+                    Call(music,"TransitionTo",MusicCue.World); Call(music,"Advance",1f);
+                    break;
+                case 17:
+                    Check(CurrentVoice.isPlaying && CurrentVoice.timeSamples > 0,"world test track advances");
+                    CurrentVoice.timeSamples = CurrentVoice.clip.frequency*15;
+                    Call(music,"TransitionTo",MusicCue.Battle); Call(music,"Advance",1f);
+                    break;
+                case 18:
+                    BattlePlays();
+                    Call(music,"TransitionTo",MusicCue.World); Call(music,"Advance",1f);
+                    break;
+                case 19:
+                    Check(music.CurrentCue == MusicCue.World && CurrentVoice.isPlaying && CurrentVoice.timeSamples > 0
+                        && CurrentVoice.timeSamples < CurrentVoice.clip.frequency*2,"returning from battle restarts exploration music");
+                    CurrentVoice.timeSamples = CurrentVoice.clip.frequency*15;
+                    Call(music,"TransitionTo",MusicCue.Silence); Call(music,"Advance",1f); Silent();
+                    Call(music,"TransitionTo",MusicCue.World); Call(music,"Advance",1f);
+                    break;
+                case 20:
+                    Check(music.CurrentCue == MusicCue.World && CurrentVoice.isPlaying && CurrentVoice.timeSamples > 0
+                        && CurrentVoice.timeSamples < CurrentVoice.clip.frequency*2,"returning after silence restarts exploration music");
+                    Call(music,"TransitionTo",MusicCue.Silence); Call(music,"Advance",1f); Silent();
                     Finish(null); return;
             }
             // Editor updates can run while synchronous resources finish loading. Give the
@@ -211,7 +238,7 @@ public static class MusicValidation
     {
         SessionState.SetBool(Running,false); EditorApplication.update -= Tick;
         if (error != null) Debug.LogException(error);
-        else Debug.Log("MUSIC PLAYBACK PASS: " + checks + " checks for supplied intro, normal encounters, loops, results, defeat and separate bosses.");
+        else Debug.Log("MUSIC PLAYBACK PASS: " + checks + " checks for supplied intro, normal encounters, loops, results, defeat, separate bosses and restarting tracks after transitions.");
         if (Application.isBatchMode) EditorApplication.Exit(error == null ? 0 : 1);
         else EditorApplication.ExitPlaymode();
     }

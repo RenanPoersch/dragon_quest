@@ -18,6 +18,8 @@ A mesma faixa toca na patrulha e nos encontros aleatórios do mapa global, pedre
 
 `PrototypeCity` cria `PrototypeMusicController`, com duas fontes 2D na própria cena. O volume acompanha o fade visual da intro. Pular a intro encerra a música antes da tela New game / Continue; carregar e a travessia de New game continuam em silêncio. Ao destruir a cena, as fontes também são destruídas.
 
+Toda troca de faixa inicia a nova música do começo. Ao voltar a uma faixa anterior, inclusive após silêncio ou combate, ela reinicia sem guardar a posição anterior. Enquanto a mesma faixa continua selecionada, ela segue normalmente.
+
 Intro e batalha comum estão habilitadas em `MusicCuePolicy.IsAvailable`. As demais músicas aguardam os arquivos de referência correspondentes. As composições substitutas anteriores não fazem parte dos assets. O roteamento de mapas, chefes e vitória está preparado para as próximas conversões.
 
 ## Reprodução da conversão
@@ -33,4 +35,4 @@ O script verifica o SHA-256 do arquivo de origem antes de reutilizar eventos. As
 
 ## Validação
 
-`Tools/Test-Music.ps1` compila os scripts e testa uma cópia isolada da cena completa, preservando o Editor principal e os saves. Verifica importação, reprodução real, avanço de amostras, loops completos, fade, interrupção ao pular a intro e silêncio no título, Continue e New game. Também testa patrulha, encontros aleatórios das três regiões, reinício a cada encontro, continuidade no mesmo combate, parada nos resultados e na derrota, separação dos chefes e encerramento das fontes. `Tools > Dragon Quest > Validate Music Assets` confere as importações no Editor.
+`Tools/Test-Music.ps1` compila os scripts e testa uma cópia isolada da cena completa, preservando o Editor principal e os saves. Verifica importação, reprodução real, avanço de amostras, loops completos, fade, interrupção ao pular a intro e silêncio no título, Continue e New game. Também testa patrulha, encontros aleatórios das três regiões, reinício a cada encontro, continuidade no mesmo combate, parada nos resultados e na derrota, separação dos chefes e encerramento das fontes. O retorno à música de exploração após combate ou silêncio deve começar do início, sem retomar a posição anterior; esse teste reutiliza um clipe fornecido sem habilitar as faixas ainda pendentes. `Tools > Dragon Quest > Validate Music Assets` confere as importações no Editor.

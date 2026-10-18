@@ -11,10 +11,8 @@ namespace DragonQuest.Audio
     {
         private const float MusicVolume = .52f;
         private readonly Dictionary<MusicCue, AudioClip> clips = new Dictionary<MusicCue, AudioClip>();
-        private readonly Dictionary<MusicCue, int> positions = new Dictionary<MusicCue, int>();
         private readonly AudioSource[] sources = new AudioSource[2];
         private readonly float[] from = new float[2], target = new float[2];
-        private readonly MusicCue[] sourceCues = new MusicCue[2];
         private PrototypeSaveController saves;
         private PrototypeLocations locations;
         private PrototypeBattleController battle;
@@ -51,16 +49,9 @@ namespace DragonQuest.Audio
             Advance(Time.unscaledDeltaTime);
         }
 
-        private void Remember(int index)
-        {
-            if (index >= 0 && sources[index].isPlaying && sources[index].clip != null && MusicCuePolicy.Resumes(sourceCues[index]))
-                positions[sourceCues[index]] = sources[index].timeSamples;
-        }
-
         private void TransitionTo(MusicCue cue)
         {
             if (cue == CurrentCue) return;
-            Remember(current);
             CurrentCue = cue;
             for (int i = 0; i < 2; i++) { from[i] = sources[i].volume; target[i] = 0; }
             elapsed = 0;
@@ -74,13 +65,9 @@ namespace DragonQuest.Audio
             }
             if (clip == null) { current = -1; return; }
             int next = current == 0 ? 1 : current == 1 ? 0 : sources[0].volume <= sources[1].volume ? 0 : 1;
-            Remember(next);
             AudioSource voice = sources[next];
             voice.Stop(); voice.clip = clip; voice.volume = from[next] = 0;
-            sourceCues[next] = cue;
-            if (MusicCuePolicy.Resumes(cue) && positions.TryGetValue(cue, out int sample))
-                voice.timeSamples = Mathf.Clamp(sample, 0, clip.samples - 1);
-            else voice.timeSamples = 0;
+            voice.timeSamples = 0;
             target[next] = MusicVolume;
             current = next;
             voice.Play();
@@ -102,7 +89,6 @@ namespace DragonQuest.Audio
 
         private void OnDisable()
         {
-            Remember(current);
             foreach (AudioSource source in sources) if (source != null) source.Stop();
             CurrentCue = MusicCue.Silence; current = -1;
         }
