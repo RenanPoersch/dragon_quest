@@ -29,6 +29,7 @@ public static class MenuSoundValidation
     private static MenuSoundController sounds;
     private static AudioSource voice, musicVoice;
     private static PrototypeSaveController saves;
+    private static DialogueController dialogue;
     private static PrototypeBattleController battle;
     private static PrototypeMateriaHud inventory;
     private static PrototypeBattleHud battleHud;
@@ -117,7 +118,7 @@ public static class MenuSoundValidation
         voice = audioRoot.GetComponent<AudioSource>();
         fixture = new GameObject("Menu sound checks");
         var movement = fixture.AddComponent<PlayerMovement>();
-        var dialogue = fixture.AddComponent<DialogueController>();
+        dialogue = fixture.AddComponent<DialogueController>();
         saves = fixture.AddComponent<PrototypeSaveController>();
         battle = fixture.AddComponent<PrototypeBattleController>();
         cheats = fixture.AddComponent<PrototypeCheatMenu>();
@@ -167,39 +168,39 @@ public static class MenuSoundValidation
                     Check((bool)Field(saves,"startingNewGame").GetValue(saves),"New Game is guarded against repeated activations");
                     Put(saves,"startingNewGame",false); Property(saves,"IsMenuVisible",false); break;
                 case 7: Property(battle,"IsMenuOpen",true); State(); Call(inventory,"Update"); Sound(MenuSound.Confirm); break;
-                case 8: State(new GamepadState().WithButton(GamepadButton.DpadDown)); Call(inventory,"Update"); Sound(MenuSound.Navigate); break;
+                case 8: State(new GamepadState().WithButton(GamepadButton.DpadDown)); Call(inventory,"Update"); Quiet(); break;
                 case 9: Key(UnityEngine.InputSystem.Key.Enter); Call(inventory,"Update"); Sound(MenuSound.Confirm); break;
-                case 10: Key(UnityEngine.InputSystem.Key.DownArrow); Call(inventory,"Update"); Sound(MenuSound.Navigate); break;
+                case 10: Key(UnityEngine.InputSystem.Key.DownArrow); Call(inventory,"Update"); Quiet(); break;
                 case 11: CancelInventory(); break;
                 case 12: OpenInventoryCommand(0); break;
-                case 13: Key(UnityEngine.InputSystem.Key.DownArrow); Call(inventory,"Update"); Sound(MenuSound.Navigate); break;
+                case 13: Key(UnityEngine.InputSystem.Key.DownArrow); Call(inventory,"Update"); Quiet(); break;
                 case 14: Key(UnityEngine.InputSystem.Key.Enter); Call(inventory,"Update"); Sound(MenuSound.Confirm); break;
-                case 15: State(new GamepadState { leftStick = Vector2.down }); Call(inventory,"Update"); Sound(MenuSound.Navigate); break;
+                case 15: State(new GamepadState { leftStick = Vector2.down }); Call(inventory,"Update"); Quiet(); break;
                 case 16: CancelInventory(); break;
                 case 17: CancelInventory(); break;
                 case 18: OpenInventoryCommand(2); break;
-                case 19: State(new GamepadState().WithButton(GamepadButton.RightShoulder)); Call(inventory,"Update"); Sound(MenuSound.Navigate); break;
-                case 20: Key(UnityEngine.InputSystem.Key.RightArrow); Call(inventory,"Update"); Sound(MenuSound.Navigate); break;
+                case 19: State(new GamepadState().WithButton(GamepadButton.RightShoulder)); Call(inventory,"Update"); Quiet(); break;
+                case 20: Key(UnityEngine.InputSystem.Key.RightArrow); Call(inventory,"Update"); Quiet(); break;
                 case 21: CancelInventory(); break;
                 case 22: OpenInventoryCommand(3); break;
-                case 23: Key(UnityEngine.InputSystem.Key.RightArrow); Call(inventory,"Update"); Sound(MenuSound.Navigate); break;
+                case 23: Key(UnityEngine.InputSystem.Key.RightArrow); Call(inventory,"Update"); Quiet(); break;
                 case 24: CancelInventory(); break;
                 case 25:
                     State(new GamepadState().WithButton(GamepadButton.East)); Call(battle,"Update"); Call(inventory,"Update");
                     Sound(MenuSound.Cancel); Check(!battle.IsMenuOpen,"closing inventory emits cancellation"); break;
                 case 26: State(); shops.Open("item-shop"); Sound(MenuSound.Confirm); break;
-                case 27: Key(UnityEngine.InputSystem.Key.DownArrow); Call(shops,"Update"); Sound(MenuSound.Navigate); break;
+                case 27: Key(UnityEngine.InputSystem.Key.DownArrow); Call(shops,"Update"); Quiet(); break;
                 case 28: Key(UnityEngine.InputSystem.Key.Enter); Call(shops,"Update"); Sound(MenuSound.Confirm); break;
                 case 29: State(); shops.Back(); Sound(MenuSound.Cancel); break;
                 case 30: State(); shops.ChooseAction(0); Sound(MenuSound.Confirm); break;
-                case 31: Key(UnityEngine.InputSystem.Key.DownArrow); Call(shops,"Update"); Sound(MenuSound.Navigate); break;
+                case 31: Key(UnityEngine.InputSystem.Key.DownArrow); Call(shops,"Update"); Quiet(); break;
                 case 32: Key(UnityEngine.InputSystem.Key.Enter); Call(shops,"Update"); Sound(MenuSound.Confirm); break;
-                case 33: Key(UnityEngine.InputSystem.Key.RightArrow); Call(shops,"Update"); Sound(MenuSound.Navigate); break;
+                case 33: Key(UnityEngine.InputSystem.Key.RightArrow); Call(shops,"Update"); Quiet(); break;
                 case 34: Key(UnityEngine.InputSystem.Key.Escape); Call(shops,"Update"); Sound(MenuSound.Cancel); break;
                 case 35: State(); shops.Back(); Sound(MenuSound.Cancel); break;
                 case 36: State(); shops.ChooseAction(2); Sound(MenuSound.Cancel); break;
                 case 37: State(new GamepadState().WithButton(GamepadButton.Select)); Call(cheats,"Update"); Sound(MenuSound.Confirm); break;
-                case 38: Key(UnityEngine.InputSystem.Key.DownArrow); Call(cheats,"Update"); Sound(MenuSound.Navigate); break;
+                case 38: Key(UnityEngine.InputSystem.Key.DownArrow); Call(cheats,"Update"); Quiet(); break;
                 case 39: Key(UnityEngine.InputSystem.Key.Enter); Call(cheats,"Update"); Sound(MenuSound.Confirm); break;
                 case 40: Key(UnityEngine.InputSystem.Key.Escape); Call(cheats,"Update"); Sound(MenuSound.Cancel); break;
                 case 41:
@@ -210,14 +211,14 @@ public static class MenuSoundValidation
                     Put(battleHud,"observedDefinition",actor.Definition); Put(battleHud,"observedLimitReady",actor.Limit.IsReady);
                     Put(battleHud,"rootCommands",BattleCommandMenu.Root(actor)); Put(battleHud,"defendCommand",BattleCommandMenu.Defend(actor));
                     break;
-                case 42: Key(UnityEngine.InputSystem.Key.DownArrow); Call(battleHud,"Update"); Sound(MenuSound.Navigate); break;
+                case 42: Key(UnityEngine.InputSystem.Key.DownArrow); Call(battleHud,"Update"); Quiet(); break;
                 case 43: Put(battleHud,"commandIndex",0); Key(UnityEngine.InputSystem.Key.Enter); Call(battleHud,"Update"); Sound(MenuSound.Confirm); break;
                 case 44: Key(UnityEngine.InputSystem.Key.Escape); Call(battleHud,"Update"); Sound(MenuSound.Cancel); break;
-                case 45: Key(UnityEngine.InputSystem.Key.RightArrow); Call(battleHud,"Update"); Sound(MenuSound.Navigate); break;
+                case 45: Key(UnityEngine.InputSystem.Key.RightArrow); Call(battleHud,"Update"); Quiet(); break;
                 case 46: Key(UnityEngine.InputSystem.Key.Escape); Call(battleHud,"Update"); Sound(MenuSound.Cancel); break;
                 case 47: Focus(false); MenuSounds.Play(MenuSound.Confirm); Quiet(); break;
                 case 48:
-                    State(); MenuSounds.Play(MenuSound.Navigate); MenuSounds.Play(MenuSound.Confirm);
+                    State(); MenuSounds.Play(MenuSound.Navigate, MenuSoundContext.InitialMenu); MenuSounds.Play(MenuSound.Confirm);
                     MenuSounds.Play(MenuSound.Cancel); MenuSounds.Play(MenuSound.Navigate); Sound(MenuSound.Cancel); break;
                 case 49:
                     State(); MenuSounds.Play(MenuSound.NewGame); Sound(MenuSound.NewGame);
@@ -226,7 +227,38 @@ public static class MenuSoundValidation
                     Check(voice.isPlaying && voice.timeSamples > 0,"New Game arpeggio continues without a redraw restart");
                     sounds.enabled = false; Check(!voice.isPlaying,"disabling scene effects stops playback");
                     MenuSounds.Play(MenuSound.Confirm); Quiet(); sounds.enabled = true; break;
-                case 51: State(); MenuSounds.Play(MenuSound.Confirm); Sound(MenuSound.Confirm); Finish(null); return;
+                case 51: State(); MenuSounds.Play(MenuSound.Confirm); Sound(MenuSound.Confirm); break;
+                case 52:
+                    Property(saves,"IsMenuVisible",true); Property(battle,"IsActive",false);
+                    Put(saves,"page",Enum.Parse(Field(saves,"page").FieldType,"Save")); Put(saves,"selectedOption",0);
+                    Key(UnityEngine.InputSystem.Key.DownArrow); Call(saves,"Update"); Sound(MenuSound.Navigate);
+                    Check((int)Field(saves,"selectedOption").GetValue(saves) == 1,"navigation between save slots remains audible"); break;
+                case 53: State(); MenuSounds.Play(MenuSound.Navigate); Quiet(); break;
+                case 54:
+                    State(); dialogue.OpenChoices("Hospedeiro","Vai descansar?",new[] {"Sim","Nao"},_ => { });
+                    dialogue.MoveChoice(1); Quiet();
+                    Check(dialogue.SelectedChoice == 0,"typing dialogue does not move or sound a choice"); break;
+                case 55:
+                    dialogue.RevealAll(); dialogue.MoveChoice(1); Sound(MenuSound.Navigate);
+                    Check(dialogue.SelectedChoice == 1,"keyboard/controller choice movement emits navigation"); break;
+                case 56: dialogue.SelectChoice(1); Quiet(); break;
+                case 57: dialogue.SelectChoice(0); Sound(MenuSound.Navigate); break;
+                case 58: dialogue.Close(); dialogue.MoveChoice(1); Quiet(); break;
+                case 59:
+                    dialogue.Open("Aldeao","Conversa sem opcoes."); dialogue.RevealAll(); dialogue.MoveChoice(1); Quiet(); break;
+                case 60:
+                    dialogue.OpenChoices("Aldeao","Uma opcao.",new[] {"Continuar"},_ => { });
+                    dialogue.RevealAll(); dialogue.MoveChoice(1); Quiet(); break;
+                case 61:
+                    dialogue.OpenChoices("Aldeao","Tres opcoes.",new[] {"Uma","Duas","Tres"},_ => { });
+                    dialogue.RevealAll(); dialogue.MoveChoice(-1); Sound(MenuSound.Navigate);
+                    Check(dialogue.SelectedChoice == 2,"wrapping dialogue choices emits navigation"); break;
+                case 62:
+                    int selection = 0; MenuSounds.Select(ref selection,1); Quiet();
+                    Check(selection == 1,"silent navigation outside allowed contexts still changes the selection"); break;
+                case 63: Focus(false); dialogue.SelectChoice(0); Quiet(); break;
+                case 64:
+                    State(); MenuSounds.Play(MenuSound.Confirm); Sound(MenuSound.Confirm); Finish(null); return;
             }
             step++; nextAt = now+.035; nextFrame = Time.frameCount+2;
         }
@@ -239,7 +271,7 @@ public static class MenuSoundValidation
         if (audioRoot != null) UnityEngine.Object.Destroy(audioRoot);
         if (listener != null) UnityEngine.Object.Destroy(listener);
         if (error != null) Debug.LogException(error);
-        else Debug.Log("MENU SOUNDS PLAYBACK PASS: "+checks+" checks for approved PCM, title, New Game, inventory, items, materia, equipment, status, shops, cheats, battle, focus, deduplication and music continuity.");
+        else Debug.Log("MENU SOUNDS PLAYBACK PASS: "+checks+" checks for approved PCM, navigation only in title/save/dialogue choices, quiet movement in other menus, confirm/cancel/New Game, focus, deduplication and music continuity.");
         if (Application.isBatchMode) EditorApplication.Exit(error == null ? 0 : 1);
         else EditorApplication.ExitPlaymode();
     }

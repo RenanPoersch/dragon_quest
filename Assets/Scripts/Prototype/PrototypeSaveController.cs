@@ -276,6 +276,8 @@ namespace DragonQuest.Prototype
             || option == SaveStore.SlotCount || previews[option] != null;
         private void CancelOverwrite()
         { overwriteSlot = 0; MenuSounds.Play(MenuSound.Cancel); }
+        private MenuSoundContext NavigationSoundContext => page == MenuPage.Title
+            ? MenuSoundContext.InitialMenu : MenuSoundContext.SaveSlots;
         private void MoveSelection(int direction)
         {
             int previous = selectedOption;
@@ -285,7 +287,7 @@ namespace DragonQuest.Prototype
                 selectedOption = (selectedOption + direction + count) % count;
                 if (OptionEnabled(selectedOption)) break;
             }
-            MenuSounds.Navigate(previous, selectedOption);
+            MenuSounds.Navigate(previous, selectedOption, NavigationSoundContext);
         }
         private void ShowMessage(string text)
         { message = text; messageUntil = Time.unscaledTime + 8f; }
@@ -398,7 +400,7 @@ namespace DragonQuest.Prototype
             if (!startingNewGame && GUI.enabled && (Event.current.type == EventType.MouseMove
                 || Event.current.type == EventType.MouseDrag || Event.current.type == EventType.MouseDown)
                 && rect.Contains(Event.current.mousePosition))
-                MenuSounds.Select(ref selectedOption, option);
+                MenuSounds.Select(ref selectedOption, option, NavigationSoundContext);
             Color previous = GUI.color;
             if (GUI.enabled && selectedOption == option) GUI.color = new Color(0.96f, 0.8f, 0.48f);
             bool clicked = GUI.Button(rect, label, style);

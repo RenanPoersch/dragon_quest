@@ -5,16 +5,18 @@ using UnityEngine;
 namespace DragonQuest.Audio
 {
     public enum MenuSound { Navigate, Confirm, Cancel, NewGame }
+    public enum MenuSoundContext { Other, InitialMenu, SaveSlots, DialogueChoices }
 
     public static class MenuSounds
     {
-        public static void Play(MenuSound sound) => MenuSoundController.Instance?.Play(sound);
-        public static void Navigate<T>(T before, T after)
+        public static void Play(MenuSound sound, MenuSoundContext context = MenuSoundContext.Other)
+            => MenuSoundController.Instance?.Play(sound, context);
+        public static void Navigate<T>(T before, T after, MenuSoundContext context = MenuSoundContext.Other)
         {
-            if (!EqualityComparer<T>.Default.Equals(before, after)) Play(MenuSound.Navigate);
+            if (!EqualityComparer<T>.Default.Equals(before, after)) Play(MenuSound.Navigate, context);
         }
-        public static void Select(ref int selection, int next)
-        { Navigate(selection, next); selection = next; }
+        public static void Select(ref int selection, int next, MenuSoundContext context = MenuSoundContext.Other)
+        { Navigate(selection, next, context); selection = next; }
     }
 
     // A separate scene object keeps short UI effects independent of the music sources.
@@ -45,8 +47,12 @@ namespace DragonQuest.Audio
             }
         }
 
-        public void Play(MenuSound sound)
+        public void Play(MenuSound sound, MenuSoundContext context = MenuSoundContext.Other)
         {
+            // Only these UI flows may emit cursor movement audio. Other menus
+            // keep their existing confirm/cancel sounds and navigate silently.
+            if (sound == MenuSound.Navigate && context != MenuSoundContext.InitialMenu
+                && context != MenuSoundContext.SaveSlots && context != MenuSoundContext.DialogueChoices) return;
             if (!isActiveAndEnabled || !GameInput.IsFocused || voice == null) return;
             // Confirmation wins over movement, cancellation over confirmation, and
             // New Game over all three. Repeated IMGUI passes cannot restart a sound.

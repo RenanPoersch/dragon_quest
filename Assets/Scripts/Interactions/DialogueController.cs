@@ -1,4 +1,5 @@
 using UnityEngine;
+using DragonQuest.Audio;
 
 namespace DragonQuest.Interactions
 {
@@ -46,7 +47,9 @@ namespace DragonQuest.Interactions
 
         public void SelectChoice(int index)
         {
-            if (ChoicesReady && index >= 0 && index < Choices.Count) SelectedChoice = index;
+            if (!ChoicesReady || index < 0 || index >= Choices.Count) return;
+            MenuSounds.Navigate(SelectedChoice, index, MenuSoundContext.DialogueChoices);
+            SelectedChoice = index;
         }
 
         public void MoveChoice(int direction)
