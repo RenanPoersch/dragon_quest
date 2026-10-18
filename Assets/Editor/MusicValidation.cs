@@ -25,7 +25,7 @@ public static class MusicValidation
     private static PrototypeIntroPresentation intro;
     private static DragonInteraction dragon;
     private static DialogueController dialogue;
-    private static AudioSource preludeVoice;
+    private static AudioSource preludeVoice, lairVoice;
     private static InnRestController rest;
     private static PrototypeEndingController endings;
 
@@ -69,10 +69,11 @@ public static class MusicValidation
                 MusicCue.MindControlEnding => 196.1622f,
                 MusicCue.MeteorEnding => 241.1160f,
                 MusicCue.Throne => 242.1609f,
+                MusicCue.DragonLair => 8.267211f,
                 _ => throw new InvalidOperationException("Missing source duration for " + cue)
             };
             Check(clip.channels == 2 && clip.frequency == 44100 && Math.Abs(clip.length-expectedSeconds)<.05f,
-                resource + " preserves the full supplied recording in stereo at 44.1 kHz");
+                resource + " preserves the intended recording segment in stereo at 44.1 kHz");
             var importer = (AudioImporter)AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(clip));
             Check(importer.defaultSampleSettings.loadType == AudioClipLoadType.Streaming
                 && importer.defaultSampleSettings.compressionFormat == AudioCompressionFormat.PCM
@@ -81,8 +82,8 @@ public static class MusicValidation
         }
         Check(MusicCuePolicy.Select(true,true,false,false,false,false,false,false,"world") == MusicCue.Intro, "intro takes priority over front end");
         Check(MusicCuePolicy.Select(false,true,false,false,false,false,false,false,"world") == MusicCue.Silence, "title and load stay silent");
-        Check(Enum.GetValues(typeof(MusicCue)).Cast<MusicCue>().Count(MusicCuePolicy.IsAvailable) == 18, "all eighteen supplied recordings are enabled");
-        Check(Resources.LoadAll<AudioClip>("Music").Length == 18, "only supplied recordings are present");
+        Check(Enum.GetValues(typeof(MusicCue)).Cast<MusicCue>().Count(MusicCuePolicy.IsAvailable) == 19, "all nineteen supplied recordings are enabled");
+        Check(Resources.LoadAll<AudioClip>("Music").Length == 19, "only supplied recordings are present");
         Check(!MusicCuePolicy.ShouldLoop(MusicCue.Sleep),"sleep jingle plays once");
         Check(MusicCuePolicy.Select(false,true,false,false,false,false,false,false,"world",story:new MusicStoryState(voyage:true)) == MusicCue.Voyage,
             "the voyage has music while title and normal load selection stay silent");
@@ -95,10 +96,10 @@ public static class MusicValidation
         foreach (GameEnding result in new[] { GameEnding.KingFreed,GameEnding.HeroPossessed,GameEnding.CastleDestroyed })
             Check(MusicCuePolicy.Select(false,false,true,false,false,false,false,false,"castle",story:new MusicStoryState(ending:result)) == MusicCuePolicy.EndingCue(result),
                 "ending music follows " + result);
-        Check(MusicCuePolicy.Select(false,false,false,false,false,false,false,false,"volcano") == MusicCue.Silence,
-            "exploring the dragon lair stays silent");
+        Check(MusicCuePolicy.Select(false,false,false,false,false,false,false,false,"volcano") == MusicCue.DragonLair,
+            "exploring the dragon lair uses the trimmed ambience");
         Check(MusicCuePolicy.Select(false,false,false,false,false,false,false,false,"volcano",true) == MusicCue.Dragon,
-            "the dragon conversation can introduce the battle theme");
+            "the dragon conversation replaces the lair ambience with the battle theme");
         Check(MusicCuePolicy.Select(false,true,false,false,false,false,false,false,"volcano",true) == MusicCue.Silence,
             "front-end silence takes priority over a dragon prelude");
         foreach (string map in new[] { "city","inn","item-shop","materia-shop","equipment-shop" })
@@ -402,16 +403,26 @@ public static class MusicValidation
                     dialogue = music.GetComponent<DialogueController>(); dialogue.enabled = false;
                     break;
                 case 31:
-                    Silent(); Check(!battle.IsActive && !dragon.IsBattlePrelude,"lair exploration cannot start dragon music");
+                    CuePlays(MusicCue.DragonLair);
+                    Check(!battle.IsActive && !dragon.IsBattlePrelude,"lair ambience is separate from dragon battle music");
+                    lairVoice = Voice(MusicCue.DragonLair);
+                    Check(lairVoice.timeSamples < lairVoice.clip.frequency*2,"entering the lair starts on the bass pulse");
+                    lairVoice.timeSamples = lairVoice.clip.samples - lairVoice.clip.frequency/3;
                     dragon.Interact(new InteractionContext(dialogue,null,_ => { }));
                     Check(dialogue.IsOpen && dialogue.PageNumber == 1,"real dragon dialogue opens before combat");
                     break;
                 case 32:
-                    Silent(); dialogue.RevealAll(); dialogue.Advance();
-                    Check(dialogue.IsTyping && !dragon.IsBattlePrelude,"first part of the final dragon line stays silent");
+                    CuePlays(MusicCue.DragonLair);
+                    Check(Voice(MusicCue.DragonLair) == lairVoice && lairVoice.timeSamples < lairVoice.clip.frequency*2,
+                        "the trimmed bass cycle loops while the dragon dialogue is open");
+                    lairVoice.timeSamples = lairVoice.clip.frequency*2;
+                    dialogue.RevealAll(); dialogue.Advance();
+                    Check(dialogue.IsTyping && !dragon.IsBattlePrelude,"early dragon speech keeps the lair ambience");
                     break;
                 case 33:
-                    Silent();
+                    CuePlays(MusicCue.DragonLair);
+                    Check(Voice(MusicCue.DragonLair) == lairVoice && lairVoice.timeSamples > lairVoice.clip.frequency*2,
+                        "ongoing lair exploration and speech do not restart the ambient cycle");
                     ((DialogueTextReveal)Field(dialogue,"reveal")).Tick(dialogue.RevealSecondsRemaining - .75f);
                     Check(dialogue.IsTyping && dragon.IsBattlePrelude,"music is requested before final text finishes");
                     break;
@@ -421,11 +432,14 @@ public static class MusicValidation
                     dialogue.Close();
                     break;
                 case 35:
-                    Silent(); Check(!battle.IsActive && !dragon.IsBattlePrelude,"cancelling the speech cancels the musical prelude");
+                    CuePlays(MusicCue.DragonLair);
+                    Check(Voice(MusicCue.DragonLair).timeSamples < Voice(MusicCue.DragonLair).clip.frequency*2,
+                        "cancelling the speech returns to a fresh ambient cycle");
+                    Check(!battle.IsActive && !dragon.IsBattlePrelude,"cancelling the speech cancels the musical prelude");
                     dialogue.Open("Outra conversa","Primeira pagina.","Ultima pagina."); dialogue.Advance(); dialogue.RevealAll();
                     break;
                 case 36:
-                    Silent(); Check(!dragon.IsBattlePrelude,"unrelated dialogue cannot reactivate the dragon prelude");
+                    CuePlays(MusicCue.DragonLair); Check(!dragon.IsBattlePrelude,"unrelated dialogue cannot reactivate the dragon prelude");
                     dialogue.Close(); dragon.Interact(new InteractionContext(dialogue,null,_ => { }));
                     NearEndOfDragonSpeech();
                     break;
@@ -587,7 +601,7 @@ public static class MusicValidation
     {
         SessionState.SetBool(Running,false); EditorApplication.update -= Tick;
         if (error != null) Debug.LogException(error);
-        else Debug.Log("MUSIC PLAYBACK PASS: " + checks + " checks for all eighteen recordings, regions, combat, boat, one-shot sleep, defeat, dragon aftermath, throne room and all three endings.");
+        else Debug.Log("MUSIC PLAYBACK PASS: " + checks + " checks for all nineteen recordings, regions, combat, boat, one-shot sleep, defeat, bass ambience, continuous dragon prelude, dragon aftermath, throne room and all three endings.");
         if (Application.isBatchMode) EditorApplication.Exit(error == null ? 0 : 1);
         else EditorApplication.ExitPlaymode();
     }

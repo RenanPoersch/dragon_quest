@@ -71,7 +71,8 @@ namespace DragonQuest.Audio
             CurrentCue = cue;
             for (int i = 0; i < 2; i++) { from[i] = sources[i].volume; target[i] = 0; }
             elapsed = 0;
-            duration = cue == MusicCue.Silence || cue == MusicCue.Sleep ? .12f : cue == MusicCue.Victory ? .18f : .65f;
+            duration = cue == MusicCue.DragonLair ? .08f
+                : cue == MusicCue.Silence || cue == MusicCue.Sleep ? .12f : cue == MusicCue.Victory ? .18f : .65f;
             if (cue == MusicCue.Silence) { current = -1; return; }
             if (!clips.TryGetValue(cue, out AudioClip clip))
             {

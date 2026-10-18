@@ -5,7 +5,7 @@ namespace DragonQuest.Audio
     public enum MusicCue
     {
         Silence, Intro, World, Village, Quarry, Forest, Ruins, Battle, Dragon, FinalBoss, Victory,
-        Voyage, Sleep, Defeat, DragonFreed, GoodEnding, MindControlEnding, MeteorEnding, Throne
+        Voyage, Sleep, Defeat, DragonFreed, GoodEnding, MindControlEnding, MeteorEnding, Throne, DragonLair
     }
 
     public readonly struct MusicStoryState
@@ -44,7 +44,7 @@ namespace DragonQuest.Audio
                 case "west-forest": return MusicCue.Quarry;
                 case "east-forest": return MusicCue.Forest;
                 case "ancient-ruins": return MusicCue.Ruins;
-                case "volcano": return story.DragonDefeated ? MusicCue.DragonFreed : MusicCue.Silence;
+                case "volcano": return story.DragonDefeated ? MusicCue.DragonFreed : MusicCue.DragonLair;
                 case "castle": return MusicCue.Throne;
                 default: return MusicCue.Silence;
             }
@@ -68,7 +68,7 @@ namespace DragonQuest.Audio
             || cue == MusicCue.Ruins || cue == MusicCue.Quarry || cue == MusicCue.Voyage
             || cue == MusicCue.Sleep || cue == MusicCue.Defeat || cue == MusicCue.DragonFreed
             || cue == MusicCue.GoodEnding || cue == MusicCue.MindControlEnding || cue == MusicCue.MeteorEnding
-            || cue == MusicCue.Throne;
+            || cue == MusicCue.Throne || cue == MusicCue.DragonLair;
         public static string ResourceName(MusicCue cue) => IsAvailable(cue) ? "Music/" + cue.ToString().ToLowerInvariant() : null;
     }
 }

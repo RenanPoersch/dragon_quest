@@ -1,6 +1,6 @@
 # Músicas do jogo
 
-O jogo usa as gravações originais fornecidas pelo usuário. Os M4A foram decodificados para WAV PCM de 16 bits, em estéreo a 44,1 kHz, mantendo a gravação completa, seus timbres, andamento e dinâmica. Não há transcrição de notas, ressíntese ou tratamento 8-bit nos áudios usados pelo jogo. A Unity importa essas faixas em PCM com streaming, sem outra compressão com perdas e sem carregar a faixa inteira antecipadamente.
+O jogo usa as gravações originais fornecidas pelo usuário. Os M4A foram decodificados para WAV PCM de 16 bits, em estéreo a 44,1 kHz, mantendo seus timbres, andamento e dinâmica. As primeiras dezoito faixas são completas; a sala do dragão usa somente um ciclo do trecho inicial, conforme solicitado. Não há transcrição de notas, ressíntese ou tratamento 8-bit nos áudios usados pelo jogo. A Unity importa essas faixas em PCM com streaming, sem outra compressão com perdas e sem carregar a faixa inteira antecipadamente.
 
 ## Arquivos usados
 
@@ -24,6 +24,8 @@ O jogo usa as gravações originais fornecidas pelo usuário. Os M4A foram decod
 - Final do meteoro: `videoplayback (17).m4a` → `Assets/Resources/Music/meteorending.wav`, com 241,116 segundos. SHA-256 da origem: `36f876975819b5c7445514957ba1d0c5d23179176188d54d63bac08a1402ce0e`.
 - Sala do trono: `videoplayback (18).m4a` → `Assets/Resources/Music/throne.wav`, com 242,161 segundos. SHA-256 da origem: `e16efdb220d095ce93978f43fce5b0ef8f6cba1a41508c499b72b78e2f52d9ef`.
 
+- Sala do dragão: `videoplayback (19).m4a` → `Assets/Resources/Music/dragonlair.wav`, loop de 8,267211 segundos, recortado de 8,480000 a 16,747211 segundos. SHA-256 da origem: `342c44435e6edf40839c2e62a19b5b5ef7db226f79d8394546570674fce44de6`.
+
 As versões 8-bit foram removidas dos assets. Os scripts e relatórios da experiência anterior permanecem apenas como histórico e não participam da reprodução.
 
 ## Integração
@@ -40,25 +42,25 @@ Quando a tela de resultados da vitória aparece, `victory.wav` começa do iníci
 
 Floresta leste (`east-forest`), ruínas (`ancient-ruins`) e pedreira (`west-forest`) usam respectivamente `forest.wav`, `ruins.wav` e `quarry.wav`, em loop durante a exploração. Encontros comuns continuam usando `battle.wav`; voltar ao cenário reinicia sua música do começo.
 
-O covil (`volcano`) permanece em silêncio durante a exploração e as primeiras falas do dragão. `DragonInteraction.IsBattlePrelude` sinaliza o último segundo da escrita da última página da conversa do confronto. A música `dragon.wav` entra nesse trecho e mantém a mesma fonte e posição quando a conversa termina e `StartDragonBattle` abre o combate. Avançar a escrita rapidamente preserva o avanço imediato da conversa; a última página já revelada também permite a entrada da música, sem impor uma espera ao jogador. Cancelar ou substituir a conversa cancela a entrada, e a essência liberta não ativa música de batalha.
+O covil (`volcano`) usa `dragonlair.wav` durante a exploração e as primeiras falas do dragão, antes de sua derrota. O grave recorrente do início tem período aproximado de 8,267 segundos; o recorte começa na subida do segundo ataque e termina no ponto correspondente do seguinte, antes da entrada da melodia. Uma emenda circular de 40 ms preserva o intervalo entre ataques e evita um salto artificial de amostras. Os outros 99,516% do ciclo mantêm exatamente o PCM decodificado da origem. A entrada usa fade de 80 ms para preservar o ataque do grave. `DragonInteraction.IsBattlePrelude` sinaliza o último segundo da escrita da última página da conversa do confronto. A música `dragon.wav` entra nesse trecho e mantém a mesma fonte e posição quando a conversa termina e `StartDragonBattle` abre o combate. Avançar a escrita rapidamente preserva o avanço imediato da conversa; a última página já revelada também permite a entrada da música, sem impor uma espera ao jogador. Cancelar ou substituir a conversa retorna ao loop ambiente do início; a essência liberta não ativa música de batalha.
 
 `finalboss.wav` começa ao iniciar a batalha do tirano e repete em loop durante esse combate. A sala do trono fora de combate usa `throne.wav`, sem alterar a música da vila.
 
 `defeat.wav` toca após a animação de derrota, enquanto a tela aguarda o jogador continuar. Ao retornar à hospedaria, a música da vila volta do início; essa faixa não toca na seleção normal de saves.
 
-`dragonfreed.wav` começa após continuar na tela de vitória do dragão, quando o covil apresenta a essência liberta. A fanfarra normal permanece na tela de resultados. A faixa da essência segue enquanto o jogador permanecer no covil libertado; antes de vencer o dragão, a exploração e as primeiras falas continuam em silêncio.
+`dragonfreed.wav` começa após continuar na tela de vitória do dragão, quando o covil apresenta a essência liberta. A fanfarra normal permanece na tela de resultados. A faixa da essência segue enquanto o jogador permanecer no covil libertado; antes de vencer o dragão, a exploração e as primeiras falas mantêm o loop ambiente.
 
 Ao passar a noite, a música da vila continua durante a caminhada até as camas. `sleep.wav` entra no fade para dormir e toca uma única vez. `InnRestController` mantém a noite até completar os 9,195 segundos da gravação, retomando a música da vila no despertar. Um novo descanso começa o jingle do início.
 
 `PrototypeEndingController.CurrentEnding` seleciona a trilha do desfecho: `goodending.wav` para `KingFreed`, `mindcontrolending.wav` para `HeroPossessed` e `meteorending.wav` para `CastleDestroyed`. Cada faixa cobre sua apresentação e repete enquanto o final estiver aberto. Ao voltar ao título, as fontes da cena são encerradas.
 
-Toda troca de faixa inicia a nova música do começo. Ao voltar a uma faixa anterior, inclusive após silêncio ou combate, ela reinicia sem guardar a posição anterior. Enquanto a mesma faixa continua selecionada, ela segue normalmente. O loop repete cada gravação completa, incluindo seu encerramento original.
+Toda troca de faixa inicia a nova música do começo. Ao voltar a uma faixa anterior, inclusive após silêncio ou combate, ela reinicia sem guardar a posição anterior. Enquanto a mesma faixa continua selecionada, ela segue normalmente. Os loops das faixas completas incluem seu encerramento original; o ambiente da sala do dragão repete somente o ciclo recortado.
 
-As dezoito gravações fornecidas estão habilitadas em `MusicCuePolicy.IsAvailable`. Título e Continue para carregar saves permanecem em silêncio. `MusicStoryState` informa nau, descanso, dragão libertado e final ativo à política de seleção.
+As dezenove gravações fornecidas estão habilitadas em `MusicCuePolicy.IsAvailable`. Título e Continue para carregar saves permanecem em silêncio. `MusicStoryState` informa nau, descanso, dragão libertado e final ativo à política de seleção.
 
 ## Reprodução da importação
 
-Os arquivos M4A originais permanecem na pasta Downloads. Os WAV utilizados pelo jogo estão versionados no projeto. Para gerá-los novamente com FFmpeg:
+Os arquivos M4A originais permanecem na pasta Downloads. Os WAV utilizados pelo jogo estão versionados no projeto. Para gerar novamente as faixas completas com FFmpeg:
 
 ```powershell
 ffmpeg -i 'caminho/videoplayback (1).m4a' -map 0:a:0 -map_metadata -1 -c:a pcm_s16le -fflags +bitexact -flags:a +bitexact Assets/Resources/Music/intro.wav
@@ -81,10 +83,20 @@ ffmpeg -i 'caminho/videoplayback (17).m4a' -map 0:a:0 -map_metadata -1 -c:a pcm_
 ffmpeg -i 'caminho/videoplayback (18).m4a' -map 0:a:0 -map_metadata -1 -c:a pcm_s16le -fflags +bitexact -flags:a +bitexact Assets/Resources/Music/throne.wav
 ```
 
+O ambiente do dragão é reproduzível com o script de biblioteca padrão do Python e FFmpeg:
+
+```powershell
+python Tools/Build-DragonLairLoop.py 'caminho/videoplayback (19).m4a' Assets/Resources/Music/dragonlair.wav --ffmpeg ffmpeg
+```
+
+O corte usa frames estéreo PCM a 44.100 Hz: início 373.968, fim exclusivo 738.552, total 364.584. A primeira amostra segue exatamente a amostra final na origem; uma interpolação cossenoidal de 1.764 frames retorna ao ciclo selecionado. A duração continua 8,267211 segundos, sem encurtar a pulsação com sobreposição. Não há EQ, mudança de altura ou andamento. SHA-256 do WAV: `2dfc9c14643404ea9f9fc77b9e55b514fd50f312a467cf270a8ca2b225ffa76d`.
+
 ## Validação
 
 `Tools/Test-Music.ps1` compila os scripts e testa uma cópia isolada da cena completa, preservando o Editor principal e os saves. Verifica importação PCM, duração completa, estéreo, reprodução real, avanço de amostras, loops, fade, interrupção ao pular a intro e silêncio no título, Continue e New game. Também testa o mundo aberto, seu loop completo, continuidade durante a exploração e reinício ao voltar da vitória ou da vila. Confere a gravação da vila, seu loop completo, continuidade na hospedaria e no retorno à rua, além do roteamento das lojas. Inclui patrulha, encontros aleatórios das três regiões, reinício a cada encontro, continuidade no mesmo combate, transição para a música de vitória na tela real de resultados, loop e continuidade nessa tela, troca ao continuar ou na derrota, separação dos chefes e encerramento das fontes. `Tools > Dragon Quest > Validate Music Assets` confere as importações no Editor.
 
-A validação conjunta também cobre as três novas regiões e seus loops, o silêncio no covil e nas primeiras falas, a entrada musical antes de terminar a última fala, o cancelamento e a substituição da conversa, a continuidade da mesma fonte de áudio ao carregar a luta do dragão, sua vitória e a música da essência liberta, além da faixa e do loop exclusivos da batalha do tirano. `Tools/Test-Secrets.ps1` confere a escrita do diálogo e o tempo restante por elementos de texto, incluindo acentos e emoji.
+A validação conjunta também cobre as três novas regiões e seus loops, o loop ambiente no covil e nas primeiras falas, a entrada musical antes de terminar a última fala, o cancelamento e a substituição da conversa, a continuidade da mesma fonte de áudio ao carregar a luta do dragão, sua vitória e a música da essência liberta, além da faixa e do loop exclusivos da batalha do tirano. `Tools/Test-Secrets.ps1` confere a escrita do diálogo e o tempo restante por elementos de texto, incluindo acentos e emoji.
 
 A validação do lote 11–18 cobre a nau e seu término, derrota e retorno à hospedaria, a música da essência após o dragão, a sala do trono e sua troca para combate, o jingle de descanso sem loop e a espera antes do despertar, além dos três finais reais e o silêncio ao voltar ao título.
+
+O ambiente recortado também é validado na cena real: início no grave, loop completo, continuidade durante a conversa, troca para a música de batalha no final da fala, retorno ao ambiente ao cancelar e continuidade ininterrupta ao abrir a luta. O script de recorte verifica a emenda contra duas amostras adjacentes reais e a preservação do PCM fora dos 40 ms de união.
