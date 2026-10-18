@@ -86,8 +86,13 @@ namespace DragonQuest.Prototype
             Fill(new Rect(area.x + 2, area.y + 2, area.width - 4, area.height - 4), new Color(.79f, .80f, .90f));
             Rect inner = new Rect(area.x + 5, area.y + 5, area.width - 10, area.height - 10);
             for (int row = 0; row < 24; row++)
-                Fill(new Rect(inner.x, inner.y + inner.height * row / 24, inner.width, inner.height / 24 + 1),
+            {
+                float top = inner.y + inner.height * row / 24;
+                // Overlap gradient strips to avoid seams, but keep the bottom border intact.
+                float bottom = Mathf.Min(inner.yMax, top + inner.height / 24 + 1);
+                Fill(Rect.MinMaxRect(inner.x, top, inner.xMax, bottom),
                     Color.Lerp(new Color(.075f, .12f, .59f), new Color(.025f, .028f, .27f), row / 23f));
+            }
         }
         private void Fill(Rect area, Color color)
         { var previous = GUI.color; GUI.color = color; GUI.DrawTexture(area, pixel); GUI.color = previous; }
