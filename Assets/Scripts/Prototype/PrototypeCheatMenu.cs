@@ -40,9 +40,9 @@ namespace DragonQuest.Prototype
             else if (IsOpen)
             {
                 MenuDirection direction = GameInput.Navigation;
-                if (direction == MenuDirection.Up) selected = (selected + OptionCount - 1) % OptionCount;
-                else if (direction == MenuDirection.Down) selected = (selected + 1) % OptionCount;
-                if (GameInput.GamepadConfirmPressed) Activate(selected);
+                if (direction == MenuDirection.Up || direction == MenuDirection.Left) selected = (selected + OptionCount - 1) % OptionCount;
+                else if (direction == MenuDirection.Down || direction == MenuDirection.Right) selected = (selected + 1) % OptionCount;
+                if (GameInput.ConfirmPressed) Activate(selected);
             }
             if (BlocksInput) GameInput.ConsumeGamepadFrame();
         }
@@ -105,12 +105,8 @@ namespace DragonQuest.Prototype
             var current = Event.current;
             if (current.type == EventType.KeyDown)
             {
-                KeyCode key = current.keyCode;
+                // Read navigation/confirmation once in Update, including when no IMGUI key event arrives.
                 current.Use();
-                if (key == KeyCode.UpArrow || key == KeyCode.W) selected = (selected + OptionCount - 1) % OptionCount;
-                else if (key == KeyCode.DownArrow || key == KeyCode.S) selected = (selected + 1) % OptionCount;
-                else if (key == KeyCode.Return || key == KeyCode.KeypadEnter || key == KeyCode.Space) Activate(selected);
-                if (!IsOpen) return;
             }
             GUI.color = new Color(.04f, .07f, .14f);
             GUI.DrawTexture(new Rect(0, 0, 660, 576), Texture2D.whiteTexture);

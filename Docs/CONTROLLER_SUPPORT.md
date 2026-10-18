@@ -9,7 +9,7 @@ O jogo consulta `Gamepad.current` a cada leitura, sem exigir teclado conectado. 
 - Inventário e lojas preservam seus botões IMGUI, com foco sequencial, borda dourada, opções desabilitadas ignoradas e rolagem automática. A confirmação é processada uma vez por quadro; abrir o menu não confirma um botão. O mouse continua funcionando.
 - A confirmação que fecha uma tela é consumida para impedir ações na tela seguinte. Os bloqueios de diálogo, combate, animações, menus, cheats e perda de foco continuam valendo.
 - A introdução já aceitava o botão inferior; os menus respeitam o fade e a liberação desse botão antes de selecionar New game. A travessia e as cenas finais cinematográficas conservam seu tempo automático.
-- O analógico direito permite rolar falas longas. R3 abre o Cheat Engine, inclusive durante combate, e o bloqueio impede ações no jogo abaixo dele.
+- O analógico direito permite rolar falas longas. Select/Back/View/Share e R3 abrem o Cheat Engine, inclusive durante combate, e o bloqueio impede ações no jogo abaixo dele.
 
 ## Inventário e voltar — 18 de outubro de 2026
 
@@ -17,11 +17,18 @@ Triângulo/Y abre o inventário; Start/Options também continua disponível. A c
 
 Os testes de integração verificam esses retornos, incluindo a abertura com a lenda já aprendida e a prioridade de cancelar sobre confirmar em diálogos.
 
+## Navegação e Select — 18 de outubro de 2026
+
+Setas/WASD, direcional e analógico esquerdo usam a mesma leitura do Input System e a mesma repetição. A tela inicial, Continue e cheats processam navegação e confirmação em Update, sem depender de eventos de teclado do IMGUI nem processar o mesmo toque duas vezes. O cursor parado do mouse não substitui a seleção do controle. A navegação acompanha novas atualizações de entrada no mesmo quadro, e consumir uma ação preserva o intervalo de repetição.
+
+Select/Back/View/Share abre e fecha o Cheat Engine durante a jornada; Círculo/B também o fecha. Esse botão não solicita mais um save. F5, o cristal e a hospedeira continuam disponíveis para salvar.
+
 ## Testes reproduzíveis
 
 ```powershell
 ./Tools/Test-ControllerInput.ps1
 ./Tools/Test-ControllerInput.ps1 -UnityIntegration
+./Tools/Test-ControllerInput.ps1 -UnityIntegration -PlayMode
 ./Tools/Test-UnityScripts.ps1
 ```
 
@@ -46,7 +53,7 @@ Referência de compatibilidade e zona morta: [Unity Input System 1.19 — Gamepa
 4. Abrir o inventário, trocar personagem/aba, usar item, equipar/remover equipamento, selecionar matéria e encaixe. Percorrer uma lista maior que a área visível e conferir a rolagem.
 5. Em uma loja, percorrer Comprar/Vender, missão, produtos, quantidade, máximo, confirmação e cancelamento. Conferir ouro e estoque depois da transação. Botão direito fecha sem acionar o mundo.
 6. Em combate, escolher ataque, magia, summon e item, navegar entre alvos e voltar com o botão direito. Confirmar resultados depois da animação. Testar R3 e confirmar que o combate fica bloqueado pelo Cheat Engine.
-7. Salvar com View/Back/Share no mapa global ou hospedaria. Navegar pelos slots e confirmar ou cancelar a sobrescrita. Em Continue, slots indisponíveis devem ser pulados.
+7. Abrir/fechar cheats com Select/Back/View/Share; conferir que não abre o salvamento. Salvar pelo cristal ou hospedeira na hospedaria, ou F5 no teclado. Navegar pelos slots e confirmar ou cancelar a sobrescrita. Em Continue, slots indisponíveis devem ser pulados.
 8. Desconectar enquanto anda, reconectar e continuar. Alternar teclado/mouse e controle na mesma sessão. Verificar retorno ao menu depois do final.
 
 Compilação e controle virtual não confirmam compatibilidade Bluetooth/USB de cada modelo ou driver, nem substituem esse roteiro com um dispositivo físico.

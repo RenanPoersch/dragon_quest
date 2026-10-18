@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using DragonQuest.Input;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 namespace DragonQuest.Prototype
 {
@@ -18,13 +17,14 @@ namespace DragonQuest.Prototype
 
         public void Begin(bool blocked)
         {
+            if (Event.current.type == EventType.KeyDown) Event.current.Use();
             buttonIndex = scrollIndex = 0; currentScroll = -1;
             if (Event.current.type == EventType.Repaint) buttons.Clear();
             if (processedFrame == Time.frameCount) return;
             bool opened = Time.frameCount > lastDrawFrame + 1;
             if (opened) { focus.Reset(); selectedScroll = revealIndex = -1; }
             processedFrame = lastDrawFrame = Time.frameCount;
-            confirm = !blocked && !opened && GameInput.GamepadConfirmPressed;
+            confirm = !blocked && !opened && GameInput.ConfirmPressed;
             if (blocked) return;
             MenuDirection direction = GameInput.Navigation;
             if (direction != MenuDirection.None)
@@ -51,10 +51,10 @@ namespace DragonQuest.Prototype
                 }
             }
             Color previous = GUI.backgroundColor;
-            if (selected && Gamepad.current != null && GUI.enabled) GUI.backgroundColor = new Color(1, .8f, .3f);
+            if (selected && GUI.enabled) GUI.backgroundColor = new Color(1, .8f, .3f);
             bool clicked = GUI.Button(area, label, style);
             GUI.backgroundColor = previous;
-            if (selected && Gamepad.current != null && GUI.enabled && Event.current.type == EventType.Repaint)
+            if (selected && GUI.enabled && Event.current.type == EventType.Repaint)
             {
                 Color color = GUI.color; GUI.color = new Color(1, .85f, .35f);
                 GUI.DrawTexture(new Rect(area.x, area.y, area.width, 2), Texture2D.whiteTexture);
@@ -70,8 +70,7 @@ namespace DragonQuest.Prototype
         public Vector2 BeginScrollView(Rect viewport, Vector2 scroll, Rect content)
         {
             currentScroll = scrollIndex++;
-            if (selectedScroll == currentScroll && revealIndex == focus.Selected && selectedRectIndex == focus.Selected
-                && Gamepad.current != null)
+            if (selectedScroll == currentScroll && revealIndex == focus.Selected && selectedRectIndex == focus.Selected)
             {
                 if (selectedRect.y < scroll.y) scroll.y = selectedRect.y;
                 if (selectedRect.yMax > scroll.y + viewport.height) scroll.y = selectedRect.yMax - viewport.height;

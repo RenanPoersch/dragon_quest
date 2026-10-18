@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.LowLevel;
 
 namespace DragonQuest.Input
 {
@@ -9,6 +10,7 @@ namespace DragonQuest.Input
         private static readonly ControllerNavigation repeat = new ControllerNavigation();
         private static int navigationFrame = -1, consumedFrame = -1;
         private static MenuDirection navigation;
+        private static uint navigationUpdate;
         private static int observedDevice = -1;
         private static System.Func<bool> hasFocus = () => Application.isFocused;
         // One gate for exploration and every screen, also replaceable in isolated input checks.
@@ -21,6 +23,7 @@ namespace DragonQuest.Input
         private static void Reset()
         {
             repeat.Reset(); navigationFrame = consumedFrame = observedDevice = -1; navigation = MenuDirection.None;
+            navigationUpdate = 0;
             hasFocus = () => Application.isFocused;
         }
 
@@ -56,14 +59,22 @@ namespace DragonQuest.Input
         {
             get
             {
-                if (!PadAvailable) { repeat.Reset(); observedDevice = -1; return MenuDirection.None; }
-                if (observedDevice != Gamepad.current.deviceId)
-                { repeat.Reset(); navigationFrame = -1; observedDevice = Gamepad.current.deviceId; }
-                if (navigationFrame != Time.frameCount)
+                if (!IsFrameAvailable)
                 {
-                    Vector2 value = PadMovement;
+                    // Consuming a screen's input must not restart the held-direction repeat.
+                    if (!IsFocused) { repeat.Reset(); observedDevice = navigationFrame = -1; }
+                    return MenuDirection.None;
+                }
+                int device = Gamepad.current?.deviceId ?? -1;
+                if (observedDevice != device)
+                { repeat.Reset(); navigationFrame = -1; observedDevice = device; }
+                uint update = InputState.updateCount;
+                if (navigationFrame != Time.frameCount || navigationUpdate != update)
+                {
+                    // Keyboard, D-pad and stick share direction, delay and repeat in every menu.
+                    Vector2 value = Movement;
                     navigation = repeat.Step(value.x, value.y, Time.unscaledTimeAsDouble);
-                    navigationFrame = Time.frameCount;
+                    navigationFrame = Time.frameCount; navigationUpdate = update;
                 }
                 return navigation;
             }
@@ -81,9 +92,9 @@ namespace DragonQuest.Input
         public static bool InventoryPressed => IsFrameAvailable && (PadAvailable
             && (Gamepad.current.buttonNorth.wasPressedThisFrame || Gamepad.current.startButton.wasPressedThisFrame)
             || Keyboard.current?.iKey.wasPressedThisFrame == true);
-        public static bool SavePressed => IsFrameAvailable && (PadAvailable && Gamepad.current.selectButton.wasPressedThisFrame
-            || Keyboard.current?.f5Key.wasPressedThisFrame == true);
-        public static bool CheatsPressed => IsFrameAvailable && (PadAvailable && Gamepad.current.rightStickButton.wasPressedThisFrame
+        public static bool SavePressed => IsFrameAvailable && Keyboard.current?.f5Key.wasPressedThisFrame == true;
+        public static bool CheatsPressed => IsFrameAvailable && (PadAvailable
+            && (Gamepad.current.selectButton.wasPressedThisFrame || Gamepad.current.rightStickButton.wasPressedThisFrame)
             || Keyboard.current?.backquoteKey.wasPressedThisFrame == true);
 
         // Legacy name: consume keyboard and gamepad presses so one screen cannot activate another.

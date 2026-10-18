@@ -35,9 +35,9 @@ Conecte um controle reconhecido pelo Input System da Unity; ele pode ser conecta
 | Interagir / avançar diálogo / confirmar / atacar | Botão inferior: A no Xbox, X no PlayStation |
 | Voltar / fechar | Botão direito: B no Xbox, Círculo no PlayStation |
 | Inventário | Botão superior: Y no Xbox, Triângulo no PlayStation; ou Start/Options |
-| Salvar no mapa global ou na hospedaria | View/Back/Share |
+| Salvar | Cristal ou hospedeira na hospedaria; F5 no teclado |
 | Rolar texto de diálogo longo | Analógico direito |
-| Abrir / fechar Cheat Engine | Clique no analógico direito (R3) |
+| Abrir / fechar Cheat Engine | Select/Back/View/Share; também R3 |
 
 Nos menus de inventário e loja, o direcional percorre os botões em sequência; cima/esquerda volta e baixo/direita avança. O botão selecionado recebe uma borda dourada, opções indisponíveis são puladas e listas rolam para manter a seleção visível. Confirme o produto, quantidade, compra/venda, equipamento ou encaixe pelo mesmo botão inferior. A tela inicial, Continue, escolha de slot, confirmação de sobrescrita, escolhas de diálogo, batalha e resultados também aceitam controle.
 

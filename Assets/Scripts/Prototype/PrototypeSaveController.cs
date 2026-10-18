@@ -31,8 +31,6 @@ namespace DragonQuest.Prototype
         private Texture2D hand;
         private Rect handUv = new Rect(0, 0, 1, 1);
         private float handAspect = 1;
-        private Vector2 lastMousePosition;
-        private bool pointerMoved;
         private GUIStyle titleStyle, textStyle, smallStyle, buttonStyle, titleButtonStyle;
         private string message;
         private float messageUntil;
@@ -208,17 +206,18 @@ namespace DragonQuest.Prototype
             {
                 if ((intro == null || !intro.IsPlaying) && menuHasDrawn)
                     menuFadeInElapsed = Mathf.Min(MenuFadeInDuration, menuFadeInElapsed + Time.unscaledDeltaTime);
-                if (!IsMenuFadingIn && (intro == null || !intro.BlocksMenuInput) && GameInput.IsFocused)
+                if (!IsMenuFadingIn && (intro == null || !intro.BlocksMenuInput) && GameInput.IsFrameAvailable)
                 {
                     MenuDirection direction = GameInput.Navigation;
-                    if (GameInput.GamepadCancelPressed) UpdateMenuInput(KeyCode.Escape);
+                    if (GameInput.CancelPressed)
+                    { UpdateMenuInput(KeyCode.Escape); GameInput.ConsumeGamepadFrame(); }
                     else
                     {
-                        if (direction == MenuDirection.Up) MoveSelection(-1);
-                        else if (direction == MenuDirection.Down) MoveSelection(1);
-                        if (GameInput.GamepadConfirmPressed) UpdateMenuInput(KeyCode.Return);
+                        if (direction == MenuDirection.Up || direction == MenuDirection.Left) MoveSelection(-1);
+                        else if (direction == MenuDirection.Down || direction == MenuDirection.Right) MoveSelection(1);
+                        if (GameInput.ConfirmPressed)
+                        { UpdateMenuInput(KeyCode.Return); GameInput.ConsumeGamepadFrame(); }
                     }
-                    if (GameInput.GamepadConfirmPressed || GameInput.GamepadCancelPressed) GameInput.ConsumeGamepadFrame();
                 }
                 return;
             }
@@ -289,14 +288,15 @@ namespace DragonQuest.Prototype
             if ((startingNewGame || IsMenuFadingIn || intro != null && intro.BlocksMenuInput)
                 && (Event.current.isKey || Event.current.isMouse))
                 Event.current.Use();
-            // Consume menu keys before drawing controls so a focused IMGUI button cannot activate twice.
+            // Update owns keyboard and controller input; IMGUI only handles pointer activation.
             if (Event.current.type == EventType.KeyDown && (Event.current.keyCode == KeyCode.Return
                 || Event.current.keyCode == KeyCode.KeypadEnter || Event.current.keyCode == KeyCode.Space
                 || Event.current.keyCode == KeyCode.UpArrow || Event.current.keyCode == KeyCode.DownArrow
+                || Event.current.keyCode == KeyCode.LeftArrow || Event.current.keyCode == KeyCode.RightArrow
+                || Event.current.keyCode == KeyCode.A || Event.current.keyCode == KeyCode.D || Event.current.keyCode == KeyCode.E
                 || Event.current.keyCode == KeyCode.W || Event.current.keyCode == KeyCode.S
                 || Event.current.keyCode == KeyCode.Escape))
             {
-                UpdateMenuInput(Event.current.keyCode);
                 Event.current.Use();
                 if (!IsMenuVisible) return;
                 if (voyage != null) { voyage.Draw(); return; }
@@ -311,8 +311,6 @@ namespace DragonQuest.Prototype
             float scale = Mathf.Min(Screen.width / 1280f, Screen.height / 720f);
             GUI.matrix = Matrix4x4.TRS(new Vector3((Screen.width - 1280 * scale) / 2, (Screen.height - 720 * scale) / 2, 0),
                 Quaternion.identity, new Vector3(scale, scale, 1));
-            pointerMoved = Event.current.mousePosition != lastMousePosition;
-            lastMousePosition = Event.current.mousePosition;
             if (page == MenuPage.Title)
             {
                 if (scaleSprite != null)
@@ -386,8 +384,9 @@ namespace DragonQuest.Prototype
         }
         private bool MenuButton(Rect rect, string label, int option, GUIStyle style)
         {
-            if (!startingNewGame && GUI.enabled && (pointerMoved || Event.current.type == EventType.MouseMove
-                || Event.current.type == EventType.MouseDown) && rect.Contains(Event.current.mousePosition))
+            if (!startingNewGame && GUI.enabled && (Event.current.type == EventType.MouseMove
+                || Event.current.type == EventType.MouseDrag || Event.current.type == EventType.MouseDown)
+                && rect.Contains(Event.current.mousePosition))
                 selectedOption = option;
             Color previous = GUI.color;
             if (GUI.enabled && selectedOption == option) GUI.color = new Color(0.96f, 0.8f, 0.48f);

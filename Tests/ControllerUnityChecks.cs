@@ -283,7 +283,7 @@ public static class ControllerUnityChecks
             Check(GameInput.CancelPressed, "East cancels.");
             State(new GamepadState().WithButton(GamepadButton.West)); Check(!GameInput.InventoryPressed, "Square does not open inventory.");
             State(new GamepadState().WithButton(GamepadButton.Start)); Check(GameInput.InventoryPressed, "Start opens inventory.");
-            State(new GamepadState().WithButton(GamepadButton.Select)); Check(GameInput.SavePressed, "Select/View saves.");
+            State(new GamepadState().WithButton(GamepadButton.Select)); Check(GameInput.CheatsPressed && !GameInput.SavePressed, "Select/View opens cheats without saving.");
             State(new GamepadState().WithButton(GamepadButton.North)); Check(GameInput.InventoryPressed && !GameInput.InteractPressed, "Triangle opens inventory without interacting.");
             State(new GamepadState().WithButton(GamepadButton.RightStick)); Check(GameInput.CheatsPressed, "R3 opens cheats.");
             var hero = new GameObject("Controller test hero");
@@ -331,6 +331,7 @@ public static class ControllerUnityChecks
             State(new GamepadState()); InputSystem.QueueStateEvent(keyboard, new KeyboardState(Key.W, Key.D)); InputSystem.Update();
             Check(GameInput.Movement.x > 0 && GameInput.Movement.y > 0 && GameInput.Movement.magnitude <= 1.0001f,
                 "Keyboard movement still works with a controller connected.");
+            MenuInputUnityChecks.Run(pad, keyboard);
             CheckInventoryControls(keyboard);
             CheckDialogueNavigation(keyboard, interaction, dialogue, movement);
             CheckBattleConfirmation(keyboard);
