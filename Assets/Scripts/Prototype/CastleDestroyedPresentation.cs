@@ -9,7 +9,7 @@ namespace DragonQuest.Prototype
         public const string BackgroundResource = "PixelArt/Endings/CastleAftermath";
         public const string ForegroundResource = "PixelArt/Endings/SeatedElderHill";
         private readonly string[] lines = EndingNarrative.CastleDestroyedEpilogue.Split('\n');
-        private readonly Texture2D background, foreground, shade;
+        private readonly Texture2D background, foreground;
         private readonly EndingArtworkRenderer backgroundMotion = new EndingArtworkRenderer();
         private readonly EndingArtworkRenderer foregroundMotion = new EndingArtworkRenderer();
         private GUIStyle story, caption;
@@ -23,12 +23,6 @@ namespace DragonQuest.Prototype
             Sequence = new CastleDestroyedSequence(lines.Length);
             background = Load(BackgroundResource);
             foreground = Load(ForegroundResource);
-            shade = new Texture2D(128, 1, TextureFormat.RGBA32, false)
-                { name = "FinalOne / narrative shade", wrapMode = TextureWrapMode.Clamp };
-            var colors = new Color[128];
-            for (int x = 0; x < colors.Length; x++)
-                colors[x] = new Color(.035f, .025f, .03f, .82f * (1 - Mathf.SmoothStep(0, 1, x / 127f)));
-            shade.SetPixels(colors); shade.Apply(false, true);
         }
 
         public void Update(float unscaledDeltaTime)
@@ -108,8 +102,8 @@ namespace DragonQuest.Prototype
             float opacity = Mathf.Clamp01((Sequence.Elapsed - CastleDestroyedSequence.TextStart) / 1.4f)
                 * (1 - Mathf.Clamp01((Sequence.Elapsed - Sequence.TextEndAt) / 1.2f));
             if (opacity <= 0) return;
-            GUI.color = new Color(1, 1, 1, opacity);
-            GUI.DrawTexture(new Rect(0, 40, 600, 540), shade);
+            GUI.color = new Color(0, 0, 0, opacity);
+            GUI.Label(new Rect(72, 62, 450, 30), "CINZAS DO CASTELO", caption);
             GUI.color = new Color(.96f, .76f, .47f, opacity);
             GUI.Label(new Rect(70, 60, 450, 30), "CINZAS DO CASTELO", caption);
             GUI.BeginGroup(new Rect(70, 104, 470, CastleDestroyedSequence.TextWindowHeight));
@@ -145,12 +139,7 @@ namespace DragonQuest.Prototype
         { GUI.color = color; GUI.DrawTexture(area, Texture2D.whiteTexture); }
         public void Dispose()
         {
-            backgroundMotion.Dispose(); foregroundMotion.Dispose(); DestroyOwned(shade);
-        }
-        private static void DestroyOwned(UnityEngine.Object asset)
-        {
-            if (Application.isPlaying) UnityEngine.Object.Destroy(asset);
-            else UnityEngine.Object.DestroyImmediate(asset);
+            backgroundMotion.Dispose(); foregroundMotion.Dispose();
         }
     }
 }

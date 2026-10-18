@@ -9,7 +9,8 @@ public static class CastleImpactValidation
     [MenuItem("Tools/Dragon Quest/Validate Castle Impact")]
     public static void Run()
     {
-        foreach (string resource in new[] { CastleImpactPresentation.CastleResource, CastleImpactPresentation.MeteorResource })
+        foreach (string resource in new[] { CastleImpactPresentation.CastleResource, CastleImpactPresentation.MeteorResource,
+            CastleImpactPresentation.RedCloudResource })
         {
             var texture = Resources.Load<Texture2D>(resource);
             Assert(texture != null, "art exists: " + resource);
@@ -33,6 +34,7 @@ public static class CastleImpactValidation
         finally { UnityEngine.Object.DestroyImmediate(source); }
         Shader shader = Resources.Load<Shader>(CastleImpactPresentation.ShaderResource);
         Assert(shader != null && shader.isSupported && !ShaderUtil.ShaderHasError(shader), "composite shader compiles");
+        ValidateCloudColors(shader);
         using (var ending = new CastleDestroyedEndingPresentation())
         {
             ending.Update(4);
@@ -50,7 +52,54 @@ public static class CastleImpactValidation
             var target = impact.RenderFrame();
             Assert(target.IsCreated() && target.width==1920 && target.height==990, "GPU cinematic renders");
         }
-        Debug.Log("CASTLE_IMPACT_VALIDATION_OK: imported art, alpha, shader, first frame, cut overflow and full epilogue.");
+        Debug.Log("CASTLE_IMPACT_VALIDATION_OK: cloud-only red artwork, original foreground colors, alpha, shader and complete epilogue.");
+    }
+
+    private static void ValidateCloudColors(Shader shader)
+    {
+        var castle = Resources.Load<Texture2D>(CastleImpactPresentation.CastleResource);
+        var clouds = Resources.Load<Texture2D>(CastleImpactPresentation.RedCloudResource);
+        Assert(clouds.width==castle.width && clouds.height==castle.height, "cloud variant aligns with the original painting");
+        var material = new Material(shader);
+        var target = RenderTexture.GetTemporary(castle.width,castle.height,0,RenderTextureFormat.ARGB32);
+        var readback = new Texture2D(castle.width,castle.height,TextureFormat.RGBA32,false,true);
+        var previous = RenderTexture.active;
+        try
+        {
+            material.SetTexture("_RedCloudTex",clouds);
+            material.SetVector("_MeteorRect",new Vector4(-10,-10,1,1));
+            material.SetFloat("_CinematicTime",6);
+            material.SetFloat("_CameraZoom",1); material.SetFloat("_CropY",1);
+            material.SetFloat("_MeteorOpacity",0);
+            Graphics.Blit(castle,target,material); RenderTexture.active=target;
+            readback.ReadPixels(new Rect(0,0,castle.width,castle.height),0,0); readback.Apply();
+            Color[] before = readback.GetPixels();
+            material.SetFloat("_MeteorOpacity",1);
+            Graphics.Blit(castle,target,material);
+            readback.ReadPixels(new Rect(0,0,castle.width,castle.height),0,0); readback.Apply();
+            Color[] after = readback.GetPixels();
+            // Native artwork coordinates measured from the upper-left corner.
+            foreach (Vector2 point in new[] { new Vector2(1470,300),new Vector2(1235,340),new Vector2(985,430),
+                new Vector2(1320,420),new Vector2(650,520),new Vector2(100,830),new Vector2(800,810),new Vector2(1500,820) })
+            {
+                int pixel=(castle.height-1-(int)point.y)*castle.width+(int)point.x;
+                Color difference=after[pixel]-before[pixel];
+                Assert(Mathf.Abs(difference.r)+Mathf.Abs(difference.g)+Mathf.Abs(difference.b)<.015f,
+                    "castle, roofs, mountains and water retain their original RGB: "+point);
+            }
+            foreach (Vector2 point in new[] { new Vector2(300,200),new Vector2(800,180),new Vector2(1100,110) })
+            {
+                int pixel=(castle.height-1-(int)point.y)*castle.width+(int)point.x;
+                Assert(after[pixel].r>after[pixel].g*2 && after[pixel].r>after[pixel].b*2
+                    && Mathf.Abs(after[pixel].r-before[pixel].r)+Mathf.Abs(after[pixel].g-before[pixel].g)>.05f,
+                    "clouds turn red when the meteor appears: "+point);
+            }
+        }
+        finally
+        {
+            RenderTexture.active=previous; RenderTexture.ReleaseTemporary(target);
+            UnityEngine.Object.DestroyImmediate(readback); UnityEngine.Object.DestroyImmediate(material);
+        }
     }
 
     public static void RunAndCapture()

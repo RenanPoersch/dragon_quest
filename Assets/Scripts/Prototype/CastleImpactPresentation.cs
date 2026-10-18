@@ -6,6 +6,7 @@ namespace DragonQuest.Prototype
     public sealed class CastleImpactPresentation : IDisposable
     {
         public const string CastleResource = "PixelArt/Endings/CastleBeforeImpact";
+        public const string RedCloudResource = "PixelArt/Endings/CastleRedClouds";
         public const string MeteorResource = "PixelArt/Endings/EndingMeteor";
         public const string ShaderResource = "PixelArt/Endings/CastleImpactComposite";
         public const float FrameWidth = 1280, FrameHeight = 660;
@@ -26,6 +27,7 @@ namespace DragonQuest.Prototype
             composite = new Material(shader)
                 { name = "Castle impact / storm and falling meteor", hideFlags = HideFlags.HideAndDontSave };
             composite.SetTexture("_MeteorTex", meteor);
+            composite.SetTexture("_RedCloudTex", Load(RedCloudResource));
             composite.SetFloat("_CropY", FrameHeight / (FrameWidth * castle.height / castle.width));
             frame = new RenderTexture(1920, 990, 0, RenderTextureFormat.ARGB32)
                 { name = "Castle impact / cinematic", filterMode = FilterMode.Bilinear, wrapMode = TextureWrapMode.Clamp };
@@ -39,11 +41,8 @@ namespace DragonQuest.Prototype
             float x = Sequence.MeteorX - .73f * size, y = Sequence.MeteorY - .71f * size;
             composite.SetVector("_MeteorRect", new Vector4(x / FrameWidth, 1 - (y + size) / FrameHeight,
                 size / FrameWidth, size / FrameHeight));
-            composite.SetVector("_MeteorCenter", new Vector4(Sequence.MeteorX / FrameWidth,
-                1 - Sequence.MeteorY / FrameHeight, 0, 0));
             composite.SetFloat("_CinematicTime", Sequence.Elapsed);
             composite.SetFloat("_MeteorOpacity", Sequence.MeteorOpacity);
-            composite.SetFloat("_Heat", Sequence.Heat);
             composite.SetFloat("_CameraZoom", Sequence.CameraZoom);
             RenderTexture previous = RenderTexture.active;
             try { Graphics.Blit(castle, frame, composite); }

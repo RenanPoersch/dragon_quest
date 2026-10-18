@@ -3,12 +3,11 @@ Shader "Hidden/DragonQuest/CastleImpactComposite"
     Properties
     {
         _MainTex ("Storm over the intact castle", 2D) = "black" {}
+        _RedCloudTex ("Painted crimson clouds only", 2D) = "black" {}
         _MeteorTex ("Meteor with transparent fire", 2D) = "black" {}
         _MeteorRect ("Meteor in picture coordinates", Vector) = (0,0,1,1)
-        _MeteorCenter ("Rock center", Vector) = (.5,1,0,0)
         _CinematicTime ("Unscaled clock", Float) = 0
         _MeteorOpacity ("Emergence through the clouds", Range(0,1)) = 0
-        _Heat ("Approaching firelight", Range(0,1)) = 0
         _CameraZoom ("Slow camera push", Float) = 1
         _CropY ("Aspect preserving sky crop", Float) = 1
     }
@@ -21,9 +20,9 @@ Shader "Hidden/DragonQuest/CastleImpactComposite"
             #pragma vertex vert_img
             #pragma fragment frag
             #include "UnityCG.cginc"
-            sampler2D _MainTex, _MeteorTex;
-            float4 _MeteorRect, _MeteorCenter;
-            float _CinematicTime, _MeteorOpacity, _Heat, _CameraZoom, _CropY;
+            sampler2D _MainTex, _MeteorTex, _RedCloudTex;
+            float4 _MeteorRect;
+            float _CinematicTime, _MeteorOpacity, _CameraZoom, _CropY;
             float Hash(float2 p) { return frac(sin(dot(p,float2(127.1,311.7)))*43758.5453); }
             float Rain(float2 uv, float density, float speed)
             {
@@ -43,18 +42,16 @@ Shader "Hidden/DragonQuest/CastleImpactComposite"
                 source.x += cloud*sin(source.y*9+t*.12)*.0028;
                 source.y += cloud*sin(source.x*13+t*.09)*.0015;
                 float3 color = tex2D(_MainTex,source).rgb;
-                // The meteor's emergence turns the whole storm crimson, preserving cloud detail.
-                // The lower frame receives less of the sky grade, like reflected red light on stone.
-                float sky = smoothstep(.28,.67,source.y);
-                float luminance = dot(color,float3(.2126,.7152,.0722));
-                float3 redStorm = luminance*float3(1.85,.18,.15)+float3(.045,.002,.005);
-                color = lerp(color,redStorm,_MeteorOpacity*sky*.96);
+                // Replace only crimson cloud pixels from the sky variant. Cool stone/water and
+                // original warm windows remain the original painting, including above the horizon.
+                float3 redCloud = tex2D(_RedCloudTex,source).rgb;
+                float crimson = (redCloud.r-max(redCloud.g,redCloud.b))/max(.0001,redCloud.r);
+                float originalWarmth = (color.r-max(color.g,color.b))/max(.0001,color.r);
+                float cloudMask = smoothstep(.45,.65,crimson)
+                    * (1-smoothstep(.22,.42,originalWarmth)) * smoothstep(.40,.52,source.y);
+                color = lerp(color,redCloud,_MeteorOpacity*cloudMask);
                 float thunder = .10*exp(-pow((t-1.9)/.10,2))+.06*exp(-pow((t-2.2)/.15,2));
                 color += thunder*float3(.55,.66,.85);
-                float2 distanceToRock = (scene-_MeteorCenter.xy)*float2(1.94,1);
-                float halo = exp(-dot(distanceToRock,distanceToRock)*5);
-                float pulse = .95+.05*sin(t*7.1)+.025*sin(t*13.7);
-                color += _Heat*pulse*(halo*.30+smoothstep(.52,.80,scene.x)*.045)*float3(1,.36,.07);
                 float rain = Rain(scene,75,.31)*.045+Rain(scene,115,.21)*.025;
                 color += rain*float3(.55,.66,.78);
 

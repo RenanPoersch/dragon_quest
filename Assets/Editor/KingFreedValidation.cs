@@ -17,6 +17,7 @@ public static class KingFreedValidation
             Assert(texture.filterMode == FilterMode.Point && texture.wrapMode == TextureWrapMode.Clamp
                 && !importer.mipmapEnabled && !importer.isReadable && importer.npotScale == TextureImporterNPOTScale.None
                 && importer.textureCompression == TextureImporterCompression.Uncompressed, "native uncompressed artwork: " + resource);
+            ValidateOriginalColors(texture);
             for (int frame = 0; frame <= 100; frame++)
             {
                 bool isProsperity = resource == KingFreedPresentation.ProsperityResource;
@@ -57,7 +58,40 @@ public static class KingFreedValidation
             Assert(sequence.IsComplete && sequence.BlackOpacity == 1, "the menu is reached only after black");
         }
         Assert(EndingNarrative.Pages(GameEnding.KingFreed).Length == 3, "legacy narrative API remains compatible");
-        Debug.Log("GOOD_ENDING_VALIDATION_OK: native paintings, framing, accented narrative, complete speech, prosperity and black hold.");
+        Debug.Log("GOOD_ENDING_VALIDATION_OK: original unfiltered painting colors, framing, complete speech, prosperity and black hold.");
+    }
+
+    private static void ValidateOriginalColors(Texture2D artwork)
+    {
+        var reference = RenderTexture.GetTemporary(artwork.width,artwork.height,0,RenderTextureFormat.ARGB32);
+        var capture = new Texture2D(artwork.width,artwork.height,TextureFormat.RGBA32,false,true);
+        var previous = RenderTexture.active;
+        try
+        {
+            Graphics.Blit(artwork,reference); RenderTexture.active=reference;
+            capture.ReadPixels(new Rect(0,0,artwork.width,artwork.height),0,0); capture.Apply();
+            Color[] original = capture.GetPixels();
+            using (var renderer = new EndingArtworkRenderer())
+            {
+                Rect full = new Rect(0,0,artwork.width,artwork.height);
+                RenderTexture.active=renderer.RenderFrame(artwork,full,full);
+                capture.ReadPixels(full,0,0); capture.Apply();
+                Color[] rendered = capture.GetPixels();
+                RenderTexture.active=reference;
+                for (int y=artwork.height/8;y<artwork.height;y+=artwork.height/4)
+                    for (int x=artwork.width/8;x<artwork.width;x+=artwork.width/4)
+                    {
+                        Color difference=rendered[y*artwork.width+x]-original[y*artwork.width+x];
+                        Assert(Mathf.Abs(difference.r)+Mathf.Abs(difference.g)+Mathf.Abs(difference.b)<.015f,
+                            "good ending keeps original RGB without a color filter: "+artwork.name);
+                    }
+            }
+        }
+        finally
+        {
+            RenderTexture.active=previous; RenderTexture.ReleaseTemporary(reference);
+            UnityEngine.Object.DestroyImmediate(capture);
+        }
     }
 
     [MenuItem("Tools/Dragon Quest/Preview Good Ending")]
