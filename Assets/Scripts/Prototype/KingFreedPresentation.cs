@@ -72,7 +72,7 @@ namespace DragonQuest.Prototype
         {
             if (opacity <= 0) return;
             GUI.color = new Color(1, 1, 1, opacity);
-            GUI.DrawTexture(new Rect(0, 40, 520, 410), shade);
+            GUI.DrawTexture(new Rect(0, 40, 520, 540), shade);
             GUI.color = new Color(.96f, .8f, .5f, opacity);
             GUI.Label(new Rect(60, 60, TextColumnWidth, 30), heading, caption);
             GUI.BeginGroup(new Rect(60, 104, TextColumnWidth, KingFreedSequence.TextWindowHeight));

@@ -114,7 +114,7 @@ namespace DragonQuest.Prototype
                 * (1 - Mathf.Clamp01((Sequence.Elapsed - Sequence.TextEndAt) / 1.2f));
             if (opacity <= 0) return;
             GUI.color = new Color(1, 1, 1, opacity);
-            GUI.DrawTexture(new Rect(0, 40, 600, 410), shade);
+            GUI.DrawTexture(new Rect(0, 40, 600, 540), shade);
             GUI.color = new Color(.96f, .76f, .47f, opacity);
             GUI.Label(new Rect(70, 60, 450, 30), "CINZAS DO CASTELO", caption);
             GUI.BeginGroup(new Rect(70, 104, 470, CastleDestroyedSequence.TextWindowHeight));

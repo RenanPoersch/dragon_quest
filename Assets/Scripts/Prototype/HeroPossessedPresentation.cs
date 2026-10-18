@@ -129,7 +129,7 @@ namespace DragonQuest.Prototype
                 * (1 - Mathf.Clamp01((Sequence.Elapsed - Sequence.TextEndAt) / 1.2f));
             if (opacity <= 0) return;
             GUI.color = new Color(1, 1, 1, opacity);
-            GUI.DrawTexture(new Rect(0, 40, 470, 410), shade);
+            GUI.DrawTexture(new Rect(0, 40, 470, 540), shade);
             GUI.color = new Color(.96f, .76f, .47f, opacity);
             GUI.Label(new Rect(60, 60, 350, 30), "O NOVO HOSPEDEIRO", caption);
             GUI.BeginGroup(new Rect(60, 104, 350, HeroPossessedSequence.TextWindowHeight));
