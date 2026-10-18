@@ -6,28 +6,25 @@ namespace DragonQuest.Combat
     public readonly struct StatusIndicator
     {
         public readonly CombatStatus Status;
-        public readonly string Description;
         public readonly int Turns;
-        public StatusIndicator(CombatStatus status, string description, int turns = 0)
-        { Status = status; Description = description; Turns = turns; }
+        public StatusIndicator(CombatStatus status, int turns = 0)
+        { Status = status; Turns = turns; }
     }
     public static class CombatStatuses
     {
         public static List<StatusIndicator> Active(CombatantState member)
         {
             var result = new List<StatusIndicator>();
-            if (!member.IsAlive) { result.Add(new StatusIndicator(CombatStatus.Defeated, "Derrotado")); return result; }
-            if (member.PoisonTurns > 0) result.Add(new StatusIndicator(CombatStatus.Poison, "Veneno: 5% do HP maximo por turno ou a cada 3s no mapa; ate curar ou chegar a 0 HP"));
-            if (member.ShieldTurns > 0) result.Add(new StatusIndicator(CombatStatus.Shield, "Shield: -50% de todo dano recebido", member.ShieldTurns));
-            if (member.IsDefending) result.Add(new StatusIndicator(CombatStatus.Defending, "Defender: -50% de dano de ataques ate o proximo turno"));
-            if (member.ProtectedBy != null) result.Add(new StatusIndicator(CombatStatus.Protected, "Protegido por " + member.ProtectedBy.Definition.Name));
-            if (member.TauntTurns > 0) result.Add(new StatusIndicator(CombatStatus.Taunted, "Provocado", member.TauntTurns));
-            if (member.BoundActions > 0) result.Add(new StatusIndicator(CombatStatus.Bound, "Acorrentado"));
-            if (member.MindControlTurns > 0) result.Add(new StatusIndicator(CombatStatus.MindControlled,
-                "Confusao: ataca automaticamente um aliado ou inimigo aleatorio", member.MindControlTurns));
-            if (member.SilenceTurns > 0) result.Add(new StatusIndicator(CombatStatus.Silenced,
-                "Silencio: nao pode usar magias ou invocacoes", member.SilenceTurns));
-            if (member.IsCharging) result.Add(new StatusIndicator(CombatStatus.Charging, "Preparando ataque"));
+            if (!member.IsAlive) { result.Add(new StatusIndicator(CombatStatus.Defeated)); return result; }
+            if (member.PoisonTurns > 0) result.Add(new StatusIndicator(CombatStatus.Poison));
+            if (member.ShieldTurns > 0) result.Add(new StatusIndicator(CombatStatus.Shield, member.ShieldTurns));
+            if (member.IsDefending) result.Add(new StatusIndicator(CombatStatus.Defending));
+            if (member.ProtectedBy != null) result.Add(new StatusIndicator(CombatStatus.Protected));
+            if (member.TauntTurns > 0) result.Add(new StatusIndicator(CombatStatus.Taunted, member.TauntTurns));
+            if (member.BoundActions > 0) result.Add(new StatusIndicator(CombatStatus.Bound));
+            if (member.MindControlTurns > 0) result.Add(new StatusIndicator(CombatStatus.MindControlled, member.MindControlTurns));
+            if (member.SilenceTurns > 0) result.Add(new StatusIndicator(CombatStatus.Silenced, member.SilenceTurns));
+            if (member.IsCharging) result.Add(new StatusIndicator(CombatStatus.Charging));
             return result;
         }
     }

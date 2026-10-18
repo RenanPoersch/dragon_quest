@@ -69,9 +69,7 @@ namespace DragonQuest.Prototype
             foreach (StatusIndicator indicator in statuses)
             {
                 Rect rect = new Rect(x + index % 4 * 18, y + index / 4 * 18, 16, 16); index++;
-                string tooltip = indicator.Description + (indicator.Turns > 0 ? ": " + indicator.Turns + " turno(s) restante(s)" : "");
                 GUI.DrawTexture(rect, Icon(indicator.Status), ScaleMode.StretchToFill, true);
-                GUI.Label(rect, new GUIContent("", tooltip), GUIStyle.none);
                 if (indicator.Turns > 0) GUI.Label(new Rect(rect.x+8,rect.y+6,10,12), indicator.Turns.ToString(), count);
             }
         }

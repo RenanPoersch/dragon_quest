@@ -9,9 +9,8 @@ namespace DragonQuest.Combat
         public BattleCommandKind Kind { get; }
         public AbilityDefinition Ability { get; }
         public string Label { get; }
-        public string Description { get; }
-        public BattleMenuCommand(BattleCommandKind kind, string label, string description, AbilityDefinition ability = null)
-        { Kind = kind; Label = label; Description = description; Ability = ability; }
+        public BattleMenuCommand(BattleCommandKind kind, string label, AbilityDefinition ability = null)
+        { Kind = kind; Label = label; Ability = ability; }
     }
 
     // Groups commands by materia provenance; defense replaces the attack row on demand.
@@ -55,15 +54,15 @@ namespace DragonQuest.Combat
                 if (ability.UsesLimit && limit == null) limit = ability;
                 if (!ability.UsesLimit) { magic |= ability.MenuGroup == AbilityMenuGroup.Magic; summon |= ability.MenuGroup == AbilityMenuGroup.Summon; }
             }
-            if (actor.Limit.IsReady && limit != null) result.Add(new BattleMenuCommand(BattleCommandKind.Ability, "LIMIT", limit.Description, limit));
-            else if (attack != null) result.Add(new BattleMenuCommand(BattleCommandKind.Ability, attack.Name, attack.Description, attack));
-            if (magic) result.Add(new BattleMenuCommand(BattleCommandKind.Magic, "Magic", "Escolha uma magia equipada."));
-            if (summon) result.Add(new BattleMenuCommand(BattleCommandKind.Summon, "Summon", "Escolha uma invocacao equipada."));
+            if (actor.Limit.IsReady && limit != null) result.Add(new BattleMenuCommand(BattleCommandKind.Ability, "LIMIT", limit));
+            else if (attack != null) result.Add(new BattleMenuCommand(BattleCommandKind.Ability, attack.Name, attack));
+            if (magic) result.Add(new BattleMenuCommand(BattleCommandKind.Magic, "Magic"));
+            if (summon) result.Add(new BattleMenuCommand(BattleCommandKind.Summon, "Summon"));
             foreach (AbilityDefinition ability in actor.Definition.Abilities)
                 if (ability != attack && !ability.UsesLimit && ability.Effect != AbilityEffect.Defend
                     && ability.MenuGroup == AbilityMenuGroup.Direct)
-                    result.Add(new BattleMenuCommand(BattleCommandKind.Ability, ability.Name, ability.Description, ability));
-            result.Add(new BattleMenuCommand(BattleCommandKind.Items, "Itens", "Usar um consumivel do inventario."));
+                    result.Add(new BattleMenuCommand(BattleCommandKind.Ability, ability.Name, ability));
+            result.Add(new BattleMenuCommand(BattleCommandKind.Items, "Itens"));
             return result;
         }
     }

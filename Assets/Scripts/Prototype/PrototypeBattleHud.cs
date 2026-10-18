@@ -349,7 +349,6 @@ namespace DragonQuest.Prototype
             }
             else if (observedActor != null) DrawActions();
             if (!string.IsNullOrEmpty(controller.ErrorMessage)) GUI.Label(new Rect(40, 668, 560, 25), controller.ErrorMessage, small);
-            if (!string.IsNullOrEmpty(GUI.tooltip)) GUI.Label(new Rect(660, 683, 585, 18), GUI.tooltip, small);
             GUI.skin = previousSkin;
             GUI.matrix = previous;
             // Cobre tambem os paineis e as barras externas no mesmo instante do dano.
