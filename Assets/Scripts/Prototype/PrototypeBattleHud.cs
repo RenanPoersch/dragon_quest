@@ -428,7 +428,7 @@ namespace DragonQuest.Prototype
                 if (participant.IsAlive)
                     statusIcons.DrawOverhead(figure, participant.MindControlTurns > 0
                         || controller.IsPresentingAction && controller.IsPresentingConfusedAction && controller.PresentingActor == participant,
-                        participant.IsSilenced, Time.unscaledTime);
+                        participant.IsSilenced, Time.unscaledTime, participant.TauntTurns > 0);
                 if (!ultimate && participant.IsAlive && participant == (controller.IsPresentingAction ? controller.PresentingActor : observedActor))
                     DrawTurnArrow(figure.center.x + castStep, figure.y - 30 + Mathf.Sin(Time.unscaledTime * 5) * 3);
                 bool group = selected != null && (selected.Targets == TargetRule.AllEnemies || selected.Targets == TargetRule.AllAllies);

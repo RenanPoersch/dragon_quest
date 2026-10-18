@@ -130,9 +130,13 @@ internal static class PartyConditionChecks
         Check(poison.g > poison.r && poison.g > poison.b, "Sprite envenenado recebe verde.");
         var bound = BattleStatusColors.Tint(false, 1);
         Check(bound.b > bound.r && bound.b > bound.g, "Correntes aplicam azul/lilas.");
-        var taunted = BattleStatusColors.Tint(false, 0, 1);
-        Check(taunted.r > taunted.g && taunted.r > taunted.b, "Provocar aplica vermelho/laranja.");
-        Check(BattleStatusColors.Tint(true, 1, 1).Equals(poison), "Veneno tem prioridade visual em condicoes simultaneas.");
+        var taunted = PrototypeBattleFactory.CreateEncounter(PrototypePartyFactory.CreateTestParty()).Combatants.First(c => c.Team == CombatTeam.Enemy);
+        taunted.TauntTurns = 2;
+        Check(BattleStatusColors.Tint(taunted).Equals(UnityEngine.Color.white), "Provocar conserva a cor do inimigo; vermelho fica reservado para morte.");
+        taunted.BoundActions = 1;
+        Check(BattleStatusColors.Tint(taunted).Equals(bound), "Provocar nao interfere na cor das correntes.");
+        taunted.PoisonTurns = 1;
+        Check(BattleStatusColors.Tint(taunted).Equals(poison), "Veneno tem prioridade visual em condicoes simultaneas.");
         Check(BattleStatusColors.Tint(false, 0).Equals(UnityEngine.Color.white), "Sprite volta a cor normal sem condicoes.");
         var dot = BattleStatusColors.VitalChange(new CombatVitalChange(1, -5, false, false, damageOverTime: true));
         Check(dot.r > dot.g && dot.b > dot.r, "Dano DOT usa numero roxo.");
