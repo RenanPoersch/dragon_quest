@@ -39,6 +39,87 @@ public static class ControllerUnityChecks
         InputSystem.QueueStateEvent(keyboard, new KeyboardState()); InputSystem.Update();
         InputSystem.QueueStateEvent(keyboard, new KeyboardState(keys)); InputSystem.Update();
     }
+    private static void CheckInventoryControls(Keyboard keyboard)
+    {
+        State(keyboard);
+        var fixture = new GameObject("Inventory control checks");
+        var movement = fixture.AddComponent<PlayerMovement>(); Call(movement, "Awake");
+        var dialogue = fixture.AddComponent<DialogueController>();
+        var secrets = new DragonQuest.Progression.AncientSecrets(); secrets.LearnPoem();
+        var progress = new ExplorationProgress(50);
+        var battle = fixture.AddComponent<PrototypeBattleController>();
+        battle.Initialize(movement, dialogue, progress, ancientSecrets: secrets);
+        var interaction = fixture.AddComponent<PlayerInteraction>();
+        interaction.Initialize(new InteractionContext(dialogue, progress, _ => {},
+            isBusy: () => battle.IsBusy, secrets: secrets), new Interactable[0]);
+        var inventory = fixture.AddComponent<PrototypeMateriaHud>(); inventory.Initialize(battle, secrets);
+        var page = typeof(PrototypeMateriaHud).GetField("page", BindingFlags.Instance | BindingFlags.NonPublic);
+        var open = typeof(PrototypeMateriaHud).GetMethod("OpenCommand", BindingFlags.Instance | BindingFlags.NonPublic);
+        State(new GamepadState().WithButton(GamepadButton.North)); Call(interaction, "Update"); Call(battle, "Update");
+        Check(battle.IsMenuOpen && !dialogue.IsOpen && !GameInput.InventoryPressed,
+            "Triangle opens inventory after learning the poem and consumes its press without opening speech.");
+        Call(inventory, "CheckOpened");
+        for (int command = 0; command < InventoryMenuPresentation.Commands.Length; command++)
+        {
+            open.Invoke(inventory, new object[] { command });
+            State(new GamepadState().WithButton(GamepadButton.East)); Call(battle, "Update");
+            Check(battle.IsMenuOpen && (int)page.GetValue(inventory) == -1 && !GameInput.CancelPressed,
+                "Circle returns from " + InventoryMenuPresentation.Commands[command] + " to the inventory overview.");
+        }
+        open.Invoke(inventory, new object[] { 0 });
+        var items = (DragonQuest.Inventory.ItemMenuSession)typeof(PrototypeMateriaHud)
+            .GetField("itemMenu", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(inventory);
+        Check(items.BeginUse(battle.Party), "An item can enter target selection.");
+        int quantity = battle.Party.Consumables.QuantityOf(items.SelectedItem);
+        State(new GamepadState().WithButton(GamepadButton.East)); Call(battle, "Update");
+        Check(!items.ChoosingTarget && (int)page.GetValue(inventory) == 2 && battle.IsMenuOpen
+            && battle.Party.Consumables.QuantityOf(items.SelectedItem) == quantity,
+            "Circle cancels the item target without consuming an item or leaving its list.");
+        State(new GamepadState().WithButton(GamepadButton.East)); Call(battle, "Update");
+        Check((int)page.GetValue(inventory) == -1 && battle.IsMenuOpen, "A second Circle returns from items to the overview.");
+        open.Invoke(inventory, new object[] { 1 });
+        var materia = (DragonQuest.Equipment.MateriaMenuSession)typeof(PrototypeMateriaHud)
+            .GetField("materiaMenu", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(inventory);
+        Check(materia.BeginEquip(battle.Party), "A materia can enter socket selection.");
+        State(new GamepadState().WithButton(GamepadButton.East)); Call(battle, "Update");
+        Check(!materia.ChoosingSocket && (int)page.GetValue(inventory) == 0 && battle.IsMenuOpen,
+            "Circle cancels a socket selection while keeping the materia list open.");
+        State(new GamepadState().WithButton(GamepadButton.East)); Call(battle, "Update");
+        State(new GamepadState().WithButton(GamepadButton.East)); Call(battle, "Update");
+        Check(!battle.IsMenuOpen && !GameInput.CancelPressed, "Circle closes the inventory only after returning to its overview.");
+        State(keyboard, Key.P); Call(interaction, "Update");
+        Check(!dialogue.IsOpen, "The removed poem shortcut no longer opens speech from the keyboard.");
+        int chosen = -1;
+        dialogue.OpenChoices("Cancel", "Choose", new[] { "One", "Two" }, index => chosen = index); dialogue.RevealAll();
+        State(new GamepadState().WithButton(GamepadButton.East).WithButton(GamepadButton.South)); Call(interaction, "Update");
+        Check(!dialogue.IsOpen && chosen == -1 && !GameInput.ConfirmPressed,
+            "Circle cancels a dialogue choice even when confirmation is pressed together.");
+        var shop = fixture.AddComponent<PrototypeShopController>(); shop.Initialize(movement, dialogue, battle, progress);
+        shop.Open("item-shop"); shop.ChooseAction(0); shop.Menu.BeginQuantity();
+        Check(shop.Menu.Phase.ToString() == "Quantity", "Shop quantity selection opens.");
+        int gold = progress.Gold;
+        foreach (string expected in new[] { "Browse", "Actions" })
+        {
+            State(new GamepadState().WithButton(GamepadButton.East)); Call(shop, "Update");
+            Check(shop.IsOpen && shop.Menu.Phase.ToString() == expected && progress.Gold == gold && !GameInput.CancelPressed,
+                "Circle returns one shop level to " + expected + " without a transaction.");
+        }
+        State(new GamepadState().WithButton(GamepadButton.East)); Call(shop, "Update");
+        Check(!shop.IsOpen, "Circle closes the shop from its action menu.");
+        State(keyboard);
+        battle.StartBattle();
+        var battleHud = fixture.AddComponent<PrototypeBattleHud>(); battleHud.Initialize(battle);
+        typeof(PrototypeBattleHud).GetField("observedBattle", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(battleHud, battle.Session);
+        State(new GamepadState().WithButton(GamepadButton.South)); Call(battleHud, "Update");
+        var selected = typeof(PrototypeBattleHud).GetField("selected", BindingFlags.Instance | BindingFlags.NonPublic);
+        Check(selected.GetValue(battleHud) != null, "Battle attack enters target selection.");
+        State(new GamepadState().WithButton(GamepadButton.East)); Call(battleHud, "Update");
+        Check(selected.GetValue(battleHud) == null && battle.Session.CurrentActor.TurnsTaken == 0 && !GameInput.CancelPressed,
+            "Circle cancels the battle target without spending a turn.");
+        UnityEngine.Object.DestroyImmediate(fixture);
+        State(keyboard);
+    }
+
     private static void CheckDialogueNavigation(Keyboard keyboard, PlayerInteraction interaction,
         DialogueController dialogue, PlayerMovement movement)
     {
@@ -200,10 +281,10 @@ public static class ControllerUnityChecks
             Check(!GameInput.InteractPressed && !GameInput.ConfirmPressed, "A consumed press cannot activate another screen.");
             State(new GamepadState().WithButton(GamepadButton.East));
             Check(GameInput.CancelPressed, "East cancels.");
-            State(new GamepadState().WithButton(GamepadButton.West)); Check(GameInput.InventoryPressed, "West opens inventory.");
+            State(new GamepadState().WithButton(GamepadButton.West)); Check(!GameInput.InventoryPressed, "Square does not open inventory.");
             State(new GamepadState().WithButton(GamepadButton.Start)); Check(GameInput.InventoryPressed, "Start opens inventory.");
             State(new GamepadState().WithButton(GamepadButton.Select)); Check(GameInput.SavePressed, "Select/View saves.");
-            State(new GamepadState().WithButton(GamepadButton.North)); Check(GameInput.PoemPressed, "North opens the poem.");
+            State(new GamepadState().WithButton(GamepadButton.North)); Check(GameInput.InventoryPressed && !GameInput.InteractPressed, "Triangle opens inventory without interacting.");
             State(new GamepadState().WithButton(GamepadButton.RightStick)); Check(GameInput.CheatsPressed, "R3 opens cheats.");
             var hero = new GameObject("Controller test hero");
             var movement = hero.AddComponent<PlayerMovement>(); Call(movement, "Awake");
@@ -233,8 +314,8 @@ public static class ControllerUnityChecks
             Check(choice == 1, "South activates the selected dialogue choice.");
             var battle = hero.AddComponent<PrototypeBattleController>();
             battle.Initialize(movement, dialogue, new ExplorationProgress());
-            State(new GamepadState().WithButton(GamepadButton.West)); Call(battle, "Update");
-            Check(battle.IsMenuOpen, "West opens the actual inventory controller.");
+            State(new GamepadState().WithButton(GamepadButton.North)); Call(battle, "Update");
+            Check(battle.IsMenuOpen, "Triangle opens the actual inventory controller.");
             State(new GamepadState().WithButton(GamepadButton.East)); Call(battle, "Update");
             Check(!battle.IsMenuOpen && !GameInput.CancelPressed, "Closing inventory consumes the cancel press.");
             var shop = hero.AddComponent<PrototypeShopController>(); shop.Initialize(movement, dialogue, battle, new ExplorationProgress());
@@ -250,6 +331,7 @@ public static class ControllerUnityChecks
             State(new GamepadState()); InputSystem.QueueStateEvent(keyboard, new KeyboardState(Key.W, Key.D)); InputSystem.Update();
             Check(GameInput.Movement.x > 0 && GameInput.Movement.y > 0 && GameInput.Movement.magnitude <= 1.0001f,
                 "Keyboard movement still works with a controller connected.");
+            CheckInventoryControls(keyboard);
             CheckDialogueNavigation(keyboard, interaction, dialogue, movement);
             CheckBattleConfirmation(keyboard);
             UnityEngine.Object.DestroyImmediate(hero);

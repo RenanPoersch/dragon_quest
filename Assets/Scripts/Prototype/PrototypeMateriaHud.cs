@@ -41,7 +41,7 @@ namespace DragonQuest.Prototype
                 if (materiaMenu.ChoosingSocket) materiaMenu.CancelSocket(); else page = -1;
                 return true;
             }
-            if (page == 1 || page == 3) { page = -1; return true; }
+            if (page == 1 || page == 3 || page == 4) { page = -1; return true; }
             if (page != 2) return false;
             if (itemMenu.ChoosingTarget) itemMenu.CancelTarget(); else page = -1;
             return true;

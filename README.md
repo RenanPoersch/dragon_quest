@@ -34,9 +34,8 @@ Conecte um controle reconhecido pelo Input System da Unity; ele pode ser conecta
 | Andar / navegar | Analógico esquerdo ou direcional |
 | Interagir / avançar diálogo / confirmar / atacar | Botão inferior: A no Xbox, X no PlayStation |
 | Voltar / fechar | Botão direito: B no Xbox, Círculo no PlayStation |
-| Inventário | Botão esquerdo: X no Xbox, Quadrado no PlayStation; ou Start/Options |
+| Inventário | Botão superior: Y no Xbox, Triângulo no PlayStation; ou Start/Options |
 | Salvar no mapa global ou na hospedaria | View/Back/Share |
-| Consultar o poema após aprendê-lo | Botão superior: Y no Xbox, Triângulo no PlayStation |
 | Rolar texto de diálogo longo | Analógico direito |
 | Abrir / fechar Cheat Engine | Clique no analógico direito (R3) |
 
@@ -66,7 +65,7 @@ Abra `Assets/Scenes/CidadePrototipo.unity` e siga `Docs/MAPA_GLOBAL_PIXEL_ART.md
 
 ## Parte 7B — três segredos e poema em latim
 
-A camponesa do bairro residencial recita um poema original de três versos em latim e explica cada frase, sem identificar a resposta do altar. Termine a conversa para consultar o poema e suas explicações com **P**.
+A camponesa do bairro residencial recita um poema original de três versos em latim e explica cada frase, sem identificar a resposta do altar. O poema e suas explicações podem ser ouvidos ao conversar com ela.
 
 - Altar nas ruínas antigas: saia da periferia e caminhe até o ponto de interesse ao sudoeste da ilha. Dentro das ruínas, escolha o verso que corresponde à imagem de chama e reino destruído, com clique ou teclas 1/2/3.
 - Pedreira a noroeste: interprete outro verso do mesmo poema para ativar os monólitos. Erros reiniciam sem punição; o cenário interno continua com a arte da floresta oeste nesta etapa.

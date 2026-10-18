@@ -2,7 +2,6 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using DragonQuest.Input;
 using DragonQuest.Exploration;
-using DragonQuest.Progression;
 
 namespace DragonQuest.Interactions
 {
@@ -64,11 +63,6 @@ namespace DragonQuest.Interactions
             }
 
             movement.SetMovementEnabled(true);
-            if(hasInput && context.Secrets != null && context.Secrets.KnowsPoem && GameInput.PoemPressed)
-            {
-                context.Dialogue.Open("Poema da lenda",LegendPoem.ExplainedPages());
-                movement.SetMovementEnabled(false);return;
-            }
             if (hasInput && GameInput.InteractPressed)
             {
                 FindNearest()?.Interact(context);

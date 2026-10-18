@@ -18,7 +18,7 @@ A lenda da ilha aparece em um poema original de três versos em latim. A campone
 
 O texto foi escrito para a lenda fictícia deste projeto, sem atribuição a um poeta histórico. O vocabulário foi consultado em fontes acadêmicas: [Latin Core Vocabulary, Dickinson College](https://dcc.dickinson.edu/latin-core-list1), [ardeo, Lewis & Short](https://atlas.perseus.tufts.edu/dictionaries/entry/urn%3Acite2%3Ascaife-viewer%3Adictionary-entries.atlas_v1%3Alat.ls.perseus-eng2-n3492/), [pereo, Lewis & Short](https://www.perseus.tufts.edu/hopper/text?doc=Perseus%3Atext%3A1999.04.0059%3Aentry%3Dpereo) e [servo, Lewis & Short](https://atlas.perseus.tufts.edu/dictionaries/entry/urn%3Acite2%3Ascaife-viewer%3Adictionary-entries.atlas_v1%3Alat.ls.perseus-eng2-n43947/).
 
-Depois de terminar a conversa completa, **P** permite reler o poema e suas explicações durante a exploração. Cancelar antes do fim não registra a conversa como concluída. Ouvir a lenda não revela o contador de segredos.
+O poema e suas explicações ficam na conversa com a camponesa; a consulta avulsa por atalho foi removida. Cancelar antes do fim não registra a conversa como concluída. Ouvir a lenda não revela o contador de segredos.
 
 ## Os três segredos
 
@@ -36,10 +36,10 @@ O ícone da cratera agora leva automaticamente ao interior do vulcão, adicionad
 
 1. Saia de Play e aguarde a importação. Abra `Assets/Scenes/CidadePrototipo.unity`, entre em Play e confira o Console.
 2. Na ilha, examine a passagem antes de resolver qualquer segredo: as rochas devem impedir atravessar. O HUD não deve mostrar o contador.
-3. Entre na periferia pelo castelo global. Vá ao bairro residencial a oeste: a camponesa fica em **(-25,5; -3)**. Abra a conversa e cancele com Esc antes do fim: P ainda não deve abrir o poema. Converse de novo até terminar e confira as três explicações. P passa a abrir a leitura.
+3. Entre na periferia pelo castelo global. Vá ao bairro residencial a oeste: a camponesa fica em **(-25,5; -3)**. Abra a conversa e cancele com Esc ou Círculo antes do fim: a lenda ainda não deve estar aprendida. Converse de novo até terminar e confira as três explicações. Triângulo abre o inventário, inclusive depois de aprender a lenda.
 4. Saia da periferia pelo portão sul e procure **Ruínas antigas** ao sudoeste do castelo global. Caminhe pela entrada do ícone. O altar fica em **(0; 4)** do novo cenário; aproxime-se pelo sul. Teste cancelar a escolha, selecionar um verso errado e tentar novamente. A resposta correta acende a chama e mostra 1/3; repetir não aumenta o contador. Use a saída em **(0; -5,8)** para voltar à ilha, junto ao ícone das ruínas. Entre novamente e confirme a chama acesa e o progresso preservado.
 5. Na ilha, entre na floresta oeste. A inscrição fica na pedra em **(-2; 3)**. Teste começar pelo Sol, depois Lua/Lua e depois Lua/Estrela/Estrela: cada erro apaga o ciclo. Resolva Lua/Estrela/Sol. Os monólitos ficam em Lua **(-2; 0)**, Estrela **(2; 3,5)** e Sol **(2; -1,5)**.
-6. Saia e retorne à floresta: as luzes e a conclusão devem continuar. Teste P e confirme que ler o poema não gasta recursos nem altera o progresso.
+6. Saia e retorne à floresta: as luzes e a conclusão devem continuar. Teste Triângulo e confirme que abre o inventário sem iniciar uma fala. Círculo retorna à exploração sem gastar recursos nem alterar o progresso.
 7. Entre na floresta leste. Examine a pedra em **(2; 3)**, siga a pista e examine as raízes da árvore em **(4,5; 5)**, aproximando-se pelo oeste. Confira a escama em I → Itens; repetir a interação não duplica o objeto.
 8. Antes de ter todos os objetivos, examine novamente a passagem: possuir somente a escama não basta. Com 3/3, as rochas continuam fechadas até usar E.
 9. Use E na passagem, aguarde as rochas se afastarem e caminhe ao vulcão. A área do ícone agora leva ao interior da parte 7C; use sua saída ao sul para retornar à ilha. A batalha começa somente ao concluir a conversa com o dragão.

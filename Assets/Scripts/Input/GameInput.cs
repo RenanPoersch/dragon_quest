@@ -79,12 +79,10 @@ namespace DragonQuest.Input
         public static bool InteractPressed => IsFrameAvailable && (GamepadConfirmPressed
             || Keyboard.current?.eKey.wasPressedThisFrame == true);
         public static bool InventoryPressed => IsFrameAvailable && (PadAvailable
-            && (Gamepad.current.buttonWest.wasPressedThisFrame || Gamepad.current.startButton.wasPressedThisFrame)
+            && (Gamepad.current.buttonNorth.wasPressedThisFrame || Gamepad.current.startButton.wasPressedThisFrame)
             || Keyboard.current?.iKey.wasPressedThisFrame == true);
         public static bool SavePressed => IsFrameAvailable && (PadAvailable && Gamepad.current.selectButton.wasPressedThisFrame
             || Keyboard.current?.f5Key.wasPressedThisFrame == true);
-        public static bool PoemPressed => IsFrameAvailable && (PadAvailable && Gamepad.current.buttonNorth.wasPressedThisFrame
-            || Keyboard.current?.pKey.wasPressedThisFrame == true);
         public static bool CheatsPressed => IsFrameAvailable && (PadAvailable && Gamepad.current.rightStickButton.wasPressedThisFrame
             || Keyboard.current?.backquoteKey.wasPressedThisFrame == true);
 

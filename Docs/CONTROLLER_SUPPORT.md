@@ -11,6 +11,12 @@ O jogo consulta `Gamepad.current` a cada leitura, sem exigir teclado conectado. 
 - A introdução já aceitava o botão inferior; os menus respeitam o fade e a liberação desse botão antes de selecionar New game. A travessia e as cenas finais cinematográficas conservam seu tempo automático.
 - O analógico direito permite rolar falas longas. R3 abre o Cheat Engine, inclusive durante combate, e o bloqueio impede ações no jogo abaixo dele.
 
+## Inventário e voltar — 18 de outubro de 2026
+
+Triângulo/Y abre o inventário; Start/Options também continua disponível. A consulta avulsa do poema foi removida. Círculo/B cancela a seleção atual ou volta uma tela: alvo de item, encaixe de matéria, lista, tela inicial do inventário e exploração. Config também volta à tela inicial do inventário. Nas lojas, volta de quantidade para produtos, depois ações e então fecha, sem comprar ou vender. Diálogos e alvos de batalha usam o mesmo cancelar, sem executar a escolha ou gastar o turno.
+
+Os testes de integração verificam esses retornos, incluindo a abertura com a lenda já aprendida e a prioridade de cancelar sobre confirmar em diálogos.
+
 ## Testes reproduzíveis
 
 ```powershell
