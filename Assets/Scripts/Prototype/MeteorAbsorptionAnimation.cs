@@ -6,7 +6,7 @@ namespace DragonQuest.Prototype
     // All layers are transparent, point-filtered sprite atlases drawn in the battle's 2D plane.
     public sealed class MeteorAbsorptionAnimation
     {
-        private BattleAnimationSheet hero, release, ribbons;
+        private BattleAnimationSheet hero, release, ribbons, aura;
         private readonly Action<Texture2D, Rect, Rect, Color> drawTexture;
 
         public MeteorAbsorptionAnimation(Action<Texture2D, Rect, Rect, Color> drawTexture = null)
@@ -15,9 +15,10 @@ namespace DragonQuest.Prototype
         public void Prepare()
         {
             if (hero != null) return;
-            hero = new BattleAnimationSheet("PixelArt/ArenMeteorAbsorb", 4, 1, false, drawTexture);
+            hero = new BattleAnimationSheet("PixelArt/ArenMeteorDraconic", 4, 1, false, drawTexture);
             release = new BattleAnimationSheet("PixelArt/TyrantFireballRelease", 2, 1, false, drawTexture);
             ribbons = new BattleAnimationSheet("PixelArt/MeteorFireRibbons", 4, 1, false, drawTexture);
+            aura = new BattleAnimationSheet("PixelArt/DraconicAbsorptionAura", 4, 1, false, drawTexture);
         }
 
         public static Rect BearerRect(Rect ground, float elapsed)
@@ -36,6 +37,7 @@ namespace DragonQuest.Prototype
         {
             if (id != "aren" || elapsed < 0 || elapsed >= CastleMeteorPresentation.Duration) return false;
             Prepare();
+            DrawAura(airborne, elapsed, false);
             return hero.Draw(new Vector2(airborne.center.x, airborne.yMax), airborne.height,
                 CastleMeteorPresentation.AbsorberPose(elapsed), tint);
         }
@@ -49,8 +51,13 @@ namespace DragonQuest.Prototype
 
         public void DrawTransfer(Rect king, Rect airborne, float elapsed)
         {
-            if (elapsed < 0 || elapsed >= CastleMeteorPresentation.AbsorptionEnd) return;
+            if (elapsed < 0 || elapsed >= CastleMeteorPresentation.Duration) return;
             Prepare();
+            if (elapsed >= CastleMeteorPresentation.AbsorptionEnd)
+            {
+                DrawAura(airborne, elapsed, true);
+                return;
+            }
             Vector2 source = FireballCenter(king);
             Vector2 chest = new Vector2(airborne.center.x - airborne.width * .45f,
                 airborne.y + airborne.height * .43f);
@@ -67,6 +74,22 @@ namespace DragonQuest.Prototype
             float size = 1 - progress;
             if (size > .01f)
                 release.DrawCentered(source, king.height * size, 1, Color.white);
+            // The front arcs receive the stream after it has reached the armor's chest.
+            DrawAura(airborne, elapsed, true);
+        }
+
+        private void DrawAura(Rect airborne, float elapsed, bool foreground)
+        {
+            float opacity = Mathf.Clamp01((elapsed - .12f) / .38f)
+                * Mathf.Clamp01((3.25f - elapsed) / .55f);
+            if (opacity <= 0) return;
+            bool absorbing = elapsed >= CastleMeteorPresentation.AbsorptionStart
+                && elapsed < CastleMeteorPresentation.AbsorptionEnd;
+            float pulse = absorbing ? 1 + Mathf.Sin(elapsed * 13) * .025f : 1;
+            int frame = (int)(Mathf.Max(0, elapsed - .12f) * 10) % 4;
+            aura.DrawCentered(new Vector2(airborne.center.x - 8, airborne.center.y),
+                airborne.height * 1.45f * pulse, frame,
+                new Color(1, 1, 1, opacity * (foreground ? .38f : .82f)));
         }
     }
 }

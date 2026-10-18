@@ -1,0 +1,20 @@
+{
+  "tool": "built-in image_gen",
+  "assets": [
+    {
+      "file": "Assets/Resources/PixelArt/ArenMeteorDraconic.png",
+      "references": [
+        "Assets/Resources/PixelArt/ArenMeteorAbsorb.png",
+        "Assets/Resources/PixelArt/Inventory/dragon-armor.png"
+      ],
+      "prompt": "Use case: precise-object-edit. Asset type: production 2D pixel-art JRPG hero animation atlas. Edit target: ArenMeteorAbsorb.png. Supporting armor reference: dragon-armor.png for the red draconic scale chestplate and gold/orange rim. Change ONLY the hero's outfit to a clearly visible RED DRACONIC ARMOR: layered crimson dragon scales across his chest, gold-edged overlapping cuirass plates, small dragon-shaped shoulder guards and scaled red forearm bracers. The armor should wrap his torso and shoulders, with a small warm orange luminous chest core. Preserve the SAME blond hero face and hair, red flowing scarf/cape, brown gloves and boots, ALL FOUR exact airborne poses, chest projected to LEFT and both arms trailing BEHIND toward RIGHT, bent dangling legs, silhouettes, size, spacing and left-facing direction. Same four separated frames in ONE HORIZONTAL ROW, wide 3:1 true transparent canvas, large empty gutters and outer alpha margins. No weapon or external fire effects. Crisp square pixel clusters and stepped shaded color ramps matching the reference. No 3D render, no blur, no background, ground, text, grid or additional character. This is worn dragon armor around the hero, not a floating armor icon; keep the face and hands readable. Keep all four poses and framing as close to edit target as possible."
+    },
+    {
+      "file": "Assets/Resources/PixelArt/DraconicAbsorptionAura.png",
+      "references": [
+        "Assets/Resources/PixelArt/ArenMeteorAbsorb.png"
+      ],
+      "prompt": "Use case: stylized-concept. Asset type: effect-only 2D pixel-art sprite animation atlas for an absorbing draconic aura surrounding an airborne hero. Reference image ArenMeteorAbsorb.png provides the crisp pixel style and airborne proportions ONLY; DO NOT draw the hero or any figure. Exactly FOUR complete, separate oval aura sprites in a SINGLE HORIZONTAL ROW on a wide 3:1 true transparent canvas. Same oval outline size and center in every frame, generous empty alpha margins and gutters. Each aura is a protective oval shell formed from a sparse ring of red dragon-scale-like flame shards and slender orange-gold curving fire ribbons, enclosing a VERY LARGE fully transparent hollow interior where the hero will be drawn. Aura height about 1.5 times its width; the oval should hug and surround a whole small airborne hero. On the LEFT side only, a few thin pointed fire tendrils curve inward towards a tiny absorption point just LEFT of center at chest height; this receives incoming fire from the left and curls it into the hero. Frame1 aura gathering, frame2 inward flame curls, frame3 stronger inward spiral and bright scale rim, frame4 alternate flicker and thinning arcs. Distinct animation in the arcs but consistent ring silhouette. Bright yellow pixel highlights on red/orange scale outlines, crisp hand-pixeled clusters, limited warm palette. Center mostly transparent and no opaque disc, so the hero's face, open chest and arms stay visible. No armor emblem, no character/body, no dragon animal, no rock/comet, no background, 3D, blur, airbrush, text, labels or grid. Transparent aura EFFECT ONLY."
+    }
+  ]
+}

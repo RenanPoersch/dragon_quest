@@ -10,7 +10,7 @@ public static class MeteorAbsorptionValidation
     [MenuItem("Tools/Dragon Quest/Validate Comet Absorption")]
     public static void Run()
     {
-        foreach (string resource in new[] { "ArenMeteorAbsorb", "TyrantFireballRelease", "MeteorFireRibbons" })
+        foreach (string resource in new[] { "ArenMeteorDraconic", "DraconicAbsorptionAura", "TyrantFireballRelease", "MeteorFireRibbons" })
         {
             Texture2D texture = Resources.Load<Texture2D>("PixelArt/" + resource);
             Assert(texture != null, "Missing absorption sprite: " + resource);
@@ -41,6 +41,21 @@ public static class MeteorAbsorptionValidation
             Assert(!drawn.Contains("TyrantFlamingMeteor") && !drawn.Contains("MeteorAbsorption"),
                 "Absorption draws neither comet nor old armor emblem.");
             bool streaming = time >= CastleMeteorPresentation.AbsorptionStart && time < CastleMeteorPresentation.AbsorptionEnd;
+            Assert(drawn.Contains("ArenMeteorDraconic") && !drawn.Contains("ArenMeteorAbsorb"),
+                "The airborne hero visibly wears the draconic armor.");
+            bool auraVisible = time > .12f && time < 3.25f;
+            Assert(drawn.FindAll(name => name == "DraconicAbsorptionAura").Count == (auraVisible ? 2 : 0),
+                "The aura surrounds the hero in two layers and fades before landing.");
+            if (auraVisible)
+            {
+                int back = drawn.IndexOf("DraconicAbsorptionAura"), front = drawn.LastIndexOf("DraconicAbsorptionAura");
+                int hero = drawn.IndexOf("ArenMeteorDraconic");
+                Assert(back < hero && front > hero, "Aura arcs pass behind and in front of the armored hero.");
+                Assert(bounds[back].height > bounds[hero].height * 1.3f
+                    && bounds[back].yMin >= 0
+                    && Mathf.Abs(bounds[front].center.x - (bearer.center.x - 8)) < .1f,
+                    "The aura encloses and follows the airborne hero.");
+            }
             Assert(drawn.Contains("MeteorFireRibbons") == streaming, "Fire strips follow the transfer window.");
             Assert(drawn.FindAll(name => name == "TyrantFireballRelease").Count ==
                 (time < CastleMeteorPresentation.AbsorptionEnd - .02f ? 2 : 1), "The casting orb is consumed once.");
@@ -50,6 +65,8 @@ public static class MeteorAbsorptionValidation
                 Assert(first >= 0 && last - first == 63, "Transfer uses only 64 contiguous sprite sections.");
                 Assert(bounds[first].center.x < bounds[last].center.x
                     && bounds[last].center.y < bounds[first].center.y, "Fire flows forward and upward into the airborne chest.");
+                Assert(drawn.LastIndexOf("DraconicAbsorptionAura") > last,
+                    "The receiving aura is drawn over the ends of the incoming fire ribbons.");
             }
         }
         drawn.Clear();
@@ -62,7 +79,7 @@ public static class MeteorAbsorptionValidation
 
         string output = Environment.GetEnvironmentVariable("DQ_COMET_OUTPUT");
         if (!string.IsNullOrEmpty(output)) RenderPreview(output, king, ground);
-        Debug.Log("COMET_ABSORPTION_UNITY_OK: sprite imports, 216 rendered frames, fire transfer and preserved destructive impact.");
+        Debug.Log("COMET_ABSORPTION_UNITY_OK: sprite imports, 216 rendered frames, draconic armor, layered absorption aura, fire transfer and preserved destructive impact.");
     }
 
     private static void RenderPreview(string output, Rect king, Rect ground)
