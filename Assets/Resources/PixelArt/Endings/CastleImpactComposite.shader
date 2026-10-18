@@ -43,6 +43,12 @@ Shader "Hidden/DragonQuest/CastleImpactComposite"
                 source.x += cloud*sin(source.y*9+t*.12)*.0028;
                 source.y += cloud*sin(source.x*13+t*.09)*.0015;
                 float3 color = tex2D(_MainTex,source).rgb;
+                // The meteor's emergence turns the whole storm crimson, preserving cloud detail.
+                // The lower frame receives less of the sky grade, like reflected red light on stone.
+                float sky = smoothstep(.28,.67,source.y);
+                float luminance = dot(color,float3(.2126,.7152,.0722));
+                float3 redStorm = luminance*float3(1.85,.18,.15)+float3(.045,.002,.005);
+                color = lerp(color,redStorm,_MeteorOpacity*sky*.96);
                 float thunder = .10*exp(-pow((t-1.9)/.10,2))+.06*exp(-pow((t-2.2)/.15,2));
                 color += thunder*float3(.55,.66,.85);
                 float2 distanceToRock = (scene-_MeteorCenter.xy)*float2(1.94,1);

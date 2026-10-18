@@ -9,6 +9,7 @@ namespace DragonQuest.Prototype
         public const string MeteorResource = "PixelArt/Endings/EndingMeteor";
         public const string ShaderResource = "PixelArt/Endings/CastleImpactComposite";
         public const float FrameWidth = 1280, FrameHeight = 660;
+        private const float ShakeOverscan = CastleImpactSequence.MaximumShake + 2;
         private readonly Texture2D castle;
         private readonly Material composite;
         private readonly RenderTexture frame;
@@ -66,11 +67,10 @@ namespace DragonQuest.Prototype
                 GUI.matrix = Matrix4x4.TRS(new Vector3(viewport.x + (viewport.width - 1280 * scale) / 2,
                     viewport.y + (viewport.height - 720 * scale) / 2, 0), Quaternion.identity, new Vector3(scale, scale, 1));
                 GUI.BeginGroup(new Rect(0, 30, FrameWidth, FrameHeight));
-                float shake = Sequence.ImpactShake, t = Sequence.Elapsed;
                 GUI.color = Color.white;
-                // Overscan prevents the brief impact tremor from uncovering the picture's edges.
-                GUI.DrawTexture(new Rect(-5 + Mathf.Sin(t * 71) * shake, -5 + Mathf.Cos(t * 53) * shake,
-                    FrameWidth + 10, FrameHeight + 10), RenderFrame());
+                // Cover both axes even at maximum collision shake; no empty edge can enter the frame.
+                GUI.DrawTexture(new Rect(-ShakeOverscan + Sequence.ShakeX, -ShakeOverscan + Sequence.ShakeY,
+                    FrameWidth + 2 * ShakeOverscan, FrameHeight + 2 * ShakeOverscan), RenderFrame());
                 GUI.EndGroup();
                 GUI.matrix = Matrix4x4.identity;
                 Fill(viewport, new Color(0, 0, 0, Sequence.BlackOpacity));
