@@ -23,7 +23,7 @@ namespace DragonQuest.Prototype
         public bool IsComplete => Elapsed >= CompleteAt;
         public float ProsperityOpacity => Smooth((Elapsed - DissolveAt) / DissolveDuration);
         public float SpeechProgress => Clamp(Elapsed / ProsperityAt);
-        public float ProsperityProgress => Clamp((Elapsed - DissolveAt) / (FadeOutAt - DissolveAt));
+        public float ProsperityProgress => Clamp((Elapsed - DissolveAt) / (BlackAt - DissolveAt));
         public float SpeechTextOffset => TextOffset(TextStart);
         public float EpilogueTextOffset => TextOffset(EpilogueTextStart);
         public float SpeechTextOpacity => TextOpacity(TextStart, SpeechTextEndAt);

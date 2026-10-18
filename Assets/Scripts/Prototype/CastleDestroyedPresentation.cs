@@ -10,6 +10,8 @@ namespace DragonQuest.Prototype
         public const string ForegroundResource = "PixelArt/Endings/SeatedElderHill";
         private readonly string[] lines = EndingNarrative.CastleDestroyedEpilogue.Split('\n');
         private readonly Texture2D background, foreground, shade;
+        private readonly EndingArtworkRenderer backgroundMotion = new EndingArtworkRenderer();
+        private readonly EndingArtworkRenderer foregroundMotion = new EndingArtworkRenderer();
         private GUIStyle story, caption;
         private bool hasDrawn;
         private readonly bool enterFromWhite;
@@ -19,16 +21,8 @@ namespace DragonQuest.Prototype
         {
             this.enterFromWhite = enterFromWhite;
             Sequence = new CastleDestroyedSequence(lines.Length);
-            Texture2D panorama = Load(BackgroundResource);
+            background = Load(BackgroundResource);
             foreground = Load(ForegroundResource);
-            // A private filtered copy blends fractional-pixel pans without changing the shared pixel-art asset.
-            background = new Texture2D(panorama.width, panorama.height, panorama.format, false)
-                { name = "FinalOne / smooth castle panorama", filterMode = FilterMode.Bilinear,
-                    wrapMode = TextureWrapMode.Clamp };
-            // Copy on the GPU: imported panoramas are intentionally non-readable in play mode/builds.
-            // Drop the empty CPU copy before the transfer so Apply cannot overwrite the copied image.
-            background.Apply(false, true);
-            Graphics.CopyTexture(panorama, background);
             shade = new Texture2D(128, 1, TextureFormat.RGBA32, false)
                 { name = "FinalOne / narrative shade", wrapMode = TextureWrapMode.Clamp };
             var colors = new Color[128];
@@ -64,8 +58,8 @@ namespace DragonQuest.Prototype
                 GUI.color = Color.white;
                 float panoramaWidth = 1280 + CastleDestroyedSequence.BackgroundDrift + 24;
                 float panoramaHeight = panoramaWidth * background.height / background.width;
-                GUI.DrawTexture(new Rect(-12 + Sequence.BackgroundX, (660 - panoramaHeight) / 2,
-                    panoramaWidth, panoramaHeight), background);
+                backgroundMotion.Draw(background, new Rect(-12 + Sequence.BackgroundX, (660 - panoramaHeight) / 2,
+                    panoramaWidth, panoramaHeight), new Rect(0, 0, 1280, 660));
                 DrawWaterAndAsh();
                 DrawForeground();
                 DrawNarrative();
@@ -86,7 +80,8 @@ namespace DragonQuest.Prototype
             // One painted layer keeps the seated man's palm, hips and extended boot on the curved soil.
             // Its lower hillside continues below the frame, while the entire pose remains visible.
             var bounds = new Rect(x, 180, CastleDestroyedSequence.LandWidth, height);
-            GUI.color = Color.white; GUI.DrawTexture(bounds, foreground);
+            GUI.color = Color.white;
+            foregroundMotion.Draw(foreground, bounds, new Rect(0, 0, 1280, 660));
         }
 
         private void DrawWaterAndAsh()
@@ -150,7 +145,7 @@ namespace DragonQuest.Prototype
         { GUI.color = color; GUI.DrawTexture(area, Texture2D.whiteTexture); }
         public void Dispose()
         {
-            DestroyOwned(background); DestroyOwned(shade);
+            backgroundMotion.Dispose(); foregroundMotion.Dispose(); DestroyOwned(shade);
         }
         private static void DestroyOwned(UnityEngine.Object asset)
         {

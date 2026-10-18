@@ -15,6 +15,15 @@ public static class HeroPossessedChecks
         Check(Near(At(HeroPossessedSequence.FadeInDuration).BlackOpacity,0), "The opening fade finishes.");
         Check(HeroPossessedSequence.TextStart < HeroPossessedSequence.CameraStopAt,
             "Narration begins while the camera is still travelling.");
+        foreach (float join in new[] { HeroPossessedSequence.CameraStart + HeroPossessedSequence.CarpetDuration,
+            HeroPossessedSequence.CameraStart + HeroPossessedSequence.CarpetDuration + HeroPossessedSequence.StairDuration })
+        {
+            const float step = 1f/60;
+            float before = (At(join).CameraFocusY - At(join-step).CameraFocusY)/step;
+            float after = (At(join+step).CameraFocusY - At(join).CameraFocusY)/step;
+            Check(before < -.015f && after < -.015f && Math.Abs(before-after) < .001f,
+                "Camera velocity stays continuous and nonzero between carpet, stairs and reveal.");
+        }
         float previous = .84f;
         for (float t = 0; t < At(0).CompleteAt; t += .025f)
         {

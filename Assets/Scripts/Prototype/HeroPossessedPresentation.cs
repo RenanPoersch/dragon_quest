@@ -15,13 +15,14 @@ namespace DragonQuest.Prototype
         public const string CompositeResource = "PixelArt/Endings/PossessedThroneComposite";
         public const float SkyPadding = .18f;
         public const float SpiritOpacity = .76f;
-        public const float RainOpacity = .72f, RainFramesPerSecond = 24;
+        public const float RainOpacity = .72f;
         public static readonly Vector4 SpiritRect = new Vector4(.22f, .49f, .56f, .56f);
         private readonly string[] lines = EndingNarrative.HeroPossessedEpilogue.Split('\n');
         private readonly Texture2D throne, shade;
         private readonly Texture2D[] lightning;
         private readonly Material composite;
         private readonly RenderTexture illuminatedThrone;
+        private readonly EndingArtworkRenderer cameraMotion = new EndingArtworkRenderer();
         private GUIStyle story, caption;
         private bool hasDrawn;
         private float previousLightning = -1;
@@ -79,7 +80,7 @@ namespace DragonQuest.Prototype
                 Rect camera = CameraBounds(Sequence, throne.width / (float)throne.height);
                 camera.y+=30;
                 GUI.color = Color.white;
-                GUI.DrawTexture(CompositeBounds(camera), illuminatedThrone);
+                cameraMotion.Draw(illuminatedThrone, CompositeBounds(camera), new Rect(0, 0, 1280, 690));
                 // Keep the opening letterbox; once the camera locks, lightning
                 // can continue through the black sky to the actual screen top.
                 if(!Sequence.CameraStopped) Fill(new Rect(0,0,1280,30),Color.black);
@@ -104,7 +105,7 @@ namespace DragonQuest.Prototype
             var light = Sequence.LightningState;
             float flash = light.Intensity;
             // The rain keeps moving through dark intervals, even with timeScale at zero.
-            float rainTime = Mathf.Floor(Sequence.Elapsed * RainFramesPerSecond) / RainFramesPerSecond;
+            float rainTime = Sequence.Elapsed;
             if (light.FlashIndex == previousLightningIndex && Mathf.Approximately(flash, previousLightning)
                 && rainTime == previousRainTime && illuminatedThrone.IsCreated()) return;
             composite.SetFloat("_Lightning", flash);
@@ -163,6 +164,7 @@ namespace DragonQuest.Prototype
         { GUI.color = color; GUI.DrawTexture(area, Texture2D.whiteTexture); }
         public void Dispose()
         {
+            cameraMotion.Dispose();
             illuminatedThrone.Release(); DestroyOwned(illuminatedThrone);
             DestroyOwned(composite); DestroyOwned(shade);
         }

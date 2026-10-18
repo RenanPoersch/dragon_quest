@@ -39,13 +39,23 @@ namespace DragonQuest.Prototype
             get
             {
                 float t = Elapsed - CameraStart;
-                if (t <= CarpetDuration) return Lerp(.84f, .64f, Smooth(t / CarpetDuration));
+                // Share velocities at the carpet/stair/reveal joins instead of
+                // easing to a complete stop at every waypoint.
+                float stairsVelocity = (.44f - .84f) / (CarpetDuration + StairDuration);
+                float revealVelocity = (FinalCameraFocusY - .64f) / (StairDuration + RevealDuration);
+                if (t <= CarpetDuration) return CameraCurve(.84f, .64f, 0, stairsVelocity, t, CarpetDuration);
                 t -= CarpetDuration;
-                if (t <= StairDuration) return Lerp(.64f, .44f, Smooth(t / StairDuration));
-                return Lerp(.44f, FinalCameraFocusY, Smooth((t - StairDuration) / RevealDuration));
+                if (t <= StairDuration) return CameraCurve(.64f, .44f, stairsVelocity, revealVelocity, t, StairDuration);
+                return CameraCurve(.44f, FinalCameraFocusY, revealVelocity, 0, t - StairDuration, RevealDuration);
             }
         }
         public float CameraImageWidth => Lerp(1500, 1040, Smooth((Elapsed - CameraStart) / (CameraStopAt - CameraStart)));
+        private static float CameraCurve(float from, float to, float startVelocity, float endVelocity, float time, float duration)
+        {
+            float t = Math.Max(0, Math.Min(1, time / duration)), t2 = t * t, t3 = t2 * t;
+            return (2*t3 - 3*t2 + 1)*from + (t3 - 2*t2 + t)*duration*startVelocity
+                + (-2*t3 + 3*t2)*to + (t3 - t2)*duration*endVelocity;
+        }
         public float Lightning => LightningState.Intensity;
         public int LightningFrame => LightningState.Frame;
         public StormLight LightningState

@@ -12,6 +12,8 @@ namespace DragonQuest.Prototype
         private readonly string[] speechLines = EndingNarrative.KingFreedSpeech.Split('\n');
         private readonly string[] epilogueLines = EndingNarrative.KingFreedEpilogue.Split('\n');
         private readonly Texture2D speech, prosperity, shade;
+        private readonly EndingArtworkRenderer speechMotion = new EndingArtworkRenderer();
+        private readonly EndingArtworkRenderer prosperityMotion = new EndingArtworkRenderer();
         private GUIStyle story, caption;
         private bool hasDrawn;
         public KingFreedSequence Sequence { get; }
@@ -47,11 +49,13 @@ namespace DragonQuest.Prototype
                     viewport.y + (viewport.height - 720 * scale) / 2, 0), Quaternion.identity, new Vector3(scale, scale, 1));
                 GUI.BeginGroup(new Rect(0, 30, 1280, 660));
                 GUI.color = Color.white;
-                GUI.DrawTexture(ArtBounds(Sequence.SpeechProgress, speech.width / (float)speech.height, false), speech);
+                speechMotion.Draw(speech, ArtBounds(Sequence.SpeechProgress, speech.width / (float)speech.height, false),
+                    new Rect(0, 0, 1280, 660));
                 if (Sequence.ProsperityOpacity > 0)
                 {
                     GUI.color = new Color(1, 1, 1, Sequence.ProsperityOpacity);
-                    GUI.DrawTexture(ArtBounds(Sequence.ProsperityProgress, prosperity.width / (float)prosperity.height, true), prosperity);
+                    prosperityMotion.Draw(prosperity, ArtBounds(Sequence.ProsperityProgress, prosperity.width / (float)prosperity.height, true),
+                        new Rect(0, 0, 1280, 660));
                 }
                 DrawNarrative(speechLines, "A VOZ DO REI", Sequence.SpeechTextOffset, Sequence.SpeechTextOpacity);
                 DrawNarrative(epilogueLines, "UM REINO EM PAZ", Sequence.EpilogueTextOffset, Sequence.EpilogueTextOpacity);
@@ -106,6 +110,7 @@ namespace DragonQuest.Prototype
         { GUI.color = color; GUI.DrawTexture(area, Texture2D.whiteTexture); }
         public void Dispose()
         {
+            speechMotion.Dispose(); prosperityMotion.Dispose();
             if (Application.isPlaying) UnityEngine.Object.Destroy(shade);
             else UnityEngine.Object.DestroyImmediate(shade);
         }
