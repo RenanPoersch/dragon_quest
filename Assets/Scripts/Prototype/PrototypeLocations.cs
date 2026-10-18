@@ -101,6 +101,7 @@ namespace DragonQuest.Prototype
             cameraFollow.SetArtworkFrame(forest || quarry || inn || weapons || compact != null, inn || weapons || compact != null,
                 compact != null ? CompactShopLayout.ArtAspect : weapons ? WeaponShopLayout.ArtAspect : inn ? PrototypeInnLayout.ArtAspect : 16f / 9f);
             player.Teleport(arrival);
+            if (volcano) player.FaceTowards(arrival + Vector2.right);
             if(throne) throneDepth.Refresh();
             cameraFollow.Initialize(player.transform, (forest || quarry) ? PrototypeWorldLayout.ForestBounds : navigation.Current.Bounds, navigation.Current.CameraSize,
                 navigation.Current.FixedCamera, navigation.Current.CoveredGroundBounds);
