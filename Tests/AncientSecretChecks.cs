@@ -119,14 +119,19 @@ internal static class AncientSecretChecks
         Assert(reveal.IsComplete && reveal.VisibleText == "", "Texto vazio termina sem esperar.");
         reveal.Begin("A\u0301\U0001F31FB");
         Assert(!reveal.IsComplete && reveal.VisibleText == "", "Nova fala inicia sem texto revelado.");
+        Assert(Math.Abs(reveal.SecondsRemaining - 3f/DialogueTextReveal.CharactersPerSecond) < .0001f,
+            "Tempo restante conta elementos de texto, incluindo acento e emoji completos.");
         reveal.Tick(1f/DialogueTextReveal.CharactersPerSecond);
         Assert(reveal.VisibleText == "A\u0301", "Acento combinante aparece com a letra inteira.");
+        Assert(Math.Abs(reveal.SecondsRemaining - 2f/DialogueTextReveal.CharactersPerSecond) < .0001f,
+            "Escrita reduz o tempo restante de forma consistente.");
         reveal.Tick(1f/DialogueTextReveal.CharactersPerSecond);
         Assert(reveal.VisibleText == "A\u0301\U0001F31F", "Par substituto aparece inteiro.");
         foreach (float invalid in new[]{-1f,0f,float.NaN,float.PositiveInfinity}) reveal.Tick(invalid);
         Assert(reveal.VisibleText == "A\u0301\U0001F31F", "Tempos invalidos nao alteram a escrita.");
         reveal.Finish();
         Assert(reveal.IsComplete && reveal.VisibleText == "A\u0301\U0001F31FB", "Concluir revela o restante da fala.");
+        Assert(reveal.SecondsRemaining == 0, "Pular a escrita encerra tambem o tempo restante.");
         reveal.Tick(10);
         Assert(reveal.IsComplete && reveal.VisibleText == "A\u0301\U0001F31FB", "Fala concluida nao reinicia pelo tempo.");
         string longText = new string('x',200);

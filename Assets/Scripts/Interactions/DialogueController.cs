@@ -10,6 +10,7 @@ namespace DragonQuest.Interactions
         public bool IsOpen => session.IsOpen;
         public bool HasChoices => session.HasChoices;
         public bool IsTyping => IsOpen && !reveal.IsComplete;
+        public float RevealSecondsRemaining => reveal.SecondsRemaining;
         public bool ChoicesReady => HasChoices && !IsTyping;
         public string Title => session.Title;
         public string Text => session.Text;

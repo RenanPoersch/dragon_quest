@@ -14,6 +14,7 @@ namespace DragonQuest.Interactions
 
         public string VisibleText { get; private set; } = string.Empty;
         public bool IsComplete => shown == elements.Length;
+        public float SecondsRemaining => (elements.Length - shown) / CharactersPerSecond;
 
         public void Begin(string message)
         {

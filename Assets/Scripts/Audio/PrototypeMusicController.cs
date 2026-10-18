@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using DragonQuest.Combat;
+using DragonQuest.Interactions;
 using DragonQuest.Prototype;
 using UnityEngine;
 
@@ -16,6 +17,7 @@ namespace DragonQuest.Audio
         private PrototypeSaveController saves;
         private PrototypeLocations locations;
         private PrototypeBattleController battle;
+        private DragonInteraction dragon;
         private int current = -1;
         private float elapsed, duration;
         public MusicCue CurrentCue { get; private set; }
@@ -23,6 +25,7 @@ namespace DragonQuest.Audio
         public void Initialize(PrototypeSaveController menus, PrototypeLocations maps, PrototypeBattleController combat)
         {
             saves = menus; locations = maps; battle = combat;
+            dragon = GetComponentInChildren<DragonInteraction>(true);
             if (sources[0] != null) return;
             for (int i = 0; i < sources.Length; i++)
             {
@@ -43,7 +46,8 @@ namespace DragonQuest.Audio
             if (saves == null || locations == null || battle == null || sources[0] == null) return;
             var cue = MusicCuePolicy.Select(saves.IsIntroPlaying, saves.IsFrontEndVisible, battle.HasEnded,
                 battle.IsActive, battle.IsDragonEncounter, battle.IsCastleEncounter, battle.IsPostBattleOpen,
-                battle.Session?.Outcome == BattleOutcome.Defeat && !battle.IsPresentingAction, locations.LocationId);
+                battle.Session?.Outcome == BattleOutcome.Defeat && !battle.IsPresentingAction, locations.LocationId,
+                dragon != null && dragon.IsBattlePrelude);
             if (!MusicCuePolicy.IsAvailable(cue)) cue = MusicCue.Silence;
             TransitionTo(cue);
             Advance(Time.unscaledDeltaTime);

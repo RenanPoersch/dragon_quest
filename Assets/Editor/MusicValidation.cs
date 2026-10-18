@@ -3,6 +3,7 @@ using System.Linq;
 using System.Reflection;
 using DragonQuest.Audio;
 using DragonQuest.Combat;
+using DragonQuest.Interactions;
 using DragonQuest.Prototype;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -21,6 +22,9 @@ public static class MusicValidation
     private static PrototypeMusicController music;
     private static PrototypeLocations maps;
     private static PrototypeIntroPresentation intro;
+    private static DragonInteraction dragon;
+    private static DialogueController dialogue;
+    private static AudioSource preludeVoice;
 
     static MusicValidation()
     {
@@ -49,6 +53,11 @@ public static class MusicValidation
                 MusicCue.Victory => 54.1257f,
                 MusicCue.World => 410.4591f,
                 MusicCue.Village => 157.1527f,
+                MusicCue.Dragon => 152.1371f,
+                MusicCue.FinalBoss => 440.4825f,
+                MusicCue.Forest => 171.1543f,
+                MusicCue.Ruins => 134.1417f,
+                MusicCue.Quarry => 167.1140f,
                 _ => throw new InvalidOperationException("Missing source duration for " + cue)
             };
             Check(clip.channels == 2 && clip.frequency == 44100 && Math.Abs(clip.length-expectedSeconds)<.05f,
@@ -62,8 +71,14 @@ public static class MusicValidation
         Check(MusicCuePolicy.Select(true,true,false,false,false,false,false,false,"world") == MusicCue.Intro, "intro takes priority over front end");
         Check(MusicCuePolicy.Select(false,true,false,false,false,false,false,false,"world") == MusicCue.Silence, "title and load stay silent");
         Check(MusicCuePolicy.Select(false,false,true,true,false,true,false,false,"castle") == MusicCue.Silence, "ending stays silent");
-        Check(Enum.GetValues(typeof(MusicCue)).Cast<MusicCue>().Count(MusicCuePolicy.IsAvailable) == 5, "only supplied intro, battle, victory, world and village are enabled");
-        Check(Resources.LoadAll<AudioClip>("Music").Length == 5, "only supplied recordings are present");
+        Check(Enum.GetValues(typeof(MusicCue)).Cast<MusicCue>().Count(MusicCuePolicy.IsAvailable) == 10, "all ten supplied recordings are enabled");
+        Check(Resources.LoadAll<AudioClip>("Music").Length == 10, "only supplied recordings are present");
+        Check(MusicCuePolicy.Select(false,false,false,false,false,false,false,false,"volcano") == MusicCue.Silence,
+            "exploring the dragon lair stays silent");
+        Check(MusicCuePolicy.Select(false,false,false,false,false,false,false,false,"volcano",true) == MusicCue.Dragon,
+            "the dragon conversation can introduce the battle theme");
+        Check(MusicCuePolicy.Select(false,true,false,false,false,false,false,false,"volcano",true) == MusicCue.Silence,
+            "front-end silence takes priority over a dragon prelude");
         foreach (string map in new[] { "city","inn","item-shop","materia-shop","equipment-shop" })
             Check(MusicCuePolicy.Select(false,false,false,false,false,false,false,false,map) == MusicCue.Village,
                 "village recording follows the town and its interiors in " + map);
@@ -103,6 +118,25 @@ public static class MusicValidation
     private static AudioSource VictoryVoice => music.GetComponentsInChildren<AudioSource>().First(s => s.clip?.name == "victory" && s.isPlaying);
     private static AudioSource WorldVoice => music.GetComponentsInChildren<AudioSource>().First(s => s.clip?.name == "world" && s.isPlaying);
     private static AudioSource VillageVoice => music.GetComponentsInChildren<AudioSource>().First(s => s.clip?.name == "village" && s.isPlaying);
+    private static AudioSource Voice(MusicCue cue) => music.GetComponentsInChildren<AudioSource>()
+        .First(s => s.clip?.name == cue.ToString().ToLowerInvariant() && s.isPlaying);
+    private static void CuePlays(MusicCue cue)
+    {
+        Check(music.CurrentCue == cue,"expected " + cue + " at step " + step);
+        AudioSource voice = Voice(cue);
+        Check(voice.timeSamples > 0 && voice.loop && voice.volume > 0 && voice.spatialBlend == 0,
+            cue + " plays the supplied recording as an audible 2D loop");
+        Check(music.GetComponentsInChildren<AudioSource>().All(s => s == voice || !s.isPlaying),
+            "previous music stops after switching to " + cue);
+    }
+    private static void NearEndOfDragonSpeech()
+    {
+        dialogue.RevealAll(); dialogue.Advance();
+        Check(dialogue.PageNumber == dialogue.PageCount && dialogue.RevealSecondsRemaining > DragonInteraction.BattleMusicLeadSeconds,
+            "last dragon page begins before the music lead-in window");
+        ((DialogueTextReveal)Field(dialogue,"reveal")).Tick(dialogue.RevealSecondsRemaining - .75f);
+        Check(dialogue.IsTyping && dragon.IsBattlePrelude,"dragon prelude starts before the last line finishes typing");
+    }
     private static void BattlePlays()
     {
         Check(music.CurrentCue == MusicCue.Battle, "battle theme is selected at step " + step);
@@ -156,10 +190,15 @@ public static class MusicValidation
         if (!EditorApplication.isPlaying || EditorApplication.isCompiling) return;
         double now = EditorApplication.timeSinceStartup;
         if (began == 0) { began = now; nextAt = now + 2; }
-        if (now - began > 100) { Finish(new Exception("Music playback timed out")); return; }
+        if (now - began > 180) { Finish(new Exception("Music playback timed out at step " + step)); return; }
         // Resume only this isolated test if startup diagnostics trigger Console Error Pause.
         if (EditorApplication.isPaused) { EditorApplication.isPaused = false; nextAt = now + 1; return; }
         if (now < nextAt || Time.frameCount < nextFrame) return;
+        // Streaming can start asynchronously after a first import. Wait briefly for the
+        // selected recording to advance before sampling it; failed playback still fails.
+        if (music != null && music.CurrentCue != MusicCue.Silence && now < nextAt + 5
+            && !music.GetComponentsInChildren<AudioSource>().Any(s => s.clip?.name == music.CurrentCue.ToString().ToLowerInvariant()
+                && s.isPlaying && s.timeSamples > 0 && s.volume > 0)) return;
         try
         {
             switch (step)
@@ -293,14 +332,111 @@ public static class MusicValidation
                     BattlePlays(); Set(battle.Session,"Outcome",BattleOutcome.Defeat);
                     break;
                 case 24:
-                    Silent(); ClearCombat();
-                    Call(battle,"StartEncounter",PrototypeBattleFactory.CreateDragonEncounter(battle.Party),true);
+                    Silent(); ClearCombat(); Restore("west-forest");
                     break;
                 case 25:
-                    Silent(); ClearCombat();
-                    Call(battle,"StartEncounter",PrototypeCastleBattleFactory.Create(battle.Party),false);
+                    CuePlays(MusicCue.Quarry);
+                    Check(Voice(MusicCue.Quarry).timeSamples < Voice(MusicCue.Quarry).clip.frequency*2,"quarry music starts from the beginning");
+                    Voice(MusicCue.Quarry).timeSamples = Voice(MusicCue.Quarry).clip.samples - Voice(MusicCue.Quarry).clip.frequency/3;
                     break;
                 case 26:
+                    CuePlays(MusicCue.Quarry);
+                    Check(Voice(MusicCue.Quarry).timeSamples < Voice(MusicCue.Quarry).clip.frequency*2,"full quarry recording loops");
+                    Restore("east-forest");
+                    break;
+                case 27:
+                    CuePlays(MusicCue.Forest);
+                    Check(Voice(MusicCue.Forest).timeSamples < Voice(MusicCue.Forest).clip.frequency*2,"forest music starts from the beginning");
+                    Voice(MusicCue.Forest).timeSamples = Voice(MusicCue.Forest).clip.samples - Voice(MusicCue.Forest).clip.frequency/3;
+                    break;
+                case 28:
+                    CuePlays(MusicCue.Forest);
+                    Check(Voice(MusicCue.Forest).timeSamples < Voice(MusicCue.Forest).clip.frequency*2,"full forest recording loops");
+                    Restore("ancient-ruins");
+                    break;
+                case 29:
+                    CuePlays(MusicCue.Ruins);
+                    Check(Voice(MusicCue.Ruins).timeSamples < Voice(MusicCue.Ruins).clip.frequency*2,"ruins music starts from the beginning");
+                    Voice(MusicCue.Ruins).timeSamples = Voice(MusicCue.Ruins).clip.samples - Voice(MusicCue.Ruins).clip.frequency/3;
+                    break;
+                case 30:
+                    CuePlays(MusicCue.Ruins);
+                    Check(Voice(MusicCue.Ruins).timeSamples < Voice(MusicCue.Ruins).clip.frequency*2,"full ruins recording loops");
+                    Call(Field(battle,"secrets"),"Restore",true,true,3,true,true);
+                    Restore("volcano");
+                    dragon = music.GetComponentInChildren<DragonInteraction>(true);
+                    dialogue = music.GetComponent<DialogueController>(); dialogue.enabled = false;
+                    break;
+                case 31:
+                    Silent(); Check(!battle.IsActive && !dragon.IsBattlePrelude,"lair exploration cannot start dragon music");
+                    dragon.Interact(new InteractionContext(dialogue,null,_ => { }));
+                    Check(dialogue.IsOpen && dialogue.PageNumber == 1,"real dragon dialogue opens before combat");
+                    break;
+                case 32:
+                    Silent(); dialogue.RevealAll(); dialogue.Advance();
+                    Check(dialogue.IsTyping && !dragon.IsBattlePrelude,"first part of the final dragon line stays silent");
+                    break;
+                case 33:
+                    Silent();
+                    ((DialogueTextReveal)Field(dialogue,"reveal")).Tick(dialogue.RevealSecondsRemaining - .75f);
+                    Check(dialogue.IsTyping && dragon.IsBattlePrelude,"music is requested before final text finishes");
+                    break;
+                case 34:
+                    CuePlays(MusicCue.Dragon);
+                    Check(dialogue.IsOpen && dialogue.IsTyping && !battle.IsActive,"dragon music begins during the last spoken page");
+                    dialogue.Close();
+                    break;
+                case 35:
+                    Silent(); Check(!battle.IsActive && !dragon.IsBattlePrelude,"cancelling the speech cancels the musical prelude");
+                    dialogue.Open("Outra conversa","Primeira pagina.","Ultima pagina."); dialogue.Advance(); dialogue.RevealAll();
+                    break;
+                case 36:
+                    Silent(); Check(!dragon.IsBattlePrelude,"unrelated dialogue cannot reactivate the dragon prelude");
+                    dialogue.Close(); dragon.Interact(new InteractionContext(dialogue,null,_ => { }));
+                    NearEndOfDragonSpeech();
+                    break;
+                case 37:
+                    CuePlays(MusicCue.Dragon);
+                    Check(Voice(MusicCue.Dragon).timeSamples < Voice(MusicCue.Dragon).clip.frequency*2,"a new dragon approach restarts the recording");
+                    preludeVoice = Voice(MusicCue.Dragon); preludeVoice.timeSamples = preludeVoice.clip.frequency*10;
+                    dialogue.RevealAll(); dialogue.Advance();
+                    Check(!dialogue.IsOpen && battle.IsActive && battle.IsDragonEncounter,"completing the real dialogue starts the dragon battle");
+                    break;
+                case 38:
+                    CuePlays(MusicCue.Dragon);
+                    Check(Voice(MusicCue.Dragon) == preludeVoice && preludeVoice.timeSamples > preludeVoice.clip.frequency*10,
+                        "the same audio source continues from speech into combat without restarting");
+                    preludeVoice.timeSamples = preludeVoice.clip.samples - preludeVoice.clip.frequency/3;
+                    break;
+                case 39:
+                    CuePlays(MusicCue.Dragon);
+                    Check(preludeVoice.timeSamples < preludeVoice.clip.frequency*2,"full dragon recording loops during combat");
+                    foreach (var fighter in battle.Session.Combatants) if (fighter.Team == CombatTeam.Enemy) Set(fighter,"Hp",0);
+                    Set(battle.Session,"Outcome",BattleOutcome.Victory); Call(battle,"AwardIfComplete"); Call(battle,"Update");
+                    break;
+                case 40:
+                    VictoryPlays();
+                    Check(battle.Dragon.IsDefeated,"dragon victory marks the liberated essence");
+                    Set(battle,"PostBattleStartedAt",Time.unscaledTime-10); battle.ReturnToCity();
+                    break;
+                case 41:
+                    Silent(); dialogue.Close(); dragon.Interact(new InteractionContext(dialogue,null,_ => { }));
+                    Check(dialogue.Title == "Essencia liberta" && !dragon.IsBattlePrelude,"liberated essence conversation has no battle music");
+                    break;
+                case 42:
+                    Silent(); dialogue.Close(); ClearCombat(); Restore("castle"); battle.StartCastleBattle();
+                    break;
+                case 43:
+                    CuePlays(MusicCue.FinalBoss);
+                    Check(Voice(MusicCue.FinalBoss).timeSamples < Voice(MusicCue.FinalBoss).clip.frequency*2,"tyrant battle starts its own recording from the beginning");
+                    Voice(MusicCue.FinalBoss).timeSamples = Voice(MusicCue.FinalBoss).clip.samples - Voice(MusicCue.FinalBoss).clip.frequency/3;
+                    break;
+                case 44:
+                    CuePlays(MusicCue.FinalBoss);
+                    Check(Voice(MusicCue.FinalBoss).timeSamples < Voice(MusicCue.FinalBoss).clip.frequency*2,"full tyrant recording loops during battle");
+                    Set(battle.Session,"Outcome",BattleOutcome.Defeat);
+                    break;
+                case 45:
                     Silent(); ClearCombat(); Set(battle,"HasEnded",true); music.enabled = false;
                     Check(music.GetComponentsInChildren<AudioSource>().All(s => !s.isPlaying), "disabling the controller stops audio");
                     Finish(null); return;
@@ -315,7 +451,7 @@ public static class MusicValidation
     {
         SessionState.SetBool(Running,false); EditorApplication.update -= Tick;
         if (error != null) Debug.LogException(error);
-        else Debug.Log("MUSIC PLAYBACK PASS: " + checks + " checks for supplied intro, normal encounters, loops, results, defeat, separate bosses and restarting tracks after transitions.");
+        else Debug.Log("MUSIC PLAYBACK PASS: " + checks + " checks for all ten supplied recordings, region loops, normal battles, victory, quiet dragon lair, cancelled speech, uninterrupted dragon prelude and tyrant battle.");
         if (Application.isBatchMode) EditorApplication.Exit(error == null ? 0 : 1);
         else EditorApplication.ExitPlaymode();
     }
