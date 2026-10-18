@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using DragonQuest.Exploration;
 using DragonQuest.Interactions;
-using DragonQuest.Progression;
 using DragonQuest.Prototype;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -19,11 +18,10 @@ public static class CompactShopValidation
         if (string.IsNullOrEmpty(output)) output = Path.GetFullPath(Path.Combine(Application.dataPath,"../Temp/CompactShopPreview"));
         Directory.CreateDirectory(output);
         foreach (var layout in new[] { CompactShopLayout.Items,CompactShopLayout.Materia }) Validate(layout,output);
-        CheckDelivery();
         Assert(Resources.Load<Texture2D>("PixelArt/ShopPropsAtlas") == null && Resources.Load<Texture2D>("PixelArt/MateriaShopAtlas") == null
             && Resources.Load<Shader>("MateriaShop") == null,"retired shop assets have been removed");
-        File.WriteAllText(Path.Combine(output,"result.txt"),"COMPACT_SHOPS_VALIDATION_OK: two full paintings, smaller rooms, depth, collisions, connected floor, movement, trade, delivery, saves, travel, retired assets and three aspect ratios.");
-        Debug.Log("COMPACT_SHOPS_VALIDATION_OK: item and materia shops, navigation, trade, delivery and three display aspects.");
+        File.WriteAllText(Path.Combine(output,"result.txt"),"COMPACT_SHOPS_VALIDATION_OK: two full paintings, smaller rooms, depth, collisions, connected floor, movement, trade, saves, travel, retired assets and three aspect ratios.");
+        Debug.Log("COMPACT_SHOPS_VALIDATION_OK: item and materia shops, navigation, trade and three display aspects.");
         string previous = Environment.GetEnvironmentVariable("DQ_WEAPON_SHOP_OUTPUT");
         try { Environment.SetEnvironmentVariable("DQ_WEAPON_SHOP_OUTPUT",Path.Combine(output,"weapon-regression")); WeaponShopValidation.Run(); }
         finally { Environment.SetEnvironmentVariable("DQ_WEAPON_SHOP_OUTPUT",previous); }
@@ -144,14 +142,6 @@ public static class CompactShopValidation
         var sale = service.SaleEntries(shop).First(e=>e.CanSell && (items ? e.Item == PrototypePartyFactory.Potion
             : e.Materia != null && e.Materia.Definition == PrototypePartyFactory.FireMateria));
         Assert(service.TrySell(shop,sale,1,out _) && service.Progress.Gold == 1000-price/2,"sale returns half of price");
-    }
-    private static void CheckDelivery()
-    {
-        var service = PrototypeShopFactory.Create(PrototypePartyFactory.Create(),new ExplorationProgress(1000));
-        var quest = new DeliveryQuest(service);
-        Assert(quest.TryInteract(service.FindShop("item-shop"),out _) && quest.Stage == DeliveryStage.CarryingPackage,"item vendor starts delivery");
-        Assert(quest.TryInteract(service.FindShop("materia-shop"),out _) && quest.Stage == DeliveryStage.Delivered,"materia vendor receives delivery");
-        Assert(quest.TryInteract(service.FindShop("item-shop"),out _) && quest.Stage == DeliveryStage.Completed && service.Progress.Gold == 1030,"return trip rewards and completes delivery");
     }
     private static Transform Person(Transform root,PixelSpriteLibrary people,string name,Vector2 ground,string atlas,int frame)
     {

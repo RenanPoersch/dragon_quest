@@ -139,7 +139,7 @@ namespace DragonQuest.Prototype
                 dragon.Restore(journey.Dragon.IsDefeated);
                 battle.Initialize(player.GetComponent<PlayerMovement>(), dialogue, progress, () => shops.IsOpen || saves.IsMenuVisible || cheats.BlocksInput || innRest.IsPlaying,
                     dragon, secrets, locations.RecoverAtInn, endings.Show, journey.Party);
-                shops.Initialize(player.GetComponent<PlayerMovement>(), dialogue, battle, progress, journey.Shops, journey.Quest);
+                shops.Initialize(player.GetComponent<PlayerMovement>(), dialogue, battle, progress, journey.Shops);
                 interaction.Initialize(new InteractionContext(dialogue, progress, locations.TravelTo,
                     battle.StartBattle, () => battle.IsBusy, shops.Open, secrets), interactables.ToArray());
                 hud.Initialize(dialogue, battle);

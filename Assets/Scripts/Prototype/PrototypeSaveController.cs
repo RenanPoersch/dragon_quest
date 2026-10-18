@@ -76,7 +76,7 @@ namespace DragonQuest.Prototype
         private JourneyData Capture()
         {
             Vector3 position = player.transform.position;
-            JourneyData snapshot = JourneySnapshot.Capture(battle.Party, progress, secrets, dragon, shops.Service, shops.Quest,
+            JourneyData snapshot = JourneySnapshot.Capture(battle.Party, progress, secrets, dragon, shops.Service,
                 locations.LocationId, position.x, position.y, battle.CastleRules?.Ending ?? GameEnding.None);
             snapshot.PlaySeconds = (long)playSeconds;
             return snapshot;

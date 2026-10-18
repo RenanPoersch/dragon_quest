@@ -35,7 +35,6 @@ namespace DragonQuest.Shops
             Id = id; Category = category; Price = price; Stock = stock; InitialStock = stock; CanSell = canSell;
         }
         internal void Consume(int quantity) => Stock -= quantity;
-        internal void Restock() => Stock = InitialStock;
         internal void RestoreStock(int stock) => Stock = stock;
     }
 

@@ -26,8 +26,6 @@ namespace DragonQuest.Persistence
         [DataMember(IsRequired = true)] public MateriaData[] Materias;
         [DataMember(IsRequired = true)] public StackData[] Items;
         [DataMember(IsRequired = true)] public StockData[] Stocks;
-        [DataMember(IsRequired = true)] public int DeliveryStage;
-        [DataMember(IsRequired = true)] public bool DeliveryRestocked;
     }
     [DataContract] public sealed class SecretData
     {

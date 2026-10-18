@@ -2,7 +2,7 @@
 
 As lojas de itens (noroeste), matérias (nordeste) e equipamentos (sudeste) têm interiores. Caminhe até a marca diante da porta para entrar automaticamente; aproxime-se do vendedor e use E. Esc ou Fechar encerra o menu; caminhar até a saída ao sul retorna à porta da loja correspondente.
 
-Esta página registra a entrega 6B. Use `PARTE_6C.md` para validar a versão atual, com recompensas, entrega e reposição.
+Esta página registra a entrega 6B. Use `PARTE_6C.md` para validar a versão atual, com recompensas de batalhas e baús.
 
 ## Economia inicial
 

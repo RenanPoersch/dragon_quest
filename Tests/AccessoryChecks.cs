@@ -15,7 +15,7 @@ internal static class AccessoryChecks
     private static void Reject(Action action, string message)
     { bool rejected = false; try { action(); } catch (ArgumentException) { rejected = true; } Check(rejected, message); }
     private static JourneyData Capture(ShopService shop) => JourneySnapshot.Capture(shop.Party, shop.Progress, new AncientSecrets(), new DragonProgress(), shop,
-        new DeliveryQuest(shop), PrototypeTravel.World, 0, -7);
+        PrototypeTravel.World, 0, -7);
     private static JourneyData Clone(JourneyData data) => SaveStore.Decode(SaveStore.Encode(data));
     private static void Corrupt(JourneyData data, Action<JourneyData> change, string message)
     { var copy = Clone(data); change(copy); Reject(() => JourneySnapshot.Restore(copy), message); }

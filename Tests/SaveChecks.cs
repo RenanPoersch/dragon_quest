@@ -18,7 +18,7 @@ internal static class SaveChecks
         var party = PrototypePartyFactory.Create(); var progress = new ExplorationProgress(50);
         var shops = PrototypeShopFactory.Create(party, progress);
         return JourneySnapshot.Capture(party, progress, new AncientSecrets(), new DragonProgress(), shops,
-            new DeliveryQuest(shops), PrototypeTravel.World, 0, -7);
+            PrototypeTravel.World, 0, -7);
     }
     private static JourneyData Clone(JourneyData data) => SaveStore.Decode(SaveStore.Encode(data));
     private static void Invalid(JourneyData original, Action<JourneyData> corrupt, string description)
@@ -32,12 +32,30 @@ internal static class SaveChecks
     {
         var restored = JourneySnapshot.Restore(SaveStore.Decode(SaveStore.Encode(data)));
         var recaptured = JourneySnapshot.Capture(restored.Party, restored.Progress, restored.Secrets, restored.Dragon,
-            restored.Shops, restored.Quest, data.Map, data.X, data.Y, (GameEnding)data.Ending);
+            restored.Shops, data.Map, data.X, data.Y, (GameEnding)data.Ending);
         recaptured.SavedUtc = data.SavedUtc;
         recaptured.PlaySeconds = data.PlaySeconds;
         Assert(Encoding.UTF8.GetString(SaveStore.Encode(data)) == Encoding.UTF8.GetString(SaveStore.Encode(recaptured)), "Roundtrip deve preservar todo o snapshot, incluindo IDs e encaixes.");
         return restored;
     }
+    private static void CheckLegacyShopSaves()
+    {
+        var original = Advanced();
+        string json = Encoding.UTF8.GetString(SaveStore.Encode(original));
+        Assert(!json.Contains("DeliveryStage") && !json.Contains("DeliveryRestocked"), "Novos saves nao gravam campos da missao removida.");
+        for (int stage = 0; stage <= 3; stage++)
+        {
+            string legacy = json.Substring(0, json.Length - 1) + ",\"DeliveryStage\":" + stage
+                + ",\"DeliveryRestocked\":" + (stage == 3 ? "true" : "false") + "}";
+            var loaded = JourneySnapshot.Restore(SaveStore.Decode(Encoding.UTF8.GetBytes(legacy)));
+            Assert(loaded.Progress.Gold == original.Gold && loaded.Party.Consumables.QuantityOf(PrototypePartyFactory.Potion)
+                == original.Items.First(item => item.Definition == "potion").Quantity,
+                "Saves antigos carregam sem recompensas adicionais ou alteracoes no inventario.");
+            Assert(loaded.Shops.FindShop("item-shop").Products[0].Stock == original.Stocks.First(stock => stock.Product == "potion").Quantity,
+                "Campos antigos da missao nao repoem os estoques salvos.");
+        }
+    }
+
     private static void CheckPlayTime()
     {
         var data = Initial(); data.PlaySeconds = 7 * 3600 + 2 * 60;
@@ -57,7 +75,7 @@ internal static class SaveChecks
         journey.Progress.SetInfiniteGold(true);
         journey.Party.SetMaxLevel();
         var data = JourneySnapshot.Capture(journey.Party, journey.Progress, journey.Secrets, journey.Dragon,
-            journey.Shops, journey.Quest, journey.Data.Map, journey.Data.X, journey.Data.Y);
+            journey.Shops, journey.Data.Map, journey.Data.X, journey.Data.Y);
         var loaded = RoundTrip(data);
         Assert(loaded.Progress.Gold == 50 && !loaded.Progress.HasInfiniteGold, "Unlimited gold never overwrites the saved wallet.");
         Assert(loaded.Party.Members[0].Limit.Charge == 42 && !loaded.Party.HasInfiniteLimit
@@ -68,12 +86,10 @@ internal static class SaveChecks
     private static JourneyData Advanced()
     {
         var party = PrototypePartyFactory.CreateTestParty(); var progress = new ExplorationProgress(1000);
-        var shops = PrototypeShopFactory.Create(party, progress); var quest = new DeliveryQuest(shops);
+        var shops = PrototypeShopFactory.Create(party, progress);
         shops.TryBuy(shops.FindShop("equipment-shop"), shops.FindShop("equipment-shop").Products[0], 2, out _);
         shops.TryBuy(shops.FindShop("materia-shop"), shops.FindShop("materia-shop").Products[0], 2, out _);
         shops.TryBuy(shops.FindShop("item-shop"), shops.FindShop("item-shop").Products[0], 3, out _);
-        quest.TryInteract(shops.FindShop("item-shop"), out _); quest.TryInteract(shops.FindShop("materia-shop"), out _);
-        quest.TryInteract(shops.FindShop("item-shop"), out _);
         shops.TryBuy(shops.FindShop("item-shop"), shops.FindShop("item-shop").Products[0], 1, out _);
         var secrets = new AncientSecrets(); secrets.LearnPoem(); secrets.TrySolveAltar(LegendPoem.Flame);
         secrets.Activate(MonolithSymbol.Moon); secrets.Activate(MonolithSymbol.Star); secrets.Activate(MonolithSymbol.Sun);
@@ -89,7 +105,7 @@ internal static class SaveChecks
         party.Consumables.TryRemove(PrototypePartyFactory.Ether, 1);
         var sale = shops.SaleEntries(shops.FindShop("equipment-shop")).First(e => e.Equipment?.Id == "iron-sword");
         shops.TrySell(shops.FindShop("equipment-shop"), sale, 1, out _);
-        return JourneySnapshot.Capture(party, progress, secrets, dragon, shops, quest, PrototypeTravel.Volcano, 0.4f, -2.5f);
+        return JourneySnapshot.Capture(party, progress, secrets, dragon, shops, PrototypeTravel.Volcano, 0.4f, -2.5f);
     }
     private static void CheckLevelPersistence()
     {
@@ -97,7 +113,7 @@ internal static class SaveChecks
         int[] experience = { 100, 525, 5000 };
         for (int i = 0; i < 3; i++) journey.Party.Members[i].Progression.AddExperience(experience[i]);
         var snapshot = JourneySnapshot.Capture(journey.Party, journey.Progress, journey.Secrets, journey.Dragon,
-            journey.Shops, journey.Quest, PrototypeTravel.World, 0, -7);
+            journey.Shops, PrototypeTravel.World, 0, -7);
         var restored = RoundTrip(snapshot);
         for (int i = 0; i < 3; i++)
         {
@@ -122,7 +138,7 @@ internal static class SaveChecks
         journey.Party.Members[0].RestoreVitals(37, 9, true, 1);
         journey.Party.Members[1].RestoreVitals(0, 0, false, 0);
         var data = JourneySnapshot.Capture(journey.Party, journey.Progress, journey.Secrets, journey.Dragon,
-            journey.Shops, journey.Quest, PrototypeTravel.World, 0, -7);
+            journey.Shops, PrototypeTravel.World, 0, -7);
         var restored = RoundTrip(data);
         var hero = restored.Party.Members[0]; var healer = restored.Party.Members[1];
         Assert(hero.Hp == 37 && hero.Mp == 9 && hero.IsPoisoned && hero.BoundActions == 1, "HP, MP, veneno e correntes persistem no save.");
@@ -146,7 +162,7 @@ internal static class SaveChecks
         journey.Party.TryAddMaterias(materia); journey.Party.TryEquip(member, member.Armor, 0, materia, out _);
         member.RestoreVitals(member.MaxHp, member.MaxMp, true, 0);
         var grown = JourneySnapshot.Capture(journey.Party, journey.Progress, journey.Secrets, journey.Dragon,
-            journey.Shops, journey.Quest, PrototypeTravel.World, 0, -7);
+            journey.Shops, PrototypeTravel.World, 0, -7);
         var equipped = RoundTrip(grown).Party.Members[2];
         Assert(equipped.Hp == member.MaxHp && equipped.Mp == member.MaxMp && equipped.IsPoisoned,
             "Validacao de vitais considera nivel e materias instaladas antes de restaurar HP/MP.");
@@ -161,14 +177,11 @@ internal static class SaveChecks
         Assert(restored.Party.Members[1].Weapon == null && restored.Party.Members[0].Armor == null, "Espacos vazios permanecem vazios.");
         Assert(restored.Party.Members.Select(m => m.Limit.Charge).SequenceEqual(new[] {73, 100, 12}), "Limit individual preservado.");
         Assert(!restored.Progress.TryOpenChest("praca-primeiro-bau", 25), "Carregar nao permite receber o bau novamente.");
-        Assert(!restored.Quest.TryInteract(restored.Shops.FindShop("item-shop"), out _), "Missao/restock concluido nao repete recompensa.");
-        Assert(restored.Shops.FindShop("item-shop").Products[0].Stock == 11 && restored.Shops.FindShop("equipment-shop").Products[0].Stock == 0,
-            "Reposicao feita e estoque consumido de equipamentos preservados.");
+        Assert(restored.Shops.FindShop("item-shop").Products[0].Stock == 8 && restored.Shops.FindShop("equipment-shop").Products[0].Stock == 0,
+            "Estoques consumidos de itens e equipamentos preservados.");
         restored.Party.Members[0].Limit.Spend(); Assert(data.Members[0].Limit == 73, "Restauracao independente do snapshot original.");
         foreach (GameEnding ending in new[] {GameEnding.KingFreed, GameEnding.CastleDestroyed, GameEnding.HeroPossessed})
         { var final = Clone(data); final.Map = PrototypeTravel.Castle; final.X = 0; final.Y = 4; final.Ending = (int)ending; RoundTrip(final); }
-        for (int stage = 0; stage <= 2; stage++)
-        { var partial = Initial(); partial.DeliveryStage = stage; var state = RoundTrip(partial); Assert((int)state.Quest.Stage == stage, "Passos intermediarios da entrega persistem."); }
         foreach (int step in new[] {1, 2}) { var partial = Initial(); partial.Secrets.MonolithStep = step; Assert(RoundTrip(partial).Secrets.MonolithStep == step, "Enigma parcial persiste."); }
         foreach (var map in new PrototypeTravel(restored.Secrets).Maps)
         {
@@ -202,7 +215,6 @@ internal static class SaveChecks
         Invalid(data, d => d.Items[0].Quantity = -1, "Pilha negativa");
         Invalid(data, d => d.Stocks[0].Quantity = 999, "Estoque acima do inicial");
         Invalid(data, d => d.Stocks[1].Product = d.Stocks[0].Product, "Estoque repetido");
-        Invalid(data, d => d.DeliveryRestocked = false, "Entrega concluida sem reposicao");
         Invalid(data, d => d.Secrets.MonolithStep = 1, "Passagem sem tres segredos");
         Invalid(data, d => d.DragonDefeated = false, "Armadura sem dragao");
         Invalid(data, d => d.OpenedChests = new[] {"praca-primeiro-bau", "praca-primeiro-bau"}, "Bau repetido");
@@ -266,11 +278,10 @@ internal static class SaveChecks
         session.Party.TryRemoveEquipment(session.Party.Members[0], EquipmentSlot.Armor, out _);
         session.Party.Members[0].Limit.Restore(42);
         session.Shops.TryBuy(session.Shops.FindShop("item-shop"), session.Shops.FindShop("item-shop").Products[0], 1, out _);
-        session.Quest.TryInteract(session.Shops.FindShop("item-shop"), out _);
         var changed = JourneySnapshot.Capture(session.Party, session.Progress, session.Secrets, session.Dragon,
-            session.Shops, session.Quest, PrototypeTravel.Inn, PrototypeInnLayout.Spawn.x, PrototypeInnLayout.Spawn.y);
+            session.Shops, PrototypeTravel.Inn, PrototypeInnLayout.Spawn.x, PrototypeInnLayout.Spawn.y);
         Assert(previous.SequenceEqual(File.ReadAllBytes(store.SlotPath(1))) && !File.Exists(store.SlotPath(1) + ".bak"),
-            "Eventos de bau, inventario, loja, entrega e segredo nao gravam nem criam backup.");
+            "Eventos de bau, inventario, loja e segredo nao gravam nem criam backup.");
         Assert(store.TryRead(1, out var saved, out _) && saved.Progress.Gold == 50 && saved.Party.Members[0].Armor != null
             && saved.Party.Members[0].Limit.Charge == 0 && !saved.Secrets.KnowsPoem,
             "Recarregar antes de salvar recupera a jornada anterior.");
@@ -286,7 +297,7 @@ internal static class SaveChecks
     {
         try
         {
-            CheckDomain(); CheckInventoryEvents(); CheckLevelPersistence(); CheckConditionPersistence(); CheckCheatPersistence(); CheckPlayTime();
+            CheckDomain(); CheckInventoryEvents(); CheckLevelPersistence(); CheckConditionPersistence(); CheckCheatPersistence(); CheckPlayTime(); CheckLegacyShopSaves();
             CheckManualPersistence(Path.Combine(args[0], "manual-" + Guid.NewGuid().ToString("N")));
             CheckFiles(Path.Combine(args[0], "saves-" + Guid.NewGuid().ToString("N")));
             Console.WriteLine("Salvamento: " + checks + " verificacoes passaram."); return 0;

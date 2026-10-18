@@ -11,7 +11,7 @@ Imagens criadas com o imagegen integrado, em modo de geração, e preservadas no
 
 Importação Point/Clamp, sem mipmaps nem compressão. `CompactShopLayout` registra as duas plantas em UV, incluindo piso, limites para a dimensão do personagem, balcão, vendedor, atendimento e passagem. `CompactShopPixelScenery` usa `PaintedInteriorScenery`, compartilhado com Pousada e armas. Uma camada com os mesmos pixels da pintura dá profundidade ao balcão e encobre a parte inferior do vendedor.
 
-Os IDs `item-shop` e `materia-shop`, fachadas, catálogos, preços, estoques, compra, venda e missão de entrega permanecem conectados aos mesmos serviços do jogo. É possível interagir na frente do balcão ou com o vendedor. Saves antigos de lojas reaparecem na entrada segura da nova planta.
+Os IDs `item-shop` e `materia-shop`, fachadas, catálogos, preços, estoques, compra e venda permanecem conectados aos mesmos serviços do jogo. É possível interagir na frente do balcão ou com o vendedor. Saves antigos de lojas reaparecem na entrada segura da nova planta.
 
 ## Recursos aposentados
 
@@ -19,7 +19,7 @@ Após converter as três lojas, os GUIDs dos recursos antigos foram conferidos c
 
 ## Validação
 
-`Tools > Dragon Quest > Validate Compact Shops` verifica as duas pinturas e seus contornos, tamanho das plantas, colisões, rotas da entrada até balcão e saída, movimento nas bordas, atendimento, compra e venda de poção e matéria, missão completa de entrega, saves antigos e ausência dos recursos aposentados. Renderiza os três formatos e posições próximas ao balcão e às estantes em `Temp/CompactShopPreview` (ou `DQ_COMPACT_SHOP_OUTPUT`). Executa também as validações da loja de armas e da Pousada como regressão.
+`Tools > Dragon Quest > Validate Compact Shops` verifica as duas pinturas e seus contornos, tamanho das plantas, colisões, rotas da entrada até balcão e saída, movimento nas bordas, atendimento, compra e venda de poção e matéria, saves antigos e ausência dos recursos aposentados. Renderiza os três formatos e posições próximas ao balcão e às estantes em `Temp/CompactShopPreview` (ou `DQ_COMPACT_SHOP_OUTPUT`). Executa também as validações da loja de armas e da Pousada como regressão.
 
 Os scripts do jogo são compilados com as bibliotecas da Unity, e `Tools/Test-Saves.ps1` verifica persistência. A validação por lotes usa uma cópia temporária do projeto para preservar o Editor aberto.
 

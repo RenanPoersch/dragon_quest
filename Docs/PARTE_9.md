@@ -8,7 +8,7 @@ Novo jogo inicia na ilha com o kit econômico, sem gravar arquivos, e usa o prim
 
 - Na hospedaria, andar sobre o círculo do cristal abre a seleção dos três slots. Só escolher um slot grava a jornada; slots ocupados pedem confirmação. Ao salvar ou cancelar, saia do círculo e volte para reabrir a tela.
 - Também é possível salvar manualmente com E na hospedeira → Salvar jornada, ou **F5** no mapa global ou na hospedaria, fora de diálogo/menu/combate.
-- Vitórias, segredos, baús, entrega, compras, vendas, equipamentos, matérias e finais não gravam arquivos.
+- Vitórias, segredos, baús, compras, vendas, equipamentos, matérias e finais não gravam arquivos.
 - Os três slots, saves existentes e backups continuam funcionando no mesmo formato.
 
 O salvamento automático foi removido. A posição restaurada é a do último salvamento manual, não necessariamente a última posição antes de sair de Play. Os itens gastos, recompensas e Limit permanecem na sessão e entram no próximo save manual. HP/MP continuam sendo recriados completos em cada encontro, como nas entregas anteriores.
@@ -17,7 +17,7 @@ O aviso **Salvo / slot N** confirma a gravação. Salve no mapa global ou na hos
 
 ## Dados e arquivos
 
-O save inclui ouro, baús abertos, entrega e reposição já feita, estoque de cada produto, equipamento possuído/equipado, matérias e seus encaixes, consumíveis, Limit individual, poema/segredos/selos, dragão derrotado, armadura única, mapa, posição e final.
+O save inclui ouro, baús abertos, estoque de cada produto, equipamento possuído/equipado, matérias e seus encaixes, consumíveis, Limit individual, poema/segredos/selos, dragão derrotado, armadura única, mapa, posição e final.
 
 Na configuração atual do Windows, os arquivos ficam em:
 
@@ -38,7 +38,7 @@ O formato JSON tem versão explícita. IDs estáveis apontam para o catálogo do
 2. Com pelo menos um slot vazio, escolha New game por clique e depois por teclado em uma nova sessão: a ilha deve aparecer diretamente, sem seleção de saves, com 50 moedas, duas poções e um antídoto. Altere matérias e pare Play sem salvar. Ao reiniciar, o slot deve continuar vazio.
 3. Comece novamente e vá à hospedaria. Mova o herói até um ponto fácil de reconhecer e use F5. Confira **Salvo / slot N**. Ande para longe e reinicie Play: Continuar deve recuperar a posição exata do F5. Repita pelo diálogo da hospedeira. No mapa global, mova o herói até outro ponto, use F5 e reinicie Play: Continuar deve restaurar o mapa global e a posição salva. Em outros interiores e durante combate, F5 não deve gravar.
 4. Abra o baú, compre uma poção e altere um equipamento. Nenhum aviso de save deve aparecer. Reinicie sem salvar: ouro, baú, estoque e equipamento devem voltar ao último save manual. Repita as alterações, salve na hospedaria e recarregue: agora devem permanecer, com a tampa aberta e sem repetir a recompensa.
-5. Avance a entrega e os segredos. Retorne à hospedaria e salve antes de recarregar. Confira etapa, reposição, poema, monólitos e escama; alterações posteriores sem save devem ser descartadas ao recarregar.
+5. Avance os segredos. Retorne à hospedaria e salve antes de recarregar. Confira estoques, poema, monólitos e escama; alterações posteriores sem save devem ser descartadas ao recarregar.
 6. Vença o dragão, equipe a armadura e encaixe matérias nos dois pares. Não deve haver gravação automática. Salve na hospedaria e recarregue: Limit, armadura e combos permanecem, sem outra recompensa do dragão.
 7. Faça New game novamente e salve manualmente: o próximo slot vazio deve receber a jornada e o primeiro deve permanecer intacto. Com os três slots ocupados, New game ainda deve entrar diretamente na ilha sem alterar arquivos. Use F5 na hospedaria ou no mapa global: agora a seleção de destino deve aparecer. Teste Cancelar na confirmação e Back/Esc na seleção; a jornada deve continuar e os saves devem permanecer intactos. Repita e confirme Salvar jornada para substituir apenas o slot escolhido. Confira também que Continue mantém sua seleção dos três saves.
 8. Vença uma batalha ou conclua um final e volte ao menu sem salvar. Continuar deve recuperar o último save manual, anterior ao combate/desfecho. Saves antigos que já registravam um final devem continuar carregando a cena final.

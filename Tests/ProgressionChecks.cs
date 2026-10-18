@@ -141,58 +141,6 @@ internal static class ProgressionChecks
         Assert(rejected, "Recompensa negativa deve ser recusada na definicao do inimigo.");
     }
 
-    private static void CheckDeliveryAndRestock()
-    {
-        ShopService shops = Create(1000);
-        ShopInventory items = shops.FindShop("item-shop"), materia = shops.FindShop("materia-shop"), gear = shops.FindShop("equipment-shop");
-        Assert(shops.TryBuy(items, Product(items, "potion"), 3, out _) && shops.TryBuy(materia, Product(materia, "fire"), 2, out _)
-            && shops.TryBuy(gear, Product(gear, "iron-sword"), 2, out _), "Fixture deve gastar estoques das tres categorias.");
-        int beforeGold = shops.Progress.Gold, ownedPotions = shops.Party.Consumables.QuantityOf(PrototypePartyFactory.Potion);
-        int ownedMateria = shops.Party.Materias.Count, ownedGear = shops.Party.Equipments.Count;
-        var quest = new DeliveryQuest(shops);
-        Assert(quest.Stage == DeliveryStage.Available && quest.ActionLabel("item-shop") == "Aceitar entrega", "Missao deve iniciar disponivel no vendedor de itens.");
-        Assert(!quest.TryInteract(materia, out _) && !quest.TryInteract(gear, out _) && !quest.TryInteract(null, out _), "Entrega fora de ordem ou em vendedor errado deve ser recusada.");
-        ShopService foreign = Create();
-        Assert(!quest.TryInteract(foreign.FindShop("item-shop"), out _), "Vendedor de outra sessao nao pode avancar a missao.");
-        Assert(quest.TryInteract(items, out _) && quest.Stage == DeliveryStage.CarryingPackage && shops.Progress.Gold == beforeGold,
-            "Aceitar entrega concede pacote de historia, sem ouro adiantado.");
-        Assert(!quest.TryInteract(items, out _) && quest.ActionLabel("materia-shop") == "Entregar pacote", "Nao pode aceitar outro pacote enquanto carrega o primeiro.");
-        Assert(quest.TryInteract(materia, out _) && quest.Stage == DeliveryStage.Delivered && shops.Progress.Gold == beforeGold,
-            "Entregar pacote exige retorno ao remetente para receber recompensa.");
-        Assert(!quest.TryInteract(materia, out _), "Pacote entregue nao pode ser entregue novamente.");
-        var secondView = new DeliveryQuest(shops); // Duas referencias de UI nao podem duplicar o mesmo marco.
-        Assert(secondView.TryInteract(items, out _) && secondView.TryInteract(materia, out _), "Fixture cria outra selecao pendente da mesma missao.");
-        Assert(quest.TryInteract(items, out _) && quest.Stage == DeliveryStage.Completed && shops.Progress.Gold == beforeGold + 30,
-            "Retorno concede 30 moedas e encerra a missao.");
-        Assert(Product(items, "potion").Stock == 12 && Product(materia, "fire").Stock == 0 && Product(gear, "iron-sword").Stock == 0,
-            "Marco deve repor apenas consumiveis aos valores iniciais, preservando equipamentos/materias esgotados.");
-        Assert(shops.Party.Consumables.QuantityOf(PrototypePartyFactory.Potion) == ownedPotions && shops.Party.Materias.Count == ownedMateria
-            && shops.Party.Equipments.Count == ownedGear, "Reposicao do vendedor nao deve dar mercadorias gratis nem pacote vendavel ao jogador.");
-        Assert(!secondView.TryInteract(items, out _) && secondView.Stage == DeliveryStage.Completed && shops.Progress.Gold == beforeGold + 30,
-            "Outra selecao pendente deve reconhecer marco concluido antes de conceder ouro.");
-        Assert(!quest.TryInteract(items, out _) && new DeliveryQuest(shops).Stage == DeliveryStage.Completed, "Missao concluida nao pode reiniciar na mesma sessao.");
-        Assert(shops.TryBuy(items, Product(items, "potion"), 1, out _), "Consumivel reposto deve poder ser comprado novamente.");
-        int afterGold = shops.Progress.Gold;
-        Assert(!quest.TryInteract(items, out _) && !shops.TryRestockConsumables(DeliveryQuest.MilestoneId)
-            && Product(items, "potion").Stock == 11 && shops.Progress.Gold == afterGold, "Revisitar o vendedor nao repete recompensa ou reposicao.");
-        Assert(!shops.TryRestockConsumables(null) && !shops.TryRestockConsumables(" "), "Marco invalido nao pode repor estoque.");
-        Assert(new DeliveryQuest(foreign).Stage == DeliveryStage.Available && foreign.Progress.Gold == 50,
-            "Missao e marcos devem ser independentes entre sessoes.");
-    }
-
-    private static void CheckPendingQuestReward()
-    {
-        ShopService shops = Create(int.MaxValue);
-        ShopInventory items = shops.FindShop("item-shop"), materia = shops.FindShop("materia-shop");
-        Assert(shops.TryBuy(items, Product(items, "potion"), 1, out _), "Fixture abre somente 10 moedas de espaco.");
-        var quest = new DeliveryQuest(shops);
-        Assert(quest.TryInteract(items, out _) && quest.TryInteract(materia, out _), "Entrega deve progredir mesmo com saldo alto.");
-        Assert(!quest.TryInteract(items, out _) && quest.Stage == DeliveryStage.Delivered && Product(items, "potion").Stock == 11
-            && !shops.HasRestockedMilestone(DeliveryQuest.MilestoneId), "Falha ao receber nao conclui missao ou repoe estoque.");
-        Assert(shops.Progress.TrySpendGold(20) && quest.TryInteract(items, out _) && shops.Progress.Gold == int.MaxValue
-            && Product(items, "potion").Stock == 12, "Recompensa pendente deve completar quando saldo permitir.");
-    }
-
     private static AbilityDefinition Command(CombatantState actor, string id)
     {
         foreach (AbilityDefinition ability in actor.Definition.Abilities) if (ability.SourceAbilityId == id) return ability;
@@ -227,14 +175,15 @@ internal static class ProgressionChecks
         Assert(rewards.TryClaim(battle, out _) && shops.Progress.Gold == 85
             && shops.Party.Consumables.QuantityOf(PrototypePartyFactory.Potion) == 2 && shops.Party.Consumables.QuantityOf(PrototypePartyFactory.Antidote) == 1,
             "Primeira vitoria viavel concede ouro e preserva itens que nao foram usados.");
-        var quest = new DeliveryQuest(shops);
-        ShopInventory items = shops.FindShop("item-shop"), materiaShop = shops.FindShop("materia-shop");
-        Assert(quest.TryInteract(items, out _) && quest.TryInteract(materiaShop, out _) && quest.TryInteract(items, out _)
-            && shops.Progress.TryOpenChest("praca-primeiro-bau", 25) && shops.Progress.Gold == 140,
-            "Uma vitoria, a entrega e o bau devem permitir juntar 140 moedas sem repetir encontros.");
+        ShopInventory materiaShop = shops.FindShop("materia-shop");
+        Assert(shops.Progress.TryOpenChest("praca-primeiro-bau", 25) && shops.Progress.Gold == 110,
+            "Uma vitoria e o bau somam 110 moedas ao saldo inicial.");
+        var secondVictory = Fixture(true, 35); Finish(secondVictory);
+        Assert(rewards.TryClaim(secondVictory, out _) && shops.Progress.Gold == 145,
+            "Uma segunda vitoria fornece o ouro restante para o combo sem missoes de comerciantes.");
         Assert(shops.TryBuy(materiaShop, Product(materiaShop, "fire"), 1, out _)
-            && shops.TryBuy(materiaShop, Product(materiaShop, "all"), 1, out _) && shops.Progress.Gold == 0,
-            "Economia inicial deve permitir comprar Fogo + All usando as tres fontes de ouro.");
+            && shops.TryBuy(materiaShop, Product(materiaShop, "all"), 1, out _) && shops.Progress.Gold == 5,
+            "Duas vitorias e o bau permitem comprar Fogo + All conservando cinco moedas.");
         var aren = shops.Party.Members[0];
         Assert(shops.Party.TryEquip(aren, aren.Armor, 2, shops.Party.Materias[5], out _)
             && shops.Party.TryEquip(aren, aren.Armor, 3, shops.Party.Materias[6], out _), "Combo comprado deve poder ser montado na armadura inicial.");
@@ -246,7 +195,7 @@ internal static class ProgressionChecks
 
     public static int Run()
     {
-        CheckBattleRewards(); CheckEnemyBasedRewards(); CheckDeliveryAndRestock(); CheckPendingQuestReward(); CheckEconomicalPartyCanWin();
+        CheckBattleRewards(); CheckEnemyBasedRewards(); CheckEconomicalPartyCanWin();
         return checks;
     }
 }

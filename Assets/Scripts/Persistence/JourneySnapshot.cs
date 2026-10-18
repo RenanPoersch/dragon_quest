@@ -19,13 +19,12 @@ namespace DragonQuest.Persistence
         public AncientSecrets Secrets { get; internal set; }
         public DragonProgress Dragon { get; internal set; }
         public ShopService Shops { get; internal set; }
-        public DeliveryQuest Quest { get; internal set; }
     }
 
     public static class JourneySnapshot
     {
         public static JourneyData Capture(PartyProgress party, ExplorationProgress progress, AncientSecrets secrets,
-            DragonProgress dragon, ShopService shops, DeliveryQuest quest, string map, float x, float y, GameEnding ending = GameEnding.None)
+            DragonProgress dragon, ShopService shops, string map, float x, float y, GameEnding ending = GameEnding.None)
         {
             var members = new List<MemberData>(); var gear = new List<GearData>();
             var materias = new List<MateriaData>(); var items = new List<StackData>(); var stocks = new List<StockData>();
@@ -50,8 +49,7 @@ namespace DragonQuest.Persistence
                 Secrets = new SecretData {KnowsPoem = secrets.KnowsPoem, AltarSolved = secrets.AltarSolved,
                     MonolithStep = secrets.MonolithStep, HasScale = secrets.HasScale, PassageOpen = secrets.PassageOpen},
                 DragonDefeated = dragon.IsDefeated, Members = members.ToArray(), Gear = gear.ToArray(),
-                Materias = materias.ToArray(), Items = items.ToArray(), Stocks = stocks.ToArray(),
-                DeliveryStage = (int)quest.Stage, DeliveryRestocked = shops.HasRestockedMilestone(DeliveryQuest.MilestoneId)
+                Materias = materias.ToArray(), Items = items.ToArray(), Stocks = stocks.ToArray()
             };
         }
 
@@ -147,12 +145,8 @@ namespace DragonQuest.Persistence
             foreach (var product in products)
                 Require(stockIds.Contains(product.Key) || data.EquipmentCatalogVersion == 0
                     && product.Value.Equipment?.Slot == EquipmentSlot.Accessory, "Estoque incompleto.");
-            Require(Enum.IsDefined(typeof(DeliveryStage), data.DeliveryStage)
-                && data.DeliveryRestocked == (data.DeliveryStage == (int)DeliveryStage.Completed), "Missao/reposicao inconsistente.");
-            shops.RestoreDeliveryRestock(data.DeliveryRestocked);
-            var quest = new DeliveryQuest(shops); quest.Restore((DeliveryStage)data.DeliveryStage);
             var dragon = new DragonProgress(); dragon.Restore(data.DragonDefeated);
-            return new RestoredJourney {Data = data, Party = party, Progress = progress, Secrets = secrets, Dragon = dragon, Shops = shops, Quest = quest};
+            return new RestoredJourney {Data = data, Party = party, Progress = progress, Secrets = secrets, Dragon = dragon, Shops = shops};
         }
         private static EquipmentLoadout AssignGear(string id, EquipmentSlot slot, Dictionary<string, EquipmentLoadout> gear, HashSet<string> used)
         {
