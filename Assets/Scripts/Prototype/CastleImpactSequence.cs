@@ -13,8 +13,8 @@ namespace DragonQuest.Prototype
         public float Elapsed { get; private set; }
         public bool IsComplete => Elapsed >= CompleteAt;
         public float FallProgress => Clamp((Elapsed - MeteorStart) / FallDuration);
-        // Almost linear motion preserves the weight and deliberate speed of the descent.
-        public float Approach => FallProgress * (.8f + .2f * FallProgress);
+        // Start gently and accelerate continuously toward the castle, without braking before impact.
+        public float Approach => FallProgress * FallProgress;
         public float MeteorX => 300 + 580 * Approach;
         public float MeteorY => -70 + 200 * Approach;
         public float MeteorSize => 460 + 220 * Approach;

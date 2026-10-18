@@ -13,7 +13,21 @@ public static class CastleImpactChecks
     {
         Check(At(0).BlackOpacity == 1 && At(0).MeteorOpacity == 0, "Establish storm from black before meteor.");
         Check(At(CastleImpactSequence.MeteorStart).MeteorOpacity == 0, "Meteor waits for the storm establishing shot.");
-        Check(CastleImpactSequence.FallDuration >= 12, "Descent remains deliberately slow.");
+        Check(CastleImpactSequence.FallDuration >= 12, "Descent leaves time for the slow opening and accelerating approach.");
+        float quarter = CastleImpactSequence.FallDuration / 4;
+        float previousStepX = 0, previousStepY = 0;
+        for (int part=0;part<4;part++)
+        {
+            var from = At(CastleImpactSequence.MeteorStart+part*quarter);
+            var to = At(CastleImpactSequence.MeteorStart+(part+1)*quarter);
+            float stepX = to.MeteorX-from.MeteorX, stepY = to.MeteorY-from.MeteorY;
+            Check(stepX>previousStepX && stepY>previousStepY,
+                "Each equal time interval covers more distance on both axes, including the final approach.");
+            previousStepX=stepX; previousStepY=stepY;
+        }
+        Check(Near(At(CastleImpactSequence.ImpactAt).MeteorX,880)
+            && Near(At(CastleImpactSequence.ImpactAt).MeteorY,130),
+            "Acceleration preserves the collision position and the scheduled white flash.");
         Check(At(CastleImpactSequence.MeteorStart).ScreenShake==0, "The establishing storm stays steady before the meteor.");
         Check(At(6).ScreenShake>=3 && At(15.5f).ScreenShake>At(6).ScreenShake,
             "Repeated camera rumble starts during emergence and intensifies near the castle.");
@@ -56,7 +70,7 @@ public static class CastleImpactChecks
             bool rejected=false; try { At(0).Advance(bad); } catch (ArgumentOutOfRangeException) { rejected=true; }
             Check(rejected,"Invalid clocks are rejected.");
         }
-        Console.WriteLine("CASTLE_IMPACT_OK: "+checks+" slow descent, storm, collision, white hold and frame-rate checks.");
+        Console.WriteLine("CASTLE_IMPACT_OK: "+checks+" accelerating descent, storm, collision, white hold and frame-rate checks.");
         return 0;
     }
 }
