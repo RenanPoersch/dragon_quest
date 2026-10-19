@@ -153,6 +153,7 @@ namespace DragonQuest.Prototype
                 () => locations.LocationId == PrototypeTravel.Inn, () => dialogue.IsOpen || battle.IsBusy);
             innSavePoint.Initialize(player.GetComponent<PlayerMovement>(), () => dialogue.IsOpen || battle.IsBusy, saves.OpenInnSaveMenu);
             gameObject.AddComponent<DragonQuest.Audio.PrototypeMusicController>().Initialize(saves, locations, battle);
+            gameObject.AddComponent<DragonQuest.Audio.BattleSoundController>().Initialize(battle);
         }
 
         private Transform Group(string groupName, Transform parent = null)

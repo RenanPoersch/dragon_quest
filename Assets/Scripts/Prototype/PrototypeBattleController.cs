@@ -39,6 +39,7 @@ namespace DragonQuest.Prototype
         private bool trackingWalk;
         public RandomEncounterType RandomEncounter { get; private set; }
         public event System.Action<BattleOutcome> EncounterCompleted;
+        public event System.Action ActionPresented;
         public bool HasEnded {get;private set;}
         public CastleBattleRules CastleRules => Session?.Rules as CastleBattleRules;
         public bool IsCastleEncounter => CastleRules!=null;
@@ -353,6 +354,7 @@ namespace DragonQuest.Prototype
             PresentingActor = actor; PresentingAbility = ability; PresentingTargets = targets;
             IsPresentingConfusedAction = ability == BattleSession.MindControlAttack;
             ActionStartedAt = Time.unscaledTime;
+            ActionPresented?.Invoke();
         }
 
         private void AwardIfComplete()

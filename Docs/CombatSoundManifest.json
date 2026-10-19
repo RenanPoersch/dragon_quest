@@ -1,0 +1,506 @@
+[
+  {
+    "id": "attack-aren",
+    "name": "Ataque · Aren",
+    "source": "attack",
+    "actor": "aren",
+    "element": null,
+    "duration": 0.48,
+    "sha256": "c872ed00fe6976a75745289213bd45cc59bedf31bbde18a292ba28fd7d7de036"
+  },
+  {
+    "id": "attack-lia",
+    "name": "Ataque · Lia",
+    "source": "attack",
+    "actor": "lia",
+    "element": null,
+    "duration": 0.32,
+    "sha256": "af6889e92b2d6c665792b0aa98fb91e417f85074074fd882f7091ee11c13829f"
+  },
+  {
+    "id": "attack-bram",
+    "name": "Ataque · Bram",
+    "source": "attack",
+    "actor": "bram",
+    "element": null,
+    "duration": 0.62,
+    "sha256": "d2caca564195e256eba94d4b87ff63c40fdf2bf778dcb70a000cb45804675739"
+  },
+  {
+    "id": "heavy-strike",
+    "name": "Golpe forte",
+    "source": "heavy-strike",
+    "actor": null,
+    "element": null,
+    "duration": 0.72,
+    "sha256": "2306ccbcda48420b7698d5ec57f02efe7dcd0b6d4d4561ee5dfc44b08e10d8e9"
+  },
+  {
+    "id": "cleave",
+    "name": "Corte amplo",
+    "source": "cleave",
+    "actor": null,
+    "element": null,
+    "duration": 0.82,
+    "sha256": "7f6f983e5564963aee0f7215d6cb71215e2aeeaff8d4826f7af75ab44c7d1984"
+  },
+  {
+    "id": "defend",
+    "name": "Defender",
+    "source": "defend",
+    "actor": null,
+    "element": null,
+    "duration": 0.46,
+    "sha256": "ab8eb7fc907c029c2318f198ec12dad2c9b8f48cd1a96e5d2e8c4258c9bdab02"
+  },
+  {
+    "id": "taunt",
+    "name": "Provocar",
+    "source": "taunt",
+    "actor": null,
+    "element": null,
+    "duration": 0.85,
+    "sha256": "4dc5315156c45f454792e28938768c38a620d9274a0cbdc9e001c90cfc3ee5f0"
+  },
+  {
+    "id": "protect",
+    "name": "Proteger",
+    "source": "protect",
+    "actor": null,
+    "element": null,
+    "duration": 0.82,
+    "sha256": "6cd6f4b6bc30a198828e1f5a6e5742411db012d94beca38c053b0938b6ecaa25"
+  },
+  {
+    "id": "confused-attack",
+    "name": "Ataque confuso",
+    "source": "attack",
+    "actor": "confused",
+    "element": null,
+    "duration": 0.65,
+    "sha256": "1ac85dd8d9a74bbaac20db1189990b91d9c37fce9eda3c8967bf32ffe4056137"
+  },
+  {
+    "id": "fire",
+    "name": "Fogo",
+    "source": "fire",
+    "actor": null,
+    "element": "fire",
+    "duration": 1.12,
+    "sha256": "ed92b32c160e92703d65da1ad63a180396f5c1ad6ceba4df22082d33d85b8b1c"
+  },
+  {
+    "id": "ice",
+    "name": "Gelo",
+    "source": "ice",
+    "actor": null,
+    "element": "ice",
+    "duration": 1.025,
+    "sha256": "0da86921cbcda0c16f96ac98fbd051a91404cd8565d444d281f5658dd4b522c7"
+  },
+  {
+    "id": "thunder",
+    "name": "Thunder",
+    "source": "thunder",
+    "actor": null,
+    "element": "thunder",
+    "duration": 1.12,
+    "sha256": "ab568f73f1189a40f0738b12b6785448678b24eac4a11f48119c94f734c52690"
+  },
+  {
+    "id": "earth",
+    "name": "Terra",
+    "source": "earth",
+    "actor": null,
+    "element": "earth",
+    "duration": 1.4,
+    "sha256": "d3ab9c3fcd8da3a626a3d9bdf4ee28c42dd6ec8810351512e5acec8d5c5380b6"
+  },
+  {
+    "id": "chaos",
+    "name": "Caos",
+    "source": "chaos",
+    "actor": null,
+    "element": "chaos",
+    "duration": 1.8,
+    "sha256": "e3ee8ea532e9ce8e9a63195294a63abccb9098a6af9d20fea94aa957e58ad849"
+  },
+  {
+    "id": "heal",
+    "name": "Curar",
+    "source": "heal",
+    "actor": null,
+    "element": null,
+    "duration": 1.31,
+    "sha256": "46a9142d36a62c3e5a2f9379dc4599b936ad31882c65481c2ec248afb7393455"
+  },
+  {
+    "id": "cleanse",
+    "name": "Purificar",
+    "source": "cleanse",
+    "actor": null,
+    "element": null,
+    "duration": 1.06,
+    "sha256": "3e94c80dd289df49289b10a99713a35f4ab869dc8d05aeb60eff76ed525e23d4"
+  },
+  {
+    "id": "revive",
+    "name": "Reviver",
+    "source": "revive",
+    "actor": null,
+    "element": null,
+    "duration": 2.21,
+    "sha256": "d7240c441e7b568f98b613c14162326ab13bc17c10dbf099b5d1119d70bf4c27"
+  },
+  {
+    "id": "fire-all",
+    "name": "Fogo + All",
+    "source": "fire",
+    "actor": null,
+    "element": "fire",
+    "duration": 1.6,
+    "sha256": "93513dc07d7b44ab052e6e979d5a6cae85cc83ab369cba497424287b5d21ac73"
+  },
+  {
+    "id": "ice-all",
+    "name": "Gelo + All",
+    "source": "ice",
+    "actor": null,
+    "element": "ice",
+    "duration": 1.55,
+    "sha256": "92aae30c5aa64633738364ee23e743fff3b289835fdcc28006768cd52ee85d0e"
+  },
+  {
+    "id": "thunder-all",
+    "name": "Thunder + All",
+    "source": "thunder",
+    "actor": null,
+    "element": "thunder",
+    "duration": 1.45,
+    "sha256": "a265ecf593087603060d0b8f20bb12d0598b2a17411de0afc65757b25889e5ab"
+  },
+  {
+    "id": "earth-all",
+    "name": "Terra + All",
+    "source": "earth",
+    "actor": null,
+    "element": "earth",
+    "duration": 1.65,
+    "sha256": "d866ab95ba6c63c88dd7e5201d4c2f7cff9062b56f5e7a822602870a8c933385"
+  },
+  {
+    "id": "chaos-all",
+    "name": "Caos + All",
+    "source": "chaos",
+    "actor": null,
+    "element": "chaos",
+    "duration": 2.1,
+    "sha256": "bb572bda564c26da870f2f16a5873e6a853b1a4b19e3a776cb329750c44e9b7e"
+  },
+  {
+    "id": "heal-all",
+    "name": "Curar + All",
+    "source": "heal",
+    "actor": null,
+    "element": "heal",
+    "duration": 1.59,
+    "sha256": "de7850cc6d0097abd33e62ec9ee2868e6bde3511bd6dc0a1cd004f28e170e4ca"
+  },
+  {
+    "id": "cleanse-all",
+    "name": "Purificar + All",
+    "source": "cleanse",
+    "actor": null,
+    "element": "cleanse",
+    "duration": 1.34,
+    "sha256": "a1b26309e708fc648cb9d2eb6d34247cbcdcb7434a3ea91e315d462a2f8ba884"
+  },
+  {
+    "id": "revive-all",
+    "name": "Reviver + All",
+    "source": "revive",
+    "actor": null,
+    "element": "revive",
+    "duration": 2.49,
+    "sha256": "24af344157da7ae6fa5dc0f341155fce74891d199e6a09aff7721a9937560ed9"
+  },
+  {
+    "id": "infuse-fire",
+    "name": "Ataque com Fogo",
+    "source": "attack",
+    "actor": null,
+    "element": "fire",
+    "duration": 0.85,
+    "sha256": "12cfe750a79a96360af535a6dcfb8a2a7b6ccd4cc450d0a11fa2839111291d5e"
+  },
+  {
+    "id": "infuse-ice",
+    "name": "Ataque com Gelo",
+    "source": "attack",
+    "actor": null,
+    "element": "ice",
+    "duration": 0.85,
+    "sha256": "ff530e046d8f83779a0751cc4375fb779fb56a818f61ce70ecdf1500b7ba3cd6"
+  },
+  {
+    "id": "infuse-thunder",
+    "name": "Ataque com Raio",
+    "source": "attack",
+    "actor": null,
+    "element": "thunder",
+    "duration": 0.85,
+    "sha256": "b4974b1405878ca86b8fb393f4b73f734bac257a3f6cf8563a11ca60181d5b5b"
+  },
+  {
+    "id": "infuse-earth",
+    "name": "Ataque com Terra",
+    "source": "attack",
+    "actor": null,
+    "element": "earth",
+    "duration": 0.85,
+    "sha256": "285abad2294566dfda14d1033939ea8e2242e77d22013512bbc24c8984a4403c"
+  },
+  {
+    "id": "infuse-chaos",
+    "name": "Ataque com Caos",
+    "source": "attack",
+    "actor": null,
+    "element": "chaos",
+    "duration": 0.85,
+    "sha256": "bbf114f55601159536be7047982f50dc7fba347377fbf846b18a835ecfb197c1"
+  },
+  {
+    "id": "phoenix",
+    "name": "Invocar Fênix",
+    "source": "summon",
+    "actor": null,
+    "element": null,
+    "duration": 3.05,
+    "sha256": "70d27a6a75713634e4a938604e398394476f007857a4bb442ed0d8241ac5161a"
+  },
+  {
+    "id": "bahamut",
+    "name": "Invocar Bahamut",
+    "source": "bahamut",
+    "actor": null,
+    "element": null,
+    "duration": 3.1,
+    "sha256": "40b3845265057123573782aa9093110ad28292398928c8957d6ba9754bee910a"
+  },
+  {
+    "id": "titan",
+    "name": "Invocar Titan",
+    "source": "titan",
+    "actor": null,
+    "element": null,
+    "duration": 3.2,
+    "sha256": "d95a4294a4c3a8e3f0c4a285d24e1d97ac6209ff433ed8b0ec83445279012af1"
+  },
+  {
+    "id": "omnislash",
+    "name": "Omnislash · Aren",
+    "source": "omnislash",
+    "actor": "aren",
+    "element": null,
+    "duration": 6.3,
+    "sha256": "5f04b2a81b3cc05e7d671226067d07841c4e19427e203ed02c6d143c40298a70"
+  },
+  {
+    "id": "lia-salvation",
+    "name": "Aurora da Vida · Lia",
+    "source": "lia-salvation",
+    "actor": "lia",
+    "element": null,
+    "duration": 6.05,
+    "sha256": "33284206b2e7806a5496b6e7d349d396e4ed03bebc785689cacce6f87d326392"
+  },
+  {
+    "id": "bram-aegis",
+    "name": "Bastião Inabalável · Bram",
+    "source": "bram-aegis",
+    "actor": "bram",
+    "element": null,
+    "duration": 4.25,
+    "sha256": "70f3c242d06dae016f098c2a12728a184fbe182763e83c4597eb55d28180c41e"
+  },
+  {
+    "id": "attack-guard",
+    "name": "Ataque · Guarda / Soldado",
+    "source": "attack",
+    "actor": "guard/soldier",
+    "element": null,
+    "duration": 0.55,
+    "sha256": "eae0f1f823151fcf071719039c7857d73b0f69034c2dd3527b371ddcf74845d3"
+  },
+  {
+    "id": "attack-pirate",
+    "name": "Ataque · Pirata",
+    "source": "attack",
+    "actor": "pirate",
+    "element": null,
+    "duration": 0.47,
+    "sha256": "7f5c027be886c7be9b99a0a1349c274be627d1889a654289dd80d3ac896278ac"
+  },
+  {
+    "id": "attack-wolf",
+    "name": "Ataque · Lobo",
+    "source": "attack",
+    "actor": "wolf",
+    "element": null,
+    "duration": 0.83,
+    "sha256": "4c5a1a66993196b7a281139975abca78006b43cf8dbbc76c8679d916ee134aa0"
+  },
+  {
+    "id": "attack-golem",
+    "name": "Ataque · Golem",
+    "source": "attack",
+    "actor": "golem",
+    "element": null,
+    "duration": 1.05,
+    "sha256": "b40fb97f494f200cec56fc2624030743ebaf514b1d56242faf59b27b853eed31"
+  },
+  {
+    "id": "poison-strike",
+    "name": "Golpe venenoso",
+    "source": "poison-strike",
+    "actor": null,
+    "element": null,
+    "duration": 1.02,
+    "sha256": "a92582a116ce5621335dcb55b1600a95859bf652fade37814c91e6886fa839f6"
+  },
+  {
+    "id": "enemy-sweep",
+    "name": "Varredura",
+    "source": "enemy-sweep",
+    "actor": null,
+    "element": null,
+    "duration": 0.92,
+    "sha256": "a3905a9844a999a6d188b46eff03865a64f616e2eefb8485050b949131fa8a04"
+  },
+  {
+    "id": "dragon-claw",
+    "name": "Garra dracônica",
+    "source": "dragon-claw",
+    "actor": "dragon",
+    "element": null,
+    "duration": 0.95,
+    "sha256": "6bbdbe2e6fa9cd2acb35ffc4e203d1733aed33a1e0e1c3104726ef4b83744226"
+  },
+  {
+    "id": "charge-breath",
+    "name": "Preparar sopro",
+    "source": "charge-breath",
+    "actor": "dragon",
+    "element": null,
+    "duration": 1.2,
+    "sha256": "cc8aafee23f376299c603d11bc1019d6b6c235bc9bc6007e999a6556a1e267e4"
+  },
+  {
+    "id": "dragon-breath",
+    "name": "Sopro de fogo",
+    "source": "dragon-breath",
+    "actor": "dragon",
+    "element": null,
+    "duration": 1.95,
+    "sha256": "7e720a905e5cdc1aeae7a127045b3e32eb254e01d9524f52f1147be12f013033"
+  },
+  {
+    "id": "royal-strike",
+    "name": "Golpe do Rei Rubro",
+    "source": "royal-strike",
+    "actor": "tyrant",
+    "element": null,
+    "duration": 0.8,
+    "sha256": "2d79e7c60c0e75dfba7c45a27e048a97f0ac60fcba02fca269bfbe9558a8c24d"
+  },
+  {
+    "id": "royal-heavy",
+    "name": "Golpe esmagador",
+    "source": "royal-heavy",
+    "actor": "tyrant",
+    "element": null,
+    "duration": 1.12,
+    "sha256": "ceefeda7aa558219894f53ce78c5827908ba988d305e164a1b316a4f15516140"
+  },
+  {
+    "id": "tyrant-protect",
+    "name": "Protect · Rei Rubro",
+    "source": "tyrant-protect",
+    "actor": "tyrant",
+    "element": null,
+    "duration": 1.27,
+    "sha256": "1a69d3d68de4e95af9420e174c794783dcbb9d89727db66d4766eab4f43671dc"
+  },
+  {
+    "id": "prepare-meteor",
+    "name": "Carregar meteoro",
+    "source": "prepare-meteor",
+    "actor": "tyrant",
+    "element": null,
+    "duration": 1.38,
+    "sha256": "4b10c3c31c404fd6579f8388ad18631c3927f5f0eb234defe33929af8d7b8175"
+  },
+  {
+    "id": "flaming-meteor",
+    "name": "Meteoro flamejante",
+    "source": "flaming-meteor",
+    "actor": "tyrant",
+    "element": null,
+    "duration": 4.1,
+    "sha256": "027f0740974bca0e6c197168145f1c6d9fd4ea1848139dec7cb794b4ca56109e"
+  },
+  {
+    "id": "drain-life",
+    "name": "Drenar vida",
+    "source": "drain-life",
+    "actor": "evil-spirit",
+    "element": null,
+    "duration": 1.8,
+    "sha256": "e3299887d2fcb1fdec4409e26aac12171223277d37c9b3e11139f29b6f8d4975"
+  },
+  {
+    "id": "mind-control",
+    "name": "Mind Control",
+    "source": "mind-control",
+    "actor": "evil-spirit",
+    "element": null,
+    "duration": 2.2,
+    "sha256": "658c2af7e092f5687a0ad55ef3a23c7850712bc4795401754ed3bb0e65ba5ee2"
+  },
+  {
+    "id": "silence",
+    "name": "Silence",
+    "source": "silence",
+    "actor": "evil-spirit",
+    "element": null,
+    "duration": 0.78,
+    "sha256": "b11346978cbbc1cdbf43dcb412f4fe45d8420f1fc0729a32ad1dbdb1bfbb3b21"
+  },
+  {
+    "id": "chains",
+    "name": "Correntes",
+    "source": "chains",
+    "actor": "evil-spirit",
+    "element": null,
+    "duration": 1.48,
+    "sha256": "5174583991023e96eda36b80b2af2187120b22a9603cc1ded52e0403f3df87b4"
+  },
+  {
+    "id": "chaos-magic",
+    "name": "Caos Magic",
+    "source": "chaos-magic",
+    "actor": "evil-spirit",
+    "element": null,
+    "duration": 2.15,
+    "sha256": "e72e6f81b46e542a1ab2cbf77fd49408bb00a35fe5be5863f644c91657739670"
+  },
+  {
+    "id": "meteor-absorbed",
+    "name": "Meteoro absorvido · Armadura dracônica",
+    "source": "flaming-meteor",
+    "actor": "tyrant",
+    "element": null,
+    "duration": 3.4,
+    "sha256": "50d6ceb995b4de3031f48028bc4d02e7974604f189e4b783e6e47ce17b2b5752"
+  }
+]
