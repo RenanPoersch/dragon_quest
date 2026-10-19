@@ -13,15 +13,35 @@ foreach ($entryFolder in @('Assets/Plugins', 'Assets/Editor', 'Assets/Resources/
 }
 Copy-Item -LiteralPath (Join-Path $entryRuntime 'DragonQuest.Scripts.dll') -Destination (Join-Path $entryProject 'Assets/Plugins')
 Copy-Item -LiteralPath (Join-Path $entryRoot 'Tests/BattleEntryUnityChecks.cs') -Destination (Join-Path $entryProject 'Assets/Editor')
+Copy-Item -LiteralPath (Join-Path $entryRoot 'Tests/BattleEntryPlayModeChecks.cs') -Destination (Join-Path $entryProject 'Assets/Editor')
 Copy-Item -LiteralPath (Join-Path $entryRoot 'Assets/Resources/BattleEntrySwirl.shader') -Destination (Join-Path $entryProject 'Assets/Resources')
 foreach ($entryExtension in @('.png', '.png.meta')) {
     Copy-Item -LiteralPath (Join-Path $entryRoot "Assets/Resources/PixelArt/WorldGroundMap$entryExtension") -Destination (Join-Path $entryProject 'Assets/Resources/PixelArt')
 }
 Copy-Item -LiteralPath (Join-Path $entryRoot 'ProjectSettings/ProjectVersion.txt') -Destination (Join-Path $entryProject 'ProjectSettings')
-$entryInput = Get-ChildItem -LiteralPath (Join-Path $entryRoot 'Library/PackageCache') -Directory -Filter 'com.unity.inputsystem@*' | Select-Object -First 1
-if (-not $entryInput) { throw 'Importe o Input System na Unity antes dos testes.' }
-@{ dependencies = @{ 'com.unity.inputsystem' = ('file:' + $entryInput.FullName.Replace('\', '/')); 'com.unity.modules.physics2d' = '1.0.0' } } |
-    ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (Join-Path $entryProject 'Packages/manifest.json') -Encoding utf8
+# Exercise camera capture under the same URP 2D pipeline as the game.
+Copy-Item -LiteralPath (Join-Path $entryRoot 'Assets/Settings') -Destination (Join-Path $entryProject 'Assets') -Recurse -Force
+foreach ($entrySetting in @('GraphicsSettings.asset', 'QualitySettings.asset')) {
+    Copy-Item -LiteralPath (Join-Path $entryRoot "ProjectSettings/$entrySetting") -Destination (Join-Path $entryProject 'ProjectSettings') -Force
+}
+$entryDependencies = @{ 'com.unity.modules.physics2d' = '1.0.0' }
+$entryQueue = [Collections.Generic.Queue[string]]::new()
+$entryQueue.Enqueue('com.unity.inputsystem')
+$entryQueue.Enqueue('com.unity.render-pipelines.universal')
+while ($entryQueue.Count -gt 0) {
+    $entryName = $entryQueue.Dequeue()
+    if ($entryDependencies.ContainsKey($entryName)) { continue }
+    if ($entryName.StartsWith('com.unity.modules.')) { $entryDependencies[$entryName] = '1.0.0'; continue }
+    $entryCached = Get-ChildItem -LiteralPath (Join-Path $entryRoot 'Library/PackageCache') -Directory -Filter "$entryName@*" | Select-Object -First 1
+    if (-not $entryCached) { throw "Importe $entryName na Unity antes dos testes." }
+    $entryDependencies[$entryName] = 'file:' + $entryCached.FullName.Replace('\', '/')
+    $entryPackage = Get-Content -LiteralPath (Join-Path $entryCached.FullName 'package.json') -Raw | ConvertFrom-Json
+    if ($entryPackage.dependencies) {
+        foreach ($entryDependency in $entryPackage.dependencies.PSObject.Properties.Name) { $entryQueue.Enqueue($entryDependency) }
+    }
+}
+@{ dependencies = $entryDependencies } | ConvertTo-Json -Depth 5 |
+    Set-Content -LiteralPath (Join-Path $entryProject 'Packages/manifest.json') -Encoding utf8
 $entryLog = Join-Path $entryProject 'validation.log'
 $entryPreviousOutput = $env:DQ_BATTLE_ENTRY_OUTPUT
 try {
@@ -33,6 +53,15 @@ try {
     Get-Content -LiteralPath $entryLog | Select-String 'BATTLE_ENTRY_UNITY_CHECKS_OK|Exception:|error CS|Shader error'
     if ($entryProcess.ExitCode -ne 0 -or -not (Select-String -LiteralPath $entryLog -Pattern 'BATTLE_ENTRY_UNITY_CHECKS_OK' -Quiet)) {
         throw "Validacao da transicao falhou. Consulte $entryLog"
+    }
+    $entryPlayLog = Join-Path $entryProject 'playmode.log'
+    $entryPlayProcess = Start-Process -FilePath (Join-Path $UnityEditorPath 'Unity.exe') -ArgumentList @('-batchmode', '-force-d3d11',
+        '-projectPath', ('"' + $entryProject + '"'), '-executeMethod', 'BattleEntryPlayModeChecks.Run', '-logFile', ('"' + $entryPlayLog + '"')) -WindowStyle Hidden -PassThru
+    Write-Output "Battle entry Play Mode PID $($entryPlayProcess.Id). Log: $entryPlayLog"
+    $entryPlayProcess.WaitForExit()
+    Get-Content -LiteralPath $entryPlayLog | Select-String 'BATTLE_ENTRY_PLAYMODE_CHECKS_OK|Exception:|error CS|Shader error'
+    if ($entryPlayProcess.ExitCode -ne 0 -or -not (Select-String -LiteralPath $entryPlayLog -Pattern 'BATTLE_ENTRY_PLAYMODE_CHECKS_OK' -Quiet)) {
+        throw "Validacao da transicao em execucao falhou. Consulte $entryPlayLog"
     }
 }
 finally { $env:DQ_BATTLE_ENTRY_OUTPUT = $entryPreviousOutput }

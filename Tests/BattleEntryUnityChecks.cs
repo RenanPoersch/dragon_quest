@@ -7,6 +7,8 @@ using DragonQuest.Exploration;
 using DragonQuest.Interactions;
 using DragonQuest.Prototype;
 using UnityEditor;
+using UnityEditor.SceneManagement;
+using UnityEngine.Rendering;
 using UnityEngine;
 
 public static class BattleEntryUnityChecks
@@ -23,6 +25,7 @@ public static class BattleEntryUnityChecks
             ValidateSequence();
             ValidateController();
             ValidateShader();
+            ValidateCameraCapture();
             Debug.Log("BATTLE_ENTRY_UNITY_CHECKS_OK: " + checks + " checks.");
             EditorApplication.Exit(0);
         }
@@ -89,6 +92,88 @@ public static class BattleEntryUnityChecks
             Check(!controller.IsEnteringBattle, "disabling cleans up without leaving an input lock");
         }
         finally { UnityEngine.Object.DestroyImmediate(root); }
+    }
+
+    private static void ValidateCameraCapture()
+    {
+        Check(GraphicsSettings.currentRenderPipeline != null, "capture runs with the game's URP renderer");
+        Texture2D map = Resources.Load<Texture2D>("PixelArt/WorldGroundMap");
+        Check(map != null, "exploration artwork is available to the camera");
+        var scene = EditorSceneManager.NewPreviewScene();
+        var root = new GameObject("Battle entry / live exploration camera");
+        UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(root, scene);
+        var camera = root.AddComponent<Camera>();
+        camera.orthographic = true; camera.orthographicSize = 5;
+        camera.clearFlags = CameraClearFlags.SolidColor; camera.backgroundColor = Color.black;
+        camera.transform.position = new Vector3(0, 0, -10);
+        camera.overrideSceneCullingMask = EditorSceneManager.GetSceneCullingMask(scene);
+        var picture = new GameObject("Exploration artwork"); picture.transform.SetParent(root.transform, false);
+        picture.transform.position = Vector3.zero;
+        var renderer = picture.AddComponent<SpriteRenderer>();
+        var sprite = Sprite.Create(map, new Rect(0, 0, map.width, map.height), new Vector2(.5f, .5f), map.height / 10f);
+        renderer.sprite = sprite;
+        var unlit = new Material(Shader.Find("Universal Render Pipeline/2D/Sprite-Unlit-Default"));
+        renderer.sharedMaterial = unlit;
+        var transition = root.AddComponent<BattleEntryTransition>();
+        var begin = typeof(BattleEntryTransition).GetMethod("BeginFromCamera", Private);
+        var render = typeof(BattleEntryTransition).GetMethod("RenderSwirl", Private);
+        var snapshotField = typeof(BattleEntryTransition).GetField("snapshot", Private);
+        var frameField = typeof(BattleEntryTransition).GetField("frame", Private);
+        string output = Environment.GetEnvironmentVariable("DQ_BATTLE_ENTRY_OUTPUT");
+        if (string.IsNullOrEmpty(output)) output = Path.GetFullPath("Temp/BattleEntryPreview");
+        Directory.CreateDirectory(output);
+        RenderTexture previous = RenderTexture.active;
+        try
+        {
+            foreach (var size in new[] { new Vector2Int(1280, 720), new Vector2Int(1280, 800), new Vector2Int(960, 720), new Vector2Int(1920, 810) })
+            {
+                var originalTarget = new RenderTexture(size.x, size.y, 24);
+                var readback = new Texture2D(size.x, size.y, TextureFormat.RGBA32, false);
+                camera.targetTexture = originalTarget; camera.aspect = (float)size.x / size.y;
+                picture.transform.localScale = new Vector3(camera.aspect / ((float)map.width / map.height), 1, 1);
+                Rect viewport = camera.rect;
+                float aspect = camera.aspect;
+                try
+                {
+                    camera.Render(); // Warm the same renderer used by the game's camera stack.
+                    Color32[] reference = Read(originalTarget, readback);
+                    Check(reference.Count(p => p.r > 25 || p.g > 25 || p.b > 25) > reference.Length * .7,
+                        "the real camera sees the exploration map at " + size);
+                    RenderTexture.active = previous;
+                    begin.Invoke(transition, new object[] { camera });
+                    var captured = (RenderTexture)snapshotField.GetValue(transition);
+                    var frame = (RenderTexture)frameField.GetValue(transition);
+                    Check(transition.IsPlaying && captured != null && frame != null, "capture exists before animation starts");
+                    Check(camera.targetTexture == originalTarget && camera.rect == viewport && Mathf.Approximately(camera.aspect, aspect)
+                        && RenderTexture.active == previous, "capture restores camera and render state");
+                    Color32[] mapCapture = Read(captured, readback);
+                    Check(Difference(reference, mapCapture) < 2, "transition captures actual exploration pixels instead of a blank buffer");
+                    Color32[] first = Read(frame, readback);
+                    Check(Difference(mapCapture, first) < 2, "the first animation frame contains the captured map");
+                    transition.Sequence.Advance(.6f); render.Invoke(transition, null);
+                    Color32[] winding = Read(frame, readback);
+                    Check(Difference(first, winding) > 10 && winding.Count(p => p.r > 25 || p.g > 25 || p.b > 25) > winding.Length * .7,
+                        "the runtime animation visibly twists map pixels before closing");
+                    File.WriteAllBytes(Path.Combine(output, "camera-swirl-" + size.x + "x" + size.y + ".png"), readback.EncodeToPNG());
+                    transition.Sequence.Advance(.6f); render.Invoke(transition, null);
+                    Check(Difference(winding, Read(frame, readback)) > 10, "the runtime clock advances the vortex");
+                    transition.Cancel();
+                    Check(!transition.IsPlaying && snapshotField.GetValue(transition) == null && frameField.GetValue(transition) == null,
+                        "capture resources are released between repeated encounters");
+                }
+                finally
+                {
+                    camera.targetTexture = null; RenderTexture.active = previous;
+                    originalTarget.Release(); UnityEngine.Object.DestroyImmediate(originalTarget); UnityEngine.Object.DestroyImmediate(readback);
+                }
+            }
+        }
+        finally
+        {
+            transition.Cancel(); RenderTexture.active = previous;
+            UnityEngine.Object.DestroyImmediate(unlit); UnityEngine.Object.DestroyImmediate(sprite);
+            EditorSceneManager.ClosePreviewScene(scene);
+        }
     }
 
     private static void ValidateShader()

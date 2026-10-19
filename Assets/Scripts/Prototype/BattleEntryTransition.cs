@@ -1,4 +1,3 @@
-using System.Collections;
 using DragonQuest.Input;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -34,46 +33,86 @@ namespace DragonQuest.Prototype
         public BattleEntrySequence Sequence { get; } = new BattleEntrySequence();
         public bool IsPlaying => Sequence.IsPlaying;
         public bool HidesBattle => IsPlaying && !Sequence.ShowsBattle;
-        private Coroutine capture;
         private RenderTexture snapshot, frame;
         private Material swirl;
-        private bool captured;
 
         public void Begin()
         {
             if (!Application.isPlaying || !isActiveAndEnabled || SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null) return;
+            BeginFromCamera(Camera.main);
+        }
+
+        private void BeginFromCamera(Camera view)
+        {
             Cancel();
+            if (view == null) return;
             Shader shader = Resources.Load<Shader>("BattleEntrySwirl");
-            if (shader != null && shader.isSupported)
-                swirl = new Material(shader) { name = "Battle entry / swirl", hideFlags = HideFlags.HideAndDontSave };
+            if (shader == null || !shader.isSupported) return;
+            swirl = new Material(shader) { name = "Battle entry / swirl", hideFlags = HideFlags.HideAndDontSave };
+            CaptureExploration(view);
             Sequence.Begin();
-            capture = StartCoroutine(CaptureExploration());
+            RenderSwirl();
         }
 
-        private IEnumerator CaptureExploration()
+        private void CaptureExploration(Camera view)
         {
-            // The battle HUD stays hidden for this frame, so the capture contains the exploration view.
-            yield return new WaitForEndOfFrame();
-            snapshot = CreateTexture("Battle entry / exploration");
-            frame = CreateTexture("Battle entry / frame");
-            ScreenCapture.CaptureScreenshotIntoRenderTexture(snapshot);
-            captured = true;
-            capture = null;
+            int width = view.targetTexture != null ? view.targetTexture.width : Screen.width;
+            int height = view.targetTexture != null ? view.targetTexture.height : Screen.height;
+            snapshot = CreateTexture("Battle entry / exploration", width, height, 24);
+            frame = CreateTexture("Battle entry / frame", width, height, 0);
+            RenderTexture previousTarget = view.targetTexture;
+            RenderTexture previousActive = RenderTexture.active;
+            float previousAspect = view.aspect;
+            Rect previousViewport = view.rect;
+            try
+            {
+                // Render the exploration camera directly. A screen backbuffer can be empty in
+                // the Editor or while changing views, and ScreenCapture is an optional module.
+                RenderTexture.active = snapshot;
+                GL.Clear(true, true, Color.black);
+                if (GraphicsSettings.currentRenderPipeline != null)
+                {
+                    var request = new RenderPipeline.StandardRequest { destination = snapshot };
+                    RenderPipeline.SubmitRenderRequest(view, request);
+                }
+                else
+                {
+                    view.targetTexture = snapshot;
+                    view.Render();
+                }
+            }
+            finally
+            {
+                view.targetTexture = previousTarget;
+                view.aspect = previousAspect;
+                view.rect = previousViewport;
+                RenderTexture.active = previousActive;
+            }
         }
 
-        private static RenderTexture CreateTexture(string label)
+        private static RenderTexture CreateTexture(string label, int width, int height, int depth)
         {
-            var texture = new RenderTexture(Mathf.Max(1, Screen.width), Mathf.Max(1, Screen.height), 0, RenderTextureFormat.ARGB32)
+            var texture = new RenderTexture(Mathf.Max(1, width), Mathf.Max(1, height), depth, RenderTextureFormat.ARGB32)
                 { name = label, filterMode = FilterMode.Bilinear, wrapMode = TextureWrapMode.Clamp };
             texture.Create();
             return texture;
         }
 
+        private void RenderSwirl()
+        {
+            swirl.SetFloat("_Progress", Sequence.SwirlProgress);
+            swirl.SetFloat("_Aspect", (float)snapshot.width / snapshot.height);
+            RenderTexture previous = RenderTexture.active;
+            try { Graphics.Blit(snapshot, frame, swirl); }
+            finally { RenderTexture.active = previous; }
+        }
+
         private void Update()
         {
-            if (!IsPlaying || !captured) return;
+            if (!IsPlaying) return;
             Sequence.Advance(Time.unscaledDeltaTime);
             if (!IsPlaying) { ReleaseTextures(); GameInput.ConsumeGamepadFrame(); }
+            else if (!Sequence.ShowsBattle) RenderSwirl();
         }
 
         public void MarkBattleReady()
@@ -85,7 +124,7 @@ namespace DragonQuest.Prototype
         {
             if (!IsPlaying) return;
             if (Event.current.isKey || Event.current.isMouse) Event.current.Use();
-            if (!captured || Event.current.type != EventType.Repaint) return;
+            if (Event.current.type != EventType.Repaint) return;
             Matrix4x4 previousMatrix = GUI.matrix;
             Color previousColor = GUI.color;
             int previousDepth = GUI.depth;
@@ -95,21 +134,7 @@ namespace DragonQuest.Prototype
                 var viewport = new Rect(0, 0, Screen.width, Screen.height);
                 if (!Sequence.ShowsBattle)
                 {
-                    if (swirl != null)
-                    {
-                        swirl.SetFloat("_Progress", Sequence.SwirlProgress);
-                        swirl.SetFloat("_Aspect", (float)snapshot.width / snapshot.height);
-                        RenderTexture previous = RenderTexture.active;
-                        try { Graphics.Blit(snapshot, frame, swirl); }
-                        finally { RenderTexture.active = previous; }
-                        GUI.DrawTexture(viewport, frame, ScaleMode.StretchToFill, false);
-                    }
-                    else
-                    {
-                        GUI.DrawTexture(viewport, snapshot, ScaleMode.StretchToFill, false);
-                        GUI.color = new Color(0, 0, 0, Sequence.SwirlProgress);
-                        GUI.DrawTexture(viewport, Texture2D.whiteTexture);
-                    }
+                    GUI.DrawTexture(viewport, frame, ScaleMode.StretchToFill, false);
                 }
                 else
                 {
@@ -123,13 +148,11 @@ namespace DragonQuest.Prototype
         private void OnDisable() => Cancel();
         public void Cancel()
         {
-            if (capture != null) { StopCoroutine(capture); capture = null; }
             Sequence.Cancel();
             ReleaseTextures();
         }
         private void ReleaseTextures()
         {
-            captured = false;
             if (snapshot != null) { snapshot.Release(); DestroyOwned(snapshot); snapshot = null; }
             if (frame != null) { frame.Release(); DestroyOwned(frame); frame = null; }
             if (swirl != null) { DestroyOwned(swirl); swirl = null; }
