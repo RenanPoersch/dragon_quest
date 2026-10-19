@@ -154,7 +154,7 @@ public static class InnValidation
         var combat=root.AddComponent<PrototypeBattleController>();
         var maps=root.AddComponent<PrototypeLocations>();
         var travel=new PrototypeTravel();travel.TryTravel(PrototypeTravel.City,out _);travel.TryTravel(PrototypeTravel.Inn,out _);
-        var store=new DragonQuest.Persistence.SaveStore(Path.Combine(output,"step-on-save-checks"));
+        var store=new DragonQuest.Persistence.SaveStore(Path.Combine(output,"step-on-save-checks-"+Guid.NewGuid().ToString("N")));
         SetPrivate(maps,"navigation",travel);
         SetPrivate(controller,"store",store);SetPrivate(controller,"battle",combat);
         SetPrivate(controller,"locations",maps);SetPrivate(controller,"player",hero);SetPrivate(controller,"dialogue",dialogue);
@@ -164,10 +164,56 @@ public static class InnValidation
         Assert(controller.IsMenuVisible && controller.ActiveSlot==2,"crystal opens slot selection even when a current slot is assigned");
         Assert(!store.Exists(1)&&!store.Exists(2)&&!store.Exists(3),"opening slot selection never writes a save");
         InvokePrivate(controller,"CloseSaveMenu");
+        CheckKeeperSaveSelection(root,hero,dialogue,controller,combat,travel,store);
         dialogue.Open("Hospedeira","Conversa em andamento.");controller.OpenInnSaveMenu();
         Assert(!controller.IsMenuVisible,"dialogue blocks the save selection");dialogue.Close();
         travel.TryTravel(PrototypeTravel.City,out _);controller.OpenInnSaveMenu();
         Assert(!controller.IsMenuVisible,"save crystal menu is restricted to the inn");
+    }
+    private static void CheckKeeperSaveSelection(GameObject root,PlayerMovement hero,DialogueController dialogue,
+        PrototypeSaveController controller,PrototypeBattleController combat,
+        PrototypeTravel travel,DragonQuest.Persistence.SaveStore store)
+    {
+        var progress=new ExplorationProgress(50);
+        var secrets=new AncientSecrets();var dragon=new DragonProgress();
+        combat.Initialize(hero,dialogue,progress,()=>controller.IsMenuVisible,dragon,secrets);
+        var shops=root.AddComponent<PrototypeShopController>();shops.Initialize(hero,dialogue,combat,progress);
+        SetPrivate(controller,"shops",shops);SetPrivate(controller,"progress",progress);
+        SetPrivate(controller,"secrets",secrets);SetPrivate(controller,"dragon",dragon);
+        var snapshot=DragonQuest.Persistence.JourneySnapshot.Capture(combat.Party,progress,secrets,dragon,
+            shops.Service,PrototypeTravel.Inn,hero.transform.position.x,hero.transform.position.y);
+        Assert(store.TryWrite(2,snapshot,out _),"existing slot fixture is saved");
+        string existing=File.ReadAllText(store.SlotPath(2));
+        var cityObject=new GameObject("Atendimento real / validacao");cityObject.transform.SetParent(root.transform,false);
+        var city=cityObject.AddComponent<PrototypeCity>();
+        SetPrivate(city,"scenery",new ObliqueScenery());SetPrivate(city,"navigation",travel);
+        SetPrivate(city,"saves",controller);
+        var interactions=new List<Interactable>();
+        typeof(PrototypeCity).GetMethod("CreateInn",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Instance)
+            .Invoke(city,new object[] { interactions });
+        var services=interactions.OfType<InnInteraction>().ToArray();
+        Assert(services.Length==2,"actual inn provides keeper and reception interactions");
+        var context=new InteractionContext(dialogue,progress,_=>{},isBusy:()=>combat.IsBusy);
+        foreach (InnInteraction service in services)
+        {
+            service.Interact(context);dialogue.Close();
+            Assert(!controller.IsMenuVisible,"cancelling keeper dialogue does not open save slots");
+            foreach (int activeSlot in new[] { 0,2 })
+            {
+                SetPrivate(controller,"<ActiveSlot>k__BackingField",activeSlot);
+                service.Interact(context);dialogue.RevealAll();
+                Assert(dialogue.ConfirmChoice(),"keeper save choice confirms");
+                Assert(controller.IsMenuVisible && !controller.IsFrontEndVisible && !dialogue.IsOpen && controller.ActiveSlot==activeSlot,
+                    "keeper and reception open slot selection for new and existing journeys");
+                Assert(!(bool)typeof(PlayerMovement).GetField("movementEnabled",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Instance).GetValue(hero),
+                    "keeper save menu blocks movement");
+                Assert(!store.Exists(1)&&!store.Exists(3)&&File.ReadAllText(store.SlotPath(2))==existing,
+                    "keeper save choice does not write or overwrite before slot confirmation");
+                InvokePrivate(controller,"Back");
+                Assert(!controller.IsMenuVisible && !dialogue.IsOpen,"cancelling keeper save menu returns to exploration");
+            }
+        }
+        UnityEngine.Object.DestroyImmediate(cityObject);
     }
     private static void InvokePrivate(object target,string method)
         => target.GetType().GetMethod(method,System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Instance).Invoke(target,null);

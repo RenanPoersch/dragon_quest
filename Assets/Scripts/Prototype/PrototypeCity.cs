@@ -349,10 +349,10 @@ namespace DragonQuest.Prototype
             inn.gameObject.AddComponent<InnPixelScenery>().Build(frictionless);
             CreatePassage("Saida da hospedaria",PrototypeTravel.Inn,inn,PrototypeTravel.City);
             InnInteraction keeper=CreateNpcFigure("Hospedeira",PrototypeInnLayout.Keeper,"B89673",inn).AddComponent<InnInteraction>();
-            keeper.Initialize(() => saves.SaveManual(), () => innRest.Begin());
+            keeper.Initialize(() => saves.OpenInnSaveMenu(), () => innRest.Begin());
             interactions.Add(keeper);
             InnInteraction reception=Entity("Recepcao / falar com a hospedeira",PrototypeInnLayout.Reception,inn).AddComponent<InnInteraction>();
-            reception.Initialize(() => saves.SaveManual(), () => innRest.Begin());
+            reception.Initialize(() => saves.OpenInnSaveMenu(), () => innRest.Begin());
             interactions.Add(reception);
             innSavePoint=Entity("Cristal de salvamento",PrototypeInnLayout.SavePoint,inn).AddComponent<InnSavePoint>();
             return inn;
