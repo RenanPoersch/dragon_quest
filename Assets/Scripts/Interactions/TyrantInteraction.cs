@@ -26,7 +26,7 @@ namespace DragonQuest.Interactions
         }
         public override void Interact(InteractionContext context)
         {
-            context.Dialogue.OpenWithCompletion("Tirano",startBattle,"Todo caminho nesta ilha termina diante do meu trono. Curvem-se, ou o proprio ceu caira sobre voces!",
+            context.Dialogue.OpenWithCompletion("Rei Rubro",startBattle,"Todo caminho nesta ilha termina diante do meu trono. Curvem-se, ou o proprio ceu caira sobre voces!",
                 Revealed()?"A Armadura draconica revela o espirito ao lado do rei. Derrote a sombra e preserve seu hospedeiro. Matar o rei apenas dara a ela um novo corpo."
                     :"Por um instante, uma segunda voz se mistura a dele. Ha algo alem de um homem no trono, mas voces ainda nao conseguem alcanca-lo.");
             presentParty?.Invoke(context.Dialogue);

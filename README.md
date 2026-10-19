@@ -81,15 +81,15 @@ O vulcão tem um caminho curto entre lava e rochas até o **Dragão corrompido**
 
 A armadura dá **+16 de defesa, resistência a Fogo e quatro encaixes em dois pares ligados**. Qualquer personagem pode usá-la; o bônus do tank aumenta sua defesa base para +20. Ela é protegida contra venda e precisa ser equipada para revelar o espírito. Na derrota, a equipe retorna à hospedaria, conservando Limit e progresso; consumíveis gastos continuam gastos. Veja `Docs/PARTE_7C.md` para testar.
 
-## Parte 8 — tirano, espírito e três finais
+## Parte 8 — Rei Rubro, espírito e três finais
 
-Use E no tirano e conclua a conversa para iniciar o confronto. Com a Armadura dracônica equipada, o espírito aparece desde o início e possui turno próprio, usando **Drenar vida, Correntes e Caos Magic em área**.
+Use E no Rei Rubro e conclua a conversa para iniciar o confronto. Com a Armadura dracônica equipada, o espírito aparece desde o início e possui turno próprio, usando **Drenar vida, Correntes e Caos Magic em área**.
 
-O tirano usa golpes físicos fortes sem elemento. Aos **20% de HP**, inicia uma conjuração de **cinco turnos próprios**: Protect no primeiro, carga crescente nos três seguintes e queda no quinto. Protect reduz o dano recebido pela metade, com efeito de escudo ao ser atingido; Shield aparece completo antes da pose de conjuração. Entre os turnos permanece apenas o sprite do rei; números flutuantes de 5 a 1 mostram o progresso, com fonte ligeiramente maior que o dano. O meteoro aparece somente no lançamento final. Um portador vivo da armadura absorve o meteoro inteiro; revivê-lo antes do lançamento restaura essa proteção.
+O Rei Rubro usa golpes físicos fortes sem elemento. Aos **20% de HP**, inicia uma conjuração de **cinco turnos próprios**: Protect no primeiro, carga crescente nos três seguintes e queda no quinto. Protect reduz o dano recebido pela metade, com efeito de escudo ao ser atingido; Shield aparece completo antes da pose de conjuração. Entre os turnos permanece apenas o sprite do rei; números flutuantes de 5 a 1 mostram o progresso, com fonte ligeiramente maior que o dano. O meteoro aparece somente no lançamento final. Um portador vivo da armadura absorve o meteoro inteiro; revivê-lo antes do lançamento restaura essa proteção.
 
-- **Final bom:** derrotar o espírito com o tirano vivo. O rei justo é libertado, agradece à equipe e retoma seu governo.
-- **Final ruim:** meteoro lançado sem portador vivo; a equipe e o tirano são aniquilados e o castelo é destruído.
-- **Terceiro final:** matar o tirano primeiro; o espírito possui Aren. Matar os dois simultaneamente em área também leva a esse desfecho.
+- **Final bom:** derrotar o espírito com o Rei Rubro vivo. O rei justo é libertado, agradece à equipe e retoma seu governo.
+- **Final ruim:** meteoro lançado sem portador vivo; a equipe e o Rei Rubro são aniquilados e o castelo é destruído.
+- **Terceiro final:** matar o Rei Rubro primeiro; o espírito possui Aren. Matar os dois simultaneamente em área também leva a esse desfecho.
 
 Os três finais usam animações automáticas com narrativa lateral e fade preto antes de voltar ao menu. O final bom apresenta o discurso do rei libertado e a prosperidade do povo em duas pinturas; veja `Docs/GOOD_ENDING.md`. Os outros desfechos estão em `Docs/FINAL_ONE.md` e `Docs/HERO_POSSESSED_ENDING.md`. Derrota comum volta à hospedaria e permite outra tentativa. Veja `Docs/PARTE_8.md` para as regras e o roteiro em Play. Arte, áudio, acabamento e executável ainda estão pendentes.
 
@@ -101,7 +101,7 @@ Os saves ficam em `Application.persistentDataPath/Saves`, fora do Git, com backu
 
 ## Parte 6C — recompensas e missão de entrega
 
-O ouro da vitória é a soma das recompensas dos inimigos derrotados: **Guarda do tirano: 25 moedas; Soldado: 10 moedas**. A patrulha atual rende 35, e outras formações terão totais conforme seus inimigos. O resultado mostra a composição, com pagamento único por batalha; derrota não paga. O baú concede **1.000 moedas** uma única vez por jornada. Um save que já registra esse baú aberto não recebe outra recompensa.
+O ouro da vitória é a soma das recompensas dos inimigos derrotados: **Guarda do Rei Rubro: 25 moedas; Soldado: 10 moedas**. A patrulha atual rende 35, e outras formações terão totais conforme seus inimigos. O resultado mostra a composição, com pagamento único por batalha; derrota não paga. O baú concede **1.000 moedas** uma única vez por jornada. Um save que já registra esse baú aberto não recebe outra recompensa.
 
 Na loja de itens, clique em **Aceitar entrega**. Leve o pacote ao vendedor de matérias, clique em **Entregar pacote** e volte à primeira loja para **Receber 30 moedas**. A conclusão repõe somente os consumíveis do vendedor, uma vez; equipamentos e matérias conservam os estoques restantes. O HUD mostra o objetivo atual.
 
@@ -125,7 +125,7 @@ Veja `Docs/PARTE_6B.md` para as regras de comércio, `Docs/PLANO_LOJAS.md` para 
 
 Fogo e Gelo estão disponíveis como matérias verdes, junto de Raio. As três magias têm poder 22 e custo 6 MP. Fênix causa dano de Fogo. Fraquezas causam 150% do dano normal; resistências, 50%.
 
-- Guarda do tirano: fraco a Raio, resistente a Fogo. Soldado: fraco a Fogo, resistente a Gelo.
+- Guarda do Rei Rubro: fraco a Raio, resistente a Fogo. Soldado: fraco a Fogo, resistente a Gelo.
 - All mantém o elemento e calcula a afinidade de cada alvo. Infusão mantém o elemento e passa a usar ataque físico.
 - As fichas dos inimigos mostram afinidades; o relatório da ação indica elemento e resultado. A prévia de comandos no inventário também mostra o elemento.
 - Limit continua acumulando sobre o HP realmente perdido após defesa e resistência.
@@ -241,7 +241,7 @@ Veja `Docs/PARTE_1.md` para o roteiro de verificação.
 - Armadura especial como recompensa do dragão.
 - Final ruim com castelo destruído pelo meteoro sem absorção.
 - Caminho bom: usar a armadura e derrotar o espírito preservando o rei vivo.
-- Terceiro final: matar o tirano primeiro entrega Aren ao espírito.
+- Terceiro final: matar o Rei Rubro primeiro entrega Aren ao espírito.
 
 ## Entregas
 
@@ -260,7 +260,7 @@ Veja `Docs/PARTE_1.md` para o roteiro de verificação.
 | 7A | Ilha global, periferia, florestas, interior do castelo e viagens |
 | 7B | Poema em latim, três segredos e abertura da trilha do vulcão |
 | 7C | Interior do vulcão, batalha do dragão e armadura especial |
-| 8 | Tirano, espírito, meteoro e três finais |
+| 8 | Rei Rubro, espírito, meteoro e três finais |
 | 9 | Menu inicial, três slots e salvamento manual na hospedaria |
 | 10A | Equipe/moradores em pixel art e materiais nos cenários 3D |
 | 10B | Refinamento artístico, bosses, efeitos e interface |

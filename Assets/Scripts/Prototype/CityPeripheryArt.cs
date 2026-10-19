@@ -16,7 +16,7 @@ namespace DragonQuest.Prototype
         private static readonly Color Iron = ObliqueMeshData.Hex("534A38");
         private static readonly Color Copper = ObliqueMeshData.Hex("946540");
 
-        public static bool IsRoyalCastle(string name) => name == "Castelo do tirano" || name.EndsWith("do castelo", StringComparison.Ordinal);
+        public static bool IsRoyalCastle(string name) => name == "Castelo do Rei Rubro" || name.EndsWith("do castelo", StringComparison.Ordinal);
 
         public static ObliqueMeshData Block(CityBlock block)
         {

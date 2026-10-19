@@ -123,7 +123,7 @@ O usuário confirmou que as interações funcionaram em Play. Não houve valida�
 ## Ajuste da parte 6C — ouro por inimigo
 
 - 1.518 verificações de combate/inventário/lojas/progresso passaram; as 15 verificações de exploração continuam passando.
-- Confirmados valores próprios por tipo de inimigo, soma de vários derrotados e contagem separada de cópias da mesma definição. A patrulha atual configura 25 no Guarda do tirano e 10 no Soldado.
+- Confirmados valores próprios por tipo de inimigo, soma de vários derrotados e contagem separada de cópias da mesma definição. A patrulha atual configura 25 no Guarda do Rei Rubro e 10 no Soldado.
 - Confirmados composição da recompensa no resultado, exclusão de aliados vivos/derrotados, valor zero e rejeição de valores negativos.
 - Confirmados ausência de pagamento durante o encontro ou após derrota com eliminação parcial, pagamento único e uso imediato nas lojas.
 - Confirmados proteção contra overflow da soma/saldo, ausência de pagamento parcial, aceitação do limite exato e recebimento pendente quando o saldo permitir.
@@ -149,7 +149,7 @@ O usuário confirmou que as interações funcionaram em Play. Não houve valida�
 - Confirmados chegadas dentro dos limites e livres de obstáculos, retorno de cada floresta junto ao seu ícone, retorno de lojas às suas portas e ciclos repetidos ilha/periferia/loja/castelo.
 - Confirmada altura dos ícones de castelo/floresta um pouco acima do herói e conferida uma visão geral da ilha gerada pelos dados da geometria.
 - As 1.518 verificações de combate/inventário/lojas/progresso e 15 de exploração continuam passando; scripts compilaram com bibliotecas da Unity 6000.6.5f1.
-- Ativação de ambientes, física em movimento, câmera, UI e preservação real de estado entre grupos ainda precisam de Play: `Docs/PARTE_7A.md`. O tirano tem diálogo; suas batalhas e os finais permanecem na parte 8.
+- Ativação de ambientes, física em movimento, câmera, UI e preservação real de estado entre grupos ainda precisam de Play: `Docs/PARTE_7A.md`. O Rei Rubro tem diálogo; suas batalhas e os finais permanecem na parte 8.
 
 ## Parte 7A — apresentação 2.5D
 
@@ -209,11 +209,11 @@ O usuário confirmou que as interações funcionaram em Play. Não houve valida�
 - Vitória entrega armadura uma vez, liberta essência e bloqueia repetição. Armadura: defesa 16, resistência a Fogo, dois pares de matérias, uso livre por classe e venda protegida. Tank aplica +25% sobre defesa base; remover o equipamento retira resistência e devolve matérias.
 - Derrota volta à hospedaria. Próxima batalha inicia com HP/MP completos, conservando Limit, segredos e consumíveis já gastos. O retorno à hospedaria não é uma rota normal nem um atalho para outros cenários.
 - Passaram 1.697 verificações de combate, 58 da periferia, 268 de viagens/interiores, 1.716 de câmera/malhas e 159 de segredos. Compilação passou; prévias técnicas da geometria e retrato foram inspecionadas fora do Editor.
-- Integração visual, cliques, importação da textura, diálogos, colisões e retorno efetivo ainda aguardam Play conforme `PARTE_7C.md`. Tirano, espírito, finais e salvamento em disco seguem pendentes.
+- Integração visual, cliques, importação da textura, diálogos, colisões e retorno efetivo ainda aguardam Play conforme `PARTE_7C.md`. Rei Rubro, espírito, finais e salvamento em disco seguem pendentes.
 
 ## Parte 8 — trono e três finais
 
-- Confronto único com tirano e, se a armadura estiver equipada, espírito visível desde o início. Golpes físicos sem elemento; aos 20% de HP, duas preparações completas do tirano e lançamento no turno seguinte.
+- Confronto único com Rei Rubro e, se a armadura estiver equipada, espírito visível desde o início. Golpes físicos sem elemento; aos 20% de HP, duas preparações completas do Rei Rubro e lançamento no turno seguinte.
 - Absorção integral por portador vivo, incluindo recuperação após reviver. Sem absorção, meteoro aniquila todos e determina destruição do castelo. Lançamento antecipado é recusado; a contagem não reinicia e não há repetição após absorção.
 - Espírito usa drenagem de HP real, Correntes por uma ação e Caos Magic em área. Condições e feedback de turno foram integrados ao HUD; combate comum e dragão mantiveram as verificações anteriores.
 - Três desfechos: rei libertado, castelo destruído e Aren possuído. Morte simultânea de rei/espírito determina possessão; meteoro destrutivo determina destruição. Nenhuma ação continua após um desfecho, e não há pagamento de vitória comum.

@@ -9,9 +9,9 @@ namespace DragonQuest.Progression
     public sealed class CastleBattleRules : IBattleRules
     {
         public const string TyrantId="tyrant", SpiritId="evil-spirit";
-        // Protect inicia a contagem 5 a 1; o lancamento ocupa o turno seguinte do tirano.
+        // Protect inicia a contagem 5 a 1; o lancamento ocupa o turno seguinte do Rei Rubro.
         public const int MeteorCastTurns=5;
-        public static readonly AbilityDefinition RoyalStrike=new AbilityDefinition("royal-strike","Golpe do tirano",
+        public static readonly AbilityDefinition RoyalStrike=new AbilityDefinition("royal-strike","Golpe do Rei Rubro",
             "Golpe fisico forte, sem elemento.",0,8,AbilityEffect.PhysicalDamage,TargetRule.Enemy);
         public static readonly AbilityDefinition RoyalHeavy=new AbilityDefinition("royal-heavy","Golpe esmagador",
             "Golpe fisico ainda mais forte, sem elemento.",0,14,AbilityEffect.PhysicalDamage,TargetRule.Enemy);
@@ -68,7 +68,7 @@ namespace DragonQuest.Progression
             if(ability==PrepareMeteor&&(!casting||!ProtectCast||PreparationsRemaining<=0))
             {message="Nao ha preparacao de meteoro pendente.";return false;}
             if(casting&&ability!=Protect&&ability!=PrepareMeteor&&ability!=Meteor)
-            {message="O tirano esta concentrado no meteoro.";return false;}
+            {message="O Rei Rubro esta concentrado no meteoro.";return false;}
             return true;
         }
         public bool TryResolveAction(BattleSession battle,CombatantState actor,AbilityDefinition ability,out string message)
@@ -85,7 +85,7 @@ namespace DragonQuest.Progression
                     actor.GrantDamageShield(MeteorCastTurns,true);
                 }
                 if(PreparationsRemaining>0) PreparationsRemaining--;
-                message=ability==Protect?"O tirano conjura Protect.":"O tirano continua a conjuracao.";
+                message=ability==Protect?"O Rei Rubro conjura Protect.":"O Rei Rubro continua a conjuracao.";
                 return true;
             }
             if(ability!=Meteor) return false;
@@ -107,7 +107,7 @@ namespace DragonQuest.Progression
                     participant.ClearConditions();
                     participant.TakeDamage(participant.Hp);
                 }
-                message="O meteoro flamejante aniquila a equipe e o tirano. O castelo desaba em chamas.";
+                message="O meteoro flamejante aniquila a equipe e o Rei Rubro. O castelo desaba em chamas.";
             }
             return true;
         }

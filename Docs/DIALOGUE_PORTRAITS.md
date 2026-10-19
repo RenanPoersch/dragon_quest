@@ -12,7 +12,7 @@ Onze ilustrações originais em pixel art, com fisionomia, idade, expressão, si
 | Guardião da pedreira | Mandíbula larga, nariz achatado e barba curta; braços cruzados e olhar desconfiado | `quarry-keeper.png` |
 | Viajante | Senhor magrinho e gentil, cabelos grisalhos, sorriso discreto e olhar esperançoso; capuz remendado e mochila | `traveler.png` |
 | Hospedeira | Rosto cheio, bochechas rosadas e coque; gargalhada acolhedora com a mão sobre o avental | `innkeeper.png` |
-| Tirano | Rei envelhecido de rosto ósseo e nariz adunco; olhar frontal severo e mão com anel junto ao rosto | `tyrant.png` |
+| Rei Rubro | Rei envelhecido de rosto ósseo e nariz adunco; olhar frontal severo e mão com anel junto ao rosto | `tyrant.png` |
 | Dragão corrompido | Cabeça frontal larga e baixa, olhar furioso e presas expostas | `dragon.png` |
 | Essência liberta | Perfil dourado à esquerda, pescoço em curva e cabeça elevada em serenidade | `dragon-essence.png` |
 

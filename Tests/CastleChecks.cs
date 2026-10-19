@@ -45,7 +45,7 @@ internal static class CastleChecks
                 Assert(battle.TryUseItem(actor,PrototypePartyFactory.PhoenixFeather,Find(battle,"bram"),out _),"Pluma pode reviver o portador antes do meteoro.");
             else Defend(battle);
         }
-        Assert(battle.Outcome==BattleOutcome.None&&battle.CurrentActor.Id==CastleBattleRules.TyrantId,"Contagem deve chegar ao turno do tirano.");
+        Assert(battle.Outcome==BattleOutcome.None&&battle.CurrentActor.Id==CastleBattleRules.TyrantId,"Contagem deve chegar ao turno do Rei Rubro.");
     }
     private static void Threshold(BattleSession battle)
     {
@@ -96,15 +96,15 @@ internal static class CastleChecks
         Assert(!battle.TryAct(battle.CurrentActor,CastleBattleRules.Meteor,battle.CurrentActor,out _)
             &&battle.CurrentActor.TurnsTaken==turns&&battle.CurrentActor.Hp==hp,"Nao pode lancar meteoro antes do limiar nem gastar um turno invalido.");
         Assert(EnemyAI.ChooseAbility(battle)==CastleBattleRules.RoyalStrike&&CastleBattleRules.RoyalStrike.Element==DamageElement.None
-            &&CastleBattleRules.RoyalHeavy.Element==DamageElement.None,"Golpes normais do tirano devem ser fisicos e sem elemento.");
+            &&CastleBattleRules.RoyalHeavy.Element==DamageElement.None,"Golpes normais do Rei Rubro devem ser fisicos e sem elemento.");
     }
     private static void CheckMeteor()
     {
         var battle=Create(Party(false));PrepareUntilMeteor(battle);BeforeKing(battle);
-        Assert(EnemyAI.ChooseAbility(battle)==CastleBattleRules.Meteor&&EnemyAI.TryTakeTurn(battle,out _),"Sexto turno do tirano lanca o meteoro depois do numero um.");
+        Assert(EnemyAI.ChooseAbility(battle)==CastleBattleRules.Meteor&&EnemyAI.TryTakeTurn(battle,out _),"Sexto turno do Rei Rubro lanca o meteoro depois do numero um.");
         Assert(Rules(battle).MeteorTurnsElapsed==6,"O sexto turno e registrado ao resolver o lancamento.");
         Assert(battle.Outcome==BattleOutcome.Completed&&Rules(battle).Ending==GameEnding.CastleDestroyed
-            &&battle.Combatants.All(c=>!c.IsAlive),"Meteoro ignora defender e derrota inclusive o tirano, com final de destruicao.");
+            &&battle.Combatants.All(c=>!c.IsAlive),"Meteoro ignora defender e derrota inclusive o Rei Rubro, com final de destruicao.");
         Assert(!new BattleRewards(new ExplorationProgress()).TryClaim(battle,out _),"Fim da historia nao pode pagar vitoria comum.");
         for(int bearer=0;bearer<3;bearer++)
         {
@@ -135,7 +135,7 @@ internal static class CastleChecks
         Assert(!EnemyAI.TryTakeTurn(battle,out _)&&battle.CurrentActor==null,"Nao deve haver ataques depois do final.");
         battle=Create(Party(false));var king=Find(battle,CastleBattleRules.TyrantId);king.TakeDamage(king.Hp-1);
         Assert(battle.TryAct(battle.CurrentActor,battle.CurrentActor.Definition.Abilities.Single(a=>a.Id=="attack"),king,out _)
-            &&Rules(battle).Ending==GameEnding.HeroPossessed,"Matar tirano sem armadura deve levar a possessao de Aren.");
+            &&Rules(battle).Ending==GameEnding.HeroPossessed,"Matar Rei Rubro sem armadura deve levar a possessao de Aren.");
         var party=Party(true);var cleave=new MateriaInstance("ending-cleave",PrototypePartyFactory.CleaveMateria);party.TryAddMaterias(cleave);party.TryEquip(party.Members[0],party.Members[0].Armor,2,cleave,out _);
         battle=Create(party);
         foreach(var enemy in battle.Combatants.Where(c=>c.Team==CombatTeam.Enemy)) enemy.TakeDamage(enemy.Hp-1);

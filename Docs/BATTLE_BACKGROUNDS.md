@@ -8,7 +8,7 @@ Seis artes originais geradas com a ferramenta integrada ImageGen em 14 de outubr
 | Pedreira dos Monólitos / golens | west-forest.png — paredões de pedra e piso de cascalho |
 | Floresta Leste / lobos | east-forest.png — clareira entre árvores antigas |
 | Periferia do castelo / guardas | city.png — pátio de pedra junto à muralha |
-| Interior do castelo / tirano e espírito | castle.png — salão do trono com bandeiras roxas |
+| Interior do castelo / Rei Rubro e espírito | castle.png — salão do trono com bandeiras roxas |
 | Covil do dragão | volcano.png — plataforma ampla de basalto com lava ao fundo |
 
 PrototypeBattleHud já seleciona Resources.Load<Texture2D>("BattleBackgrounds/" + BattleLocationId) a cada encontro. Os nomes dos arquivos ativam essa seleção em todas as batalhas atuais. O fundo preenche a arena de 1240 × 396, com leve recorte proporcional quando necessário. Os combatentes, seus efeitos e o menu continuam desenhados por cima. As posições dos heróis foram ajustadas levemente para que seus pés permaneçam sobre a superfície de combate dos seis fundos; sem textura carregada, o posicionamento anterior é conservado.

@@ -2,9 +2,9 @@
 
 | Achievement | Final | Ícone |
 | --- | --- | --- |
-| The good | Rei libertado: derrotar o espírito mantendo o tirano vivo | Coroa dourada, louros e amanhecer |
+| The good | Rei libertado: derrotar o espírito mantendo o Rei Rubro vivo | Coroa dourada, louros e amanhecer |
 | The bad | Castelo destruído pelo meteoro | Torre atingida por um meteoro |
-| The ugly | Espírito possui Aren após a queda do tirano | Coroa e olho violeta |
+| The ugly | Espírito possui Aren após a queda do Rei Rubro | Coroa e olho violeta |
 
 Cada conquista é liberada ao concluir a sequência do respectivo final, antes de voltar
 à tela inicial. Uma notificação no canto inferior direito da tela título mostra somente

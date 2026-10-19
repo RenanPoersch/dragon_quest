@@ -16,7 +16,7 @@ Esta página registra a entrega 6A. Na versão 6B, a equipe começa com o kit ec
 
 | Inimigo atual | Fraqueza | Resistência |
 | --- | --- | --- |
-| Guarda do tirano | Raio | Fogo |
+| Guarda do Rei Rubro | Raio | Fogo |
 | Soldado | Fogo | Gelo |
 
 Gelo causa dano normal no guarda e reduzido no soldado; os próximos encontros poderão ter outros perfis. As afinidades aparecem nas fichas dos inimigos, e o relatório da ação identifica elemento, fraqueza e resistência.

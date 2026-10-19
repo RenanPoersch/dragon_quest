@@ -84,7 +84,7 @@ namespace DragonQuest.Prototype
             if (party == null) party = PrototypePartyFactory.Create();
             var participants = new System.Collections.Generic.List<CombatantState>();
             foreach (PartyMember member in party.Members) participants.Add(member.CreateCombatant());
-            var guard = new CombatantDefinition("Guarda do tirano", "Inimigo", 180, 24, 18, 8, 0, 9,
+            var guard = new CombatantDefinition("Guarda do Rei Rubro", "Inimigo", 180, 24, 18, 8, 0, 9,
                 new ElementalAffinities(new[] { DamageElement.Lightning }, new[] { DamageElement.Fire }), goldReward: 25, experienceReward: 60, criticalChance: 0,
                 PoisonStrike, Attack, EnemySweep, Defend);
             var soldier = new CombatantDefinition("Soldado", "Inimigo", 90, 0, 15, 6, 0, 7,

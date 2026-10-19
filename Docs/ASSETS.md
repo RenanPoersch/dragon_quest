@@ -114,7 +114,7 @@ WorldGroundMap.png foi recriado inteiro em uma geração com image_gen: terreno,
 
 ## Retratos ilustrados de conversa — 16 de outubro de 2026
 
-Onze PNGs originais em `Assets/Resources/PixelArt/DialoguePortraits`, gerados separadamente com o `image_gen` integrado: Aren, aldeão, camponesa, jardineiro, exploradora, guardião da pedreira, viajante, hospedeira, tirano, dragão corrompido e essência liberta. Pixel art com proporções mais realistas; roupas e cabelos preservam a identidade de `NpcRoster`, `ArenWalk` e `Dragon`. Cada personagem tem direção própria de fisionomia, idade, expressão, silhueta e pose; as referências visuais fornecem apenas identidade e traje. Sem imagens extraídas de outros jogos ou bancos externos.
+Onze PNGs originais em `Assets/Resources/PixelArt/DialoguePortraits`, gerados separadamente com o `image_gen` integrado: Aren, aldeão, camponesa, jardineiro, exploradora, guardião da pedreira, viajante, hospedeira, Rei Rubro, dragão corrompido e essência liberta. Pixel art com proporções mais realistas; roupas e cabelos preservam a identidade de `NpcRoster`, `ArenWalk` e `Dragon`. Cada personagem tem direção própria de fisionomia, idade, expressão, silhueta e pose; as referências visuais fornecem apenas identidade e traje. Sem imagens extraídas de outros jogos ou bancos externos.
 
 Os arquivos gerados são copiados integralmente, mantendo RGBA e transparência. Importação Point/Clamp, sem mipmap, compressão, redução ou cópia legível em CPU. `DialoguePortraitCatalog` faz a associação de personagens e `DialoguePresentation` desenha os PNGs inteiros. Prompts completos, referências e SHA-256 de cada original em `Docs/ArtInputs/DialoguePortraits/prompts.json`; documentação em `Docs/DIALOGUE_PORTRAITS.md`.
 

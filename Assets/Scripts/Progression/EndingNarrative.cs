@@ -16,7 +16,7 @@ namespace DragonQuest.Progression
             + "Aren, Lia e Bram\nseguiram seu caminho.\nDeixaram para trás\num reino livre.\n\n"
             + "A chama ancestral\npermaneceu acesa.\nE, desta vez,\niluminava dias de paz.";
         public const string HeroPossessedEpilogue =
-            "O tirano caiu.\nPor um instante,\na ilha pareceu livre.\n\n"
+            "O Rei Rubro caiu.\nPor um instante,\na ilha pareceu livre.\n\n"
             + "Mas a sombra deixou\no corpo do velho rei.\nE encontrou Aren.\n\n"
             + "Agora, seus passos\njá não lhe pertencem.\nO tapete conduz\nao mesmo trono.\n\n"
             + "Do alto do trono,\nos olhos guardam\num brilho violeta.\n\n"
@@ -25,7 +25,7 @@ namespace DragonQuest.Progression
             + "O trono tem outro rei.\nA ilha, o mesmo senhor.";
         public const string CastleDestroyedEpilogue =
             "O meteoro rompeu o céu.\nNenhuma armadura deteve\na sua queda.\n\n"
-            + "O fogo consumiu o trono,\no tirano e os heróis.\nAs torres desabaram.\n\n"
+            + "O fogo consumiu o trono,\no Rei Rubro e os heróis.\nAs torres desabaram.\n\n"
             + "Onde antes se erguia\no castelo, restam cinzas\ne pedras sobre o mar.\n\n"
             + "Longe das muralhas,\num velho contempla\no que o fogo deixou.\n\n"
             + "O vento leva os nomes\nde Aren, Lia e Bram.\nA ilha guarda o silêncio.\n\n"
@@ -44,7 +44,7 @@ namespace DragonQuest.Progression
                     string[] paragraphs = CastleDestroyedEpilogue.Replace("\n\n", "|").Replace('\n', ' ').Split('|');
                     return new[]{paragraphs[0]+" "+paragraphs[1], paragraphs[2]+" "+paragraphs[3], paragraphs[4]+" "+paragraphs[5]};
                 case GameEnding.HeroPossessed: return new[]{
-                    "O tirano cai. Por um instante, Aren acredita ter encerrado o dominio sobre a ilha. Entao uma sombra abandona o corpo do rei.",
+                    "O Rei Rubro cai. Por um instante, Aren acredita ter encerrado o dominio sobre a ilha. Entao uma sombra abandona o corpo do rei.",
                     "A presenca encontra seu novo hospedeiro em Aren. Seus olhos ganham um brilho violeta, e uma segunda voz sussurra: Um trono vazio sempre encontra um novo rei.",
                     "Lia e Bram chamam pelo amigo, mas quem se volta para eles ja nao e apenas Aren. A tirania mudou de rosto. A ilha continua prisioneira."};
                 default: return new string[0];

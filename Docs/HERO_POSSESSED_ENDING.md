@@ -1,6 +1,6 @@
 # Final de possessão — O novo hospedeiro
 
-`GameEnding.HeroPossessed` agora apresenta uma animação automática na sala do trono. A regra de combate continua a mesma: derrotar o tirano antes do espírito possui Aren, inclusive em derrota simultânea dos dois. Os valores do enum e o carregamento de jornadas concluídas continuam compatíveis.
+`GameEnding.HeroPossessed` agora apresenta uma animação automática na sala do trono. A regra de combate continua a mesma: derrotar o Rei Rubro antes do espírito possui Aren, inclusive em derrota simultânea dos dois. Os valores do enum e o carregamento de jornadas concluídas continuam compatíveis.
 
 A câmera percorre verticalmente uma pintura contínua: começa no tapete, chega aos degraus e revela Aren de baixo para cima. O percurso dura 27 segundos depois do fade inicial de 1,4 s. O enquadramento final sobe mais e mantém Aren e o trono no centro horizontal, na parte inferior da tela. O rosto inteiro do fantasma aparece acima da coroa. O compositor acrescenta 18% de área preta acima da pintura, sem redimensionar ou editar o PNG original, e a câmera permanece imóvel durante o restante do epílogo.
 
@@ -20,7 +20,7 @@ O shader `PossessedThroneComposite` usa o fundo preto da pintura e a área preta
 
 ## Arte e autoria
 
-`Assets/Resources/PixelArt/Endings/PossessedThrone.png` é o PNG original gerado pelo `imagegen` integrado, copiado integralmente com seu RGBA. Referências: retrato de Aren para identidade e estilo sério, interior da sala para arquitetura e tapete, retrato do tirano para o acabamento. Resolução nativa 1024 × 1536. Importação Point/Clamp, sem compressão, mipmaps ou redimensionamento. Prompt completo em `Docs/ArtInputs/PossessedThrone.prompt.txt`.
+`Assets/Resources/PixelArt/Endings/PossessedThrone.png` é o PNG original gerado pelo `imagegen` integrado, copiado integralmente com seu RGBA. Referências: retrato de Aren para identidade e estilo sério, interior da sala para arquitetura e tapete, retrato do Rei Rubro para o acabamento. Resolução nativa 1024 × 1536. Importação Point/Clamp, sem compressão, mipmaps ou redimensionamento. Prompt completo em `Docs/ArtInputs/PossessedThrone.prompt.txt`.
 
 Os três novos PNGs de 1024 × 1536, `PossessedSpiritFront.png`, `PossessionLightningA.png` e `PossessionLightningB.png`, ficam na mesma pasta. Foram gerados separadamente com o `imagegen` integrado e copiados integralmente, preservando transparência real, pixels e resolução nativa. Importação Point/Clamp, sem compressão ou mipmaps. Prompts completos, referências e SHA-256 em `Docs/ArtInputs/PossessionSprites.prompts.json`. O sprite `SpiritBattle` continua sendo usado normalmente na batalha e não foi alterado.
 

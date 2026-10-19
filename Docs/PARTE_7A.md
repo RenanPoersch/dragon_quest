@@ -10,7 +10,7 @@ A cidade de 72 × 48 unidades agora representa a periferia do castelo. Conserva 
 | --- | --- | --- |
 | Ilha global | Castelo, duas florestas, ruínas e vulcão após abrir os selos | Costa, mar, trilhas e ícones pequenos |
 | Periferia do castelo | Ilha pelo portão sul; castelo pela porta ao norte; três lojas | Cidade ampliada, economia, moradores e combate de patrulha |
-| Interior do castelo | Entrada/saída para a periferia | Salão, colunas, tapete, trono e diálogo do tirano |
+| Interior do castelo | Entrada/saída para a periferia | Salão, colunas, tapete, trono e diálogo do Rei Rubro |
 | Floresta oeste | Entrada/saída para a ilha | Árvores, clareira, lenhador e pedra antiga |
 | Floresta leste | Entrada/saída para a ilha | Árvores, clareira, viajante e pedra com escamas |
 | Três lojas | Entrada/saída para a periferia, cada uma na sua porta | Itens, equipamentos e matérias com os estoques existentes |
@@ -31,7 +31,7 @@ Os onze ambientes são grupos independentes dentro da cena CidadePrototipo.unity
 3. Caminhe até a entrada sul do pequeno castelo central. O cenário deve mudar para a periferia, perto do portão sul. Siga pela ponte central até a praça e as lojas.
 4. Entre e saia das três lojas. Confira a chegada diante da mesma porta, ouro/estoque preservados e câmera novamente seguindo a periferia inteira. Teste compras, inventário com I e a missão de entrega conforme PARTE_6C.md.
 5. Vá ao pátio do castelo ao norte. O guarda ainda inicia a batalha da patrulha. Vença e retorne; o ouro deve somar Guarda 25 + Soldado 10 uma única vez.
-6. Caminhe até a marca dourada diante da porta do castelo. O cenário deve mudar para um salão com colunas, tapete e trono. Aproxime-se do tirano e converse; concluir esse diálogo inicia a batalha da parte 8, e Esc cancela antes de começar.
+6. Caminhe até a marca dourada diante da porta do castelo. O cenário deve mudar para um salão com colunas, tapete e trono. Aproxime-se do Rei Rubro e converse; concluir esse diálogo inicia a batalha da parte 8, e Esc cancela antes de começar.
 7. Use a saída ao sul do salão. O herói deve voltar à entrada do castelo na periferia. Caminhe até o portão sul da cidade: volte à ilha perto do pequeno castelo, sem mudar ouro/inventário/Limit.
 8. Caminhe até a entrada da floresta oeste. Explore a clareira, converse com o lenhador e use a saída sul. O retorno deve ficar junto à floresta oeste na ilha. Repita na floresta leste: seu retorno deve ficar junto ao outro ícone.
 9. Procure a vegetação entre o castelo global e as montanhas do norte. Use E na passagem oculta, leia sobre os três selos e tente atravessar: as rochas devem bloquear. Circule a cordilheira para confirmar que o vulcão não pode ser alcançado pelo mar ou pelas laterais.

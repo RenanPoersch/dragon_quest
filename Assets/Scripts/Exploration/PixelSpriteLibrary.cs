@@ -83,7 +83,7 @@ namespace DragonQuest.Exploration
                 case "Camponesa": return 1; case "Jardineiro": return 2; case "Exploradora": return 3;
                 case "Loja de itens": return 4; case "Loja de equipamentos": return 5; case "Loja de materias": return 6;
                 case "Hospedeira": return 7; case "Lenhador": return 8; case "Viajante": return 9;
-                case "Guarda do tirano": return 10; case "Tirano": return 11; default: return 0;
+                case "Guarda do Rei Rubro": return 10; case "Rei Rubro": return 11; default: return 0;
             }
         }
         public void Dispose() { foreach (var atlas in atlases.Values) atlas.Dispose(); UnityEngine.Object.Destroy(Material); }

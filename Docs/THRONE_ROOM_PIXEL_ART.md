@@ -8,7 +8,7 @@ A câmera da exploração usa perspectiva real. Os sprites conservam sua escala 
 
 `CameraFollow` recebe o perfil de perspectiva dessa sala. A pintura inteira cabe em 16:9, 16:10 e 4:3. Ao sair, a câmera ortográfica, a orientação dos controles e a altura original do herói são restauradas. Os desfechos também restabelecem explicitamente a câmera usada nas cenas finais. A batalha continua usando o sistema existente.
 
-O ID `castle`, a fachada da cidade, o diálogo do tirano, o início do combate, a revelação do espírito pela Armadura dracônica e a recuperação na Pousada continuam conectados aos mesmos serviços. Posições antigas de save que caem fora do piso novo reaparecem na entrada. As antigas peças geométricas do interior deixaram de ser instanciadas; ícones e fachadas do castelo continuam em uso.
+O ID `castle`, a fachada da cidade, o diálogo do Rei Rubro, o início do combate, a revelação do espírito pela Armadura dracônica e a recuperação na Pousada continuam conectados aos mesmos serviços. Posições antigas de save que caem fora do piso novo reaparecem na entrada. As antigas peças geométricas do interior deixaram de ser instanciadas; ícones e fachadas do castelo continuam em uso.
 
 ## Artes e prompts
 

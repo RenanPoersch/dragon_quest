@@ -37,10 +37,10 @@ public static class TyrantAudienceValidation
             hero.AddComponent<Rigidbody2D>(); hero.AddComponent<BoxCollider2D>().size = new Vector2(.55f, .6f);
             var movement = hero.AddComponent<PlayerMovement>(); Call(movement, "Awake"); movement.SetFrontalView(true);
             scenery.PixelPerson(hero.transform, "ArenWalk", animated: true); hero.AddComponent<ThroneRoomDepth>();
-            var king = Child(root.transform, "Tirano"); king.transform.position = ThroneRoomLayout.King;
+            var king = Child(root.transform, "Rei Rubro"); king.transform.position = ThroneRoomLayout.King;
             scenery.PixelPerson(king.transform, "TyrantSeated"); king.AddComponent<ThroneRoomDepth>().Refresh();
             var party = PrototypePartyFactory.Create();
-            var audience = Child(root.transform, "Party diante do tirano").AddComponent<TyrantAudience>();
+            var audience = Child(root.transform, "Party diante do Rei Rubro").AddComponent<TyrantAudience>();
             audience.Initialize(movement, () => party, scenery);
             var dialogue = root.AddComponent<DialogueController>(); int battles = 0;
             var tyrant = king.AddComponent<TyrantInteraction>();

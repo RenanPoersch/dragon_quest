@@ -21,7 +21,7 @@ namespace DragonQuest.Combat
         public static RandomEncounterType TypeAt(string map) => map == "world" ? RandomEncounterType.Pirate
             : map == "west-forest" ? RandomEncounterType.Golem : map == "east-forest" ? RandomEncounterType.Wolf : RandomEncounterType.None;
         public static string Title(RandomEncounterType type) => type == RandomEncounterType.Pirate ? "BANDIDOS PIRATAS"
-            : type == RandomEncounterType.Golem ? "GOLENS DA PEDREIRA" : type == RandomEncounterType.Wolf ? "LOBOS DA FLORESTA" : "PATRULHA DO TIRANO";
+            : type == RandomEncounterType.Golem ? "GOLENS DA PEDREIRA" : type == RandomEncounterType.Wolf ? "LOBOS DA FLORESTA" : "PATRULHA DO REI RUBRO";
         public void Reset(string map)
         {
             location = map;

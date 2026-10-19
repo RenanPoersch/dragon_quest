@@ -12,12 +12,12 @@ O XP dos inimigos derrotados é somado e dividido igualmente entre os heróis pa
 | Soldado | 25 |
 | Bandido pirata | 30 |
 | Golem da pedreira | 50 |
-| Guarda do tirano | 60 |
+| Guarda do Rei Rubro | 60 |
 | Dragão corrompido | 300 |
-| Tirano dominado | 250 |
+| Rei Rubro | 250 |
 | Espírito maligno | 500 |
 
-A patrulha rende 85 XP no total: 29 para o primeiro herói e 28 para cada um dos outros dois. Três piratas rendem 90 XP no total: 30 por herói. Libertar o rei divide os 500 XP do espírito derrotado entre os participantes, com o tirano vivo. Os finais de possessão e destruição não são vitórias e não concedem XP. A regra anterior de ouro dos finais é preservada.
+A patrulha rende 85 XP no total: 29 para o primeiro herói e 28 para cada um dos outros dois. Três piratas rendem 90 XP no total: 30 por herói. Libertar o rei divide os 500 XP do espírito derrotado entre os participantes, com o Rei Rubro vivo. Os finais de possessão e destruição não são vitórias e não concedem XP. A regra anterior de ouro dos finais é preservada.
 
 Os valores ficam em `CombatantDefinition.ExperienceReward`; mudar uma formação altera sua recompensa conforme os inimigos presentes. O saldo de ouro cheio não impede ganhar XP. Se o pagamento de ouro for tentado novamente, o XP não se repete.
 

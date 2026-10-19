@@ -202,7 +202,7 @@ internal static class ObliqueChecks
         foreach(var block in PrototypeWorldLayout.CastleBlocks)
         {Validate(ObliqueScenery.BlockData(block.Name,block.Size,block.Color,block.Solid,block.Order),block.Name);AddBlock(hall,block);}
         var king=ObliqueScenery.KingData();var spirit=ObliqueScenery.SpiritData();
-        Validate(king,"Tirano e coroa");Validate(ObliqueScenery.KingData(false),"Rei liberto");Validate(spirit,"Espirito maligno");
+        Validate(king,"Rei Rubro e coroa");Validate(ObliqueScenery.KingData(false),"Rei liberto");Validate(spirit,"Espirito maligno");
         Assert(king.Vertices.All(p=>p.z<=0),"Botas do rei nao podem ficar abaixo do piso.");
         hall.Append(spirit,ObliqueProjection.Point(PrototypeWorldLayout.Throne+Vector2.right*1.8f));
         Export(directory,"KingPortrait",king,Vector2.zero,1.1f,0.85f);

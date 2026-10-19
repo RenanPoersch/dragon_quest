@@ -40,7 +40,7 @@ public static class CastleExteriorValidation
                 mesh.SetUVs(0, data.UVs); mesh.SetUVs(1, data.Surfaces); mesh.RecalculateBounds();
                 go.AddComponent<MeshFilter>().sharedMesh = mesh;
                 go.AddComponent<MeshRenderer>().sharedMaterial = material;
-                if (name == "Castelo do tirano") ObliqueScenery.CastleTorches(PrototypeCityLayout.Buildings.First(b => b.Name == name).Size, go.transform, fire);
+                if (name == "Castelo do Rei Rubro") ObliqueScenery.CastleTorches(PrototypeCityLayout.Buildings.First(b => b.Name == name).Size, go.transform, fire);
             }
             Model("Ground", CityGroundArt.Build(), Vector2.zero, ground);
             foreach (var block in PrototypeCityLayout.Blocks.Where(b => b.Name.StartsWith("Ponte de pedra") || b.Name == "Patio da entrada do castelo"))

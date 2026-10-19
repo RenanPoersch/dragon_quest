@@ -41,7 +41,7 @@ Os nomes sobre locais, moradores, objetos e saídas foram removidos para liberar
 4. Caminhe até a entrada do castelo global. Explore a periferia, contorne casas, árvores, fonte e bancos e atravesse as três pontes.
 5. Entre nas três lojas, converse com os vendedores, abra o inventário e compre/venda um produto. Saia e confira ouro e estoques.
 6. Abra o baú. Confira a tampa aberta, as 25 moedas e a ausência de uma segunda recompensa ao examiná-lo novamente.
-7. Entre no castelo ao norte. Confira colunas, paredes, trono, diálogo do tirano e saída.
+7. Entre no castelo ao norte. Confira colunas, paredes, trono, diálogo do Rei Rubro e saída.
 8. Volte à ilha, entre nas duas florestas e examine a trilha bloqueada.
 9. Experimente a janela Game em 16:9 e 4:3. Confira os pontos de interesse e a legibilidade do HUD.
 10. Inicie uma batalha na periferia e confirme inventário/matérias, recompensa e retorno à exploração.

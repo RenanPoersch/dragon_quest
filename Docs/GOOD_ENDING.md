@@ -1,6 +1,6 @@
 # Final bom — A voz do rei e um reino em paz
 
-`GameEnding.KingFreed` apresenta uma sequência automática em duas pinturas com o acabamento sério e mais realista dos outros finais. Derrotar o espírito enquanto o tirano está vivo continua libertando o rei. Os valores dos finais e os saves permanecem compatíveis; jornadas concluídas carregadas pelo menu também usam a nova apresentação.
+`GameEnding.KingFreed` apresenta uma sequência automática em duas pinturas com o acabamento sério e mais realista dos outros finais. Derrotar o espírito enquanto o Rei Rubro está vivo continua libertando o rei. Os valores dos finais e os saves permanecem compatíveis; jornadas concluídas carregadas pelo menu também usam a nova apresentação.
 
 No primeiro momento, o rei de cabelos grisalhos, coroa de rubis e manto roxo discursa da varanda do castelo diante dos moradores. Recupera a própria voz, agradece a Aren, Lia e Bram, reconhece o sofrimento e promete abrir os celeiros, restaurar casas e servir ao povo. No segundo, a promessa se cumpre: pão é compartilhado na feira, famílias convivem, artesãos trabalham e os campos abastecem o reino.
 
@@ -12,7 +12,7 @@ Cada pintura recebe um movimento sutil de aproximação. A primeira fica ancorad
 
 As duas imagens foram criadas separadamente com o `imagegen` integrado e copiadas integralmente para `Assets/Resources/PixelArt/Endings/KingFreedSpeech.png` e `KingdomProsperity.png`. São pinturas de 1672 × 941, importadas em Point/Clamp, sem compressão, mipmaps, redimensionamento ou cópia na CPU. Os PNGs originais não recebem recorte nem edição; enquadramento, movimento, sombra de texto e dissolução são feitos em tempo de execução.
 
-O retrato do tirano fornece a identidade do rei, o final de possessão fornece as cores e o acabamento do castelo, e o panorama das cinzas fornece o acabamento de cenário. A segunda imagem usa a primeira como referência de continuidade. Prompts completos, referências e SHA-256: `Docs/ArtInputs/GoodEnding.prompts.json`.
+O retrato do Rei Rubro fornece a identidade do rei, o final de possessão fornece as cores e o acabamento do castelo, e o panorama das cinzas fornece o acabamento de cenário. A segunda imagem usa a primeira como referência de continuidade. Prompts completos, referências e SHA-256: `Docs/ArtInputs/GoodEnding.prompts.json`.
 
 ## Conferência
 

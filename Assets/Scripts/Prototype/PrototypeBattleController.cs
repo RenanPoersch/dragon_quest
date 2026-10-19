@@ -44,7 +44,7 @@ namespace DragonQuest.Prototype
         public bool IsCastleEncounter => CastleRules!=null;
         public DragonProgress Dragon { get; private set; }
         public bool IsDragonEncounter { get; private set; }
-        public string BattleTitle => IsCastleEncounter ? (CastleRules.IsSpiritRevealed?"TIRANO E ESPIRITO":"TIRANO DOMINADO")
+        public string BattleTitle => IsCastleEncounter ? (CastleRules.IsSpiritRevealed?"REI RUBRO E ESPIRITO":"REI RUBRO")
             :IsDragonEncounter ? "DRAGAO CORROMPIDO" : RandomEncounterRules.Title(RandomEncounter);
         public string ReturnLabel => IsCastleEncounter&&Session.Outcome==BattleOutcome.Completed?"Ver final"
             :Session.Outcome==BattleOutcome.Defeat?"Voltar para a hospedaria":"Continuar explorando";

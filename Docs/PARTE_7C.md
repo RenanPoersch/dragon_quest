@@ -6,7 +6,7 @@ Todos os POIs globais usam áreas de 2,8 × 2,2 unidades em torno do ícone, ace
 
 ## Dragão corrompido
 
-Use E próximo do dragão e termine a conversa para iniciar o combate. Esc cancela sem iniciar. O espírito que controla o tirano também aprisionou o dragão. A vitória liberta sua essência, entrega a armadura e concede as 100 moedas configuradas nesse inimigo, uma única vez na sessão. Visitas posteriores permitem ouvir a essência, sem repetir batalha ou recompensa.
+Use E próximo do dragão e termine a conversa para iniciar o combate. Esc cancela sem iniciar. O espírito que controla o Rei Rubro também aprisionou o dragão. A vitória liberta sua essência, entrega a armadura e concede as 100 moedas configuradas nesse inimigo, uma única vez na sessão. Visitas posteriores permitem ouvir a essência, sem repetir batalha ou recompensa.
 
 | Atributo | Valor inicial |
 | --- | --- |

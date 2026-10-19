@@ -104,7 +104,7 @@ public static class CastlePresentationChecks
                 Check(battle.TryAct(actor,actor.Definition.Abilities.Single(a=>a.Effect==AbilityEffect.Defend),actor,out _),"Aliados agem entre os turnos do cast.");
             }
             var ability=EnemyAI.ChooseAbility(battle);
-            Check(EnemyAI.TryTakeTurn(battle,out _),"Cada turno do tirano progride.");
+            Check(EnemyAI.TryTakeTurn(battle,out _),"Cada turno do Rei Rubro progride.");
             Check(rules.MeteorTurnsElapsed==turn,"A contagem segue os cinco turnos proprios.");
             float start=turn*10;
             counter.Observe(CastleBattleRules.TyrantId,ability,rules.MeteorTurnsElapsed,start);

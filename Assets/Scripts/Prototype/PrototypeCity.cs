@@ -52,7 +52,7 @@ namespace DragonQuest.Prototype
                 "Bem-vindo a periferia! Siga a viela entre as casas. Pousada e armas ficam perto da entrada; mais adiante, procure os letreiros de itens e materias. Basta entrar na porta.",
                 "Ha um bau ao lado da rua do mercado. Talvez voce encontre moedas para sua jornada.",
                 "A capela e as casas antigas ficam no lado oeste. O pequeno jardim sobrevive entre as oficinas do lado leste.",
-                "Ao norte, a ponte de pedra leva a entrada do castelo. O tirano governa de la, longe de quem vive nestes becos...");
+                "Ao norte, a ponte de pedra leva a entrada do castelo. O Rei Rubro governa de la, longe de quem vive nestes becos...");
             interactables.Add(citizen);
             GameObject peasant = CreateNpcFigure("Camponesa", PrototypeCityLayout.Resident, "B77D8B", interactions);
             interactables.Add(AddSecret(peasant, SecretObject.Peasant));
@@ -71,7 +71,7 @@ namespace DragonQuest.Prototype
             CreatePassage("Portao para a ilha", PrototypeTravel.City, city, PrototypeTravel.World);
             CreatePassage("Entrada do castelo", PrototypeTravel.City, city, PrototypeTravel.Castle);
             CreatePassage("Entrada da hospedaria",PrototypeTravel.City,city,PrototypeTravel.Inn);
-            GameObject guard = Entity("Guarda do tirano", PrototypeCityLayout.Guard, city);
+            GameObject guard = Entity("Guarda do Rei Rubro", PrototypeCityLayout.Guard, city);
             BoxCollider2D guardCollider = guard.AddComponent<BoxCollider2D>();
             guardCollider.size = new Vector2(0.65f, 0.7f);
             guardCollider.sharedMaterial = frictionless;
@@ -118,7 +118,7 @@ namespace DragonQuest.Prototype
             battle = gameObject.AddComponent<PrototypeBattleController>();
             var cheats = gameObject.AddComponent<PrototypeCheatMenu>();
             battle.Initialize(player.GetComponent<PlayerMovement>(), dialogue, progress, () => shops.IsOpen || saves.IsMenuVisible || cheats.BlocksInput || innRest.IsPlaying,dragon,secrets,locations.RecoverAtInn,endings.Show);
-            audience = new GameObject("Party diante do tirano").AddComponent<TyrantAudience>();
+            audience = new GameObject("Party diante do Rei Rubro").AddComponent<TyrantAudience>();
             audience.transform.SetParent(transform, false);
             audience.Initialize(player.GetComponent<PlayerMovement>(), () => battle.Party, scenery);
             shops.Initialize(player.GetComponent<PlayerMovement>(), dialogue, battle, progress);
@@ -300,7 +300,7 @@ namespace DragonQuest.Prototype
             Transform castle = Group("Castelo - interior");
             castle.gameObject.AddComponent<ThroneRoomPixelScenery>().Build();
             CreatePassage("Saida do castelo", PrototypeTravel.Castle, castle, PrototypeTravel.City);
-            GameObject king=Entity("Tirano",ThroneRoomLayout.King,castle);
+            GameObject king=Entity("Rei Rubro",ThroneRoomLayout.King,castle);
             BoxCollider2D collider=king.AddComponent<BoxCollider2D>();collider.size=new Vector2(0.55f,0.6f);collider.sharedMaterial=frictionless;
             scenery.PixelPerson(king.transform, "TyrantSeated");
             king.AddComponent<ThroneRoomDepth>();

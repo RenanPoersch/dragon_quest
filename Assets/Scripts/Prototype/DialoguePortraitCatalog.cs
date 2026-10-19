@@ -23,7 +23,7 @@ namespace DragonQuest.Prototype
                 case "Guardiao da pedreira": case "Lenhador": return "quarry-keeper";
                 case "Viajante": return "traveler";
                 case "Hospedeira": case "Hospedaria": return "innkeeper";
-                case "Tirano": return "tyrant";
+                case "Rei Rubro": return "tyrant";
                 case "Dragao corrompido": return "dragon";
                 case "Essencia liberta": case "Essencia do dragao": return "dragon-essence";
                 default: return "aren";

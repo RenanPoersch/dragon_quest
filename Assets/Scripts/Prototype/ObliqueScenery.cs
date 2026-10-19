@@ -88,7 +88,7 @@ namespace DragonQuest.Prototype
         public void CityBuilding(string name, Vector2 size, string hex, Transform parent)
         {
             ShowCityArt(name, CityPeripheryArt.Building(name, size, hex), parent);
-            if (name == "Castelo do tirano") CastleTorches(size, parent, PixelSprites.Material);
+            if (name == "Castelo do Rei Rubro") CastleTorches(size, parent, PixelSprites.Material);
         }
 
         public static void CastleTorches(Vector2 size, Transform parent, Material spriteMaterial)

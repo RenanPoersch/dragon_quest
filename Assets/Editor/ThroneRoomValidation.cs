@@ -39,7 +39,7 @@ public static class ThroneRoomValidation
             Transform hero=Person(root.transform,people,"Heroi",ThroneRoomLayout.Spawn,"ArenWalk",3);
             hero.gameObject.AddComponent<Rigidbody2D>();hero.gameObject.AddComponent<BoxCollider2D>().size=new Vector2(.55f,.6f);
             var player=hero.gameObject.AddComponent<PlayerMovement>();player.SendMessage("Awake");
-            Transform king=Person(roots[PrototypeTravel.Castle].transform,people,"Tirano",ThroneRoomLayout.King,"TyrantSeated");
+            Transform king=Person(roots[PrototypeTravel.Castle].transform,people,"Rei Rubro",ThroneRoomLayout.King,"TyrantSeated");
             king.gameObject.AddComponent<BoxCollider2D>().size=new Vector2(.55f,.6f);
             king.gameObject.AddComponent<ThroneRoomDepth>().Refresh();
             Transform spirit=Person(roots[PrototypeTravel.Castle].transform,people,"Espirito",ThroneRoomLayout.Spirit,"SpiritBattle");
@@ -129,7 +129,7 @@ public static class ThroneRoomValidation
         Assert(party.TryAddEquipments(armor)&&party.TryEquipEquipment(party.Members[0],armor,out _),"test party equips draconic armor");
         tyrant.SendMessage("Update");Assert(spirit.gameObject.activeSelf,"draconic armor reveals spirit in new room");
         var dialogue=root.AddComponent<DialogueController>();tyrant.Interact(new InteractionContext(dialogue,new ExplorationProgress(),_=>{}));
-        Assert(dialogue.IsOpen&&dialogue.Title=="Tirano","king retains encounter dialogue");
+        Assert(dialogue.IsOpen&&dialogue.Title=="Rei Rubro","king retains encounter dialogue");
         while(dialogue.IsOpen)dialogue.Advance();Assert(started==1,"dialogue starts existing castle battle exactly once");
         spirit.gameObject.SetActive(false);
     }
