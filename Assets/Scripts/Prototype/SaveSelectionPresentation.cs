@@ -10,8 +10,6 @@ namespace DragonQuest.Prototype
         public static readonly Rect BackRect = new Rect(1140, 8, 132, 56);
         public static Rect SlotRect(int index) => new Rect(0, 80 + index * 212, 1280, 212);
         private readonly Texture2D pixel, gradient;
-        private readonly PixelSpriteAtlas[] portraits = new PixelSpriteAtlas[3];
-        private readonly Rect[] portraitUv = new Rect[3];
         private GUIStyle heading, text, number, right, level, empty, note;
         public GUIStyle BackStyle { get; private set; }
         private int lastSlot;
@@ -28,16 +26,6 @@ namespace DragonQuest.Prototype
                 gradient.SetPixel(x, y, Color.Lerp(bottom, top, v));
             }
             gradient.Apply();
-            string[] resources = { "ArenWalk", "LiaWalk", "BramWalk" };
-            for (int i = 0; i < portraits.Length; i++)
-            {
-                portraits[i] = new PixelSpriteAtlas(resources[i]);
-                Rect frame = portraits[i].Sprites[0].rect;
-                float width = Mathf.Min(frame.width, frame.height * .62f * 164 / 152), height = width * 152 / 164;
-                portraitUv[i] = new Rect((frame.center.x - width / 2) / portraits[i].Texture.width,
-                    (frame.yMax - height) / portraits[i].Texture.height,
-                    width / portraits[i].Texture.width, height / portraits[i].Texture.height);
-            }
         }
 
         private void EnsureStyles()
@@ -83,10 +71,9 @@ namespace DragonQuest.Prototype
             for (int member = 0; member < journey.Party.Members.Count; member++)
             {
                 string id = journey.Party.Members[member].Id;
-                int portrait = id == "lia" ? 1 : id == "bram" ? 2 : 0;
                 Rect face = new Rect(68 + member * 176, row.y + 16, 164, 152);
                 Fill(face, new Color(.87f, .86f, .80f));
-                GUI.DrawTextureWithTexCoords(face, portraits[portrait].Texture, portraitUv[portrait], true);
+                HeroPortraitCatalog.Draw(face, id);
             }
             var leader = journey.Party.Members[0];
             ShadowLabel(new Rect(690, row.y + 14, 260, 50), leader.Name, text);
@@ -134,7 +121,6 @@ namespace DragonQuest.Prototype
         }
         public void Dispose()
         {
-            foreach (var portrait in portraits) portrait?.Dispose();
             UnityEngine.Object.Destroy(pixel); UnityEngine.Object.Destroy(gradient);
         }
     }

@@ -13,8 +13,6 @@ namespace DragonQuest.Prototype
         public static readonly Rect PartyRect = new Rect(32, 72, 1050, 574);
         public static Rect CommandRect(int index) => new Rect(1070, 62 + index * 48, 164, 46);
         private readonly Texture2D gradient, hand;
-        private readonly PixelSpriteAtlas[] portraits = new PixelSpriteAtlas[3];
-        private readonly Rect[] portraitUv = new Rect[3];
         private Rect handUv = new Rect(0, 0, 1, 1);
         private float handAspect = 1;
         private GUIStyle name, label, value, cyan, caption, right, condition;
@@ -32,16 +30,6 @@ namespace DragonQuest.Prototype
                     gradient.SetPixel(x, y, Color.Lerp(lower, upper, v));
                 }
             gradient.Apply();
-            string[] resources = { "ArenWalk", "LiaWalk", "BramWalk" };
-            for (int i = 0; i < portraits.Length; i++)
-            {
-                portraits[i] = new PixelSpriteAtlas(resources[i]);
-                Rect frame = portraits[i].Sprites[0].rect;
-                float height = frame.height * .59f, width = Mathf.Min(frame.width, height);
-                portraitUv[i] = new Rect((frame.center.x - width / 2) / portraits[i].Texture.width,
-                    (frame.yMax - height) / portraits[i].Texture.height,
-                    width / portraits[i].Texture.width, height / portraits[i].Texture.height);
-            }
             hand = Resources.Load<Texture2D>("PixelArt/BattleGloveCursor");
             if (hand == null) return;
             Color32[] pixels = hand.GetPixels32();
@@ -122,11 +110,10 @@ namespace DragonQuest.Prototype
 
         public void DrawPortrait(Rect rect, PartyMember member)
         {
-            int index = member.Id == "lia" ? 1 : member.Id == "bram" ? 2 : 0;
             Fill(rect, new Color(.83f, .84f, .79f));
             Color previous = GUI.color;
             GUI.color = member.IsAlive ? Color.white : new Color(.5f, .5f, .5f);
-            GUI.DrawTextureWithTexCoords(rect, portraits[index].Texture, portraitUv[index], true);
+            HeroPortraitCatalog.Draw(rect, member.Id);
             GUI.color = previous;
         }
 
@@ -199,7 +186,6 @@ namespace DragonQuest.Prototype
         }
         public void Dispose()
         {
-            foreach (var portrait in portraits) portrait?.Dispose();
             UnityEngine.Object.Destroy(gradient);
         }
     }

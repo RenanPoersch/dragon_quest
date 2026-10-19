@@ -1,0 +1,26 @@
+{
+  "tool": "Built-in image_gen",
+  "useCase": "style-transfer",
+  "assets": [
+    {
+      "character": "lia",
+      "asset": "Assets/Resources/PixelArt/HeroPortraits/lia.png",
+      "references": [
+        "Assets/Resources/PixelArt/LiaWalk.png",
+        "Assets/Resources/PixelArt/DialoguePortraits/aren.png"
+      ],
+      "prompt": "Use case: style-transfer. Asset type: ONE production square transparent head-and-shoulders portrait for a fantasy RPG menu. Primary request: turn the character from IMAGE 1 into their serious, more realistic portrait version, precisely matching the detailed grounded pixel-art portrait style and framing of IMAGE 2 (Aren). IMAGE 1 is the character IDENTITY/CLOTHING reference, not proportions; IMAGE 2 is the STYLE/FRAMING reference, not identity. Style: normal adult anatomy, natural-sized expressive eyes, distinctive individual facial bone structure, detailed hand-crafted hard-edged pixel clusters, rich restrained warm/cool shading, serious painted pixel-art finish. Keep the full head and all headwear inside a square canvas, 4% clear top and side margin; prominent readable face, shoulders/upper chest continue naturally to the bottom edge. Single character only. Genuinely transparent RGBA background outside the silhouette. No scene, background color, frame, text, watermark, sprite sheet, grid, giant anime eyes, chibi anatomy, glossy 3D or photograph. Match Aren portrait face scale and detailed finish. Subject: Lia, a young ADULT female healer, short softly tousled chestnut brown hair in a jaw-length bob, gentle but determined green eyes, natural feminine face, cream/ivory robe with sage-green edging and green scarf, brown leather strap and small gold clasp. Calm focused three-quarter pose looking slightly toward the viewer's left. Her own face, not Aren's face. Bust only, no staff required.",
+      "sha256": "bb03c863fb3448239c5e5cbe83729dcc11090572c3d9de19a1c882f6fac56158"
+    },
+    {
+      "character": "bram",
+      "asset": "Assets/Resources/PixelArt/HeroPortraits/bram.png",
+      "references": [
+        "Assets/Resources/PixelArt/BramWalk.png",
+        "Assets/Resources/PixelArt/DialoguePortraits/aren.png"
+      ],
+      "prompt": "Use case: style-transfer. Asset type: ONE production square transparent head-and-shoulders portrait for a fantasy RPG menu. Primary request: turn the character from IMAGE 1 into their serious, more realistic portrait version, precisely matching the detailed grounded pixel-art portrait style and framing of IMAGE 2 (Aren). IMAGE 1 is the character IDENTITY/CLOTHING reference, not proportions; IMAGE 2 is the STYLE/FRAMING reference, not identity. Style: normal adult anatomy, natural-sized expressive eyes, distinctive individual facial bone structure, detailed hand-crafted hard-edged pixel clusters, rich restrained warm/cool shading, serious painted pixel-art finish. Keep the full head and all headwear inside a square canvas, 4% clear top and side margin; prominent readable face, shoulders/upper chest continue naturally to the bottom edge. Single character only. Genuinely transparent RGBA background outside the silhouette. No scene, background color, frame, text, watermark, sprite sheet, grid, giant anime eyes, chibi anatomy, glossy 3D or photograph. Match Aren portrait face scale and detailed finish. Subject: Bram, a sturdy ADULT male knight with a strong square jaw, short brown hair visible beneath his open silver steel helmet, natural blue eyes, reliable resolute expression, steel plate pauldrons, deep-blue tabard with gold lion heraldry and blue cloak. Face remains fully visible beneath the open helmet. Three-quarter pose looking slightly toward the viewer's right. His own more robust adult face, not Aren's face. Bust only, no weapon required.",
+      "sha256": "ff275a15f0fcc7430cb1787ff360fc5e3efeb2205cb5401894d4dad77e5eda0d"
+    }
+  ]
+}
