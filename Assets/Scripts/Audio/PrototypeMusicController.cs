@@ -71,7 +71,7 @@ namespace DragonQuest.Audio
             CurrentCue = cue;
             for (int i = 0; i < 2; i++) { from[i] = sources[i].volume; target[i] = 0; }
             elapsed = 0;
-            duration = cue == MusicCue.DragonLair ? .08f
+            duration = cue == MusicCue.DragonLair || cue == MusicCue.FinalBoss ? .08f
                 : cue == MusicCue.Silence || cue == MusicCue.Sleep ? .12f : cue == MusicCue.Victory ? .18f : .65f;
             if (cue == MusicCue.Silence) { current = -1; return; }
             if (!clips.TryGetValue(cue, out AudioClip clip))
@@ -85,7 +85,8 @@ namespace DragonQuest.Audio
             AudioSource voice = sources[next];
             voice.Stop(); voice.clip = clip; voice.volume = from[next] = 0;
             voice.loop = MusicCuePolicy.ShouldLoop(cue);
-            voice.timeSamples = 0;
+            // Skip the final recording's silent lead-in so its first hit joins the entry swirl.
+            voice.timeSamples = cue == MusicCue.FinalBoss ? Mathf.RoundToInt(clip.frequency * .66f) : 0;
             target[next] = MusicVolume;
             current = next;
             voice.Play();

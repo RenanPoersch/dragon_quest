@@ -517,11 +517,31 @@ public static class MusicValidation
                     CuePlays(MusicCue.Throne);
                     Check(Voice(MusicCue.Throne).timeSamples < Voice(MusicCue.Throne).clip.frequency*2,"throne room recording loops");
                     battle.StartCastleBattle();
+                    // Hold the exploration swirl so audio is checked before the battle is revealed.
+                    battle.EntryTransition.enabled = false;
+                    battle.EntryTransition.Sequence.Begin();
+                    Call(music,"LateUpdate");
+                    Check(music.CurrentCue == MusicCue.FinalBoss && battle.EntryTransition.HidesBattle,
+                        "final music is selected while the entry swirl still hides combat");
+                    Check(Voice(MusicCue.FinalBoss).timeSamples >= Mathf.RoundToInt(Voice(MusicCue.FinalBoss).clip.frequency * .65f),
+                        "final music skips only the recording's silent lead-in");
+                    Call(music,"Advance",.1f);
+                    Check(Voice(MusicCue.FinalBoss).volume > .5f,"final battle music enters within the first tenth of a second");
                     break;
                 case 45:
                     CuePlays(MusicCue.FinalBoss);
-                    Check(Voice(MusicCue.FinalBoss).timeSamples < Voice(MusicCue.FinalBoss).clip.frequency*2,"tyrant battle starts its own recording from the beginning");
-                    Voice(MusicCue.FinalBoss).timeSamples = Voice(MusicCue.FinalBoss).clip.samples - Voice(MusicCue.FinalBoss).clip.frequency/3;
+                    Check(battle.EntryTransition.HidesBattle,"final music plays before combat is visible");
+                    var finalVoice = Voice(MusicCue.FinalBoss);
+                    int finalPosition = finalVoice.timeSamples;
+                    Check(finalPosition < finalVoice.clip.frequency*3,"tyrant battle starts at the recording's first audible passage");
+                    battle.EntryTransition.Sequence.Advance(BattleEntrySequence.SwirlDuration);
+                    battle.EntryTransition.Sequence.MarkBattleReady();
+                    battle.EntryTransition.Sequence.Advance(BattleEntrySequence.CoveredDuration + BattleEntrySequence.RevealDuration + .01f);
+                    battle.EntryTransition.enabled = true;
+                    Call(music,"LateUpdate");
+                    Check(!battle.IsEnteringBattle && Voice(MusicCue.FinalBoss) == finalVoice && finalVoice.timeSamples >= finalPosition,
+                        "revealing the final battle keeps the same audio source and position");
+                    finalVoice.timeSamples = finalVoice.clip.samples - finalVoice.clip.frequency/3;
                     break;
                 case 46:
                     CuePlays(MusicCue.FinalBoss);
