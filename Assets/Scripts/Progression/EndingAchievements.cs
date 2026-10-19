@@ -27,16 +27,15 @@ namespace DragonQuest.Progression
         });
 
         public int Mask { get; private set; }
-        public int Count
-        {
-            get { int count = 0; foreach (var achievement in All) if (Has(achievement.Ending)) count++; return count; }
-        }
+        public int Count { get; private set; }
         public string Counter => Count + "/" + Total;
 
         public EndingAchievements(int mask = 0)
         {
             if (mask < 0 || (mask & ~AllUnlocked) != 0) throw new ArgumentOutOfRangeException(nameof(mask));
             Mask = mask;
+            foreach (var achievement in All)
+                if (Has(achievement.Ending)) Count++;
         }
 
         public bool Has(GameEnding ending)
@@ -53,6 +52,7 @@ namespace DragonQuest.Progression
                 if (achievement.Ending != ending) continue;
                 if (Has(ending)) return false;
                 Mask |= achievement.Bit;
+                Count++;
                 return true;
             }
             return false;

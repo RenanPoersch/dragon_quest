@@ -77,13 +77,46 @@ public static class EndingAchievementValidation
         bool hadLegacyMarker = PlayerPrefs.HasKey(legacyMarker);
         int originalMarker = PlayerPrefs.GetInt(legacyMarker);
         string directory = Path.Combine(Path.GetTempPath(), "DragonQuestAchievementNotifications-" + Guid.NewGuid().ToString("N"));
+        string profileDirectory = directory;
         Action restart = () =>
         {
             reset.Invoke(null, null);
-            storeField.SetValue(null, new EndingAchievementStore(directory));
+            storeField.SetValue(null, new EndingAchievementStore(profileDirectory));
         };
         try
         {
+            var counterField = typeof(EndingAchievementPresentation).GetField("counter", BindingFlags.Instance | BindingFlags.NonPublic);
+            foreach (var order in new[] { new[] { 0, 1, 2 }, new[] { 0, 2, 1 }, new[] { 1, 0, 2 },
+                new[] { 1, 2, 0 }, new[] { 2, 0, 1 }, new[] { 2, 1, 0 } })
+            {
+                profileDirectory = Path.Combine(directory, string.Join("", order));
+                restart();
+                Assert(PrototypeAchievements.Progress.Counter == "0/3", "Each order starts with an empty profile.");
+                for (int i = 0; i < order.Length; i++)
+                {
+                    var achievement = EndingAchievements.All[order[i]];
+                    PrototypeAchievements.Complete(achievement.Ending);
+                    var notification = PrototypeAchievements.TakeNotification();
+                    Assert(notification == achievement, "The completed ending keeps its own name and icon in every order.");
+                    string expectedCounter = (i + 1) + "/3";
+                    var presentation = new EndingAchievementPresentation();
+                    presentation.Show(notification, PrototypeAchievements.Progress.Counter);
+                    Assert((string)counterField.GetValue(presentation) == expectedCounter,
+                        "The notification shows 1/3, 2/3 and 3/3 in completion order.");
+                    Assert(PrototypeAchievements.TakeNotification() == null, "Each completion announces once.");
+                    restart();
+                    Assert(PrototypeAchievements.Progress.Counter == expectedCounter
+                        && PrototypeAchievements.TakeNotification() == null, "Restart preserves the count without replaying notices.");
+                    for (int completed = 0; completed <= i; completed++)
+                    {
+                        var previous = EndingAchievements.All[order[completed]];
+                        PrototypeAchievements.Complete(previous.Ending);
+                        Assert(PrototypeAchievements.TakeNotification() == previous
+                            && PrototypeAchievements.Progress.Counter == expectedCounter, "Repeating any ending keeps the unique count.");
+                    }
+                }
+            }
+            profileDirectory = directory;
             PlayerPrefs.DeleteKey(legacyMarker);
             restart();
             Assert(PrototypeAchievements.TakeNotification() == null, "A fresh startup has no announcement.");
@@ -111,7 +144,7 @@ public static class EndingAchievementValidation
             restart();
             Assert(PrototypeAchievements.TakeNotification() == null, "Announcements do not survive a new play session.");
             Assert(PrototypeAchievements.Progress.Count == EndingAchievements.Total, "Notification consumption preserves saved progress.");
-            Debug.Log("ENDING_ACHIEVEMENT_NOTIFICATIONS_OK: startup, saved endings, all completions, one-shot consumption, restart and invalid endings.");
+            Debug.Log("ENDING_ACHIEVEMENT_NOTIFICATIONS_OK: six completion orders, displayed counters, repeat endings, startup, saved endings, one-shot consumption, restart and invalid endings.");
         }
         finally
         {

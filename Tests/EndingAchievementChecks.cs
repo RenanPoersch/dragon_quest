@@ -19,6 +19,15 @@ public static class EndingAchievementChecks
             Check(EndingAchievements.All[0].Name == "The good" && EndingAchievements.All[0].Ending == endings[0], "Good mapping.");
             Check(EndingAchievements.All[1].Name == "The bad" && EndingAchievements.All[1].Ending == endings[1], "Bad mapping.");
             Check(EndingAchievements.All[2].Name == "The ugly" && EndingAchievements.All[2].Ending == endings[2], "Ugly mapping.");
+            int[] countsByMask = { 0, 1, 1, 2, 1, 2, 2, 3 };
+            for (int mask = 0; mask < countsByMask.Length; mask++)
+            {
+                var restored = new EndingAchievements(mask);
+                Check(restored.Count == countsByMask[mask] && restored.Counter == countsByMask[mask] + "/3",
+                    "Existing profiles restore the number of distinct endings, not the numeric mask.");
+                Check(!restored.Unlock(GameEnding.None) && !restored.Unlock((GameEnding)99)
+                    && restored.Count == countsByMask[mask], "Invalid endings cannot increment restored progress.");
+            }
             foreach (var order in new[] { new[] { 0, 1, 2 }, new[] { 0, 2, 1 }, new[] { 1, 0, 2 },
                 new[] { 1, 2, 0 }, new[] { 2, 0, 1 }, new[] { 2, 1, 0 } })
             {
@@ -36,7 +45,9 @@ public static class EndingAchievementChecks
                     profile = new EndingAchievementStore(directory);
                     Check(profile.Progress.Has(ending) && profile.Progress.Count == i + 1, "Restart preserves unlocks.");
                     byte[] saved = File.ReadAllBytes(Path.Combine(directory, "endings.json"));
-                    Check(profile.TryUnlock(ending, out _) && profile.Progress.Count == i + 1, "Replay is idempotent.");
+                    for (int completed = 0; completed <= i; completed++)
+                        Check(profile.TryUnlock(endings[order[completed]], out _) && profile.Progress.Count == i + 1,
+                            "Replaying any previous ending cannot increment the count.");
                     Check(Convert.ToBase64String(saved) == Convert.ToBase64String(File.ReadAllBytes(Path.Combine(directory, "endings.json"))),
                         "Replay does not rewrite the profile.");
                 }
