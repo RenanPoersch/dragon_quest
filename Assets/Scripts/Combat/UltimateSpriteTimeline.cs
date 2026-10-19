@@ -35,7 +35,8 @@ namespace DragonQuest.Combat
                 if(elapsed<UltimateTimeline.JumpStart)
                     return Cuts[CutIndex(elapsed)%Cuts.Length][Range(CutAge(elapsed),-.065f,.13f,0,3)];
                 if(elapsed<UltimateTimeline.HangStart) return Range(elapsed,UltimateTimeline.JumpStart,UltimateTimeline.HangStart,0,3);
-                if(elapsed<UltimateTimeline.DiveStart) return Loop(elapsed,UltimateTimeline.HangStart,4,4,10);
+                // Hold the bent-knee wind-up until the final sword swing begins.
+                if(elapsed<UltimateTimeline.DiveStart) return 4;
                 if(elapsed<UltimateTimeline.FinalImpact) return Range(elapsed,UltimateTimeline.DiveStart,UltimateTimeline.FinalImpact,8,11);
                 return Range(elapsed,UltimateTimeline.FinalImpact,UltimateTimeline.FinalImpact+.72f,12,15);
             }

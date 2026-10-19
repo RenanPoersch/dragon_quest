@@ -198,7 +198,11 @@ public static class UltimateChecks
                 used[atlas].Add(frame);
             }
             Check(inRange,"Every frame of the complete cinematic refers to a valid actual sprite.");
-            foreach(var sequence in used) Check(sequence.Value.Count==16,"All sixteen authored character poses play: "+sequence.Key);
+            foreach(var sequence in used)
+            {
+                int expected=sequence.Key=="ArenFinisher"?13:16;
+                Check(sequence.Value.Count==expected,"All active character poses play: "+sequence.Key);
+            }
         }
         for(int hit=1;hit<=12;hit++)
         {
@@ -206,9 +210,16 @@ public static class UltimateChecks
             Check(UltimateSpriteTimeline.ActorVisible(time),"The sword wielder is visible at each actual hit.");
             Check(!UltimateSpriteTimeline.ActorVisible(time+.14f),"The sword wielder vanishes between cuts.");
         }
-        Check(UltimateSpriteTimeline.PoseAtlas(HeroUltimates.Omnislash,UltimateTimeline.HangStart)=="ArenFinisher"
-            && UltimateSpriteTimeline.PoseFrame(HeroUltimates.Omnislash,UltimateTimeline.HangStart+.1f)>=4
-            && UltimateSpriteTimeline.PoseFrame(HeroUltimates.Omnislash,UltimateTimeline.HangStart+.1f)<=7,"Airborne hold uses its dedicated drawn wind-up poses.");
+        bool held=true;
+        for(float time=UltimateTimeline.HangStart;time<UltimateTimeline.DiveStart;time+=1f/120)
+            held &= UltimateSpriteTimeline.PoseAtlas(HeroUltimates.Omnislash,time)=="ArenFinisher"
+                && UltimateSpriteTimeline.PoseFrame(HeroUltimates.Omnislash,time)==4;
+        Check(held,"The airborne wind-up keeps the same bent-knee pose throughout the hold.");
+        Check(UltimateSpriteTimeline.PoseFrame(HeroUltimates.Omnislash,UltimateTimeline.DiveStart-.001f)==4
+            && UltimateSpriteTimeline.PoseFrame(HeroUltimates.Omnislash,UltimateTimeline.DiveStart)==8
+            && UltimateSpriteTimeline.PoseFrame(HeroUltimates.Omnislash,UltimateTimeline.FinalImpact-.001f)==11
+            && UltimateSpriteTimeline.PoseFrame(HeroUltimates.Omnislash,UltimateTimeline.FinalImpact)==12,
+            "The held knee releases into the final swing, then the landing at the actual impact.");
         Check(UltimateTimeline.AegisShieldStart<UltimateTimeline.AegisShieldImpact
             && UltimateTimeline.AegisShieldImpact<UltimateTimeline.AegisShieldEnd
             && UltimateTimeline.AegisShieldEnd<UltimateTimeline.AegisBashStart
