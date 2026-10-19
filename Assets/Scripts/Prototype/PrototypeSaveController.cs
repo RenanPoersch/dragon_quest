@@ -198,8 +198,7 @@ namespace DragonQuest.Prototype
                     var notification = PrototypeAchievements.TakeNotification();
                     if (notification != null) achievementScreen.Show(notification, PrototypeAchievements.Progress.Counter);
                 }
-                var displayed = achievementScreen.Achievement;
-                if (achievementScreen.Update(Time.unscaledDeltaTime)) PrototypeAchievements.MarkNotified(displayed);
+                achievementScreen.Update(Time.unscaledDeltaTime);
             }
             if (startingNewGame)
             {

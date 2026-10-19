@@ -1,5 +1,7 @@
 using System;
 using System.IO;
+using System.Reflection;
+using DragonQuest.Persistence;
 using DragonQuest.Progression;
 using DragonQuest.Prototype;
 using UnityEditor;
@@ -10,6 +12,7 @@ public static class EndingAchievementValidation
     [MenuItem("Tools/Dragon Quest/Validate Ending Achievements")]
     public static void Run()
     {
+        ValidateNotifications();
         foreach (var achievement in EndingAchievements.All)
         {
             var icon = Resources.Load<Texture2D>(achievement.IconResource);
@@ -61,6 +64,63 @@ public static class EndingAchievementValidation
         Assert(titleSource.Contains("achievementScreen.Draw();"),
             "The title uses persistent achievement progress.");
         Debug.Log("ENDING_ACHIEVEMENT_UNITY_OK: three imported icons, pixel settings, transparency, font widths, layout and ending/menu hooks.");
+    }
+
+    private static void ValidateNotifications()
+    {
+        const BindingFlags hidden = BindingFlags.Static | BindingFlags.NonPublic;
+        var storeField = typeof(PrototypeAchievements).GetField("store", hidden);
+        var pendingField = typeof(PrototypeAchievements).GetField("pendingNotification", hidden);
+        var reset = typeof(PrototypeAchievements).GetMethod("ResetSession", hidden);
+        object originalStore = storeField.GetValue(null), originalPending = pendingField.GetValue(null);
+        const string legacyMarker = "DragonQuest.EndingAchievements.NotifiedMask.v1";
+        bool hadLegacyMarker = PlayerPrefs.HasKey(legacyMarker);
+        int originalMarker = PlayerPrefs.GetInt(legacyMarker);
+        string directory = Path.Combine(Path.GetTempPath(), "DragonQuestAchievementNotifications-" + Guid.NewGuid().ToString("N"));
+        Action restart = () =>
+        {
+            reset.Invoke(null, null);
+            storeField.SetValue(null, new EndingAchievementStore(directory));
+        };
+        try
+        {
+            PlayerPrefs.DeleteKey(legacyMarker);
+            restart();
+            Assert(PrototypeAchievements.TakeNotification() == null, "A fresh startup has no announcement.");
+            PrototypeAchievements.Complete(GameEnding.KingFreed);
+            Assert(PrototypeAchievements.TakeNotification() == EndingAchievements.All[0], "A newly unlocked endgame announces its achievement.");
+            Assert(PrototypeAchievements.TakeNotification() == null, "A new achievement cannot announce twice.");
+            var saved = new EndingAchievementStore(directory);
+            foreach (var achievement in EndingAchievements.All)
+                Assert(saved.TryUnlock(achievement.Ending, out _), "Prepare previously completed endings.");
+            restart();
+            Assert(PrototypeAchievements.Progress.Count == EndingAchievements.Total, "Saved achievements remain unlocked.");
+            Assert(PrototypeAchievements.TakeNotification() == null, "Saved endings never announce themselves on startup.");
+            foreach (var achievement in EndingAchievements.All)
+            {
+                PrototypeAchievements.Complete(achievement.Ending);
+                Assert(PrototypeAchievements.TakeNotification() == achievement, "A completed endgame announces its matching achievement.");
+                Assert(PrototypeAchievements.TakeNotification() == null, "The announcement is consumed once, even when interrupted.");
+                restart();
+                Assert(PrototypeAchievements.TakeNotification() == null, "Restarting or returning to the title cannot replay old announcements.");
+            }
+            PrototypeAchievements.Complete(GameEnding.None);
+            PrototypeAchievements.Complete((GameEnding)99);
+            Assert(PrototypeAchievements.TakeNotification() == null, "No announcement for defeat or an unknown ending.");
+            PrototypeAchievements.Complete(GameEnding.KingFreed);
+            restart();
+            Assert(PrototypeAchievements.TakeNotification() == null, "Announcements do not survive a new play session.");
+            Assert(PrototypeAchievements.Progress.Count == EndingAchievements.Total, "Notification consumption preserves saved progress.");
+            Debug.Log("ENDING_ACHIEVEMENT_NOTIFICATIONS_OK: startup, saved endings, all completions, one-shot consumption, restart and invalid endings.");
+        }
+        finally
+        {
+            if (hadLegacyMarker) PlayerPrefs.SetInt(legacyMarker, originalMarker);
+            else PlayerPrefs.DeleteKey(legacyMarker);
+            storeField.SetValue(null, originalStore);
+            pendingField.SetValue(null, originalPending);
+            if (Directory.Exists(directory)) Directory.Delete(directory, true);
+        }
     }
 
     private static bool Contains(Rect outer, Rect inner) => inner.xMin >= outer.xMin && inner.xMax <= outer.xMax
