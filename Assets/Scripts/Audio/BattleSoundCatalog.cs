@@ -22,27 +22,55 @@ namespace DragonQuest.Audio
 
     public static class BattleSoundCatalog
     {
+        // Contact markers belong to the approved V3/V4 PCM masters.
         private static readonly Dictionary<string, float> impacts = new Dictionary<string, float>(StringComparer.Ordinal)
         {
-            { "attack-aren", .102f }, { "attack-lia", .04f }, { "attack-bram", .16f },
-            { "heavy-strike", .18f }, { "cleave", .16f }, { "defend", .055f },
-            { "taunt", .21f }, { "protect", .19f }, { "confused-attack", .22f },
-            { "fire", .025f }, { "ice", .06f }, { "thunder", 0 }, { "earth", .035f },
-            { "chaos", .21f }, { "heal", 0 }, { "cleanse", 0 }, { "revive", .55f },
-            { "fire-all", .025f }, { "ice-all", .06f }, { "thunder-all", 0 }, { "earth-all", .035f },
-            { "chaos-all", .21f }, { "heal-all", 0 }, { "cleanse-all", 0 }, { "revive-all", .55f },
-            { "infuse-fire", .09f }, { "infuse-ice", .09f }, { "infuse-thunder", .09f },
-            { "infuse-earth", .09f }, { "infuse-chaos", .09f },
-            { "phoenix", .82f }, { "bahamut", 1.1f }, { "titan", 1.34f },
-            { "attack-guard", .14f }, { "attack-pirate", .11f }, { "attack-wolf", .13f },
-            { "attack-golem", .16f }, { "poison-strike", .13f }, { "enemy-sweep", .18f },
-            { "dragon-claw", .155f }, { "royal-strike", .17f }, { "royal-heavy", .31f },
-            { "tyrant-protect", .2f }, { "drain-life", 1.15f }, { "mind-control", 1.35f },
-            { "silence", .38f }, { "chains", .78f }, { "chaos-magic", 1.9f }
+            { "attack-aren", 0.11f },
+            { "attack-lia", 0.08f },
+            { "attack-bram", 0.15f },
+            { "heavy-strike", 0.23f },
+            { "cleave", 0.24f },
+            { "defend", 0.091f },
+            { "protect", 0.206f },
+            { "confused-attack", 0.265f },
+            { "fire-all", 0.879f },
+            { "ice-all", 0.419f },
+            { "thunder-all", 0.305f },
+            { "earth-all", 0.567f },
+            { "chaos-all", 0.612f },
+            { "heal-all", 0.395f },
+            { "cleanse-all", 0.305f },
+            { "revive-all", 1.132f },
+            { "infuse-fire", 0.144f },
+            { "infuse-ice", 0.34f },
+            { "infuse-thunder", 0.144f },
+            { "infuse-earth", 0.144f },
+            { "infuse-chaos", 0.144f },
+            { "phoenix", 0.34f },
+            { "bahamut", 1.05f },
+            { "titan", 1.38f },
+            { "attack-guard", 0.115f },
+            { "attack-pirate", 0.114f },
+            { "attack-wolf", 0.017f },
+            { "attack-golem", 0.186f },
+            { "poison-strike", 0.114f },
+            { "enemy-sweep", 0.25f },
+            { "dragon-claw", 0.188f },
+            { "royal-strike", 0.199f },
+            { "royal-heavy", 0.32f },
+            { "tyrant-protect", 0.108f },
+            { "drain-life", 0.384f },
+            { "mind-control", 1.348f },
+            { "silence", 0.177f },
+            { "chains", 1.12f },
+            { "chaos-magic", 1.07f }
         };
         private static readonly HashSet<string> fromStart = new HashSet<string>(StringComparer.Ordinal)
         { "omnislash", "lia-salvation", "bram-aegis", "charge-breath", "dragon-breath",
-            "prepare-meteor", "flaming-meteor", "meteor-absorbed" };
+            "flaming-meteor", "meteor-absorbed", "taunt" };
+        // Both target modes use the same approved All recording and level.
+        private static readonly HashSet<string> sharedSpells = new HashSet<string>(StringComparer.Ordinal)
+        { "fire", "ice", "thunder", "earth", "chaos", "heal", "cleanse", "revive" };
         public static IReadOnlyList<string> ResourceKeys { get; } = BuildKeys();
 
         private static IReadOnlyList<string> BuildKeys()
@@ -54,7 +82,7 @@ namespace DragonQuest.Audio
 
         public static BattleSoundCue Resolve(string actorId, AbilityDefinition ability, bool meteorAbsorbed = false)
         {
-            if (ability == null) return default;
+            if (ability == null || ability.SourceAbilityId == "prepare-meteor") return default;
             string key = ability.SourceAbilityId;
             if (ability.Id == "confused-attack") key = "confused-attack";
             else if (key == "attack")
@@ -78,8 +106,7 @@ namespace DragonQuest.Audio
             }
             else if (key == "summon") key = "phoenix";
             else if (key == "flaming-meteor" && meteorAbsorbed) key = "meteor-absorbed";
-            else if ((ability.Targets == TargetRule.AllEnemies || ability.Targets == TargetRule.AllAllies)
-                && impacts.ContainsKey(key + "-all")) key += "-all";
+            else if (sharedSpells.Contains(key)) key += "-all";
 
             if (fromStart.Contains(key)) return new BattleSoundCue(key, startsWithAction: true);
             return impacts.TryGetValue(key, out float impact) ? new BattleSoundCue(key, impact) : default;

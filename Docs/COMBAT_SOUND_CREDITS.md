@@ -1,88 +1,44 @@
-# Bases de áudio e edição — prévias V2
+# Sons de combate — fontes da seleção V3/V4
 
-Edição, montagem, desenho dos gestos e texturas complementares: Codex, para este projeto. Nenhuma gravação de terceiro é apresentada como gravação original do projeto.
+Edição aprovada pelo usuário: nove revisões V4 e demais masters V3. Fontes CC0. Os WAV instalados preservam os bytes aprovados; a conversão das prévias HQ MP3 para PCM não recupera informação perdida na compressão.
 
-As gravações abaixo são disponibilizadas pelos autores sob CC0. As páginas de origem e os arquivos baixados foram preservados em sources/.
+## Fontes utilizadas
 
-- rubberduck — [rpg](https://opengameart.org/content/80-cc0-rpg-sfx) — CC0; arquivo `https://opengameart.org/sites/default/files/80-CC0-RPG-SFX_0.zip`.
-- rubberduck — [creatures](https://opengameart.org/content/80-cc0-creature-sfx) — CC0; arquivo `https://opengameart.org/sites/default/files/80-CC0-creature-SFX_0.zip`.
-- artisticdude — [foley](https://opengameart.org/content/rpg-sound-pack) — CC0; arquivo `https://opengameart.org/sites/default/files/rpg_sound_pack.zip`.
-- IgnasD — [ice](https://opengameart.org/content/ice-breakingshattering) — CC0; arquivo `https://opengameart.org/sites/default/files/IceShatters_0.zip`.
-- AntumDeluge — [fire](https://opengameart.org/content/fire-crackling/) — CC0; arquivo `https://opengameart.org/sites/default/files/fire-1.wav`.
-- qubodup — [earth](https://opengameart.org/content/earth-element-magic-spell) — CC0; arquivo `https://opengameart.org/sites/default/files/Earth%20Element%20Magic%20Spell_0.flac`.
-- Kenney — [impacts](https://kenney.nl/assets/impact-sounds) — CC0; arquivo `https://kenney.nl/media/pages/assets/impact-sounds/87b4ddecda-1677589768/kenney_impact-sounds.zip`.
+- **bamboo** — scotthopkins: [Freesound - WhooshSFX_1.wav by scotthopkins](https://freesound.org/people/scotthopkins/sounds/351724/). public player HQ MP3 preview. Licença CC0-1.0. SHA-256 da fonte: `8476ef167105091c41a4e8b48708b517aae28dd4bcf56776a766e4d2a7582569`.
+- **battlecry** — spookymodem: [Freesound - Battlecry.wav by spookymodem](https://freesound.org/people/spookymodem/sounds/249807/). public player HQ MP3 preview. Licença CC0-1.0. SHA-256 da fonte: `08ee183ae7239719c8ec82287e344624fcf34a0a3b79de4e7b755ec575577ea4`.
+- **bowl** — cabled_mess: [Freesound - Singing Bowl_23042017 02 [RAW] by cabled_mess](https://freesound.org/people/cabled_mess/sounds/389523/). public player HQ MP3 preview. Licença CC0-1.0. SHA-256 da fonte: `45331f60310d8c98ddc4c989260c565869cc7094497bde7ee17a92870f60a5a6`.
+- **bowl-rim** — hollandm: [Freesound - Singing Bowl, long without reverb by hollandm](https://freesound.org/people/hollandm/sounds/573805/). public player HQ MP3 preview. Licença CC0-1.0. SHA-256 da fonte: `8c20131e8d13dba8fc28442d165d24464dfb4625f8a7b35c2fa843245b23f5d7`.
+- **breath** — LindaBarrans: [Freesound - SFX BREATHING by LindaBarrans](https://freesound.org/people/LindaBarrans/sounds/800927/). public player HQ MP3 preview. Licença CC0-1.0. SHA-256 da fonte: `5f6c115dcb10550c0da1846cc7e6cb1d5093e9257137691f0b1a33836bda915c`.
+- **chain** — sethlind: [Freesound - metal chain.wav by sethlind](https://freesound.org/people/sethlind/sounds/332838/). public player HQ MP3 preview. Licença CC0-1.0. SHA-256 da fonte: `d9ca961a5697061e198a414aa879a6b2f924c33ad9b505ba99d4a6738854e3fc`.
+- **chimes** — Adelantemos: [Freesound - Wind Chimes 02.wav by Adelantemos](https://freesound.org/people/Adelantemos/sounds/222893/). public player HQ MP3 preview. Licença CC0-1.0. SHA-256 da fonte: `3fd2f6e204e6cfd9d2b5c9a5debd7951f035554e8672ae9e8288f3e20539c5d8`.
+- **dog** — coldvet: [Freesound - Dog Growl - Beast / Creature by coldvet](https://freesound.org/people/coldvet/sounds/404920/). public player HQ MP3 preview. Licença CC0-1.0. SHA-256 da fonte: `4f1f9c5f7eddec8faa1667bf6f26165f2ea6672e8f0da954ad676a0a96f3454c`.
+- **eagle-cry** — Johnnie_Holiday: [Freesound - Eagle.wav by Johnnie_Holiday](https://freesound.org/people/Johnnie_Holiday/sounds/583615/). public player HQ MP3 preview. Licença CC0-1.0. SHA-256 da fonte: `30cb3b5f77e9f7a4f33fce3a468243f3521657427c665041ed27975a62f87208`.
+- **gas** — Sadiquecat: [Freesound - Blowtorch - Gas out by Sadiquecat](https://freesound.org/people/Sadiquecat/sounds/707252/). public player HQ MP3 preview. Licença CC0-1.0. SHA-256 da fonte: `343d9aae6b0933d91f247eb4b920e3f83245138d64ab81b601559880239c3426`.
+- **hammer** — draftcraft: [Freesound - Hammer hitting an anvil by draftcraft](https://freesound.org/people/draftcraft/sounds/434339/). public player HQ MP3 preview. Licença CC0-1.0. SHA-256 da fonte: `26d3e7204015560e3ee18d0711730ef69b03b9c64fb4acd7e9a170c1883c4397`.
+- **heart** — Andy Jack / JonasTisell: [Freesound - Heartbeat by JonasTisell](https://freesound.org/people/JonasTisell/sounds/670465/). public player HQ MP3 preview. Licença CC0-1.0. SHA-256 da fonte: `1d5ec4cddbefdbcf3f64cf72ec3980c9f1a0de2b21cb40744ff05d9a282ae867`.
+- **ice** — northern87: [Freesound - Ice cracking_northern87 by northern87](https://freesound.org/people/northern87/sounds/369982/). public player HQ MP3 preview. Licença CC0-1.0. SHA-256 da fonte: `09c18972003f501748501894c7acc48c375472ac92bf370d0c1ffe4c6267eac3`.
+- **ice-crush** — Mooe: [Freesound - ice_cracking_01.flac by Mooe](https://freesound.org/people/Mooe/sounds/169897/). public player HQ MP3 preview. Licença CC0-1.0. SHA-256 da fonte: `fbc8b7674d1149f019214f70017cc000d9e5e5f570b33b2e2f1831d749c3b408`.
+- **rockfall** — AlanCat: [Freesound - rockfall2a.wav by AlanCat](https://freesound.org/people/AlanCat/sounds/389303/). public player HQ MP3 preview. Licença CC0-1.0. SHA-256 da fonte: `db15885029d027756ef2b90114c202f4837f10a128371f493904b4886818ffcd`.
+- **rocks** — iwanPlays: [Freesound - Bricks/Stones/Rocks/Gravel Falling by iwanPlays](https://freesound.org/people/iwanPlays/sounds/567249/). public player HQ MP3 preview. Licença CC0-1.0. SHA-256 da fonte: `6fdc4ecbc4c1140d9354a64575892f57a5d476cf8b8421fdd2daa90a401342e4`.
+- **rough-metal** — dslrguide: [Freesound - Rough Metal Scrape Textured by dslrguide](https://freesound.org/people/dslrguide/sounds/321485/). public player HQ MP3 preview. Licença CC0-1.0. SHA-256 da fonte: `79cd4504921e67d07c45cc994435b5ab26e6939f3c4712fcebdb11f75f3e4f0e`.
+- **scrape** — dslrguide: [Freesound - Metal Scrape by dslrguide](https://freesound.org/people/dslrguide/sounds/321480/). public player HQ MP3 preview. Licença CC0-1.0. SHA-256 da fonte: `e36dd4f89f5eb4ce45f5c95f584f4c16f3f3df0c27b1969ff6a22c3fb1681c97`.
+- **shield-hit** — fonografico: [Freesound - SHIELDHIT2.wav by fonografico](https://freesound.org/people/fonografico/sounds/636102/). public player HQ MP3 preview. Licença CC0-1.0. SHA-256 da fonte: `481cdd4e31df685b6132b8d2eca794047d9d65d88318e8eea43c339ac98f08b0`.
+- **staff-hit** — bmacphail: [Freesound - Wooden Stick Whacks Medicine Ball.wav by bmacphail](https://freesound.org/people/bmacphail/sounds/569541/). public player HQ MP3 preview. Licença CC0-1.0. SHA-256 da fonte: `424986060d370a1e2fcea1e49fcc07ba116b29cd25d0e03a59a148299b590d4d`.
+- **swishes** — artisticdude: [Swishes Sound Pack](https://opengameart.org/content/swishes-sound-pack). original WAV recordings in ZIP. Licença CC0-1.0. SHA-256 da fonte: `7980215241b739a787dcf26f660ce510bb237900968789395a86911619795693`.
+- **sword-draw** — hushless: [Freesound - Sword Unsheath by hushless](https://freesound.org/people/hushless/sounds/772113/). public player HQ MP3 preview. Licença CC0-1.0. SHA-256 da fonte: `8c481b07db2739ee37399683cb2f6d0709a1c43747b23bab93bce52e94c22f48`.
+- **sword-hit** — qubodup: [Freesound - Sword Hit by qubodup](https://freesound.org/people/qubodup/sounds/442769/). public player HQ MP3 preview. Licença CC0-1.0. SHA-256 da fonte: `93d72e63bb8d9b8a60d2c0ac665c153171515645fbb85f4ec028e4a253e7b167`.
+- **thunder** — BlueDelta: [Freesound - Heavy Thunder Strike - no Rain - QUADRO.wav by BlueDelta](https://freesound.org/people/BlueDelta/sounds/446753/). public player HQ MP3 preview. Licença CC0-1.0. SHA-256 da fonte: `343c8e7a6d24b7f71fd65117cb0120bb01460127cbfdf00668c42a0b69ad9c00`.
+- **tiger** — eZZin: [Freesound - Tiger roar female by eZZin](https://freesound.org/people/eZZin/sounds/811790/). public player HQ MP3 preview. Licença CC0-1.0. SHA-256 da fonte: `0d0d063e8b51c2d012e2044b870eeca0d10920fb1a8a008174258b4c5e8c2a30`.
+- **torch-raw** — kyles: [Freesound - blowtorch light and run flame good detail on off2.flac by kyles](https://freesound.org/people/kyles/sounds/453408/). public player HQ MP3 preview. Licença CC0-1.0. SHA-256 da fonte: `68a661a736753b4486a2ab83e2803e79d0380151e717fa5158344e3f2040e418`.
+- **v2-fire** — AntumDeluge: [v2-fire](https://opengameart.org/content/fire-crackling/). arquivo original do pacote. Licença CC0. SHA-256 da fonte: `26702de8a195bcbafeae72034861d875a1b7917168a25106f4e1957ecdddf7e5`.
+- **v2-foley** — artisticdude: [v2-foley](https://opengameart.org/content/rpg-sound-pack). arquivo original do pacote. Licença CC0. SHA-256 da fonte: `f80754a9c04854e30c9da89d0186540ad097309d98b41387b6e83029e2601421`.
+- **v2-impacts** — Kenney: [v2-impacts](https://kenney.nl/assets/impact-sounds). arquivo original do pacote. Licença CC0. SHA-256 da fonte: `029d734af1582474edf3a694d1b0cebc97c1c152f2f39fa34d4c2bafc5de77f8`.
+- **warcry-dry** — WelvynZPorterSamples: [Freesound - Male Yelling out a War Cry 1 - WITHOUT reverb.wav by WelvynZPorterSamples](https://freesound.org/people/WelvynZPorterSamples/sounds/621342/). public player HQ MP3 preview. Licença CC0-1.0. SHA-256 da fonte: `3f66e0cdd20593dc12fb71a6942d1a52794809afa5ddff847241c9eebb86f7a8`.
+- **water** — soundofsong: [Freesound - water running drain loop by soundofsong](https://freesound.org/people/soundofsong/sounds/841983/). public player HQ MP3 preview. Licença CC0-1.0. SHA-256 da fonte: `e6343264c5a2342acc75a24956c075a6d0f7d594a754d876221f074bcf360375`.
 
-## Materiais utilizados
+O coração foi gravado por Andy Jack e publicado por JonasTisell. O cão Harvey Bird foi gravado por Frederick Bird (coldvet). O material de rochas de iwanPlays combina fontes CC0 de adamgryu (336023), AlanCat (389303) e spookymodem (202098).
+O Sword Hit de qubodup combina gravações CC0 de Christopherderp (364531) e JohnBuhr (326795, 326797, 326863, 326861). O Eagle.wav de Johnnie_Holiday já contém montagem e processamento de frequência, conforme a descrição original.
 
-- `creatures\unpacked\barking_02.ogg`
-- `creatures\unpacked\breath.ogg`
-- `creatures\unpacked\grunt_03.ogg`
-- `creatures\unpacked\grunt_05.ogg`
-- `creatures\unpacked\roar_01.ogg`
-- `creatures\unpacked\roar_02.ogg`
-- `creatures\unpacked\roar_03.ogg`
-- `earth\Earth Element Magic Spell_0.flac`
-- `fire\fire-1.wav`
-- `foley\unpacked\RPG Sound Pack\NPC\beetle\bite-small2.wav`
-- `foley\unpacked\RPG Sound Pack\NPC\shade\shade10.wav`
-- `foley\unpacked\RPG Sound Pack\NPC\shade\shade11.wav`
-- `foley\unpacked\RPG Sound Pack\NPC\shade\shade12.wav`
-- `foley\unpacked\RPG Sound Pack\NPC\shade\shade13.wav`
-- `foley\unpacked\RPG Sound Pack\NPC\shade\shade2.wav`
-- `foley\unpacked\RPG Sound Pack\NPC\shade\shade3.wav`
-- `foley\unpacked\RPG Sound Pack\NPC\shade\shade4.wav`
-- `foley\unpacked\RPG Sound Pack\NPC\shade\shade6.wav`
-- `foley\unpacked\RPG Sound Pack\NPC\shade\shade7.wav`
-- `foley\unpacked\RPG Sound Pack\NPC\shade\shade8.wav`
-- `foley\unpacked\RPG Sound Pack\NPC\shade\shade9.wav`
-- `foley\unpacked\RPG Sound Pack\battle\swing.wav`
-- `foley\unpacked\RPG Sound Pack\battle\swing2.wav`
-- `foley\unpacked\RPG Sound Pack\battle\swing3.wav`
-- `foley\unpacked\RPG Sound Pack\battle\sword-unsheathe.wav`
-- `foley\unpacked\RPG Sound Pack\battle\sword-unsheathe3.wav`
-- `foley\unpacked\RPG Sound Pack\inventory\armor-light.wav`
-- `foley\unpacked\RPG Sound Pack\inventory\bubble.wav`
-- `foley\unpacked\RPG Sound Pack\inventory\bubble2.wav`
-- `foley\unpacked\RPG Sound Pack\inventory\bubble3.wav`
-- `foley\unpacked\RPG Sound Pack\inventory\chainmail1.wav`
-- `foley\unpacked\RPG Sound Pack\inventory\chainmail2.wav`
-- `foley\unpacked\RPG Sound Pack\inventory\cloth-heavy.wav`
-- `foley\unpacked\RPG Sound Pack\inventory\metal-ringing.wav`
-- `foley\unpacked\RPG Sound Pack\inventory\metal-small1.wav`
-- `ice\unpacked\IceShatters\LedasLuzta.ogg`
-- `ice\unpacked\IceShatters\LedasLuzta2.ogg`
-- `ice\unpacked\IceShatters\LedasLuzta4.ogg`
-- `ice\unpacked\IceShatters\LedasLuzta5.ogg`
-- `impacts\unpacked\Audio\impactMetal_heavy_000.ogg`
-- `impacts\unpacked\Audio\impactMetal_heavy_002.ogg`
-- `impacts\unpacked\Audio\impactMetal_heavy_003.ogg`
-- `impacts\unpacked\Audio\impactMining_001.ogg`
-- `impacts\unpacked\Audio\impactMining_002.ogg`
-- `impacts\unpacked\Audio\impactMining_003.ogg`
-- `impacts\unpacked\Audio\impactPlate_heavy_000.ogg`
-- `impacts\unpacked\Audio\impactPlate_heavy_001.ogg`
-- `impacts\unpacked\Audio\impactPlate_heavy_002.ogg`
-- `impacts\unpacked\Audio\impactPlate_heavy_003.ogg`
-- `impacts\unpacked\Audio\impactPlate_heavy_004.ogg`
-- `impacts\unpacked\Audio\impactPunch_heavy_000.ogg`
-- `impacts\unpacked\Audio\impactPunch_heavy_001.ogg`
-- `impacts\unpacked\Audio\impactPunch_heavy_002.ogg`
-- `impacts\unpacked\Audio\impactPunch_heavy_003.ogg`
-- `impacts\unpacked\Audio\impactSoft_heavy_003.ogg`
-- `impacts\unpacked\Audio\impactWood_heavy_000.ogg`
-- `impacts\unpacked\Audio\impactWood_heavy_002.ogg`
-- `rpg\unpacked\blade_01.ogg`
-- `rpg\unpacked\blade_02.ogg`
-- `rpg\unpacked\blade_03.ogg`
-- `rpg\unpacked\chain_01.ogg`
-- `rpg\unpacked\chain_02.ogg`
-- `rpg\unpacked\chain_03.ogg`
-- `rpg\unpacked\creature_slime_03.ogg`
-- `rpg\unpacked\item_gem_04.ogg`
-- `rpg\unpacked\lock_01.ogg`
-- `rpg\unpacked\lock_03.ogg`
-- `rpg\unpacked\spell_fire_06.ogg`
-- `rpg\unpacked\stones_01.ogg`
-- `rpg\unpacked\stones_02.ogg`
-- `rpg\unpacked\stones_03.ogg`
-- `rpg\unpacked\stones_04.ogg`
+Fênix usa somente águia e chama. Bahamut não contém vocalização de felino. Bastião começa com voz humana de batalha. Omnislash preserva a carga de 4,40 a 5,02 segundos e o impacto final em 5,32 segundos.
+
+As janelas e materiais por efeito, hashes dos masters e medições anteriores à aprovação estão em CombatSoundManifest.json. A seleção por ação, aliases e mudo estão em CombatSoundSelection.json.

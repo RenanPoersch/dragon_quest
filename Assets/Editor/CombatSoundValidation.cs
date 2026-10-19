@@ -53,7 +53,7 @@ public static class CombatSoundValidation
         try
         {
             rows = ReadRows(); checks = 0;
-            Check(rows.Length == 56 && BattleSoundCatalog.ResourceKeys.Count == 56, "all 56 approved variants are present");
+            Check(rows.Length == 47 && BattleSoundCatalog.ResourceKeys.Count == 47, "all 47 approved recordings are present");
             Check(rows.Select(r => r.id).OrderBy(x => x).SequenceEqual(BattleSoundCatalog.ResourceKeys), "resource catalogue exactly matches approval manifest");
             foreach (Row row in rows)
             {
@@ -61,7 +61,7 @@ public static class CombatSoundValidation
                 AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate);
                 using (var hash = SHA256.Create())
                     Check(BitConverter.ToString(hash.ComputeHash(File.ReadAllBytes(path))).Replace("-", "").ToLowerInvariant() == row.sha256,
-                        row.id + " is byte-identical to the V2 preview");
+                        row.id + " is byte-identical to the approved V3/V4 preview");
                 var clip = Resources.Load<AudioClip>("CombatSounds/" + row.id);
                 Check(clip != null && clip.channels == 2 && clip.frequency == 48000 && Math.Abs(clip.length - row.duration) < .001f,
                     row.id + " preserves stereo, rate and duration");
@@ -144,8 +144,10 @@ public static class CombatSoundValidation
             && BattleSoundCatalog.Resolve("lia", HeroUltimates.Salvation).StartOffset(3.65f) == 0
             && BattleSoundCatalog.Resolve("bram", HeroUltimates.Aegis).StartOffset(2.85f) == 0,
             "all three limits retain their authored timeline, including all 13 cuts");
-        Check(Math.Abs(BattleSoundCatalog.Resolve("aren", PrototypePartyFactory.Thunder).StartOffset(.5f) - .5f) < .001f,
-            "the lightning crack lands on the visible impact");
+        Check(BattleSoundCatalog.Resolve("aren", PrototypePartyFactory.Thunder).Key == "thunder-all",
+            "single-target spells use the approved All recording");
+        Check(!BattleSoundCatalog.Resolve("aren", definitions["prepare-meteor"]).IsValid,
+            "meteor preparation is intentionally silent");
         sounds.StopAll();
     }
 
@@ -233,7 +235,7 @@ public static class CombatSoundValidation
                 + ", due=" + due + ", current=" + sounds.CurrentSound + ", focused=" + GameInput.IsFocused + ")");
             Check(sounds.PlayCount == playCount, "idle rendering and update frames do not duplicate playback");
             index++; phase = 0;
-            if (index % 8 == 0) Debug.Log("COMBAT SOUND PLAYBACK PROGRESS: " + index + "/56");
+            if (index % 8 == 0) Debug.Log("COMBAT SOUND PLAYBACK PROGRESS: " + index + "/" + rows.Length);
         }
         catch (Exception error) { Finish(error); }
     }
@@ -244,7 +246,7 @@ public static class CombatSoundValidation
         if (fixture != null) UnityEngine.Object.Destroy(fixture);
         if (listener != null) UnityEngine.Object.Destroy(listener);
         if (error != null) Debug.LogException(error);
-        else Debug.Log("COMBAT SOUNDS PLAYBACK PASS: " + checks + " checks; all 56 approved PCM variants, presentation timing, real sample advancement, rejected/duplicate actions, focus, lifecycle and music continuity.");
+        else Debug.Log("COMBAT SOUNDS PLAYBACK PASS: " + checks + " checks; all 47 approved PCM recordings, presentation timing, real sample advancement, rejected/duplicate actions, focus, lifecycle and music continuity.");
         if (Application.isBatchMode) EditorApplication.Exit(error == null ? 0 : 1);
         else EditorApplication.ExitPlaymode();
     }
