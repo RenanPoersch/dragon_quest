@@ -25,6 +25,7 @@ public static class BattleEntryUnityChecks
             ValidateSequence();
             ValidateController();
             ValidateShader();
+            ValidateFullScreenRotation();
             ValidateCameraCapture();
             Debug.Log("BATTLE_ENTRY_UNITY_CHECKS_OK: " + checks + " checks.");
             EditorApplication.Exit(0);
@@ -174,6 +175,71 @@ public static class BattleEntryUnityChecks
             UnityEngine.Object.DestroyImmediate(unlit); UnityEngine.Object.DestroyImmediate(sprite);
             EditorSceneManager.ClosePreviewScene(scene);
         }
+    }
+
+    private static void ValidateFullScreenRotation()
+    {
+        var material = new Material(Resources.Load<Shader>("BattleEntrySwirl"));
+        var previous = RenderTexture.active;
+        try
+        {
+            foreach (var size in new[] { new Vector2Int(1280, 720), new Vector2Int(1280, 800), new Vector2Int(960, 720), new Vector2Int(1920, 810) })
+            {
+                var source = new Texture2D(size.x, size.y, TextureFormat.RGBA32, false);
+                var target = new RenderTexture(size.x, size.y, 0, RenderTextureFormat.ARGB32);
+                var readback = new Texture2D(size.x, size.y, TextureFormat.RGBA32, false);
+                float aspect = (float)size.x / size.y;
+                material.SetFloat("_Aspect", aspect);
+                try
+                {
+                    source.SetPixels32(Enumerable.Repeat(new Color32(255, 255, 255, 255), size.x * size.y).ToArray()); source.Apply();
+                    var turning = Render(source, target, readback, material, .75f);
+                    Check(turning.All(p => p.r > 250 && p.g > 250 && p.b > 250),
+                        "the whole screen stays filled through the rotation without a closing iris at " + size);
+                    var fading = Render(source, target, readback, material, .9f);
+                    int darkest = fading.Min(p => (int)p.r), brightest = fading.Max(p => (int)p.r);
+                    Check(darkest > 0 && brightest < 250 && brightest - darkest <= 1,
+                        "the transition fades the centre and every edge evenly at " + size);
+
+                    // A circular marker must keep its visible area as the scene rotates.
+                    // This catches an unwanted zoom even when mirrored edges fill the screen.
+                    var pixels = new Color32[size.x * size.y];
+                    for (int y = 0; y < size.y; y++) for (int x = 0; x < size.x; x++)
+                    {
+                        float dx = ((x + .5f) / size.x - .5f) * aspect, dy = (y + .5f) / size.y - .5f;
+                        float distance = Mathf.Sqrt(dx * dx + dy * dy);
+                        pixels[y * size.x + x] = distance > .18f && distance < .24f
+                            ? new Color32(255, 255, 255, 255) : new Color32(40, 70, 100, 255);
+                    }
+                    source.filterMode = FilterMode.Point; source.SetPixels32(pixels); source.Apply();
+                    int originalArea = MarkerArea(Render(source, target, readback, material, 0), size);
+                    foreach (float progress in new[] { .25f, .55f, .78f })
+                    {
+                        int area = MarkerArea(Render(source, target, readback, material, progress), size);
+                        Check(Math.Abs(area - originalArea) < originalArea * .02f,
+                            "visible image scale stays constant during rotation at " + progress + " / " + size + "; area " + area + " / " + originalArea);
+                    }
+                }
+                finally
+                {
+                    RenderTexture.active = previous; target.Release();
+                    UnityEngine.Object.DestroyImmediate(source); UnityEngine.Object.DestroyImmediate(target); UnityEngine.Object.DestroyImmediate(readback);
+                }
+            }
+        }
+        finally { RenderTexture.active = previous; UnityEngine.Object.DestroyImmediate(material); }
+    }
+    private static int MarkerArea(Color32[] pixels, Vector2Int size)
+    {
+        int count = 0;
+        float aspect = (float)size.x / size.y;
+        for (int y = 0; y < size.y; y++) for (int x = 0; x < size.x; x++)
+        {
+            if (Math.Abs(((x + .5f) / size.x - .5f) * aspect) > .3f || Math.Abs((y + .5f) / size.y - .5f) > .3f) continue;
+            Color32 pixel = pixels[y * size.x + x];
+            if (pixel.r > 220 && pixel.g > 220 && pixel.b > 220) count++;
+        }
+        return count;
     }
 
     private static void ValidateShader()
