@@ -7,7 +7,7 @@ namespace DragonQuest.Prototype
     // The reveal waits for a complete battle repaint, including its lazily loaded artwork.
     public sealed class BattleEntrySequence
     {
-        public const float SwirlDuration = 1.5f, CoveredDuration = .12f, RevealDuration = .32f;
+        public const float SwirlDuration = 3.2f, CoveredDuration = .12f, RevealDuration = .32f;
         public float Elapsed { get; private set; }
         public bool IsPlaying { get; private set; }
         public bool ShowsBattle => IsPlaying && Elapsed >= SwirlDuration;

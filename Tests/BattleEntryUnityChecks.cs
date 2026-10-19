@@ -26,6 +26,7 @@ public static class BattleEntryUnityChecks
             ValidateController();
             ValidateShader();
             ValidateFullScreenRotation();
+            ValidateLiquidFlow();
             ValidateCameraCapture();
             Debug.Log("BATTLE_ENTRY_UNITY_CHECKS_OK: " + checks + " checks.");
             EditorApplication.Exit(0);
@@ -39,7 +40,10 @@ public static class BattleEntryUnityChecks
         sequence.Begin();
         Check(sequence.IsPlaying && !sequence.ShowsBattle && sequence.SwirlProgress == 0, "starts with the exploration picture");
         sequence.MarkBattleReady(); // A premature notification must not reveal an unpainted battle.
-        sequence.Advance(.75f);
+        sequence.Advance(1.5f);
+        Check(!sequence.ShowsBattle && sequence.SwirlProgress < .5f, "the old entry cutoff now occurs before the midpoint of the slower swirl");
+        sequence.Begin();
+        sequence.Advance(BattleEntrySequence.SwirlDuration / 2);
         Check(!sequence.ShowsBattle && Mathf.Abs(sequence.SwirlProgress - .5f) < .001f, "full swirl precedes battle visibility");
         sequence.Advance(100);
         Check(sequence.IsPlaying && sequence.ShowsBattle && sequence.BlackOpacity == 1, "slow loading holds at full black");
@@ -151,12 +155,12 @@ public static class BattleEntryUnityChecks
                     Check(Difference(reference, mapCapture) < 2, "transition captures actual exploration pixels instead of a blank buffer");
                     Color32[] first = Read(frame, readback);
                     Check(Difference(mapCapture, first) < 2, "the first animation frame contains the captured map");
-                    transition.Sequence.Advance(.6f); render.Invoke(transition, null);
+                    transition.Sequence.Advance(BattleEntrySequence.SwirlDuration * .4f); render.Invoke(transition, null);
                     Color32[] winding = Read(frame, readback);
                     Check(Difference(first, winding) > 10 && winding.Count(p => p.r > 25 || p.g > 25 || p.b > 25) > winding.Length * .7,
                         "the runtime animation visibly twists map pixels before closing");
                     File.WriteAllBytes(Path.Combine(output, "camera-swirl-" + size.x + "x" + size.y + ".png"), readback.EncodeToPNG());
-                    transition.Sequence.Advance(.6f); render.Invoke(transition, null);
+                    transition.Sequence.Advance(BattleEntrySequence.SwirlDuration * .4f); render.Invoke(transition, null);
                     Check(Difference(winding, Read(frame, readback)) > 10, "the runtime clock advances the vortex");
                     transition.Cancel();
                     Check(!transition.IsPlaying && snapshotField.GetValue(transition) == null && frameField.GetValue(transition) == null,
@@ -240,6 +244,37 @@ public static class BattleEntryUnityChecks
             if (pixel.r > 220 && pixel.g > 220 && pixel.b > 220) count++;
         }
         return count;
+    }
+
+    private static void ValidateLiquidFlow()
+    {
+        const int width = 1280, height = 720;
+        var source = new Texture2D(width, height, TextureFormat.RGBA32, false) { filterMode = FilterMode.Point };
+        var target = new RenderTexture(width, height, 0, RenderTextureFormat.ARGB32);
+        var readback = new Texture2D(width, height, TextureFormat.RGBA32, false);
+        var material = new Material(Resources.Load<Shader>("BattleEntrySwirl"));
+        var previous = RenderTexture.active;
+        try
+        {
+            var pixels = new Color32[width * height];
+            for (int y = 0; y < height; y++) for (int x = 0; x < width; x++)
+                pixels[y * width + x] = (x / 32 + y / 32) % 2 == 0
+                    ? new Color32(230, 50, 40, 255) : new Color32(40, 100, 230, 255);
+            source.SetPixels32(pixels); source.Apply();
+            material.SetFloat("_Aspect", (float)width / height);
+            Color32[] first = Render(source, target, readback, material, 0);
+            Check(first.Count(p => p.r > 45 && p.r < 225) < first.Length * .01,
+                "the initial image preserves crisp exploration detail");
+            Color32[] fluid = Render(source, target, readback, material, .65f);
+            Check(fluid.Count(p => p.r > 45 && p.r < 225) > fluid.Length * .15,
+                "details visibly blend along the liquid vortex instead of only rotating rigidly");
+        }
+        finally
+        {
+            RenderTexture.active = previous; target.Release();
+            UnityEngine.Object.DestroyImmediate(source); UnityEngine.Object.DestroyImmediate(target);
+            UnityEngine.Object.DestroyImmediate(readback); UnityEngine.Object.DestroyImmediate(material);
+        }
     }
 
     private static void ValidateShader()
