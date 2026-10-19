@@ -44,8 +44,15 @@ namespace DragonQuest.Prototype
                 (artworkBounds.y - viewport.y) / viewport.height,
                 artworkBounds.width / viewport.width, artworkBounds.height / viewport.height));
             RenderTexture previous = RenderTexture.active;
-            try { Graphics.Blit(artwork, frame, material); }
-            finally { RenderTexture.active = previous; }
+            bool previousSrgbWrite = GL.sRGBWrite;
+            try
+            {
+                // IMGUI disables sRGB writes. Encode the offscreen frame for its
+                // own target so drawing it in a Linear project keeps the original colors.
+                GL.sRGBWrite = frame.sRGB;
+                Graphics.Blit(artwork, frame, material);
+            }
+            finally { GL.sRGBWrite = previousSrgbWrite; RenderTexture.active = previous; }
             return frame;
         }
 

@@ -66,15 +66,21 @@ public static class KingFreedValidation
         var reference = RenderTexture.GetTemporary(artwork.width,artwork.height,0,RenderTextureFormat.ARGB32);
         var capture = new Texture2D(artwork.width,artwork.height,TextureFormat.RGBA32,false,true);
         var previous = RenderTexture.active;
+        bool previousSrgbWrite = GL.sRGBWrite;
         try
         {
+            GL.sRGBWrite=reference.sRGB;
             Graphics.Blit(artwork,reference); RenderTexture.active=reference;
             capture.ReadPixels(new Rect(0,0,artwork.width,artwork.height),0,0); capture.Apply();
             Color[] original = capture.GetPixels();
             using (var renderer = new EndingArtworkRenderer())
             {
                 Rect full = new Rect(0,0,artwork.width,artwork.height);
-                RenderTexture.active=renderer.RenderFrame(artwork,full,full);
+                // Reproduce IMGUI's write state, which used to darken Linear-project frames.
+                GL.sRGBWrite=false;
+                RenderTexture renderedFrame=renderer.RenderFrame(artwork,full,full);
+                Assert(!GL.sRGBWrite && RenderTexture.active==reference, "artwork rendering restores GUI graphics state");
+                RenderTexture.active=renderedFrame;
                 capture.ReadPixels(full,0,0); capture.Apply();
                 Color[] rendered = capture.GetPixels();
                 RenderTexture.active=reference;
@@ -89,6 +95,7 @@ public static class KingFreedValidation
         }
         finally
         {
+            GL.sRGBWrite=previousSrgbWrite;
             RenderTexture.active=previous; RenderTexture.ReleaseTemporary(reference);
             UnityEngine.Object.DestroyImmediate(capture);
         }

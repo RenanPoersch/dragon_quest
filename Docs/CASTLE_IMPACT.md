@@ -12,6 +12,6 @@ O relógio usa tempo não escalado e não avança antes do primeiro desenho. A c
 
 Artes novas geradas com a ferramenta integrada de imagens: `Assets/Resources/PixelArt/Endings/CastleBeforeImpact.png`, `EndingMeteor.png` e `CastleRedClouds.png`. Prompts e proveniência em `Docs/ArtInputs/CastleImpact.prompts.json` e `CastleRedClouds.prompt.json`.
 
-O final bom e o epílogo da colina mostram as pinturas sem camada colorida ou sombreado sobre o cenário. As letras mantêm apenas sua própria sombra. As transições para preto/branco continuam fazendo parte da sequência. A apresentação e o filtro do mind control permanecem intactos.
+O final bom e o epílogo da colina mostram as pinturas sem camada colorida sobre o cenário. O final bom mantém apenas o fundo preto padrão restrito à área de leitura, além da sombra das letras; o epílogo da colina mantém apenas a sombra das letras. As transições para preto/branco continuam fazendo parte da sequência. A apresentação e o filtro do mind control permanecem intactos.
 
 Validação: `Tools/Test-CastleImpact.ps1`, `Tools/Test-FinalOne.ps1`, `Tools/Test-UnityScripts.ps1` e menu Unity `Tools/Dragon Quest/Validate Castle Impact`. O menu `Preview Castle Impact` permite reproduzir e inspecionar a abertura e o epílogo completo.

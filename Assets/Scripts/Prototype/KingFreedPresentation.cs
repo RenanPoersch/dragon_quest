@@ -11,7 +11,7 @@ namespace DragonQuest.Prototype
         public const float TextColumnWidth = 350;
         private readonly string[] speechLines = EndingNarrative.KingFreedSpeech.Split('\n');
         private readonly string[] epilogueLines = EndingNarrative.KingFreedEpilogue.Split('\n');
-        private readonly Texture2D speech, prosperity;
+        private readonly Texture2D speech, prosperity, shade;
         private readonly EndingArtworkRenderer speechMotion = new EndingArtworkRenderer();
         private readonly EndingArtworkRenderer prosperityMotion = new EndingArtworkRenderer();
         private GUIStyle story, caption;
@@ -22,6 +22,12 @@ namespace DragonQuest.Prototype
         {
             Sequence = new KingFreedSequence(speechLines.Length, epilogueLines.Length);
             speech = Load(SpeechResource); prosperity = Load(ProsperityResource);
+            shade = new Texture2D(128, 1, TextureFormat.RGBA32, false)
+            { name = "King freed / narrative shade", wrapMode = TextureWrapMode.Clamp };
+            var colors = new Color[shade.width];
+            for (int x = 0; x < colors.Length; x++)
+                colors[x] = new Color(0, 0, 0, .82f * (1 - Mathf.SmoothStep(0, 1, x / 127f)));
+            shade.SetPixels(colors); shade.Apply(false, true);
         }
         public void Update(float unscaledDeltaTime)
         { if (hasDrawn) Sequence.Advance(unscaledDeltaTime); }
@@ -69,6 +75,8 @@ namespace DragonQuest.Prototype
         private void DrawNarrative(string[] lines, string heading, float offset, float opacity)
         {
             if (opacity <= 0) return;
+            GUI.color = new Color(1, 1, 1, opacity);
+            GUI.DrawTexture(new Rect(0, 40, 520, 540), shade);
             GUI.color = new Color(0, 0, 0, opacity);
             GUI.Label(new Rect(62, 62, TextColumnWidth, 30), heading, caption);
             GUI.color = new Color(.96f, .8f, .5f, opacity);
@@ -105,6 +113,8 @@ namespace DragonQuest.Prototype
         public void Dispose()
         {
             speechMotion.Dispose(); prosperityMotion.Dispose();
+            if (Application.isPlaying) UnityEngine.Object.Destroy(shade);
+            else UnityEngine.Object.DestroyImmediate(shade);
         }
     }
 }
