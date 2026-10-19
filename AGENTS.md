@@ -6,6 +6,10 @@ O projeto Unity está em `C:\Users\renan\Documents\Codex\2026-10-08\tenh\outputs
 
 Não adicione textos de ajuda, dicas de teclas/controle ou instruções explicativas nas telas sem pedido explícito do usuário. Siga as referências visuais fornecidas.
 
+## Retratos de personagens
+
+Cada personagem deve ter fisionomia, expressão, ângulo da cabeça e pose próprios. Não reutilize o mesmo rosto e a mesma pose mudando apenas cabelo e roupa. Use referências de estilo para o acabamento, sem copiar a fisionomia ou a composição de outro personagem. Compare os retratos lado a lado antes de concluir.
+
 ## Commit e push ao concluir atividades
 
 Preferência permanente do usuário, autorizada em 13 de outubro de 2026: após concluir cada atividade que altere o projeto, faça o commit e o push automaticamente, em todos os chats deste projeto.
