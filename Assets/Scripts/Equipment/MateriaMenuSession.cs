@@ -37,7 +37,12 @@ namespace DragonQuest.Equipment
         {
             var materia = SelectedMateria; var socket = SelectedSocket;
             materias.Clear(); foreach (var item in party.Materias) materias.Add(item);
-            if (arranged) materias.Sort((a, b) => StringComparer.OrdinalIgnoreCase.Compare(a.Definition.Name, b.Definition.Name));
+            if (arranged) materias.Sort((a, b) =>
+            {
+                // MateriaType groups colors in green, blue, red, purple order.
+                int color = a.Definition.Type.CompareTo(b.Definition.Type);
+                return color != 0 ? color : StringComparer.OrdinalIgnoreCase.Compare(a.Definition.Name, b.Definition.Name);
+            });
             int index = materias.IndexOf(materia);
             bool lostMateria = materia != null && index < 0;
             MateriaIndex = index >= 0 ? index : Math.Max(0, Math.Min(MateriaIndex, materias.Count - 1));

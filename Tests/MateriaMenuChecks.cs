@@ -57,7 +57,18 @@ internal static class MateriaMenuChecks
         Check(robe.LinkedSocket(5) == 4 && Count(party, materia) == 1, "The last linked pair and unique identity remain intact.");
         menu.Arrange(party);
         Check(menu.SelectedMateria == materia && !menu.ChoosingSocket, "Arrange preserves the selected instance.");
-        for (int i = 1; i < menu.Materias.Count; i++) Check(StringComparer.OrdinalIgnoreCase.Compare(menu.Materias[i-1].Definition.Name, menu.Materias[i].Definition.Name) <= 0, "Materia list is alphabetic.");
+        var expected = new[] { "chaos", "cure", "fire", "ice", "cleanse", "thunder", "thunder", "earth", "revive",
+            "all", "all", "bahamut", "phoenix", "titan", "cleave", "defense", "heavy", "guardian", "hp", "infuse", "mp" };
+        Check(menu.Materias.Count == expected.Length, "Arrange keeps every materia, including duplicate definitions.");
+        for (int i = 0; i < expected.Length; i++)
+            Check(menu.Materias[i].Definition.Id == expected[i], "Arrange groups green, blue, red and purple, alphabetically within each color.");
+        var originalFire = menu.Materias[2];
+        var addition = new MateriaInstance("new-fire", PrototypePartyFactory.FireMateria);
+        Check(party.TryAddMaterias(addition), "A new materia can enter the arranged inventory.");
+        menu.Refresh(party);
+        Check(menu.SelectedMateria == materia && menu.Materias.Count == expected.Length + 1
+            && Math.Abs(Find(menu, addition) - Find(menu, originalFire)) == 1,
+            "Refresh keeps the selected instance and inserts new materia beside its matching color and name.");
     }
     private static void RemovalAndRefresh()
     {
