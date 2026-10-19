@@ -18,10 +18,16 @@ Copy-Item -LiteralPath (Join-Path $entryRoot 'Assets/Resources/BattleEntrySwirl.
 foreach ($entryExtension in @('.png', '.png.meta')) {
     Copy-Item -LiteralPath (Join-Path $entryRoot "Assets/Resources/PixelArt/WorldGroundMap$entryExtension") -Destination (Join-Path $entryProject 'Assets/Resources/PixelArt')
 }
+foreach ($entryResource in @('ThroneRoomInterior.png', 'ThroneRoomInterior.png.meta')) {
+    Copy-Item -LiteralPath (Join-Path $entryRoot "Assets/Resources/PixelArt/$entryResource") -Destination (Join-Path $entryProject 'Assets/Resources/PixelArt')
+}
+foreach ($entryShader in @('ForestPixelBackdrop.shader', 'PixelCharacter.shader')) {
+    Copy-Item -LiteralPath (Join-Path $entryRoot "Assets/Resources/$entryShader") -Destination (Join-Path $entryProject 'Assets/Resources')
+}
 Copy-Item -LiteralPath (Join-Path $entryRoot 'ProjectSettings/ProjectVersion.txt') -Destination (Join-Path $entryProject 'ProjectSettings')
 # Exercise camera capture under the same URP 2D pipeline as the game.
 Copy-Item -LiteralPath (Join-Path $entryRoot 'Assets/Settings') -Destination (Join-Path $entryProject 'Assets') -Recurse -Force
-foreach ($entrySetting in @('GraphicsSettings.asset', 'QualitySettings.asset')) {
+foreach ($entrySetting in @('GraphicsSettings.asset', 'QualitySettings.asset', 'ProjectSettings.asset')) {
     Copy-Item -LiteralPath (Join-Path $entryRoot "ProjectSettings/$entrySetting") -Destination (Join-Path $entryProject 'ProjectSettings') -Force
 }
 $entryDependencies = @{ 'com.unity.modules.physics2d' = '1.0.0' }

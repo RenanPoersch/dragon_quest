@@ -49,6 +49,7 @@ namespace DragonQuest.Prototype
             Shader shader = Resources.Load<Shader>("BattleEntrySwirl");
             if (shader == null || !shader.isSupported) return;
             swirl = new Material(shader) { name = "Battle entry / swirl", hideFlags = HideFlags.HideAndDontSave };
+            swirl.SetFloat("_ShadowLift", GetComponent<PrototypeBattleController>()?.IsCastleEncounter == true ? 1 : 0);
             CaptureExploration(view);
             Sequence.Begin();
             RenderSwirl();

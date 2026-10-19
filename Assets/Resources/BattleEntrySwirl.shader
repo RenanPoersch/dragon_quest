@@ -5,6 +5,7 @@ Shader "Hidden/DragonQuest/BattleEntrySwirl"
         _MainTex ("Exploration screen", 2D) = "black" {}
         _Progress ("Vortex progress", Range(0,1)) = 0
         _Aspect ("Screen aspect", Float) = 1.777778
+        _ShadowLift ("Final encounter shadow visibility", Range(0,1)) = 0
     }
     SubShader
     {
@@ -16,7 +17,7 @@ Shader "Hidden/DragonQuest/BattleEntrySwirl"
             #pragma fragment frag
             #include "UnityCG.cginc"
             sampler2D _MainTex;
-            float _Progress, _Aspect;
+            float _Progress, _Aspect, _ShadowLift;
 
             float3 FlowSample(float2 radialPosition, float angle, float2 aspect)
             {
@@ -50,6 +51,23 @@ Shader "Hidden/DragonQuest/BattleEntrySwirl"
                 color += FlowSample(p, angle - softness * .6, aspect) * .15;
                 color += FlowSample(p, angle - softness * .9, aspect) * .10;
                 color += FlowSample(p, angle - softness * 1.2, aspect) * .05;
+                // The throne room's near-black stone overwhelms the spiral when mixed.
+                // Lift only its shadows during motion, preserving the original first frame
+                // and bright stained glass/flames. Work in display space for consistent tone.
+                float lift = _ShadowLift * smoothstep(0, .18, t);
+                if (lift > 0)
+                {
+                    float3 displayColor = color;
+                    #if !defined(UNITY_COLORSPACE_GAMMA)
+                        displayColor = LinearToGammaSpace(color);
+                    #endif
+                    float shadows = 1 - smoothstep(.12, .72, max(displayColor.r, max(displayColor.g, displayColor.b)));
+                    float3 brighter = saturate(displayColor * 1.30 + .12);
+                    #if !defined(UNITY_COLORSPACE_GAMMA)
+                        brighter = GammaToLinearSpace(brighter);
+                    #endif
+                    color = lerp(color, brighter, lift * shadows);
+                }
                 color *= 1 - smoothstep(.82, 1, t);
                 return fixed4(color, 1);
             }

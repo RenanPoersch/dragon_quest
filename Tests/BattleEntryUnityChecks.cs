@@ -28,6 +28,7 @@ public static class BattleEntryUnityChecks
             ValidateFullScreenRotation();
             ValidateLiquidFlow();
             ValidateCameraCapture();
+            ValidateFinalBattleShadows();
             Debug.Log("BATTLE_ENTRY_UNITY_CHECKS_OK: " + checks + " checks.");
             EditorApplication.Exit(0);
         }
@@ -177,6 +178,84 @@ public static class BattleEntryUnityChecks
         {
             transition.Cancel(); RenderTexture.active = previous;
             UnityEngine.Object.DestroyImmediate(unlit); UnityEngine.Object.DestroyImmediate(sprite);
+            EditorSceneManager.ClosePreviewScene(scene);
+        }
+    }
+
+    private static void ValidateFinalBattleShadows()
+    {
+        var scene = EditorSceneManager.NewPreviewScene();
+        var root = new GameObject("Battle entry / throne room shadow visibility");
+        UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(root, scene);
+        root.AddComponent<ThroneRoomPixelScenery>().Build();
+        var cameraObject = new GameObject("Final encounter / actual perspective camera"); cameraObject.transform.SetParent(root.transform, false);
+        var camera = cameraObject.AddComponent<Camera>();
+        camera.transform.position = ThroneRoomLayout.CameraPosition; camera.transform.rotation = ThroneRoomLayout.CameraRotation;
+        camera.fieldOfView = ThroneRoomLayout.FieldOfView; camera.aspect = 1280f / 720;
+        camera.overrideSceneCullingMask = EditorSceneManager.GetSceneCullingMask(scene);
+        camera.clearFlags = CameraClearFlags.SolidColor; camera.backgroundColor = Color.black;
+        var originalTarget = new RenderTexture(1280, 720, 24);
+        var readback = new Texture2D(1280, 720, TextureFormat.RGBA32, false);
+        var previous = RenderTexture.active;
+        var heroObject = new GameObject("Party"); heroObject.transform.SetParent(root.transform, false);
+        var hero = heroObject.AddComponent<PlayerMovement>(); typeof(PlayerMovement).GetMethod("Awake", Private).Invoke(hero, null);
+        var dialogue = root.AddComponent<DialogueController>();
+        var battle = root.AddComponent<PrototypeBattleController>(); battle.Initialize(hero, dialogue, new ExplorationProgress());
+        var transition = battle.EntryTransition;
+        var begin = typeof(BattleEntryTransition).GetMethod("BeginFromCamera", Private);
+        var render = typeof(BattleEntryTransition).GetMethod("RenderSwirl", Private);
+        var frameField = typeof(BattleEntryTransition).GetField("frame", Private);
+        var materialField = typeof(BattleEntryTransition).GetField("swirl", Private);
+        string output = Environment.GetEnvironmentVariable("DQ_BATTLE_ENTRY_OUTPUT");
+        if (string.IsNullOrEmpty(output)) output = Path.GetFullPath("Temp/BattleEntryPreview");
+        Directory.CreateDirectory(output);
+        try
+        {
+            camera.targetTexture = originalTarget; camera.Render();
+            var reference = Read(originalTarget, readback);
+            Check(reference.Count(p => p.r > 30 || p.g > 30 || p.b > 30) > reference.Length * .6,
+                "shadow correction uses the actual throne room camera and original painting");
+            begin.Invoke(transition, new object[] { camera });
+            Check(((Material)materialField.GetValue(transition)).GetFloat("_ShadowLift") == 0,
+                "ordinary encounters keep their approved vortex colors");
+            transition.Cancel();
+            battle.StartCastleBattle();
+            Check(battle.IsCastleEncounter, "the final encounter enables the throne room treatment");
+            begin.Invoke(transition, new object[] { camera });
+            var material = (Material)materialField.GetValue(transition);
+            var frame = (RenderTexture)frameField.GetValue(transition);
+            Check(material.GetFloat("_ShadowLift") == 1, "final battle capture selects shadow lifting automatically");
+            Check(Difference(reference, Read(frame, readback)) < 2, "shadow lifting starts gradually after the original first frame");
+            transition.Sequence.Advance(BattleEntrySequence.SwirlDuration * .5f);
+            material.SetFloat("_ShadowLift", 0); render.Invoke(transition, null);
+            var before = Read(frame, readback);
+            File.WriteAllBytes(Path.Combine(output, "throne-vortex-before.png"), readback.EncodeToPNG());
+            material.SetFloat("_ShadowLift", 1); render.Invoke(transition, null);
+            var after = Read(frame, readback);
+            File.WriteAllBytes(Path.Combine(output, "throne-vortex-after.png"), readback.EncodeToPNG());
+            int darkBefore = before.Count(p => Math.Max(p.r, Math.Max(p.g, p.b)) < 30);
+            int darkAfter = after.Count(p => Math.Max(p.r, Math.Max(p.g, p.b)) < 30);
+            Check(darkBefore > 1000 && darkAfter < darkBefore * .5,
+                "near-black regions no longer dominate the final vortex: " + darkBefore + " -> " + darkAfter);
+            double brightnessBefore = before.Average(p => (.2126 * p.r + .7152 * p.g + .0722 * p.b));
+            double brightnessAfter = after.Average(p => (.2126 * p.r + .7152 * p.g + .0722 * p.b));
+            Check(brightnessAfter > brightnessBefore + 8, "stone and carpet colors stay visible while swirling");
+            int highlights = 0, preserved = 0;
+            for (int i = 0; i < before.Length; i++)
+                if (Math.Max(before[i].r, Math.Max(before[i].g, before[i].b)) > 200)
+                {
+                    highlights++;
+                    if (Math.Abs(before[i].r - after[i].r) <= 2 && Math.Abs(before[i].g - after[i].g) <= 2
+                        && Math.Abs(before[i].b - after[i].b) <= 2) preserved++;
+                }
+            Check(highlights > 100 && preserved > highlights * .99, "bright flames and stained glass keep their original colors");
+            transition.Sequence.Advance(BattleEntrySequence.SwirlDuration); render.Invoke(transition, null);
+            Check(Read(frame, readback).All(p => p.r == 0 && p.g == 0 && p.b == 0), "the final handoff still reaches a fully covered battle");
+        }
+        finally
+        {
+            transition.Cancel(); camera.targetTexture = null; RenderTexture.active = previous;
+            originalTarget.Release(); UnityEngine.Object.DestroyImmediate(originalTarget); UnityEngine.Object.DestroyImmediate(readback);
             EditorSceneManager.ClosePreviewScene(scene);
         }
     }
