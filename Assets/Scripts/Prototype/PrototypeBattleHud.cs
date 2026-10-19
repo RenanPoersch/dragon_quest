@@ -139,6 +139,7 @@ namespace DragonQuest.Prototype
         {
             if (controller == null || !controller.IsActive || controller.IsPostBattleOpen) { numbers.Clear(); return; }
             ObserveBattle();
+            if (controller.IsEnteringBattle) return;
             if (controller.IsCheatMenuBlocking) return;
             if (controller.IsPresentingAction) return;
             Keyboard keys = Keyboard.current;
@@ -194,7 +195,7 @@ namespace DragonQuest.Prototype
                 ChooseCommand(commandIndex, navigateOnly: true);
         }
 
-        private bool CanAcceptMenuInput => GameInput.IsFrameAvailable && !controller.IsCheatMenuBlocking
+        private bool CanAcceptMenuInput => GameInput.IsFrameAvailable && !controller.IsEnteringBattle && !controller.IsCheatMenuBlocking
             && !controller.IsPresentingAction;
         private bool InSubmenu => itemMode || menuGroup != AbilityMenuGroup.Direct;
         private bool CanOpenDefendMenu => !InSubmenu && !defendMode && defendCommand != null
@@ -299,7 +300,8 @@ namespace DragonQuest.Prototype
 
         private void OnGUI()
         {
-            if (controller == null || !controller.IsActive || controller.IsPostBattleOpen) return;
+            if (controller == null || !controller.IsActive || controller.IsPostBattleOpen
+                || controller.EntryTransition?.HidesBattle == true) return;
             // Keyboard commands belong to Update; IMGUI must not confirm the new selection again.
             if (Event.current.isKey) Event.current.Use();
             EnsureStyles(); ObserveBattle();
@@ -351,6 +353,7 @@ namespace DragonQuest.Prototype
             if (!string.IsNullOrEmpty(controller.ErrorMessage)) GUI.Label(new Rect(40, 668, 560, 25), controller.ErrorMessage, small);
             GUI.skin = previousSkin;
             GUI.matrix = previous;
+            controller.EntryTransition?.MarkBattleReady();
             // Cobre tambem os paineis e as barras externas no mesmo instante do dano.
             if (controller.MeteorWhiteOpacity > 0)
             {

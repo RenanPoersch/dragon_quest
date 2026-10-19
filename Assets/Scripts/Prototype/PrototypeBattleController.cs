@@ -57,6 +57,8 @@ namespace DragonQuest.Prototype
         public void SetLocationProvider(System.Func<string> provider) => currentLocation = provider ?? (() => PrototypeTravel.World);
         public bool AreRandomEncountersEnabled => randomEncounters.IsEnabled;
         public void SetRandomEncountersEnabled(bool enabled) => randomEncounters.SetEnabled(enabled, currentLocation());
+        public BattleEntryTransition EntryTransition { get; private set; }
+        public bool IsEnteringBattle => EntryTransition != null && EntryTransition.IsPlaying;
         public bool IsActive { get; private set; }
         public bool IsMenuOpen { get; private set; }
         public System.Func<bool> TryCancelInventorySelection { get; set; }
@@ -139,6 +141,8 @@ namespace DragonQuest.Prototype
             var postBattleHud = GetComponent<PrototypePostBattleHud>();
             if (postBattleHud == null) postBattleHud = gameObject.AddComponent<PrototypePostBattleHud>();
             postBattleHud.Initialize(this);
+            EntryTransition = GetComponent<BattleEntryTransition>();
+            if (EntryTransition == null) EntryTransition = gameObject.AddComponent<BattleEntryTransition>();
             Dragon = dragonProgress ?? new DragonProgress(); secrets = ancientSecrets; recoverAtInn = recovery;
             showEnding=endingPresentation;
             trackingWalk = false;
@@ -257,6 +261,7 @@ namespace DragonQuest.Prototype
             ErrorMessage = string.Empty;
             RewardMessage = string.Empty;
             movement.SetMovementEnabled(false);
+            EntryTransition.Begin();
         }
 
         public void StartCastleBattle()
@@ -267,7 +272,7 @@ namespace DragonQuest.Prototype
 
         public bool TryPlayerAction(AbilityDefinition ability, CombatantState target)
         {
-            if (IsCheatMenuBlocking) return false;
+            if (IsEnteringBattle || IsCheatMenuBlocking) return false;
             if (!IsActive || IsPresentingAction || Session.CurrentActor == null || Session.CurrentActor.Team != CombatTeam.Party) return false;
             CombatantState actor = Session.CurrentActor;
             target = Session.ResolveLivingEnemyTarget(ability, target);
@@ -304,7 +309,7 @@ namespace DragonQuest.Prototype
 
         public bool TryPlayerItem(ConsumableDefinition item, CombatantState target)
         {
-            if (IsCheatMenuBlocking) return false;
+            if (IsEnteringBattle || IsCheatMenuBlocking) return false;
             if (!IsActive || IsPresentingAction || Session.CurrentActor == null || Session.CurrentActor.Team != CombatTeam.Party) return false;
             CombatantState actor = Session.CurrentActor;
             CaptureChains();
@@ -392,6 +397,7 @@ namespace DragonQuest.Prototype
 
         private void Update()
         {
+            if (IsEnteringBattle) { pendingEnemy = null; return; }
             if (IsCheatMenuBlocking) { pendingEnemy = null; return; }
             ResolveMeteorImpact();
             if (IsDestructiveMeteor && CastleRules.Ending == GameEnding.CastleDestroyed
@@ -479,7 +485,7 @@ namespace DragonQuest.Prototype
 
         public void ReturnToCity()
         {
-            if (IsCheatMenuBlocking) return;
+            if (IsEnteringBattle || IsCheatMenuBlocking) return;
             if (!IsActive || IsPresentingAction || Session.Outcome == BattleOutcome.None) return;
             if (PostBattleResults.IsVictory(Session) && (!IsPostBattleOpen || !PostBattle.CanContinue(Time.unscaledTime - PostBattleStartedAt))) return;
             IsPostBattleOpen = false;

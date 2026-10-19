@@ -30,7 +30,7 @@ namespace DragonQuest.Prototype
 
         private void Update()
         {
-            if (battle == null || saves.IsMenuVisible || battle.HasEnded || !GameInput.IsFocused
+            if (battle == null || saves.IsMenuVisible || battle.HasEnded || battle.IsEnteringBattle || !GameInput.IsFocused
                 || GetComponent<InnRestController>()?.IsPlaying == true) return;
             if (GameInput.CheatsPressed)
             {
