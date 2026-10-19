@@ -10,12 +10,12 @@ O desafio existente continua sendo Lua → Estrela → Sol. Aproximar-se e press
 
 ## Símbolos animados
 
-Lua: crescente prateado com relevo e brilho azul que percorre a borda, a 8 quadros/s. Estrela: cinco pontas facetadas em prata e esmeralda, com cintilações nos braços, a 10 quadros/s. Sol: disco de âmbar e raios dourados que acendem em sequência, a 12 quadros/s. Cada símbolo possui uma animação própria, com escala constante e registro do corpo principal para evitar que as faíscas desloquem a figura.
+Lua: crescente prateado com relevo e brilho azul que percorre a borda, a 4 quadros/s. Estrela: cinco pontas facetadas em prata e esmeralda, com cintilações nos braços, a 5 quadros/s. Sol: disco de âmbar e raios dourados que acendem em sequência, a 6 quadros/s. Cada símbolo possui uma animação própria, com escala constante e registro do corpo principal para evitar que as faíscas desloquem a figura.
 
 Enquanto o totem está apagado, o primeiro quadro aparece estático e dessaturado, como uma gravação na rocha. Ao ativá-lo, a arte recupera suas cores e entra em animação. Errar a sequência desliga e reinicia as animações; concluir ou carregar o desafio resolvido mantém os três animados. Não houve alteração na sequência, nas colisões ou no salvamento.
 
 ## Recompensa visual da sequência
 
-Somente ao completar Lua → Estrela → Sol, os três símbolos se erguem simultaneamente das faces das pedras. A transição dura 0,7 s e aumenta a arte em quatro vezes. Os símbolos permanecem animados acima dos próprios totens, com oscilação vertical suave e espaço entre a imagem e o topo da rocha. As gravações menores reaparecem nas pedras ao terminar a subida.
+Somente ao completar Lua → Estrela → Sol, os três símbolos se erguem simultaneamente das faces das pedras. A transição dura 2 s e aumenta a arte em quatro vezes. Os símbolos permanecem animados acima dos próprios totens, com oscilação vertical suave em ciclos de 5,6 s e espaço entre a imagem e o topo da rocha. As gravações menores reaparecem nas pedras ao terminar a subida.
 
 Acertos parciais continuam iluminando a face; uma ordem incorreta não produz a levitação. Voltar à pedreira ou carregar um save com os monólitos resolvidos apresenta os três símbolos já suspensos. A validação `QuarryRuneValidation` também confere transição, flutuação, retorno ao mapa e restauração de saves completos e incompletos.

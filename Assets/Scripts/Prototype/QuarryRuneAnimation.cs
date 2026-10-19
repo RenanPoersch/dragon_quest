@@ -10,7 +10,7 @@ namespace DragonQuest.Prototype
     {
         public const int FrameCount = 8, Columns = 4, Rows = 2;
         private const float FaceWidth = .37f, FaceHeight = .46f;
-        public const float FloatingScale = 4f, RevealDuration = .7f;
+        public const float FloatingScale = 4f, RevealDuration = 2f;
         private readonly Sprite[] frames = new Sprite[FrameCount];
         private SpriteRenderer view;
         private SpriteRenderer engraving;
@@ -26,8 +26,8 @@ namespace DragonQuest.Prototype
         public Texture2D Source { get; private set; }
 
         public static int Rate(MonolithSymbol symbol)
-            => symbol == MonolithSymbol.Moon ? 8 : symbol == MonolithSymbol.Star ? 10
-                : symbol == MonolithSymbol.Sun ? 12 : throw new ArgumentOutOfRangeException(nameof(symbol));
+            => symbol == MonolithSymbol.Moon ? 4 : symbol == MonolithSymbol.Star ? 5
+                : symbol == MonolithSymbol.Sun ? 6 : throw new ArgumentOutOfRangeException(nameof(symbol));
         public static string Resource(MonolithSymbol symbol)
             => symbol == MonolithSymbol.Moon ? "QuarryMoonRune" : symbol == MonolithSymbol.Star ? "QuarryStarRune"
                 : symbol == MonolithSymbol.Sun ? "QuarrySunRune" : throw new ArgumentOutOfRangeException(nameof(symbol));
@@ -119,7 +119,7 @@ namespace DragonQuest.Prototype
             {
                 float t = IsFloating ? Mathf.Clamp01(completionElapsed/RevealDuration) : 0;
                 float reveal = 1-Mathf.Pow(1-t,3);
-                float hover = Mathf.Sin(completionElapsed*(2*Mathf.PI/2.8f)+(int)Symbol*1.2f)*.10f;
+                float hover = Mathf.Sin(completionElapsed*(2*Mathf.PI/5.6f)+(int)Symbol*1.2f)*.10f;
                 // FaceHeight bounds all opaque pixels, leaving daylight between every frame and the stone.
                 var floating = new Vector3(0,stoneTop+.30f+FaceHeight*FloatingScale/2+hover,facePosition.z);
                 transform.localPosition = Vector3.Lerp(facePosition,floating,reveal);
