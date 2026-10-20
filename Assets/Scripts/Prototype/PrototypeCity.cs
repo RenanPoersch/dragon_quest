@@ -47,12 +47,11 @@ namespace DragonQuest.Prototype
 
             var interactables = new List<Interactable>();
             Transform interactions = Group("Moradores e bau", city);
-            NpcInteraction citizen = CreateNpc("Aldeao", PrototypeCityLayout.Citizen, "8D9DB0", interactions);
-            citizen.Initialize("Aldeao",
-                "Bem-vindo a periferia! Siga a viela entre as casas. Pousada e armas ficam perto da entrada; mais adiante, procure os letreiros de itens e materias. Basta entrar na porta.",
-                "Ha um bau ao lado da rua do mercado. Talvez voce encontre moedas para sua jornada.",
-                "A capela e as casas antigas ficam no lado oeste. O pequeno jardim sobrevive entre as oficinas do lado leste.",
-                "Ao norte, a ponte de pedra leva a entrada do castelo. O Rei Rubro governa de la, longe de quem vive nestes becos...");
+            NpcInteraction citizen = CreateNpc("Aldeão", PrototypeCityLayout.Citizen, "8D9DB0", interactions);
+            citizen.Initialize("Aldeão",
+                "Ah, então vocês são os aventureiros que vieram do sul? Devem estar cansados da viagem.",
+                "Podem dormir e se recuperar na pousada. E, se precisarem de mantimentos, deem uma olhada nas lojas da cidade.",
+                "Não temos muita coisa por aqui, mas deve ser o suficiente.");
             interactables.Add(citizen);
             GameObject peasant = CreateNpcFigure("Camponesa", PrototypeCityLayout.Resident, "B77D8B", interactions);
             interactables.Add(AddSecret(peasant, SecretObject.Peasant));

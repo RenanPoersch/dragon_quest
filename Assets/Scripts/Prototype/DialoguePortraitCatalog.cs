@@ -16,7 +16,7 @@ namespace DragonQuest.Prototype
         {
             switch (speaker)
             {
-                case "Aldeao": return "villager";
+                case "Aldeão": case "Aldeao": return "villager";
                 case "Camponesa": return "peasant";
                 case "Jardineiro": return "gardener";
                 case "Exploradora": return "explorer";
