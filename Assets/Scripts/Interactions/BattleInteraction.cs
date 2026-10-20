@@ -45,7 +45,7 @@ namespace DragonQuest.Interactions
             if (battle.IsBusy || dialogue.IsOpen || !GameInput.IsFocused) return;
             Vector2 position = player.transform.position;
             if (Mathf.Abs(position.x - PrototypeCityLayout.Bridge.x) <= 2.35f
-                && position.y >= PrototypeCityLayout.Guard.y - 3f
+                && position.y >= PrototypeCityLayout.Guard.y - .8f
                 && position.y <= PrototypeCityLayout.CastleDoor.y + .5f)
                 Challenge();
         }
