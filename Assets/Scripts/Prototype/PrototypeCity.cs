@@ -63,8 +63,7 @@ namespace DragonQuest.Prototype
                 "Eu ainda quero ver este jardim florir de novo. Tem de haver dias melhores... Até para um velho como eu.");
             interactables.Add(gardener);
             NpcInteraction explorer = CreateNpc("Exploradora", PrototypeCityLayout.Explorer, "B79458", interactions);
-            explorer.Initialize("Exploradora", "Ainda encontro pedras das antigas ruinas nos alicerces destas oficinas.",
-                "Encontrei marcas de escamas nas pedras. As lendas falam de um dragao, mas ele nunca aparece para qualquer viajante.");
+            explorer.Initialize("Exploradora", "Cavar, cavar... Explorar, explorar...");
             interactables.Add(explorer);
             interactables.Add(CreateChest(interactions));
             CreatePassage("Entrada da loja de itens", PrototypeTravel.City, city, "item-shop");
