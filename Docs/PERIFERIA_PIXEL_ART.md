@@ -17,7 +17,7 @@ A periferia foi redesenhada a partir da referência enviada pelo usuário: bairr
 ## Planta e passagens
 
 - Bairro de 26 × 44 unidades, alongado de sul para norte, com 22 construções. As fileiras foram afastadas horizontalmente, abrindo a rua central e conservando os acessos às fachadas. A casa do padeiro fica na fileira externa leste, deixando livre o pátio da loja de armas.
-- Entrada da ilha ao sul. Hospedaria e equipamentos ficam primeiro; itens e matérias ficam mais adiante. Camponesa no lado oeste, exploradora no beco leste e jardineiro no pequeno jardim entre casas.
+- Entrada da ilha ao sul. Hospedaria e equipamentos ficam primeiro; itens e matérias ficam mais adiante. Camponesa no lado oeste, exploradora no beco leste e viajante no pequeno jardim entre casas. O jardineiro fica na clareira da Floresta Leste.
 - Lago, rio e três pontes de madeira foram retirados. Há uma única ponte de pedra ao norte, sobre um fosso seco, com parapeitos e passagem até o portão do castelo. O leito e suas paredes se prolongam por toda a largura do terreno visual; não terminam na borda da cidade caminhável.
 - Fortaleza de pedra com muralha central mais larga, duas torres robustas, torre de menagem recuada, ameias, seteiras, estandartes e grande portão em arco. Torres chegam a 8,02 unidades de altura; as construções comuns têm aproximadamente 3–4 unidades.
 - Chegar ao portão depois da ponte troca automaticamente para o interior do castelo. Lojas e hospedaria também mantêm entrada automática; retornos ficam fora das áreas de passagem.

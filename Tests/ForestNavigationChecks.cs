@@ -26,7 +26,7 @@ class ForestNavigationChecks
             var c=queue.Dequeue();var ground=EastForestLayout.Ground(c.Item1/200f,c.Item2/200f);
             stone|=Vector2.Distance(ground,PrototypeSecretLayout.ClawStone)<1.55f;
             tree|=Vector2.Distance(ground,PrototypeSecretLayout.HollowTree)<1.55f;
-            npc|=Vector2.Distance(ground,EastForestLayout.Traveler)<1.55f;
+            npc|=Vector2.Distance(ground,EastForestLayout.Gardener)<1.55f;
             exit|=travel.RouteFrom(PrototypeTravel.EastForest,PrototypeTravel.World).Entrance.Contains(ground);
             foreach(var d in new[]{(1,0),(-1,0),(0,1),(0,-1)})
             {
@@ -37,7 +37,7 @@ class ForestNavigationChecks
         }
         Assert(stone,"Connected floor reaches stone within interaction range");
         Assert(tree,"Connected floor reaches scale within interaction range");
-        Assert(npc,"Traveler is accessible");Assert(exit,"Bottom exit is accessible");
+        Assert(npc,"Gardener is accessible");Assert(exit,"Bottom exit is accessible");
         foreach(var c in seen)
         {
             var start=EastForestLayout.Ground(c.Item1/200f,c.Item2/200f);

@@ -56,7 +56,7 @@ namespace DragonQuest.Prototype
         public static readonly Vector2 Citizen = new Vector2(-1.2f, -15);
         public static readonly Vector2 Chest = new Vector2(2, -2.5f);
         public static readonly Vector2 Resident = new Vector2(-8.2f, 0);
-        public static readonly Vector2 Gardener = new Vector2(8, 7.4f);
+        public static readonly Vector2 Traveler = new Vector2(8, 7.4f);
         public static readonly Vector2 Explorer = new Vector2(0.4f, 1.7f);
         public static Vector2 ItemDoor => DoorAt("Loja de itens");
         public static Vector2 EquipmentDoor => DoorAt("Loja de equipamentos");
@@ -80,7 +80,7 @@ namespace DragonQuest.Prototype
             new CityDistrict("PORTAO SUL", new Rect(-13, -22, 26, 5), Entry),
             new CityDistrict("BECO DAS OFICINAS", new Rect(-13, -17, 26, 10), Spawn),
             new CityDistrict("MERCADO ANTIGO", new Rect(-13, -7, 26, 10), new Vector2(0, -2)),
-            new CityDistrict("JARDIM ENTRE CASAS", new Rect(2, 3, 11, 7), Gardener + Vector2.down),
+            new CityDistrict("JARDIM ENTRE CASAS", new Rect(2, 3, 11, 7), Traveler + Vector2.down),
             new CityDistrict("BAIRRO DA CAPELA", new Rect(-13, 3, 15, 7), new Vector2(-0.5f, 5)),
             new CityDistrict("PONTE DO CASTELO", new Rect(-13, 10, 26, 12), Bridge)
         });
@@ -97,7 +97,7 @@ namespace DragonQuest.Prototype
                 if (OverlapsHero(block, position)) return Spawn;
             foreach (CityBlock block in Blocks)
                 if (block.Solid && OverlapsHero(block, position)) return Spawn;
-            foreach (Vector2 npc in new[] {Citizen, Resident, Gardener, Explorer})
+            foreach (Vector2 npc in new[] {Citizen, Resident, Traveler, Explorer})
                 if (OverlapsHero(new CityBlock("Morador", npc.x, npc.y, 0.55f, 0.6f, "", true, 0), position)) return Spawn;
             if (OverlapsHero(new CityBlock("Guarda", Guard.x, Guard.y, 0.65f, 0.7f, "", true, 0), position)
                 || OverlapsHero(new CityBlock("Bau", Chest.x, Chest.y, 0.9f, 0.7f, "", true, 0), position)) return Spawn;

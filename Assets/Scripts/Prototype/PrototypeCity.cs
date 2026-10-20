@@ -55,13 +55,11 @@ namespace DragonQuest.Prototype
             interactables.Add(citizen);
             GameObject peasant = CreateNpcFigure("Camponesa", PrototypeCityLayout.Resident, "B77D8B", interactions);
             interactables.Add(AddSecret(peasant, SecretObject.Peasant));
-            NpcInteraction gardener = CreateNpc("Jardineiro", PrototypeCityLayout.Gardener, "86A96B", interactions);
-            gardener.Initialize("Jardineiro",
-                "Já houve um tempo em que estes jardins viviam cheios. As crianças vinham buscar flores... Hoje eu cuido deste cantinho. É o que as costas ainda permitem.",
-                "Perdi minha casa, enterrei amigos... Até fome eu passei. Tem manhã em que a gente acorda e pensa se ainda vale a pena levantar.",
-                "Mas aí eu venho aqui e encontro uma folha nova, uma flor que abriu durante a noite... E já começo a pensar no que vou plantar amanhã.",
-                "Eu ainda quero ver este jardim florir de novo. Tem de haver dias melhores... Até para um velho como eu.");
-            interactables.Add(gardener);
+            NpcInteraction traveler = CreateNpc("Viajante", PrototypeCityLayout.Traveler, "C19862", interactions);
+            traveler.Initialize("Viajante",
+                "Encontrei marcas incomuns numa pedra da floresta a leste. Não parecem ter sido feitas por nenhum animal que eu conheça.",
+                "Minha família dizia que a floresta guarda aquilo que os homens esquecem. Nunca entendi muito bem.");
+            interactables.Add(traveler);
             NpcInteraction explorer = CreateNpc("Exploradora", PrototypeCityLayout.Explorer, "B79458", interactions);
             explorer.Initialize("Exploradora", "Cavar, cavar... Explorar, explorar...");
             interactables.Add(explorer);
@@ -295,11 +293,13 @@ namespace DragonQuest.Prototype
                 collider.size = block.Size; collider.sharedMaterial = frictionless;
             }
             CreatePassage("Saida da floresta", PrototypeTravel.EastForest, forest, PrototypeTravel.World);
-            NpcInteraction inhabitant = CreateNpc("Viajante", EastForestLayout.Traveler, "C19862", forest);
-            inhabitant.Initialize("Viajante",
-                "Encontrei marcas incomuns numa pedra ao norte. Nao parecem ter sido feitas por nenhum animal que eu conheca.",
-                "Minha familia dizia que a floresta guarda aquilo que os homens esquecem. Nunca entendi muito bem.");
-            interactions.Add(inhabitant);
+            NpcInteraction gardener = CreateNpc("Jardineiro", EastForestLayout.Gardener, "86A96B", forest);
+            gardener.Initialize("Jardineiro",
+                "Já houve um tempo em que estes jardins viviam cheios. As crianças vinham buscar flores... Hoje eu cuido deste cantinho. É o que as costas ainda permitem.",
+                "Perdi minha casa, enterrei amigos... Até fome eu passei. Tem manhã em que a gente acorda e pensa se ainda vale a pena levantar.",
+                "Mas aí eu venho aqui e encontro uma folha nova, uma flor que abriu durante a noite... E já começo a pensar no que vou plantar amanhã.",
+                "Eu ainda quero ver este jardim florir de novo. Tem de haver dias melhores... Até para um velho como eu.");
+            interactions.Add(gardener);
             GameObject stone = Entity("Marcas na pedra", PrototypeSecretLayout.ClawStone, forest);
             interactions.Add(AddSecret(stone, SecretObject.ClawStone));
             GameObject tree = Entity("Raizes da arvore oca", PrototypeSecretLayout.HollowTree, forest);

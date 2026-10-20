@@ -34,7 +34,7 @@ internal static class CityLayoutChecks
     private static void BuildNavigation()
     {
         foreach (CityBlock block in PrototypeCityLayout.Blocks.Concat(PrototypeCityLayout.Buildings)) if (block.Solid) solids.Add(block.Bounds);
-        foreach (Vector2 npc in new[] { PrototypeCityLayout.Citizen, PrototypeCityLayout.Resident, PrototypeCityLayout.Gardener, PrototypeCityLayout.Explorer })
+        foreach (Vector2 npc in new[] { PrototypeCityLayout.Citizen, PrototypeCityLayout.Resident, PrototypeCityLayout.Traveler, PrototypeCityLayout.Explorer })
             solids.Add(new Rect(npc.x - 0.275f, npc.y - 0.3f, 0.55f, 0.6f));
         Vector2 guard = PrototypeCityLayout.Guard, chest = PrototypeCityLayout.Chest;
         solids.Add(new Rect(guard.x - 0.325f, guard.y - 0.35f, 0.65f, 0.7f));

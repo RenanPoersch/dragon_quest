@@ -12,7 +12,7 @@ A cidade de 72 × 48 unidades agora representa a periferia do castelo. Conserva 
 | Periferia do castelo | Ilha pelo portão sul; castelo pela porta ao norte; três lojas | Cidade ampliada, economia, moradores e combate de patrulha |
 | Interior do castelo | Entrada/saída para a periferia | Salão, colunas, tapete, trono e diálogo do Rei Rubro |
 | Floresta oeste | Entrada/saída para a ilha | Árvores, clareira, lenhador e pedra antiga |
-| Floresta leste | Entrada/saída para a ilha | Árvores, clareira, viajante e pedra com escamas |
+| Floresta leste | Entrada/saída para a ilha | Árvores, clareira, jardineiro e pedra com escamas |
 | Três lojas | Entrada/saída para a periferia, cada uma na sua porta | Itens, equipamentos e matérias com os estoques existentes |
 | Ruínas antigas | Entrada/saída para a ilha | Altar da lenda e construções quebradas |
 | Vulcão | Entrada/saída para a ilha depois de abrir os selos | Trilha de basalto, lava e arena do dragão |

@@ -13,7 +13,7 @@ namespace DragonQuest.Prototype
         private static readonly Rect ExitGroundBounds = GroundBounds(ExitImageBounds);
         public static readonly Vector2 Exit = ExitGroundBounds.center;
         public static readonly Vector2 ExitSize = ExitGroundBounds.size;
-        public static readonly Vector2 Traveler = Ground(.47f, .64f);
+        public static readonly Vector2 Gardener = Ground(.47f, .64f);
         // Coordinates follow the visible clearing, excluding trunks, distant forest and foreground roots.
         // U runs left-to-right and V top-to-bottom in the continuous 16:9 painting.
         private static readonly Vector2[] Floor = {
@@ -68,7 +68,7 @@ namespace DragonQuest.Prototype
                 if (!Inside(image+offset)) return false;
             return !Overlaps(ground,PrototypeSecretLayout.ClawStone,new Vector2(1.4f,1))
                 && !Overlaps(ground,PrototypeSecretLayout.HollowTree,new Vector2(1.6f,1))
-                && !Overlaps(ground,Traveler,new Vector2(.55f,.6f));
+                && !Overlaps(ground,Gardener,new Vector2(.55f,.6f));
         }
 
         private static bool Overlaps(Vector2 feet,Vector2 obstacle,Vector2 size)
