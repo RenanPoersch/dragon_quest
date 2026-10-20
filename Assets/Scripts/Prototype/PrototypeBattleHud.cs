@@ -458,7 +458,7 @@ namespace DragonQuest.Prototype
                         spellAnimation.Draw(FigureRect(target), impact,
                             elapsed - impactDelay + SpellAnimation.ImpactDelayFor(impact));
                 if (controller.PresentingAbility.PartyEffect == PartyEffect.RestoreAndRevive
-                    && elapsed >= impactDelay - .15f)
+                    && elapsed >= impactDelay - SpellAnimation.ImpactDelayFor(PrototypeBattleFactory.Heal))
                     foreach (CombatantState ally in controller.PresentingPartyTargets)
                         spellAnimation.Draw(FigureRect(ally), PrototypeBattleFactory.Heal,
                             elapsed - impactDelay + SpellAnimation.ImpactDelayFor(PrototypeBattleFactory.Heal));

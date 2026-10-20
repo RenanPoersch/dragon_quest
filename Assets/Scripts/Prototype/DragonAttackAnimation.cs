@@ -7,7 +7,7 @@ namespace DragonQuest.Prototype
         public static string Resource(string abilityId) => abilityId == "dragon-claw" ? "DragonClaw"
             : abilityId == "dragon-breath" ? "DragonBreath"
             : abilityId == "charge-breath" ? "DragonCharge" : null;
-        public static float FrameDuration(string abilityId) => abilityId == "dragon-breath" ? 0.24f
+        public static float FrameDuration(string abilityId) => abilityId == "dragon-breath" ? 0.48f
             : abilityId == "charge-breath" ? 0.18f : 0.12f;
         public static float Duration(string abilityId) => 6 * FrameDuration(abilityId);
         public static float ImpactDelay(string abilityId) => 3 * FrameDuration(abilityId);

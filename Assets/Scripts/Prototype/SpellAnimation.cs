@@ -45,7 +45,7 @@ namespace DragonQuest.Prototype
             return null;
         }
 
-        public static float DurationFor(AbilityDefinition ability) => Resource(ability) == "HealSpell" ? 1.4f : Duration;
+        public static float DurationFor(AbilityDefinition ability) => Resource(ability) == "HealSpell" ? 2.8f : Duration;
         public static float ImpactDelayFor(AbilityDefinition ability) => DurationFor(ability) * .5f;
         public static int Frame(float elapsed, AbilityDefinition ability = null)
             => Math.Max(0, Math.Min((int)(elapsed / DurationFor(ability) * 8), 7));
