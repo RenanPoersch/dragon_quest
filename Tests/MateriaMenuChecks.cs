@@ -90,9 +90,33 @@ internal static class MateriaMenuChecks
         party = new PartyProgress(new[] { party.Members[0] }, new MateriaInstance[0]); menu.Reset(party); menu.Move(1); menu.MoveVertical(1);
         Check(menu.SelectedMateria == null && menu.SelectedSocket == null && !menu.ConfirmSocket(party), "An empty party inventory is safe to browse.");
     }
+    private static void Submenus()
+    {
+        var party = PrototypePartyFactory.CreateTestParty(); var menu = new MateriaMenuSession(); menu.Reset(party);
+        var selected = menu.SelectedMateria; var equipped = party.Members[0].Weapon.Sockets[0];
+        menu.MoveSubmenu(1, party);
+        Check(menu.SubmenuIndex == 1 && menu.Removing && menu.ChoosingSocket && menu.BrowsingSubmenus,
+            "Right changes Equip to Remove and selects an occupied socket without removing it.");
+        menu.MoveSubmenu(1, party);
+        Check(menu.SubmenuIndex == 2 && !menu.Removing && !menu.ChoosingSocket && menu.SelectedMateria == selected,
+            "Another Right changes Remove to Arrange instead of moving a socket.");
+        Check(party.Members[0].Weapon.Sockets[0] == equipped, "Browsing submenus cannot mutate equipment.");
+        menu.MoveSubmenu(1, party);
+        Check(menu.SubmenuIndex == 0 && !menu.Removing, "Right wraps Arrange to Equip.");
+        menu.MoveSubmenu(-1, party);
+        Check(menu.SubmenuIndex == 2, "Left wraps Equip to Arrange.");
+        menu.MoveSubmenu(-1, party); menu.FocusContent(); int socket = menu.SocketIndex;
+        menu.Move(1);
+        Check(menu.SubmenuIndex == 1 && !menu.BrowsingSubmenus && menu.SocketIndex != socket,
+            "After entering Remove content, horizontal navigation selects sockets within that context.");
+        menu.ShowEquip();
+        Check(menu.SubmenuIndex == 0 && !menu.Removing && !menu.ChoosingSocket, "Equip cancels removal and restores its context.");
+        menu.Reset(party);
+        Check(menu.SubmenuIndex == 0 && !menu.BrowsingSubmenus, "Reopening resets the submenu.");
+    }
     public static int Main()
     {
-        try { SelectionAndExchange(); NavigationAndSixSockets(); RemovalAndRefresh(); Console.WriteLine("MATERIA_MENU_CHECKS_OK: " + checks + " checks."); return 0; }
+        try { SelectionAndExchange(); NavigationAndSixSockets(); RemovalAndRefresh(); Submenus(); Console.WriteLine("MATERIA_MENU_CHECKS_OK: " + checks + " checks."); return 0; }
         catch (Exception error) { Console.Error.WriteLine(error); return 1; }
     }
 }

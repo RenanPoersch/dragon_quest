@@ -94,11 +94,34 @@ internal static class ItemMenuChecks
         menu.Reset(party); menu.Move(1, party);
         Check(menu.Items.Count == 0 && menu.SelectedItem == null && !menu.BeginUse(party), "An empty inventory remains navigable and cannot use items.");
     }
+    private static void CheckSubmenus()
+    {
+        var party = Party(); var menu = Menu(party, PrototypePartyFactory.Potion);
+        var selected = menu.SelectedItem; int stock = party.Consumables.QuantityOf(selected);
+        menu.MoveSubmenu(1, party);
+        Check(menu.SubmenuIndex == 1 && menu.BrowsingSubmenus && menu.SelectedItem == selected,
+            "Right switches from Use to Arrange and preserves the selected item.");
+        for (int i = 1; i < menu.Items.Count; i++)
+            Check(StringComparer.OrdinalIgnoreCase.Compare(menu.Items[i - 1].Definition.Name, menu.Items[i].Definition.Name) <= 0,
+                "Switching to Arrange applies alphabetical ordering.");
+        menu.MoveSubmenu(1, party);
+        Check(menu.SubmenuIndex == 2 && menu.ShowingKeyItems && !menu.BeginUse(party),
+            "Right switches Arrange to Key Items and changes the usable content.");
+        menu.MoveSubmenu(1, party);
+        Check(menu.SubmenuIndex == 0 && !menu.ShowingKeyItems, "Right wraps Key Items back to Use.");
+        menu.MoveSubmenu(-1, party);
+        Check(menu.ShowingKeyItems, "Left wraps Use to Key Items.");
+        menu.ShowKeyItems(false); menu.BeginUse(party); menu.MoveSubmenu(-1, party);
+        Check(menu.ShowingKeyItems && !menu.ChoosingTarget && party.Consumables.QuantityOf(selected) == stock,
+            "Changing submenu cancels a pending target without consuming an item.");
+        menu.Reset(party);
+        Check(menu.SubmenuIndex == 0 && !menu.BrowsingSubmenus, "Reopening resets submenu focus.");
+    }
     public static int Main()
     {
         try
         {
-            CheckSelectionAndCancellation(); CheckInvalidTargetsAndStock(); CheckAllEffects(); CheckCategoriesAndArrangement();
+            CheckSelectionAndCancellation(); CheckInvalidTargetsAndStock(); CheckAllEffects(); CheckCategoriesAndArrangement(); CheckSubmenus();
             Console.WriteLine("ITEM_MENU_CHECKS_OK: " + checks + " checks passed."); return 0;
         }
         catch (Exception error) { Console.Error.WriteLine(error); return 1; }

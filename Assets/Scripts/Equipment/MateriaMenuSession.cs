@@ -23,6 +23,8 @@ namespace DragonQuest.Equipment
         public int SocketIndex { get; private set; }
         public bool ChoosingSocket { get; private set; }
         public bool Removing { get; private set; }
+        public int SubmenuIndex { get; private set; }
+        public bool BrowsingSubmenus { get; private set; }
         public string Message { get; private set; } = "";
         public MateriaInstance SelectedMateria => materias.Count == 0 ? null : materias[MateriaIndex];
         public MateriaMenuSocket SelectedSocket => sockets.Count == 0 ? null : sockets[SocketIndex];
@@ -31,6 +33,7 @@ namespace DragonQuest.Equipment
         public void Reset(PartyProgress party)
         {
             materias.Clear(); sockets.Clear(); MateriaIndex = SocketIndex = 0; arranged = false;
+            SubmenuIndex = 0;
             CancelSocket(); Refresh(party);
         }
         public void Refresh(PartyProgress party)
@@ -63,6 +66,7 @@ namespace DragonQuest.Equipment
         }
         public bool BeginEquip(PartyProgress party)
         {
+            SubmenuIndex = 0; BrowsingSubmenus = false;
             Refresh(party); Removing = false;
             if (SelectedMateria == null || sockets.Count == 0)
             { Message = sockets.Count == 0 ? "Nenhum encaixe disponivel." : "Nenhuma materia no inventario."; return false; }
@@ -70,6 +74,7 @@ namespace DragonQuest.Equipment
         }
         public bool BeginRemove(PartyProgress party)
         {
+            SubmenuIndex = 1; BrowsingSubmenus = false;
             Refresh(party);
             int index = sockets.FindIndex(s => s.Equipment.Sockets[s.Index] != null);
             if (index < 0) { CancelSocket(); Message = "Nenhuma materia equipada."; return false; }
@@ -78,7 +83,7 @@ namespace DragonQuest.Equipment
         public void SelectSocket(int index)
         {
             if (!ChoosingSocket || index < 0 || index >= sockets.Count) return;
-            SocketIndex = index; Message = "";
+            SocketIndex = index; BrowsingSubmenus = false; Message = "";
         }
         public void Move(int step)
         {
@@ -109,7 +114,17 @@ namespace DragonQuest.Equipment
             if (Removing && !sockets.Exists(s => s.Equipment.Sockets[s.Index] != null)) { ChoosingSocket = false; Removing = false; }
             Message = result; return changed;
         }
-        public void CancelSocket() { ChoosingSocket = Removing = false; Message = ""; }
-        public void Arrange(PartyProgress party) { arranged = true; CancelSocket(); Refresh(party); }
+        public void CancelSocket() { ChoosingSocket = Removing = BrowsingSubmenus = false; Message = ""; }
+        public void ShowEquip() { CancelSocket(); SubmenuIndex = 0; }
+        public void Arrange(PartyProgress party) { arranged = true; CancelSocket(); SubmenuIndex = 2; Refresh(party); }
+        public void MoveSubmenu(int step, PartyProgress party)
+        {
+            int next = (SubmenuIndex + step % 3 + 3) % 3;
+            if (next == 1) BeginRemove(party);
+            else if (next == 2) Arrange(party);
+            else ShowEquip();
+            BrowsingSubmenus = true;
+        }
+        public void FocusContent() { BrowsingSubmenus = false; }
     }
 }

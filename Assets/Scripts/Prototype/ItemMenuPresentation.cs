@@ -40,6 +40,7 @@ namespace DragonQuest.Prototype
             if (Button(new Rect(66, 10, 142, 48), "Use", canInteract)) session.ShowKeyItems(false);
             if (Button(new Rect(276, 10, 190, 48), "Arrange", canInteract)) { session.Arrange(party); scroll = Vector2.zero; }
             if (Button(new Rect(522, 10, 238, 48), "Key Items", canInteract)) { session.ShowKeyItems(true); scroll = Vector2.zero; }
+            theme.DrawHand(new Rect(session.SubmenuIndex == 0 ? 66 : session.SubmenuIndex == 1 ? 276 : 522, 10, 142, 48));
             if (Button(new Rect(994, 10, 110, 48), "Item", canInteract, MenuSound.Cancel)) back();
             if (Button(new Rect(1128, 16, 124, 40), "Voltar", canInteract, MenuSound.Cancel))
             { if (session.ChoosingTarget) session.CancelTarget(); else back(); }

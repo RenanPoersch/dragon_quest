@@ -14,6 +14,8 @@ namespace DragonQuest.Inventory
         public int TargetIndex { get; private set; }
         public bool ChoosingTarget { get; private set; }
         public bool ShowingKeyItems { get; private set; }
+        public int SubmenuIndex { get; private set; }
+        public bool BrowsingSubmenus { get; private set; }
         public string Message { get; private set; } = "";
         public ConsumableDefinition SelectedItem => items.Count == 0 ? null : items[ItemIndex].Definition;
 
@@ -23,6 +25,7 @@ namespace DragonQuest.Inventory
         {
             items.Clear(); ItemIndex = TargetIndex = 0;
             ChoosingTarget = ShowingKeyItems = arranged = false; Message = "";
+            SubmenuIndex = 0; BrowsingSubmenus = false;
             Refresh(party);
         }
 
@@ -39,10 +42,19 @@ namespace DragonQuest.Inventory
         }
 
         public void ShowKeyItems(bool show)
-        { ShowingKeyItems = show; ChoosingTarget = false; Message = ""; }
+        { ShowingKeyItems = show; ChoosingTarget = BrowsingSubmenus = false; SubmenuIndex = show ? 2 : 0; Message = ""; }
 
         public void Arrange(PartyProgress party)
-        { arranged = true; ShowKeyItems(false); Refresh(party); }
+        { arranged = true; ShowKeyItems(false); SubmenuIndex = 1; Refresh(party); }
+
+        public void MoveSubmenu(int step, PartyProgress party)
+        {
+            int next = (SubmenuIndex + step % 3 + 3) % 3;
+            if (next == 1) Arrange(party); else ShowKeyItems(next == 2);
+            BrowsingSubmenus = true;
+        }
+
+        public void FocusContent() { BrowsingSubmenus = false; }
 
         public void SelectItem(int index)
         {
@@ -53,6 +65,7 @@ namespace DragonQuest.Inventory
         public bool BeginUse(PartyProgress party)
         {
             if (ShowingKeyItems || SelectedItem == null) return false;
+            SubmenuIndex = 0; BrowsingSubmenus = false;
             if (party.Consumables.QuantityOf(SelectedItem) == 0)
             { Message = "Item esgotado."; return false; }
             ChoosingTarget = true; Message = ""; return true;

@@ -31,13 +31,14 @@ namespace DragonQuest.Prototype
             theme.Panel(new Rect(0, 0, 960, 72)); theme.Panel(new Rect(960, 0, 320, 72));
             theme.Panel(new Rect(0, 76, 1280, 68));
             theme.Panel(new Rect(0, 148, 600, 572)); theme.Panel(new Rect(600, 148, 680, 572));
-            if (Button(new Rect(66, 10, 164, 48), "Equip", canInteract)) session.CancelSocket();
+            if (Button(new Rect(66, 10, 164, 48), "Equip", canInteract)) session.ShowEquip();
             if (Button(new Rect(276, 10, 190, 48), "Remove", canInteract)) session.BeginRemove(party);
             if (Button(new Rect(522, 10, 238, 48), "Arrange", canInteract))
             { session.Arrange(party); scroll = Vector2.zero; revealedIndex = -1; }
+            theme.DrawHand(new Rect(session.SubmenuIndex == 0 ? 66 : session.SubmenuIndex == 1 ? 276 : 522, 10, 164, 48));
             if (Button(new Rect(982, 10, 164, 48), "Materia", canInteract, sound: MenuSound.Cancel)) back();
             if (Button(new Rect(1158, 14, 108, 44), "Voltar", canInteract, text, MenuSound.Cancel))
-            { if (session.ChoosingSocket) session.CancelSocket(); else back(); }
+            { if (session.ChoosingSocket) session.ShowEquip(); else back(); }
             FitLabel(new Rect(28, 86, 1224, 48), session.Message, text);
             Vector2 mouse = Event.current.mousePosition;
             bool moved = pointer.x >= 0 && (mouse - pointer).sqrMagnitude > .1f;
