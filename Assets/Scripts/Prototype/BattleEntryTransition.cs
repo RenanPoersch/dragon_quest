@@ -35,6 +35,7 @@ namespace DragonQuest.Prototype
         public bool HidesBattle => IsPlaying && !Sequence.ShowsBattle;
         private RenderTexture snapshot, frame;
         private Material swirl;
+        private Color coverColor = Color.black;
 
         public void Begin()
         {
@@ -49,7 +50,9 @@ namespace DragonQuest.Prototype
             Shader shader = Resources.Load<Shader>("BattleEntrySwirl");
             if (shader == null || !shader.isSupported) return;
             swirl = new Material(shader) { name = "Battle entry / swirl", hideFlags = HideFlags.HideAndDontSave };
-            swirl.SetFloat("_ShadowLift", GetComponent<PrototypeBattleController>()?.IsCastleEncounter == true ? 1 : 0);
+            bool replaceBlack = GetComponent<PrototypeBattleController>()?.IsCastleEncounter == true;
+            swirl.SetFloat("_WhiteShadows", replaceBlack ? 1 : 0);
+            coverColor = replaceBlack ? Color.white : Color.black;
             CaptureExploration(view);
             Sequence.Begin();
             RenderSwirl();
@@ -139,7 +142,7 @@ namespace DragonQuest.Prototype
                 }
                 else
                 {
-                    GUI.color = new Color(0, 0, 0, Sequence.BlackOpacity);
+                    GUI.color = new Color(coverColor.r, coverColor.g, coverColor.b, Sequence.BlackOpacity);
                     GUI.DrawTexture(viewport, Texture2D.whiteTexture);
                 }
             }
@@ -150,6 +153,7 @@ namespace DragonQuest.Prototype
         public void Cancel()
         {
             Sequence.Cancel();
+            coverColor = Color.black;
             ReleaseTextures();
         }
         private void ReleaseTextures()

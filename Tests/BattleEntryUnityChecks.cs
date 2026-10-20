@@ -216,7 +216,7 @@ public static class BattleEntryUnityChecks
             Check(reference.Count(p => p.r > 30 || p.g > 30 || p.b > 30) > reference.Length * .6,
                 "shadow correction uses the actual throne room camera and original painting");
             begin.Invoke(transition, new object[] { camera });
-            Check(((Material)materialField.GetValue(transition)).GetFloat("_ShadowLift") == 0,
+            Check(((Material)materialField.GetValue(transition)).GetFloat("_WhiteShadows") == 0,
                 "ordinary encounters keep their approved vortex colors");
             transition.Cancel();
             battle.StartCastleBattle();
@@ -224,13 +224,27 @@ public static class BattleEntryUnityChecks
             begin.Invoke(transition, new object[] { camera });
             var material = (Material)materialField.GetValue(transition);
             var frame = (RenderTexture)frameField.GetValue(transition);
-            Check(material.GetFloat("_ShadowLift") == 1, "final battle capture selects shadow lifting automatically");
-            Check(Difference(reference, Read(frame, readback)) < 2, "shadow lifting starts gradually after the original first frame");
+            Check(material.GetFloat("_WhiteShadows") == 1, "final battle capture selects white shadows automatically");
+            var snapshot = (RenderTexture)typeof(BattleEntryTransition).GetField("snapshot", Private).GetValue(transition);
+            Check(Difference(reference, Read(snapshot, readback)) < 2, "the original exploration capture keeps its original colors");
+            var first = Read(frame, readback);
+            File.WriteAllBytes(Path.Combine(output, "throne-vortex-start-white.png"), readback.EncodeToPNG());
+            int sourceBlack = 0, convertedWhite = 0;
+            for (int i = 0; i < reference.Length; i++)
+                if (Math.Max(reference[i].r, Math.Max(reference[i].g, reference[i].b)) < 50)
+                {
+                    sourceBlack++;
+                    if (first[i].r > 250 && first[i].g > 250 && first[i].b > 250) convertedWhite++;
+                }
+            Check(sourceBlack > 1000 && convertedWhite > sourceBlack * .99,
+                "source blacks become pure white on the first vortex frame: " + convertedWhite + " / " + sourceBlack);
+            Check((Color)typeof(BattleEntryTransition).GetField("coverColor", Private).GetValue(transition) == Color.white,
+                "the final battle reveal uses a white cover without returning to black");
             transition.Sequence.Advance(BattleEntrySequence.SwirlDuration * .5f);
-            material.SetFloat("_ShadowLift", 0); render.Invoke(transition, null);
+            material.SetFloat("_WhiteShadows", 0); render.Invoke(transition, null);
             var before = Read(frame, readback);
             File.WriteAllBytes(Path.Combine(output, "throne-vortex-before.png"), readback.EncodeToPNG());
-            material.SetFloat("_ShadowLift", 1); render.Invoke(transition, null);
+            material.SetFloat("_WhiteShadows", 1); render.Invoke(transition, null);
             var after = Read(frame, readback);
             File.WriteAllBytes(Path.Combine(output, "throne-vortex-after.png"), readback.EncodeToPNG());
             int darkBefore = before.Count(p => Math.Max(p.r, Math.Max(p.g, p.b)) < 30);
@@ -239,18 +253,20 @@ public static class BattleEntryUnityChecks
                 "near-black regions no longer dominate the final vortex: " + darkBefore + " -> " + darkAfter);
             double brightnessBefore = before.Average(p => (.2126 * p.r + .7152 * p.g + .0722 * p.b));
             double brightnessAfter = after.Average(p => (.2126 * p.r + .7152 * p.g + .0722 * p.b));
-            Check(brightnessAfter > brightnessBefore + 8, "stone and carpet colors stay visible while swirling");
+            Check(brightnessAfter > brightnessBefore + 45, "white source bands dominate the vortex instead of near-black shadows");
+            Check(after.Count(p => p.r > 220 && p.g > 220 && p.b > 220) > after.Length * .20,
+                "the moving vortex contains clearly white bands rather than a subtle grey lift");
             int highlights = 0, preserved = 0;
-            for (int i = 0; i < before.Length; i++)
-                if (Math.Max(before[i].r, Math.Max(before[i].g, before[i].b)) > 200)
+            for (int i = 0; i < reference.Length; i++)
+                if (Math.Max(reference[i].r, Math.Max(reference[i].g, reference[i].b)) > 200)
                 {
                     highlights++;
-                    if (Math.Abs(before[i].r - after[i].r) <= 2 && Math.Abs(before[i].g - after[i].g) <= 2
-                        && Math.Abs(before[i].b - after[i].b) <= 2) preserved++;
+                    if (Math.Abs(reference[i].r - first[i].r) <= 2 && Math.Abs(reference[i].g - first[i].g) <= 2
+                        && Math.Abs(reference[i].b - first[i].b) <= 2) preserved++;
                 }
             Check(highlights > 100 && preserved > highlights * .99, "bright flames and stained glass keep their original colors");
             transition.Sequence.Advance(BattleEntrySequence.SwirlDuration); render.Invoke(transition, null);
-            Check(Read(frame, readback).All(p => p.r == 0 && p.g == 0 && p.b == 0), "the final handoff still reaches a fully covered battle");
+            Check(Read(frame, readback).All(p => p.r == 255 && p.g == 255 && p.b == 255), "the final handoff is fully white instead of black");
         }
         finally
         {

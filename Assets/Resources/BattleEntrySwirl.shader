@@ -5,7 +5,7 @@ Shader "Hidden/DragonQuest/BattleEntrySwirl"
         _MainTex ("Exploration screen", 2D) = "black" {}
         _Progress ("Vortex progress", Range(0,1)) = 0
         _Aspect ("Screen aspect", Float) = 1.777778
-        _ShadowLift ("Final encounter shadow visibility", Range(0,1)) = 0
+        _WhiteShadows ("Replace dark final-encounter pixels with white", Range(0,1)) = 0
     }
     SubShader
     {
@@ -17,7 +17,7 @@ Shader "Hidden/DragonQuest/BattleEntrySwirl"
             #pragma fragment frag
             #include "UnityCG.cginc"
             sampler2D _MainTex;
-            float _Progress, _Aspect, _ShadowLift;
+            float _Progress, _Aspect, _WhiteShadows;
 
             float3 FlowSample(float2 radialPosition, float angle, float2 aspect)
             {
@@ -26,7 +26,19 @@ Shader "Hidden/DragonQuest/BattleEntrySwirl"
                 float2 source = float2(c * radialPosition.x - s * radialPosition.y, s * radialPosition.x + c * radialPosition.y) / aspect + .5;
                 // Keep the viewport filled without scaling the image toward the centre.
                 source = 1 - abs(frac(source * .5) * 2 - 1);
-                return tex2D(_MainTex, source).rgb;
+                float3 color = tex2D(_MainTex, source).rgb;
+                if (_WhiteShadows > 0)
+                {
+                    float3 displayColor = color;
+                    #if !defined(UNITY_COLORSPACE_GAMMA)
+                        displayColor = LinearToGammaSpace(color);
+                    #endif
+                    float dark = 1 - smoothstep(.26, .44, max(displayColor.r, max(displayColor.g, displayColor.b)));
+                    // Replace the source blacks before they spread through the liquid blend.
+                    // This is enabled only while the final encounter's overlay is displayed.
+                    color = lerp(color, float3(1, 1, 1), _WhiteShadows * dark);
+                }
+                return color;
             }
 
             fixed4 frag(v2f_img i) : SV_Target
@@ -51,24 +63,8 @@ Shader "Hidden/DragonQuest/BattleEntrySwirl"
                 color += FlowSample(p, angle - softness * .6, aspect) * .15;
                 color += FlowSample(p, angle - softness * .9, aspect) * .10;
                 color += FlowSample(p, angle - softness * 1.2, aspect) * .05;
-                // The throne room's near-black stone overwhelms the spiral when mixed.
-                // Lift only its shadows during motion, preserving the original first frame
-                // and bright stained glass/flames. Work in display space for consistent tone.
-                float lift = _ShadowLift * smoothstep(0, .18, t);
-                if (lift > 0)
-                {
-                    float3 displayColor = color;
-                    #if !defined(UNITY_COLORSPACE_GAMMA)
-                        displayColor = LinearToGammaSpace(color);
-                    #endif
-                    float shadows = 1 - smoothstep(.12, .72, max(displayColor.r, max(displayColor.g, displayColor.b)));
-                    float3 brighter = saturate(displayColor * 1.30 + .12);
-                    #if !defined(UNITY_COLORSPACE_GAMMA)
-                        brighter = GammaToLinearSpace(brighter);
-                    #endif
-                    color = lerp(color, brighter, lift * shadows);
-                }
-                color *= 1 - smoothstep(.82, 1, t);
+                // The last battle passes through white; other encounters keep their black fade.
+                color = lerp(color, float3(1, 1, 1) * _WhiteShadows, smoothstep(.82, 1, t));
                 return fixed4(color, 1);
             }
             ENDCG
