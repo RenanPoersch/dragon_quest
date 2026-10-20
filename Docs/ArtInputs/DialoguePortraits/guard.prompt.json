@@ -1,0 +1,22 @@
+{
+  "generator": "built-in image_gen",
+  "date": "2026-10-20",
+  "id": "guard",
+  "speaker": "Guarda Real",
+  "asset": "Assets/Resources/PixelArt/DialoguePortraits/guard.png",
+  "sourceFileName": "exec-ada0ab6d-b0e5-481f-81e8-94ae42683b88.png",
+  "sha256": "a7ecc701eb43e3590811fbf5c732cba7c453153db5119926bf1e1afd29ac8d75",
+  "width": 1254,
+  "height": 1254,
+  "references": [
+    {
+      "asset": "Assets/Resources/PixelArt/GuardBattle.png",
+      "role": "Costume and color"
+    },
+    {
+      "asset": "Assets/Resources/PixelArt/DialoguePortraits/aren.png",
+      "role": "Rendering style only; distinct identity and pose"
+    }
+  ],
+  "generationPrompt": "Use case: stylized-concept.\nAsset type: production dialogue portrait for a fantasy RPG, square 1:1 PNG with true transparent background.\nPrimary request: one original stern royal bridge guard shown from upper chest to helmet crest, consistent with the established dialogue portraits.\nReference image 1 (GuardBattle.png): costume and color reference only. Preserve its recognizable polished silver plate helmet with cheek guards and raised visor, deep red plume, silver shoulder armor, dark red neck scarf and tabard, small gold cross emblem and gold edging. Translate the tiny chibi battle soldier into a mature realistically proportioned portrait.\nReference image 2 (aren.png): rendering style only: finely detailed painted pixel art, crisp deliberate pixel clusters, rich but restrained shading, dark clean contours, warm highlights, transparent silhouette. Do not copy this hero's face, hairstyle, expression, head angle or pose.\nSubject: rugged middle-aged man, broad square jaw, thick dark eyebrows, brown eyes, short dark stubble, weathered cheeks and a slightly crooked nose. Visor raised enough to clearly see his stern face. His lips slightly parted as he commands the party to halt. Chin lowered, head turned toward viewer-left in a three-quarter view, eyes looking sternly in that direction, shoulders squared at a different angle. Distinct individual physiognomy, serious military presence.\nComposition: a single centered chest-up bust, helmet and red plume fully inside the square with slight transparent padding above, shoulders and chest reaching the bottom edge. Clear readable face suitable at small UI size. Mature proportions, not chibi.\nScene/backdrop: entirely transparent background, actual alpha, no scenery, no backdrop color.\nStyle: match the high-resolution hand-painted pixel-art finish of reference 2; metallic armor with precise pixel highlights. Natural restrained warm key light.\nAvoid: duplicated faces, blond hair, royal crown, king robes, shield or sword covering the face, extra people, text, border, watermark, scenery, ground, baked checkerboard, photorealism, smooth 3D render."
+}

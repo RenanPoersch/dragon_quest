@@ -9,7 +9,7 @@ namespace DragonQuest.Prototype
         public static IReadOnlyList<string> Characters { get; } = Array.AsReadOnly(new[]
         {
             "aren", "villager", "peasant", "gardener", "explorer", "quarry-keeper",
-            "traveler", "innkeeper", "tyrant", "dragon", "dragon-essence"
+            "traveler", "innkeeper", "guard", "tyrant", "dragon", "dragon-essence"
         });
 
         public static string CharacterFor(string speaker)
@@ -23,6 +23,7 @@ namespace DragonQuest.Prototype
                 case "Guardião da pedreira": case "Guardiao da pedreira": case "Lenhador": return "quarry-keeper";
                 case "Viajante": return "traveler";
                 case "Hospedeira": case "Hospedaria": return "innkeeper";
+                case "Guarda Real": return "guard";
                 case "Rei Rubro": return "tyrant";
                 case "Dragao corrompido": return "dragon";
                 case "Essencia liberta": case "Essencia do dragao": return "dragon-essence";
