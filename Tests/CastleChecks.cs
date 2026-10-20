@@ -161,6 +161,8 @@ internal static class CastleChecks
     private static void CheckFullGoodAndDefeat()
     {
         var party=Party(true);var ice=new MateriaInstance("castle-ice",PrototypePartyFactory.IceMateria);party.TryAddMaterias(ice);party.TryEquip(party.Members[1],party.Members[1].Armor,2,ice,out _);
+        foreach(var member in party.Members) member.Progression.AddExperience(CharacterProgression.ExperienceForLevel(5));
+        party.RecoverAtInn();
         party.Consumables.TryAdd(PrototypePartyFactory.Ether,2,out _);
         var battle=Create(party);int actions=0;
         while(battle.Outcome==BattleOutcome.None&&actions++<250)
@@ -182,7 +184,7 @@ internal static class CastleChecks
             else if(actor.Id=="aren"&&actor.Mp>=4) ability=actor.Definition.Abilities.FirstOrDefault(a=>a.SourceAbilityId=="heavy-strike")??ability;
             Assert(battle.TryAct(actor,ability,target,out _),"Materias, cura e provocar devem funcionar na luta final.");
         }
-        Assert(actions<250&&Rules(battle).Ending==GameEnding.KingFreed,"Equipe com armadura, Gelo e dois eteres deve poder libertar o rei.");
+        Assert(actions<250&&Rules(battle).Ending==GameEnding.KingFreed,"Equipe de nivel 5 com armadura, Gelo e dois eteres deve poder libertar o rei.");
         battle=Create(Party(false));actions=0;
         while(battle.Outcome==BattleOutcome.None&&actions++<500)
             if(battle.CurrentActor.Team==CombatTeam.Enemy) Assert(EnemyAI.TryTakeTurn(battle,out _),"IA deve permitir uma derrota comum."); else Defend(battle);

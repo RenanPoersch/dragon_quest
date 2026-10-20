@@ -72,29 +72,30 @@ internal static class AbilityChecks
         var hero = Fighter("hero", CombatTeam.Party, 10, hp: 101, defense: 0, abilities: new[] { cleanse, Attack, Defend });
         var battle = new BattleSession(enemy, hero);
         Act(battle, poison, hero);
-        Assert(hero.Hp == 81 && hero.PoisonTurns == 3 && enemy.Mp == 56, "Golpe venenoso deve causar dano dobrado e aplicar veneno persistente.");
+        Assert(hero.Hp == 61 && hero.PoisonTurns == 3 && enemy.Mp == 56, "Golpe venenoso deve causar dano quadruplicado e aplicar veneno persistente.");
         Act(battle, Defend, hero);
-        Assert(hero.Hp == 75 && hero.IsPoisoned, "Veneno arredonda 5% para cima e ignora defesa.");
+        Assert(hero.Hp == 55 && hero.IsPoisoned, "Veneno arredonda 5% para cima e ignora defesa.");
         Act(battle, Defend, enemy);
         Act(battle, Defend, hero);
         Act(battle, Defend, enemy);
         Act(battle, Defend, hero);
-        Assert(hero.Hp == 63 && hero.IsPoisoned, "Veneno permanece depois de tres acoes do afetado.");
+        Assert(hero.Hp == 43 && hero.IsPoisoned, "Veneno permanece depois de tres acoes do afetado.");
         Act(battle, Defend, enemy);
         Assert(battle.GetValidTargets(cleanse).Count == 1, "Purificar continua disponivel depois de tres turnos.");
         Act(battle, cleanse, hero);
-        Assert(hero.Hp == 63 && !hero.IsPoisoned && hero.Mp == 56, "Purificar interrompe o veneno persistente.");
+        Assert(hero.Hp == 43 && !hero.IsPoisoned && hero.Mp == 56, "Purificar interrompe o veneno persistente.");
         Act(battle, Defend, enemy);
         Assert(battle.GetValidTargets(cleanse).Count == 0, "Purificar nao deve listar aliados saudaveis.");
         Assert(!battle.TryAct(hero, cleanse, hero, out _) && hero.Mp == 56, "Purificar sem condicao deve falhar sem gasto.");
         Act(battle, Defend, hero);
-        Assert(hero.Hp == 63, "Veneno curado nao causa dano.");
+        Assert(hero.Hp == 43, "Veneno curado nao causa dano.");
         Act(battle, poison, hero);
         int before = hero.Hp;
         Act(battle, cleanse, hero);
         Assert(hero.Hp == before && hero.PoisonTurns == 0 && hero.Mp == 52, "Purificar remove veneno antes do dano de fim de turno.");
 
         // Reaplicar veneno preserva a condicao, sem acumular duas fontes de dano.
+        hero.RecoverHp(hero.Definition.MaxHp);
         Act(battle, poison, hero);
         Act(battle, Defend, hero);
         Act(battle, poison, hero);
@@ -133,21 +134,22 @@ internal static class AbilityChecks
         Assert(battle.GetValidTargets(Attack).Count == 1 && battle.GetValidTargets(Attack)[0] == tank, "Provocar deve restringir ataques individuais ao tank.");
         Assert(!battle.TryAct(enemy, Attack, ally, out _) && enemy.TurnsTaken == 0, "Inimigo nao pode ignorar provocacao nem gastar turno na falha.");
         Assert(EnemyAI.TryTakeTurn(battle, out _), "IA deve respeitar provocacao.");
-        Assert(tank.Hp == 70 && ally.Hp == 100 && enemy.TauntTurns == 1, "Provocar deve durar por turnos do inimigo.");
+        Assert(tank.Hp == 40 && ally.Hp == 100 && enemy.TauntTurns == 1, "Provocar deve durar por turnos do inimigo.");
         Act(battle, Defend, tank);
         Act(battle, Defend, ally);
         Assert(EnemyAI.TryTakeTurn(battle, out _), "IA deve agir no segundo turno provocado.");
-        Assert(tank.Hp == 55 && enemy.TauntTurns == 0 && enemy.TauntedBy == null, "Provocacao deve terminar apos a segunda acao do alvo.");
+        Assert(tank.Hp == 10 && enemy.TauntTurns == 0 && enemy.TauntedBy == null, "Provocacao deve terminar apos a segunda acao do alvo.");
         Act(battle, Defend, tank);
         Act(battle, Defend, ally);
         Assert(battle.GetValidTargets(Attack).Count == 2, "Provocacao expirada libera ambos os alvos.");
         Act(battle, Defend, enemy);
 
         Assert(!battle.TryAct(tank, protect, tank, out _) && tank.Mp == 57, "Proteger deve exigir outro aliado sem gasto na falha.");
+        tank.RecoverHp(tank.Definition.MaxHp);
         Act(battle, protect, ally);
         Act(battle, Defend, ally);
         Act(battle, Attack, ally);
-        Assert(tank.Hp == 25 && ally.Hp == 100 && ally.ProtectedBy == null, "Tank recebe dano usando sua defesa; protecao e consumida.");
+        Assert(tank.Hp == 40 && ally.Hp == 100 && ally.ProtectedBy == null, "Tank recebe dano usando sua defesa; protecao e consumida.");
         Act(battle, protect, ally);
         Act(battle, Defend, ally);
         Act(battle, Defend, enemy);
@@ -162,11 +164,11 @@ internal static class AbilityChecks
         Act(battle, Defend, ally);
         Assert(battle.GetValidTargets(PrototypeBattleFactory.EnemySweep).Count == 2, "Area inclui a equipe apesar da provocacao.");
         Assert(EnemyAI.TryTakeTurn(battle, out _), "IA deve conseguir usar area provocada.");
-        Assert(tank.Hp == 70 && ally.Hp == 85, "Area aplica defesa de cada alvo separadamente.");
+        Assert(tank.Hp == 40 && ally.Hp == 70, "Area aplica defesa de cada alvo separadamente.");
         Act(battle, protect, ally);
         Act(battle, Defend, ally);
         Act(battle, PrototypeBattleFactory.EnemySweep, ally);
-        Assert(tank.Hp == 40 && ally.Hp == 70 && ally.ProtectedBy == null, "Area nao transfere dano e protecao expira no inicio do turno seguinte.");
+        Assert(tank.Hp == 0 && ally.Hp == 40 && ally.ProtectedBy == null, "Area nao transfere dano e protecao expira no inicio do turno seguinte.");
 
         // O golpe interceptado tambem transfere o veneno novo para o protetor.
         tank = Fighter("tank", CombatTeam.Party, 30, abilities: new[] { protect, Defend });

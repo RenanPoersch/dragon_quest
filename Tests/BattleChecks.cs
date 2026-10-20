@@ -58,7 +58,7 @@ internal static class BattleChecks
         Act(battle, Defend, lia);
         Assert(battle.CurrentActor == guard, "Guarda deve agir antes do tank.");
         Assert(EnemyAI.TryTakeTurn(battle, 0, out _), "IA deve realizar uma acao valida.");
-        Assert(aren.Hp == 70 && battle.CurrentActor == bram, "IA deve atacar aliado vivo com dano dobrado e avancar.");
+        Assert(aren.Hp == 40 && battle.CurrentActor == bram, "IA deve atacar aliado vivo com dano quadruplicado e avancar.");
         Act(battle, Defend, bram);
         Assert(battle.Round == 2 && battle.CurrentActor == aren, "Fim da ordem deve iniciar nova rodada.");
     }
@@ -92,7 +92,7 @@ internal static class BattleChecks
         Act(battle, Defend, aren);
         Act(battle, Attack, Find(battle, "guard"));
         EnemyAI.TryTakeTurn(battle, 0, out _);
-        Assert(aren.Hp == 85, "Defesa deve reduzir 30 de dano inimigo para 15.");
+        Assert(aren.Hp == 70, "Defesa deve reduzir 60 de dano inimigo para 30.");
         Act(battle, Defend, Find(battle, "bram"));
         Assert(!aren.IsDefending, "Defesa deve expirar no inicio do proximo turno do usuario.");
         Act(battle, Attack, Find(battle, "guard"));
@@ -124,7 +124,7 @@ internal static class BattleChecks
         var challenger = new CombatantState("challenger", new CombatantDefinition("Outro inimigo", "Inimigo", 100, 0, 3, 0, 0, 30, Attack), CombatTeam.Enemy);
         var independent = new BattleSession(one, two, challenger);
         Assert(EnemyAI.TryTakeTurn(independent, 0, out _), "IA deve atacar uma das instancias compartilhadas.");
-        Assert(one.Hp == 14 && two.Hp == 20 && shared.MaxHp == 20, "Dano deve alterar somente a instancia, preservando outra instancia e a definicao.");
+        Assert(one.Hp == 8 && two.Hp == 20 && shared.MaxHp == 20, "Dano deve alterar somente a instancia, preservando outra instancia e a definicao.");
 
         var fragile = new CombatantState("hero", new CombatantDefinition("Heroi", "Aliado", 1, 0, 1, 0, 0, 1, Attack), CombatTeam.Party);
         var strong = new CombatantState("enemy", new CombatantDefinition("Inimigo", "Inimigo", 100, 0, 99, 0, 0, 20, Attack), CombatTeam.Enemy);

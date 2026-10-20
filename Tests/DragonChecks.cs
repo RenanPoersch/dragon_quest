@@ -36,8 +36,8 @@ internal static class DragonChecks
         while(battle.CurrentActor.Team==CombatTeam.Party) { Defend(battle);responses++; }
         Assert(responses==3,"Cada aliado vivo precisa de um turno de resposta antes do sopro.");
         Assert(EnemyAI.ChooseAbility(battle)==PrototypeBattleFactory.DragonBreath&&EnemyAI.TryTakeTurn(battle,out _),"Sopro deve acontecer no turno seguinte a preparacao.");
-        var damage=new[]{45,47,38};
-        for(int i=0;i<party.Length;i++) Assert(hp[i]-party[i].Hp==damage[i],"Defender deve reduzir o sopro para todo aliado que escolheu a acao.");
+        var damage=new[]{90,94,76};
+        for(int i=0;i<party.Length;i++) Assert(hp[i]-party[i].Hp==Math.Min(hp[i],damage[i]),"Defender deve reduzir o sopro para todo aliado que escolheu a acao.");
         Assert(!dragon.IsCharging,"Aviso deve terminar depois do sopro.");
         while(battle.CurrentActor.Team==CombatTeam.Party) Defend(battle);
         Assert(EnemyAI.ChooseAbility(battle)==PrototypeBattleFactory.DragonClaw,"Ciclo deve reiniciar sem sopro surpresa.");
@@ -93,7 +93,7 @@ internal static class DragonChecks
             var flame=new AbilityDefinition("test-flame","Fogo","",0,0,AbilityEffect.MagicDamage,TargetRule.Enemy,element:DamageElement.Fire);
             var caster=new CombatantState("caster",new CombatantDefinition("Chama","Inimigo",100,0,0,0,60,99,flame),CombatTeam.Enemy);
             var fireBattle=new BattleSession(state,caster);
-            Assert(EnemyAI.TryTakeTurn(fireBattle,out _)&&state.Definition.MaxHp-state.Hp==(member.Id=="aren"?36:member.Id=="lia"?38:26),"Armadura deve cortar o dano de Fogo pela metade depois da defesa numerica.");
+            Assert(EnemyAI.TryTakeTurn(fireBattle,out _)&&state.Definition.MaxHp-state.Hp==(member.Id=="aren"?72:member.Id=="lia"?76:52),"Armadura deve cortar o dano de Fogo pela metade depois da defesa numerica.");
             Assert(party.TryRemoveEquipment(member,EquipmentSlot.Armor,out _)&&!progress.HasEquippedArmor(party),"Remover a armadura retira sua condicao narrativa.");
             Assert(member.CreateCombatant().Definition.Affinities.DamagePercent(DamageElement.Fire)==100,"Resistencia nao pode ficar no personagem depois de desequipar.");
         }

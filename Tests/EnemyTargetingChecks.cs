@@ -131,7 +131,7 @@ internal static class EnemyTargetingChecks
         var battle = Encounter(out var heroes, out var enemy);
         heroes[1].ProtectedBy = heroes[2];
         Check(EnemyAI.ChooseTarget(battle, Attack, .5) == heroes[1], "Proteger nao altera o heroi sorteado.");
-        Check(EnemyAI.TryTakeTurn(battle, .5, out _) && heroes[1].Hp == 800 && heroes[2].Hp == 1480,
+        Check(EnemyAI.TryTakeTurn(battle, .5, out _) && heroes[1].Hp == 800 && heroes[2].Hp == 1460,
             "Proteger intercepta o golpe dirigido ao heroi sorteado.");
 
         battle = Encounter(out _, out enemy);

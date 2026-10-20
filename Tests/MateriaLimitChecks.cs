@@ -235,7 +235,7 @@ internal static class MateriaLimitChecks
         Assert(battle.GetValidTargets(PrototypePartyFactory.Thunder).Count == 1 && battle.GetValidTargets(PrototypePartyFactory.Thunder)[0] == tank,
             "Provocacao tambem deve atrair magia individual.");
         Assert(EnemyAI.TryTakeTurn(battle, out _), "Inimigo mago deve executar sua acao.");
-        Assert(tank.Hp == 106 && ally.Hp == 80 && tank.Limit.Charge == 30, "Magia deve usar atributo magico, defesa do tank, dano inimigo dobrado e carregar Limit real.");
+        Assert(tank.Hp == 62 && ally.Hp == 80 && tank.Limit.Charge == 59, "Magia deve usar atributo magico, defesa do tank, dano inimigo quadruplicado e carregar Limit real.");
     }
 
     private static void CheckLimitCarryAndSpending()
@@ -250,11 +250,11 @@ internal static class MateriaLimitChecks
             "Limit incompleto nao pode consumir turno, MP ou carga.");
         Act(battle, MateriaResolver.Defend, hero);
         Act(battle, MateriaResolver.Attack, hero);
-        Assert(hero.Hp == 89 && member.Limit.Charge == 11, "Limit deve usar dano real apos armadura e defender.");
+        Assert(hero.Hp == 78 && member.Limit.Charge == 22, "Limit deve usar dano real apos armadura e defender.");
         hero.TakeDamage(44);
-        Assert(member.Limit.Charge == 55, "Dano deve somar carga proporcional ao HP maximo.");
+        Assert(member.Limit.Charge == 66, "Dano deve somar carga proporcional ao HP maximo.");
         var next = member.CreateCombatant();
-        Assert(next.Hp == 100 && next.Mp == 28 && next.Limit.Charge == 55, "Nova batalha restaura HP/MP e preserva Limit do mesmo membro.");
+        Assert(next.Hp == 100 && next.Mp == 28 && next.Limit.Charge == 66, "Nova batalha restaura HP/MP e preserva Limit do mesmo membro.");
         Assert(Member(party, "lia").Limit.Charge == 0, "Carga deve ser individual.");
         next.TakeDamage(10000);
         Assert(next.Hp == 0 && member.Limit.Charge == 100, "Overkill deve considerar HP realmente perdido e limitar carga a 100.");
@@ -292,8 +292,8 @@ internal static class MateriaLimitChecks
         Act(battle, MateriaResolver.Defend, hero);
         Act(battle, Command(tank, "protect"), hero);
         Act(battle, MateriaResolver.Attack, hero);
-        Assert(tank.Limit.Charge == 27 && hero.Limit.Charge == 0 && hero.Hp == 80,
-            "Protecao deve carregar somente quem recebe os 40 de dano reais, 27% de 150 HP.");
+        Assert(tank.Limit.Charge == 54 && hero.Limit.Charge == 0 && hero.Hp == 80,
+            "Protecao deve carregar somente quem recebe os 80 de dano reais, 54% de 150 HP.");
     }
 
     public static int Run()
