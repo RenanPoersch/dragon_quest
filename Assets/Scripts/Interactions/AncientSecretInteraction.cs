@@ -29,10 +29,10 @@ namespace DragonQuest.Interactions
             DialogueController dialogue=context.Dialogue;
             if(kind==SecretObject.Peasant)
             {
-                var pages=new System.Collections.Generic.List<string> { "Minha avo dizia que estas palavras sao mais antigas que o castelo. Os moradores as guardaram mesmo depois de esquecerem sua origem." };
-                pages.AddRange(LegendPoem.ExplainedPages());
-                pages.Add("As ruinas ao sudoeste da ilha ja eram antigas quando este castelo foi erguido. Muitas historias se perderam entre aquelas pedras.");
-                dialogue.OpenWithCompletion("Camponesa",secrets.LearnPoem,pages.ToArray());
+                dialogue.OpenWithCompletion("Camponesa",secrets.LearnPoem,
+                    "Minha avó me contava uma lenda quando eu era pequena. Eu sentava pertinho dela e pedia para ouvir de novo, mesmo já sabendo como terminava.",
+                    "Hoje já não lembro direito... Era algo sobre chamas, lua e coisas assim. Ela dizia que tinha a ver com aquelas ruínas a sudoeste da ilha.",
+                    "Não sei se acredito nessas coisas... Mas ela falava com tanta certeza. Queria poder perguntar de novo.");
             }
             else if(kind==SecretObject.Altar)
             {
