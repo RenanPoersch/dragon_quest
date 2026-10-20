@@ -20,7 +20,7 @@ namespace DragonQuest.Prototype
                 case "Camponesa": return "peasant";
                 case "Jardineiro": return "gardener";
                 case "Exploradora": return "explorer";
-                case "Guardiao da pedreira": case "Lenhador": return "quarry-keeper";
+                case "Guardião da pedreira": case "Guardiao da pedreira": case "Lenhador": return "quarry-keeper";
                 case "Viajante": return "traveler";
                 case "Hospedeira": case "Hospedaria": return "innkeeper";
                 case "Rei Rubro": return "tyrant";

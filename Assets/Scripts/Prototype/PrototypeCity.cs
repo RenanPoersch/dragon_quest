@@ -275,9 +275,9 @@ namespace DragonQuest.Prototype
             quarry.gameObject.AddComponent<QuarryPixelScenery>().Build(secrets, interactions, frictionless);
             CreatePassage("Saida da pedreira", PrototypeTravel.WestForest, quarry, PrototypeTravel.World);
             NpcInteraction worker = CreateNpc("Lenhador", QuarryLayout.Worker, "879C6B", quarry);
-            worker.Initialize("Guardiao da pedreira",
-                "A floresta retomou esta pedreira, mas os tres totens de rocha continuam de pe. Toque seus simbolos para despertar o ciclo antigo.",
-                "A pedra perto da entrada guarda uma pista. As luzes acompanham o ciclo; uma ordem errada apaga os simbolos. Voce pode tentar novamente sem perder nada.");
+            worker.Initialize("Guardião da pedreira",
+                "Acho que existe algum mecanismo nessas pedras. Os símbolos, o jeito como estão dispostas... Mas não tenho certeza. Pode ser só coisa da minha cabeça.",
+                "Volto aqui sempre que preciso pensar. Fico olhando para elas e imaginando quantas coisas neste mundo a gente ainda não entende... Às vezes esqueço até de ir embora.");
             interactions.Add(worker);
             return quarry;
         }
