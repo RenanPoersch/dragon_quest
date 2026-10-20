@@ -1,8 +1,8 @@
 # Sons de combate
 
-Seleção aprovada até a V10: 47 WAV PCM16 estéreo a 48 kHz. Provocar e Fênix usam a V5, Omnislash usa o final grave V8, Lia usa a descarga mágica V9 e Bahamut usa o feixe de energia e estrondo V10. Os masters aprovados são copiados sem nova edição, exceto a incorporação da camada corporal V8 nos contatos físicos existentes.
+Seleção aprovada até a V12: 47 WAV PCM16 estéreo a 48 kHz. O ataque de Bram usa a pancada seca de escudo V12; Omnislash usa a pancada e o corte pesado final V12. Provocar e Fênix usam a V5, Lia usa a descarga mágica V9 e Bahamut permanece com a V10. Os WAV desta aplicação são cópias exatas dos arquivos aprovados.
 
-A camada de receber golpe usa pancada real e contato de carne, substituindo o antigo material oco dentro de 14 composições. Não há evento de dano separado ou áudio duplicado. As demais gravações, posições, panoramas e durações dessas ações são preservados. No Omnislash, a carga e o último golpe permanecem idênticos à V8 a partir de 4,35 s; somente os contatos iniciais são recompostos. Os masters mantêm a referência aproximada de -23 LUFS e teto de -2,5 dBTP.
+A camada de receber golpe V8 continua incorporada nos contatos físicos existentes. No Omnislash, a sequência anterior e o carregamento no ar são preservados amostra por amostra até 5,02 s. O trecho novo começa no mergulho e mantém o contato final em 5,32 s. O ataque de Bram mantém o contato em 0,15 s. Os marcadores do catálogo e os importadores existentes continuam compatíveis. Os masters mantêm a referência aproximada de -23 LUFS e teto de -2,5 dBTP.
 
 As oito magias usam a mesma versão All para alvo único e grupo. `prepare-meteor` permanece intencionalmente mudo. Bastião continua começando com o grito de batalha aprovado. Demais ações mantêm a seleção anterior. `CombatSoundSelection.json` registra todas as 56 ações/variantes; `CombatSoundManifest.json` registra os 47 recursos instalados e seus hashes, níveis, marcadores e fontes. Créditos e proveniência em `COMBAT_SOUND_CREDITS.md`.
 

@@ -1,5 +1,5 @@
 {
-  "applied_version": 10,
+  "applied_version": 12,
   "format": "PCM16 stereo 48000 Hz",
   "sound_count": 47,
   "actions": [
@@ -20,9 +20,9 @@
     {
       "id": "attack-bram",
       "mode": "replace",
-      "revision": 4,
+      "revision": 12,
       "file": "attack-bram.wav",
-      "sha256": "1ade70338385180a41d652908e23baf8a81cf803f3c77750062c5a25f27db046"
+      "sha256": "42c1404b16dc4d46df0165683dfa47dcfae376f3bb47fa28cb340d07a1e48828"
     },
     {
       "id": "heavy-strike",
@@ -243,9 +243,9 @@
     {
       "id": "omnislash",
       "mode": "replace",
-      "revision": 8,
+      "revision": 12,
       "file": "omnislash.wav",
-      "sha256": "127812660bc941d695648b9b33ee3961cc51b3254be51ca2afba71dba78e1b2a",
+      "sha256": "626f2f665d4777d995bc0e17c526ebe33d146a830390f84928784234f47d9f51",
       "body_contact_revision": 8
     },
     {
@@ -409,13 +409,14 @@
     }
   ],
   "validation_run": false,
-  "validation_note": "Validação Unity dispensada pelo usuário; cópia dos PCM e incorporação da camada corporal aprovados.",
+  "validation_note": "PCM V12 aprovados copiados sem reedição; hashes e prefixo do Omnislash conferidos. Sem testes Unity, conforme pedido do usuário.",
   "latest_approved_revisions": {
     "taunt": 5,
     "phoenix": 5,
-    "omnislash": 8,
+    "omnislash": 12,
     "attack-lia": 9,
-    "bahamut": 10
+    "bahamut": 10,
+    "attack-bram": 12
   },
   "body_contact": {
     "preview_revision": 8,
@@ -443,6 +444,8 @@
       "1": 0.016541666666666666,
       "3": 0.013020833333333334
     },
-    "omnislash_charge_and_final_unchanged_from_seconds": 4.35
+    "omnislash_first_contacts_revision": 8,
+    "omnislash_prefix_preserved_to_seconds": 5.02,
+    "omnislash_final_contact_revision": 12
   }
 }

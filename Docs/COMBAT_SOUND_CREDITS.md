@@ -61,3 +61,16 @@ A camada de receber golpe V8 combina um soco em saco de pancada de NearTheAtmosh
 - **weld-arc** — kyles: [Freesound - welder sparks good detail1 short weld.flac by kyles](https://freesound.org/people/kyles/sounds/453689/). public player HQ MP3 preview. Licença CC0-1.0. SHA-256 `588657571e0b2ab01c878366d9f52346e4a9549d7d67564300e88c52efdd41ec`.
 
 Todos os downloads acima são os MP3 HQ públicos dos players, usados para edição; não são apresentados como arquivos originais sem perdas. Marcadores, ingredientes, hashes e níveis dos masters instalados estão em CombatSoundManifest.json.
+
+## Bram e Omnislash — aplicação V12
+
+Bram recebe uma pancada de escudo seca, com contato de corpo de TRP e passagem discreta de ar. O contato permanece em 0,15 s. A antiga base de martelo em bigorna e bastão foi substituída por inteiro.
+
+O Omnislash preserva o master já aplicado até 5,02 s, incluindo os doze contatos iniciais e a carga no ar. Somente o trecho final foi substituído: movimento de lâmina largo, corpo grave de pancada próxima, contato seco de TRP e corte de lenha. Contato final em 5,32 s. Fontes reais, com a afinação original dos impactos; a passagem de ar usa velocidade 0,82.
+
+O corpo da pancada usa a gravação body-punch de NearTheAtmoshphere (676466), já creditada acima. O detalhe de corte fica 4 LU abaixo do corpo, a definição de contato 5 LU abaixo e a passagem de ar 10 LU abaixo. A composição do Bram mantém a passagem de ar 9 LU abaixo da pancada. Os WAV foram copiados sem uma nova normalização ou reedição.
+
+- **dense-punches** — TRP: [Freesound - 210415 Punching bag, foley, ms.wav by TRP](https://freesound.org/people/TRP/sounds/616953/). public player HQ MP3 preview. Licença CC0-1.0. SHA-256 `c016c83c9f003b7a97a79c43662d875fa717de75e40b569bc2ad4fd89a251990`.
+- **heavy-cleave** — ElSchorscho: [Freesound - chopping wood_heavy [459] by ElSchorscho](https://freesound.org/people/ElSchorscho/sounds/847816/). public player HQ MP3 preview. Licença CC0-1.0. SHA-256 `4b824fb9a4871558cb63e55608397d2f5f454ffbe6b8fd24d4c94045794a7b99`.
+
+Passagens de ar: artisticdude, Swishes Sound Pack, CC0, já creditadas no histórico. Gravações novas obtidas das prévias HQ públicas dos players; não são apresentadas como originais sem perdas. Fontes e janelas por som constam no manifesto instalado.
