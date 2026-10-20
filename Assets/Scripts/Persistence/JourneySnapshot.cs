@@ -49,6 +49,7 @@ namespace DragonQuest.Persistence
                 Secrets = new SecretData {KnowsPoem = secrets.KnowsPoem, AltarSolved = secrets.AltarSolved,
                     MonolithStep = secrets.MonolithStep, HasScale = secrets.HasScale, PassageOpen = secrets.PassageOpen},
                 DragonDefeated = dragon.IsDefeated, CastleGuardsDefeated = progress.CastleGuardsDefeated,
+                TravelerPhoenixReceived = progress.TravelerPhoenixReceived,
                 Members = members.ToArray(), Gear = gear.ToArray(),
                 Materias = materias.ToArray(), Items = items.ToArray(), Stocks = stocks.ToArray()
             };
@@ -75,6 +76,7 @@ namespace DragonQuest.Persistence
             foreach (string id in data.OpenedChests) Require(id == "praca-primeiro-bau" && chestIds.Add(id), "Bau desconhecido ou repetido.");
             var progress = new ExplorationProgress(); progress.Restore(data.Gold, data.OpenedChests);
             progress.RestoreCastleGuards(data.CastleGuardsDefeated);
+            progress.RestoreTravelerPhoenix(data.TravelerPhoenixReceived);
             CheckArray(data.Gear, 512); CheckArray(data.Materias, 512); CheckArray(data.Items, 4); CheckArray(data.Members, 3);
             Require(data.Members.Length == 3, "Equipe incompleta.");
             var gear = new Dictionary<string, EquipmentLoadout>(); var materias = new Dictionary<string, MateriaInstance>();

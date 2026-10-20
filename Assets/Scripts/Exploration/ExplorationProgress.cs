@@ -19,6 +19,14 @@ namespace DragonQuest.Exploration
             Changed?.Invoke();
         }
         public event Action Changed;
+        public bool TravelerPhoenixReceived { get; private set; }
+        internal void RestoreTravelerPhoenix(bool received) => TravelerPhoenixReceived = received;
+        internal void ReceiveTravelerPhoenix()
+        {
+            if (TravelerPhoenixReceived) return;
+            TravelerPhoenixReceived = true;
+            Changed?.Invoke();
+        }
         public bool CastleGuardsDefeated { get; private set; }
         internal void RestoreCastleGuards(bool defeated) => CastleGuardsDefeated = defeated;
         public void DefeatCastleGuards()

@@ -56,9 +56,9 @@ namespace DragonQuest.Prototype
             GameObject peasant = CreateNpcFigure("Camponesa", PrototypeCityLayout.Resident, "B77D8B", interactions);
             interactables.Add(AddSecret(peasant, SecretObject.Peasant));
             NpcInteraction traveler = CreateNpc("Viajante", PrototypeCityLayout.Traveler, "C19862", interactions);
-            traveler.Initialize("Viajante",
-                "Encontrei marcas incomuns numa pedra da floresta a leste. Não parecem ter sido feitas por nenhum animal que eu conheça.",
-                "Minha família dizia que a floresta guarda aquilo que os homens esquecem. Nunca entendi muito bem.");
+            traveler.InitializeWithCompletion("Viajante", CompleteTravelerConversation,
+                "Encontrei marcas incomuns numa pedra ao norte. Não parecem ter sido feitas por nenhum animal que eu conheça.",
+                "Havia esse objeto vermelho perto dela...");
             interactables.Add(traveler);
             NpcInteraction explorer = CreateNpc("Exploradora", PrototypeCityLayout.Explorer, "B79458", interactions);
             explorer.Initialize("Exploradora", "Cavar, cavar... Explorar, explorar...");
@@ -180,6 +180,13 @@ namespace DragonQuest.Prototype
             entity.transform.SetParent(parent, false);
             entity.transform.localPosition = position;
             return entity;
+        }
+
+        private void CompleteTravelerConversation(InteractionContext context)
+        {
+            if (!TravelerGift.TryGivePhoenix(battle.Party, context.Progress)) return;
+            MenuSounds.Play(MenuSound.Confirm);
+            context.Dialogue.OpenNotice("Recebeu Phoenix");
         }
 
         private NpcInteraction CreateNpc(string npcName, Vector2 position, string color, Transform parent)

@@ -71,6 +71,40 @@ internal static class SaveChecks
         Assert(!legacy.Contains("CastleGuardsDefeated"), "O novo campo e opcional para saves anteriores.");
     }
 
+    private static void CheckTravelerPhoenix()
+    {
+        var journey = JourneySnapshot.Restore(Initial());
+        Assert(!journey.Progress.TravelerPhoenixReceived && !journey.Party.Materias.Any(m => m.Definition.Id == "phoenix"),
+            "Uma jornada nova ainda não recebeu a Phoenix do viajante.");
+        Assert(!TravelerGift.TryGivePhoenix(null, journey.Progress) && !journey.Progress.TravelerPhoenixReceived,
+            "Uma entrega sem equipe não consome a recompensa.");
+        int count = journey.Party.Materias.Count, changes = 0;
+        journey.Progress.Changed += () => changes++;
+        Assert(TravelerGift.TryGivePhoenix(journey.Party, journey.Progress), "O viajante entrega a Phoenix.");
+        var phoenix = journey.Party.Materias.Single(m => m.Id == TravelerGift.MateriaId);
+        Assert(phoenix.Definition == PrototypePartyFactory.SummonMateria && journey.Party.Materias.Count == count + 1
+            && journey.Progress.TravelerPhoenixReceived && changes == 1, "A entrega adiciona a matéria vermelha e registra o progresso uma vez.");
+        Assert(!TravelerGift.TryGivePhoenix(journey.Party, journey.Progress) && journey.Party.Materias.Count == count + 1 && changes == 1,
+            "Repetir a conversa não duplica a Phoenix.");
+        var data = JourneySnapshot.Capture(journey.Party, journey.Progress, journey.Secrets, journey.Dragon,
+            journey.Shops, PrototypeTravel.City, PrototypeCityLayout.Traveler.x, PrototypeCityLayout.Traveler.y - 1);
+        var loaded = RoundTrip(data);
+        Assert(loaded.Progress.TravelerPhoenixReceived && loaded.Party.Materias.Any(m => m.Id == TravelerGift.MateriaId)
+            && !TravelerGift.TryGivePhoenix(loaded.Party, loaded.Progress), "Salvar e carregar preserva a entrega sem dar outra Phoenix.");
+        Assert(loaded.Party.TryRemoveOwnedMateria(loaded.Party.Materias.Single(m => m.Id == TravelerGift.MateriaId)),
+            "A matéria recebida continua sendo uma matéria normal do inventário.");
+        data = JourneySnapshot.Capture(loaded.Party, loaded.Progress, loaded.Secrets, loaded.Dragon, loaded.Shops,
+            PrototypeTravel.World, 0, -7);
+        loaded = RoundTrip(data);
+        Assert(loaded.Progress.TravelerPhoenixReceived && !TravelerGift.TryGivePhoenix(loaded.Party, loaded.Progress)
+            && !loaded.Party.Materias.Any(m => m.Id == TravelerGift.MateriaId), "Vender a recompensa e recarregar não permite recebê-la novamente.");
+        string legacy = Encoding.UTF8.GetString(SaveStore.Encode(Initial()));
+        var legacyJourney = RoundTrip(Initial());
+        Assert(!legacy.Contains("TravelerPhoenixReceived") && !legacyJourney.Progress.TravelerPhoenixReceived
+            && TravelerGift.TryGivePhoenix(legacyJourney.Party, legacyJourney.Progress),
+            "Saves antigos continuam compatíveis com a nova recompensa.");
+    }
+
     private static void CheckPlayTime()
     {
         var data = Initial(); data.PlaySeconds = 7 * 3600 + 2 * 60;
@@ -312,7 +346,7 @@ internal static class SaveChecks
     {
         try
         {
-            CheckDomain(); CheckInventoryEvents(); CheckLevelPersistence(); CheckConditionPersistence(); CheckCheatPersistence(); CheckPlayTime(); CheckLegacyShopSaves(); CheckCastleGuardPersistence();
+            CheckDomain(); CheckInventoryEvents(); CheckLevelPersistence(); CheckConditionPersistence(); CheckCheatPersistence(); CheckPlayTime(); CheckLegacyShopSaves(); CheckCastleGuardPersistence(); CheckTravelerPhoenix();
             CheckManualPersistence(Path.Combine(args[0], "manual-" + Guid.NewGuid().ToString("N")));
             CheckFiles(Path.Combine(args[0], "saves-" + Guid.NewGuid().ToString("N")));
             Console.WriteLine("Salvamento: " + checks + " verificacoes passaram."); return 0;

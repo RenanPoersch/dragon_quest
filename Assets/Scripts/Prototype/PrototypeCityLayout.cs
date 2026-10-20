@@ -56,7 +56,7 @@ namespace DragonQuest.Prototype
         public static readonly Vector2 Citizen = new Vector2(-1.2f, -15);
         public static readonly Vector2 Chest = new Vector2(2, -2.5f);
         public static readonly Vector2 Resident = new Vector2(-8.2f, 0);
-        public static readonly Vector2 Traveler = new Vector2(8, 7.4f);
+        public static readonly Vector2 Traveler = new Vector2(8.45f, 7.8f);
         public static readonly Vector2 Explorer = new Vector2(0.4f, 1.7f);
         public static Vector2 ItemDoor => DoorAt("Loja de itens");
         public static Vector2 EquipmentDoor => DoorAt("Loja de equipamentos");

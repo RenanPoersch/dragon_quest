@@ -20,7 +20,7 @@ namespace DragonQuest.Prototype
         private Texture2D hand;
         private Rect handUv = new Rect(0, 0, 1, 1);
         private float handAspect = 1;
-        private GUIStyle title, body, choice;
+        private GUIStyle title, body, choice, notice;
         private Vector2 lastPointer;
         private bool hasPointer;
         private int lastSelectedChoice = -1;
@@ -58,6 +58,16 @@ namespace DragonQuest.Prototype
         public void Draw(DialogueController dialogue, float width, float height)
         {
             EnsureStyles();
+            if (dialogue.IsNotice)
+            {
+                float panelWidth = Mathf.Min(480, width - 32);
+                float panelHeight = Mathf.Min(height - 32,
+                    Mathf.Max(104, notice.CalcHeight(new GUIContent(dialogue.Text), panelWidth - 40) + 40));
+                var noticePanel = new Rect((width - panelWidth) / 2, (height - panelHeight) / 2, panelWidth, panelHeight);
+                Panel(noticePanel);
+                ShadowLabel(Inset(noticePanel, 20), dialogue.Text, notice);
+                return;
+            }
             if (lastContentVersion != dialogue.ContentVersion)
             {
                 scroll = Vector2.zero;
@@ -231,7 +241,9 @@ namespace DragonQuest.Prototype
             title = PrototypeTypography.Style(GUI.skin.label, 28, true);
             body = PrototypeTypography.Style(GUI.skin.label, 24);
             choice = PrototypeTypography.Style(GUI.skin.label, 22);
-            foreach (GUIStyle style in new[] { title, body, choice })
+            notice = PrototypeTypography.Style(GUI.skin.label, 28);
+            notice.alignment = TextAnchor.MiddleCenter;
+            foreach (GUIStyle style in new[] { title, body, choice, notice })
             {
                 style.wordWrap = true;
                 style.padding = new RectOffset(0, 0, 0, 0);

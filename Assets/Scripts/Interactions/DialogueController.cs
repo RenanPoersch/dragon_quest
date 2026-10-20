@@ -7,8 +7,10 @@ namespace DragonQuest.Interactions
     {
         private readonly DialogueSession session = new DialogueSession();
         private readonly DialogueTextReveal reveal = new DialogueTextReveal();
+        private bool notice;
 
         public bool IsOpen => session.IsOpen;
+        public bool IsNotice => IsOpen && notice;
         public bool HasChoices => session.HasChoices;
         public bool IsTyping => IsOpen && !reveal.IsComplete;
         public float RevealSecondsRemaining => reveal.SecondsRemaining;
@@ -29,19 +31,29 @@ namespace DragonQuest.Interactions
 
         public void Open(string title, params string[] messages)
         {
+            notice = false;
             session.Open(title, null, messages);
             BeginPage();
         }
 
         public void OpenWithCompletion(string title, System.Action completed, params string[] messages)
         {
+            notice = false;
             session.Open(title, completed, messages);
             BeginPage();
         }
 
         public void OpenChoices(string title, string text, System.Collections.Generic.IReadOnlyList<string> choices, System.Action<int> selected)
         {
+            notice = false;
             session.OpenChoices(title, text, choices, selected);
+            BeginPage();
+        }
+
+        public void OpenNotice(string message)
+        {
+            notice = true;
+            session.Open(string.Empty, null, message);
             BeginPage();
         }
 
@@ -94,6 +106,7 @@ namespace DragonQuest.Interactions
         private void BeginPage()
         {
             reveal.Begin(session.Text);
+            if (IsNotice) reveal.Finish();
             SelectedChoice = 0;
             ContentVersion++;
         }
