@@ -13,7 +13,7 @@ Os quadros têm larguras variáveis. A leitura encontra os intervalos transparen
 
 ## Contagem de cinco turnos e lançamento no sexto
 
-Aos 20% de HP do Rei Rubro, o rei aguarda Shield em sua postura normal. A animação de Shield termina por completo antes de começar a pose de conjuração, que permanece durante as ações dos outros participantes. Durante a carga fica apenas o sprite do rei: não há meteoro separado acima da arena. Um número flutuante, de 5 a 1 e sem rótulo, aparece uma vez por turno próprio do Rei Rubro. Usa fonte 44 (dano: 40), subida de 40 unidades por segundo, sombra e dissipação de 1,4 segundo, como os danos. O primeiro número aguarda Shield terminar; os demais surgem ao apresentar a ação do turno. A contagem considera apenas os turnos próprios do Rei Rubro:
+Aos 30% de HP do Rei Rubro, o rei aguarda Shield em sua postura normal. A animação de Shield termina por completo antes de começar a pose de conjuração, que permanece durante as ações dos outros participantes. Durante a carga fica apenas o sprite do rei: não há meteoro separado acima da arena. Um número flutuante, de 5 a 1 e sem rótulo, aparece uma vez por turno próprio do Rei Rubro. Usa fonte 44 (dano: 40), subida de 40 unidades por segundo, sombra e dissipação de 1,4 segundo, como os danos. O primeiro número aguarda Shield terminar; os demais surgem ao apresentar a ação do turno. A contagem considera apenas os turnos próprios do Rei Rubro:
 
 1. Protect: cria a barreira e começa a canalização.
 2. Aumenta a carga.

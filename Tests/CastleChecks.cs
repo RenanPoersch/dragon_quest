@@ -50,7 +50,7 @@ internal static class CastleChecks
     private static void Threshold(BattleSession battle)
     {
         var king=Find(battle,CastleBattleRules.TyrantId);
-        king.TakeDamage(king.Hp-120);Rules(battle).AfterAction(battle);
+        king.TakeDamage(king.Hp-180);Rules(battle).AfterAction(battle);
     }
     private static void PrepareUntilMeteor(BattleSession battle)
     {
@@ -76,10 +76,10 @@ internal static class CastleChecks
         var battle=Create(party);
         Assert(battle.Combatants.Count==4&&!Rules(battle).IsSpiritRevealed,"Armadura guardada nao revela o espirito.");
         var king=Find(battle,CastleBattleRules.TyrantId);
-        king.TakeDamage(479);Rules(battle).AfterAction(battle);
-        Assert(king.Hp==121&&!Rules(battle).MeteorStarted,"Acima de 20% nao inicia o meteoro.");
+        king.TakeDamage(419);Rules(battle).AfterAction(battle);
+        Assert(king.Hp==181&&!Rules(battle).MeteorStarted,"Acima de 30% nao inicia o meteoro.");
         king.TakeDamage(1);Rules(battle).AfterAction(battle);
-        Assert(Rules(battle).MeteorStarted&&Rules(battle).PreparationsRemaining==5&&king.IsCharging,"Em exatamente 20% inicia a conjuracao de cinco turnos.");
+        Assert(Rules(battle).MeteorStarted&&Rules(battle).PreparationsRemaining==5&&king.IsCharging,"Em exatamente 30% inicia a conjuracao de cinco turnos.");
         for(int bearer=0;bearer<3;bearer++)
         {
             battle=Create(Party(true,bearer));
@@ -88,9 +88,9 @@ internal static class CastleChecks
         battle=Create(Party(false));king=Find(battle,CastleBattleRules.TyrantId);
         var crossingAttack=battle.CurrentActor.Definition.Abilities.Single(a=>a.Id=="attack");
         int crossingDamage=Math.Max(1,battle.CurrentActor.Definition.Attack+crossingAttack.Power-king.Definition.Defense);
-        king.TakeDamage(king.Hp-(119+crossingDamage));
+        king.TakeDamage(king.Hp-(179+crossingDamage));
         Assert(battle.TryAct(battle.CurrentActor,battle.CurrentActor.Definition.Abilities.Single(a=>a.Id=="attack"),king,out _)
-            &&king.Hp==119&&Rules(battle).MeteorStarted,"Golpe que cruza o limiar precisa ativar a contagem automaticamente.");
+            &&king.Hp==179&&Rules(battle).MeteorStarted,"Golpe que cruza o limiar precisa ativar a contagem automaticamente.");
         battle=Create(Party(false));BeforeKing(battle);
         int turns=battle.CurrentActor.TurnsTaken,hp=Find(battle,CastleBattleRules.TyrantId).Hp;
         Assert(!battle.TryAct(battle.CurrentActor,CastleBattleRules.Meteor,battle.CurrentActor,out _)
@@ -115,7 +115,7 @@ internal static class CastleChecks
             Assert(!Find(battle,CastleBattleRules.TyrantId).IsCharging&&Find(battle,CastleBattleRules.TyrantId).ShieldTurns==0,"Absorcao encerra conjuracao e Protect no sexto turno.");
             Assert(Rules(battle).MeteorAbsorberId==partyBearerId(bearer),"Animacao de absorcao aponta ao portador real.");
             BeforeKing(battle);
-            Assert(EnemyAI.ChooseAbility(battle)!=CastleBattleRules.Meteor&&EnemyAI.ChooseAbility(battle)!=CastleBattleRules.PrepareMeteor,"Meteoro nao reinicia em loop abaixo de 20%.");
+            Assert(EnemyAI.ChooseAbility(battle)!=CastleBattleRules.Meteor&&EnemyAI.ChooseAbility(battle)!=CastleBattleRules.PrepareMeteor,"Meteoro nao reinicia em loop abaixo de 30%.");
         }
         var party=Party(true);battle=Create(party);Find(battle,"bram").TakeDamage(150);
         PrepareUntilMeteor(battle);BeforeKing(battle);

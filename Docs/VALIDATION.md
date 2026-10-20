@@ -213,7 +213,7 @@ O usuário confirmou que as interações funcionaram em Play. Não houve valida�
 
 ## Parte 8 — trono e três finais
 
-- Confronto único com Rei Rubro e, se a armadura estiver equipada, espírito visível desde o início. Golpes físicos sem elemento; aos 20% de HP, duas preparações completas do Rei Rubro e lançamento no turno seguinte.
+- Confronto único com Rei Rubro e, se a armadura estiver equipada, espírito visível desde o início. Golpes físicos sem elemento; aos 30% de HP, duas preparações completas do Rei Rubro e lançamento no turno seguinte.
 - Absorção integral por portador vivo, incluindo recuperação após reviver. Sem absorção, meteoro aniquila todos e determina destruição do castelo. Lançamento antecipado é recusado; a contagem não reinicia e não há repetição após absorção.
 - Espírito usa drenagem de HP real, Correntes por uma ação e Caos Magic em área. Condições e feedback de turno foram integrados ao HUD; combate comum e dragão mantiveram as verificações anteriores.
 - Três desfechos: rei libertado, castelo destruído e Aren possuído. Morte simultânea de rei/espírito determina possessão; meteoro destrutivo determina destruição. Nenhuma ação continua após um desfecho, e não há pagamento de vitória comum.

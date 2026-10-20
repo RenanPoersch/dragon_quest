@@ -115,7 +115,7 @@ namespace DragonQuest.Progression
         {
             CombatantState tyrant=Find(battle,TyrantId);
             if(Ending==GameEnding.None&&!MeteorStarted&&tyrant!=null&&tyrant.IsAlive
-                &&(long)tyrant.Hp*100<=(long)tyrant.Definition.MaxHp*20)
+                &&(long)tyrant.Hp*100<=(long)tyrant.Definition.MaxHp*30)
             {MeteorStarted=true;PreparationsRemaining=MeteorCastTurns;tyrant.IsCharging=true;}
         }
         public BattleOutcome EvaluateOutcome(BattleSession battle)
