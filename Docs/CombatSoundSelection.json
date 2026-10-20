@@ -1,5 +1,5 @@
 {
-  "applied_version": 4,
+  "applied_version": 10,
   "format": "PCM16 stereo 48000 Hz",
   "sound_count": 47,
   "actions": [
@@ -13,9 +13,9 @@
     {
       "id": "attack-lia",
       "mode": "replace",
-      "revision": 4,
+      "revision": 9,
       "file": "attack-lia.wav",
-      "sha256": "6ce02abf5f5491dae62452c35fa3b93919c28b4fa7b14246abc1cd96d3b2dd13"
+      "sha256": "1c7690d66849e2ab228d2acc8e3169fe4860f17d258cf9b0f1e775b1ddd1c098"
     },
     {
       "id": "attack-bram",
@@ -33,10 +33,11 @@
     },
     {
       "id": "cleave",
-      "mode": "keep",
-      "revision": 3,
-      "file": "05_cleave.wav",
-      "sha256": "fc28dd8f21e3290f89f7e6ce4d28831faaf0975221a0c6b0f2b0c5768f07da05"
+      "mode": "replace",
+      "revision": 8,
+      "file": "cleave.wav",
+      "sha256": "a6c162b7fa17c8c8cc52db9ea0b6747e37cd6f4cbc9aa89fab3678f8122d16d0",
+      "body_contact_revision": 8
     },
     {
       "id": "defend",
@@ -48,9 +49,9 @@
     {
       "id": "taunt",
       "mode": "replace",
-      "revision": 4,
+      "revision": 5,
       "file": "taunt.wav",
-      "sha256": "93da0505a29f8026151d749b464f2648d5184a8376c5de7066ee8a4cd288e381"
+      "sha256": "bda6b22bc5b630072d9acbd6f13accc8618d07ab4df5e962b0cbc45c258dfa4c"
     },
     {
       "id": "protect",
@@ -180,52 +181,57 @@
     },
     {
       "id": "infuse-fire",
-      "mode": "keep",
-      "revision": 3,
-      "file": "26_infuse-fire.wav",
-      "sha256": "bc565f590046aa5b8f9bb96644f841116a268780dfa66d30d2f8c71ca9c57142"
+      "mode": "replace",
+      "revision": 8,
+      "file": "infuse-fire.wav",
+      "sha256": "92789dd8654147f1de60384e58a2b4bf1d027dd4b03acc5cb406a09d67b852ae",
+      "body_contact_revision": 8
     },
     {
       "id": "infuse-ice",
-      "mode": "keep",
-      "revision": 3,
-      "file": "27_infuse-ice.wav",
-      "sha256": "30e137730329ffaaad7be14adf8b4c5697ec18c67559051852418f283396a4e9"
+      "mode": "replace",
+      "revision": 8,
+      "file": "infuse-ice.wav",
+      "sha256": "c3566b09bd85d064fa5008eb7c931372f98286d8bc11de0dd1daa7fd98ad14b4",
+      "body_contact_revision": 8
     },
     {
       "id": "infuse-thunder",
-      "mode": "keep",
-      "revision": 3,
-      "file": "28_infuse-thunder.wav",
-      "sha256": "f146d7a80b21db266eabc7ed1c2bf13ffd89c352d95dae770e3a0359c004e6d4"
+      "mode": "replace",
+      "revision": 8,
+      "file": "infuse-thunder.wav",
+      "sha256": "4398bdf5fabe74247ed86d49776faa0e9768027e098eacb1c881fd7bc3deb1ae",
+      "body_contact_revision": 8
     },
     {
       "id": "infuse-earth",
-      "mode": "keep",
-      "revision": 3,
-      "file": "29_infuse-earth.wav",
-      "sha256": "ac941e8ad13002b82689d82c39344d6098a3f18eb97026d9d03a9496752bac28"
+      "mode": "replace",
+      "revision": 8,
+      "file": "infuse-earth.wav",
+      "sha256": "fac545bb5ccfca10b92461e7d0cf5b4bb461667ba8e34b5b0978f1b572f180b1",
+      "body_contact_revision": 8
     },
     {
       "id": "infuse-chaos",
-      "mode": "keep",
-      "revision": 3,
-      "file": "30_infuse-chaos.wav",
-      "sha256": "ae26374333d416acf6388625a6ee6384a0feb6e88913b2923cbcdba294ba1e6f"
+      "mode": "replace",
+      "revision": 8,
+      "file": "infuse-chaos.wav",
+      "sha256": "272f75e71265c100737f3d7d83a27464e13e72839a653dfde8d6fc00a576f763",
+      "body_contact_revision": 8
     },
     {
       "id": "phoenix",
       "mode": "replace",
-      "revision": 4,
+      "revision": 5,
       "file": "phoenix.wav",
-      "sha256": "f392555777b1e28a4291fcf83096e539b77f03e87d969db82a58bd1d60bfd820"
+      "sha256": "e94a1ef7ef33d7c24499b172491148fe5f5dd2367c178f386c487f3c3b905727"
     },
     {
       "id": "bahamut",
       "mode": "replace",
-      "revision": 4,
+      "revision": 10,
       "file": "bahamut.wav",
-      "sha256": "16c84dc0d925a3710601d72201e9aff2d099ab031fd4d346367809e7141f37ad"
+      "sha256": "33a8494df7f5af48fa532c0468599999dcb92ec4286ac5b95f1ac0242bd94684"
     },
     {
       "id": "titan",
@@ -237,9 +243,10 @@
     {
       "id": "omnislash",
       "mode": "replace",
-      "revision": 4,
+      "revision": 8,
       "file": "omnislash.wav",
-      "sha256": "8c05a4dcd72573b189e5d09a12b747c66a5771e3ac5744f90b3e3f0598a6506b"
+      "sha256": "127812660bc941d695648b9b33ee3961cc51b3254be51ca2afba71dba78e1b2a",
+      "body_contact_revision": 8
     },
     {
       "id": "lia-salvation",
@@ -257,17 +264,19 @@
     },
     {
       "id": "attack-guard",
-      "mode": "keep",
-      "revision": 3,
-      "file": "37_attack-guard.wav",
-      "sha256": "70be86787d39588a4348d4c7ee428cc4b74e07ccec7e2f7028f12838843fda2e"
+      "mode": "replace",
+      "revision": 8,
+      "file": "attack-guard.wav",
+      "sha256": "28097e4d5a1e59a79909b0c2e31755fa1f4ef07b3a27a150e84d3bd87015d57d",
+      "body_contact_revision": 8
     },
     {
       "id": "attack-pirate",
-      "mode": "keep",
-      "revision": 3,
-      "file": "38_attack-pirate.wav",
-      "sha256": "31e7feef31d075b9ed7d5471d4c19d0d95022dec3363e65fcdbb06232b547a21"
+      "mode": "replace",
+      "revision": 8,
+      "file": "attack-pirate.wav",
+      "sha256": "07f52401fea2171a81b26c1e6c66347839364dfbca9a1a77bfbd7cf37e1b31c5",
+      "body_contact_revision": 8
     },
     {
       "id": "attack-wolf",
@@ -285,24 +294,27 @@
     },
     {
       "id": "poison-strike",
-      "mode": "keep",
-      "revision": 3,
-      "file": "41_poison-strike.wav",
-      "sha256": "96567f6c6b3e6adfb2f0e1fbb53d70c49f1b3b919f00f97f5ddbfab1870cdfa8"
+      "mode": "replace",
+      "revision": 8,
+      "file": "poison-strike.wav",
+      "sha256": "5b248448a96c56b9106167bc1dfc551b20369d6d40ea4362fb11ac086a9060b1",
+      "body_contact_revision": 8
     },
     {
       "id": "enemy-sweep",
-      "mode": "keep",
-      "revision": 3,
-      "file": "42_enemy-sweep.wav",
-      "sha256": "a34e3bb72ec21751d56d7d2e5f5aaeded3701a598d57e8404cdc805728b1b3b9"
+      "mode": "replace",
+      "revision": 8,
+      "file": "enemy-sweep.wav",
+      "sha256": "a3d67abe67bc93c2bb85a31ddc88579301a5af941c43f5c547c6a007b0207cbc",
+      "body_contact_revision": 8
     },
     {
       "id": "dragon-claw",
-      "mode": "keep",
-      "revision": 3,
-      "file": "43_dragon-claw.wav",
-      "sha256": "70f5553d76300481a997c0cf75a0ef17dac5492fc094bc8f99e8ffa80cd323a2"
+      "mode": "replace",
+      "revision": 8,
+      "file": "dragon-claw.wav",
+      "sha256": "e7d7f0a8f8337ae1d285dfd2053a7bff1ea31ab54d3fcf9caaa2da29a31a91b1",
+      "body_contact_revision": 8
     },
     {
       "id": "charge-breath",
@@ -320,17 +332,19 @@
     },
     {
       "id": "royal-strike",
-      "mode": "keep",
-      "revision": 3,
-      "file": "46_royal-strike.wav",
-      "sha256": "b3838c649f368f22e53480b5eadf79c1f9d29ce6719502560a558c2695bf0565"
+      "mode": "replace",
+      "revision": 8,
+      "file": "royal-strike.wav",
+      "sha256": "a13483353d7a1b16b5131aeb4cb17bc7bce1de2bc7361f446eb3ac6d41c4f603",
+      "body_contact_revision": 8
     },
     {
       "id": "royal-heavy",
-      "mode": "keep",
-      "revision": 3,
-      "file": "47_royal-heavy.wav",
-      "sha256": "914267b901c1517d59d5f8e451a5839dd4d4e1a79310d551609c658a0219d361"
+      "mode": "replace",
+      "revision": 8,
+      "file": "royal-heavy.wav",
+      "sha256": "5e9917b288cb9a18cb431d7b4fea5305d0d3517fa8e5433a8f4482ecca5b42f0",
+      "body_contact_revision": 8
     },
     {
       "id": "tyrant-protect",
@@ -395,5 +409,40 @@
     }
   ],
   "validation_run": false,
-  "validation_note": "Validação desta aplicação dispensada pelo usuário; arquivos aprovados copiados sem reedição."
+  "validation_note": "Validação Unity dispensada pelo usuário; cópia dos PCM e incorporação da camada corporal aprovados.",
+  "latest_approved_revisions": {
+    "taunt": 5,
+    "phoenix": 5,
+    "omnislash": 8,
+    "attack-lia": 9,
+    "bahamut": 10
+  },
+  "body_contact": {
+    "preview_revision": 8,
+    "source_master_sha256": "6577f0a16eb659a7ffc7b8f537da539aeef9bb5033ddf3d7f862c424e7558d73",
+    "affected_actions": [
+      "attack-guard",
+      "attack-pirate",
+      "cleave",
+      "dragon-claw",
+      "enemy-sweep",
+      "infuse-chaos",
+      "infuse-earth",
+      "infuse-fire",
+      "infuse-ice",
+      "infuse-thunder",
+      "omnislash",
+      "poison-strike",
+      "royal-heavy",
+      "royal-strike"
+    ],
+    "separate_damage_event": false,
+    "contact_alignment_seconds_by_variant": {
+      "0": 0.023520833333333335,
+      "2": 0.012354166666666666,
+      "1": 0.016541666666666666,
+      "3": 0.013020833333333334
+    },
+    "omnislash_charge_and_final_unchanged_from_seconds": 4.35
+  }
 }

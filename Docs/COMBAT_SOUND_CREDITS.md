@@ -1,4 +1,4 @@
-# Sons de combate — fontes da seleção V3/V4
+# Sons de combate — fontes e histórico da seleção
 
 Edição aprovada pelo usuário: nove revisões V4 e demais masters V3. Fontes CC0. Os WAV instalados preservam os bytes aprovados; a conversão das prévias HQ MP3 para PCM não recupera informação perdida na compressão.
 
@@ -39,6 +39,25 @@ Edição aprovada pelo usuário: nove revisões V4 e demais masters V3. Fontes C
 O coração foi gravado por Andy Jack e publicado por JonasTisell. O cão Harvey Bird foi gravado por Frederick Bird (coldvet). O material de rochas de iwanPlays combina fontes CC0 de adamgryu (336023), AlanCat (389303) e spookymodem (202098).
 O Sword Hit de qubodup combina gravações CC0 de Christopherderp (364531) e JohnBuhr (326795, 326797, 326863, 326861). O Eagle.wav de Johnnie_Holiday já contém montagem e processamento de frequência, conforme a descrição original.
 
-Fênix usa somente águia e chama. Bahamut não contém vocalização de felino. Bastião começa com voz humana de batalha. Omnislash preserva a carga de 4,40 a 5,02 segundos e o impacto final em 5,32 segundos.
+A Fênix V4 usava águia e chama; a revisão atual está descrita abaixo. Bahamut não contém vocalização de felino. Bastião começa com voz humana de batalha. Omnislash preserva a carga de 4,40 a 5,02 segundos e o impacto final em 5,32 segundos.
 
 As janelas e materiais por efeito, hashes dos masters e medições anteriores à aprovação estão em CombatSoundManifest.json. A seleção por ação, aliases e mudo estão em CombatSoundSelection.json.
+
+## Revisões aprovadas V5–V10
+
+Provocar V5 usa o RAAAA humano sustentado de WelvynZPorterSamples (War Cry 1 WITHOUT reverb, 621342). Fênix V5 usa chamado prolongado de ave de rapina (gavião-de-cauda-vermelha de 1888software, 575525), mais fogo de kyles (453408). A espécie da gravação não é apresentada como águia.
+
+Lia V9 usa descarga elétrica de The_Chemical_Workshop e centelha de elliott.klein. Bahamut V10 acrescenta um feixe com bobina Tesla de Resaural e arco de solda de kyles ao estrondo grave V7, de BlueDelta (446753). Omnislash mantém a carga no ar e o ápice grave V8; os 12 contatos iniciais recebem a nova camada corporal.
+
+A camada de receber golpe V8 combina um soco em saco de pancada de NearTheAtmoshphere e contato de carne de EugeneEverett. Substitui os antigos impactos corporais dentro das composições; não cria um evento de dano adicional. Níveis das camadas e do conjunto foram equilibrados na renderização.
+
+- **body-punch** — NearTheAtmoshphere: [Freesound - Hit 6 by NearTheAtmoshphere](https://freesound.org/people/NearTheAtmoshphere/sounds/676466/). public player HQ MP3 preview. Licença CC0-1.0. SHA-256 `3649f20398c67761f8b13c6cd3be8aa6c081baf683437c5286d36973456ec0be`.
+- **discharge** — The_Chemical_Workshop: [Freesound - Taser/High Voltage discharge by The_Chemical_Workshop](https://freesound.org/people/The_Chemical_Workshop/sounds/403252/). public player HQ MP3 preview. Licença CC0-1.0. SHA-256 `b090ee16b3b8a5afd02480ecfcf3a3e705d3d6dec122e84858a5cada1a41a0e3`.
+- **flesh-hit** — EugeneEverett: [Freesound - Punch.wav by EugeneEverett](https://freesound.org/people/EugeneEverett/sounds/596483/). public player HQ MP3 preview. Licença CC0-1.0. SHA-256 `2b55679edabfa402b4e421792b7f1946ac49cfc86f484c2f750814815e5dab12`.
+- **raptor-away** — 1888software: [Freesound - red-tailed-hawk-flying-away.wav by 1888software](https://freesound.org/people/1888software/sounds/575525/). public player HQ MP3 preview. Licença CC0-1.0. SHA-256 `e0f8ed19c24924c1926fa30f13dd9920c0127bd7e7c9cb2f46e4fc78d7255e52`.
+- **raptor-call** — 1888software: [Freesound - red-tailed-hawk.wav by 1888software](https://freesound.org/people/1888software/sounds/575524/). public player HQ MP3 preview. Licença CC0-1.0. SHA-256 `e16d390a5e6554446556d3e5a1319741bf87d15b99c9ecd69df7f2db0621f5f9`.
+- **spark** — elliott.klein: [Freesound - Spark by elliott.klein](https://freesound.org/people/elliott.klein/sounds/189630/). public player HQ MP3 preview. Licença CC0-1.0. SHA-256 `73081928ac0a508c07d1dfd984ebc9e6418e516b8401f377bdc93174a77c1ac7`.
+- **tesla** — Resaural: [Freesound - Electric Zap Loop by Resaural](https://freesound.org/people/Resaural/sounds/531421/). public player HQ MP3 preview. Licença CC0-1.0. SHA-256 `55a0a915c025c98e2d133a51682950463ac1ace8ca0183c0eedd3d0f65149b25`.
+- **weld-arc** — kyles: [Freesound - welder sparks good detail1 short weld.flac by kyles](https://freesound.org/people/kyles/sounds/453689/). public player HQ MP3 preview. Licença CC0-1.0. SHA-256 `588657571e0b2ab01c878366d9f52346e4a9549d7d67564300e88c52efdd41ec`.
+
+Todos os downloads acima são os MP3 HQ públicos dos players, usados para edição; não são apresentados como arquivos originais sem perdas. Marcadores, ingredientes, hashes e níveis dos masters instalados estão em CombatSoundManifest.json.

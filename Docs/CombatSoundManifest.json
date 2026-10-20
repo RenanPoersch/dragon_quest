@@ -41,33 +41,33 @@
     "source": "attack",
     "actor": "lia",
     "element": null,
-    "duration": 0.6,
-    "sha256": "6ce02abf5f5491dae62452c35fa3b93919c28b4fa7b14246abc1cd96d3b2dd13",
-    "revision": 4,
-    "integrated_lufs": -23.178,
-    "true_peak_dbtp": -2.5,
+    "duration": 0.66,
+    "sha256": "1c7690d66849e2ab228d2acc8e3169fe4860f17d258cf9b0f1e775b1ddd1c098",
+    "revision": 9,
+    "integrated_lufs": -23.0,
+    "true_peak_dbtp": -4.21,
     "impact": 0.08,
     "hitTimes": [
       0.08
     ],
     "recordings": [
       {
-        "recording": "bamboo",
-        "start": 1.928,
-        "duration": 0.207,
-        "low_cut": 220,
-        "high_cut": 13500,
+        "recording": "discharge",
+        "start": 0.72,
+        "duration": 0.58,
+        "low_cut": 110,
+        "high_cut": 7400,
         "pitch": 1.0,
-        "revision": 4
+        "decay_after_seconds": 0.15,
+        "decay_time_constant_seconds": 0.17
       },
       {
-        "recording": "staff-hit",
-        "start": 1.808,
-        "duration": 0.177,
-        "low_cut": 100,
-        "high_cut": 11500,
-        "pitch": 1.0,
-        "revision": 4
+        "recording": "spark",
+        "start": 0,
+        "duration": 0.1707,
+        "low_cut": 280,
+        "high_cut": 10500,
+        "pitch": 1.0
       }
     ]
   },
@@ -173,10 +173,10 @@
     "actor": null,
     "element": null,
     "duration": 1.05,
-    "sha256": "fc28dd8f21e3290f89f7e6ce4d28831faaf0975221a0c6b0f2b0c5768f07da05",
-    "revision": 3,
+    "sha256": "a6c162b7fa17c8c8cc52db9ea0b6747e37cd6f4cbc9aa89fab3678f8122d16d0",
+    "revision": 8,
     "integrated_lufs": -23.0,
-    "true_peak_dbtp": -7.405,
+    "true_peak_dbtp": -2.641,
     "impact": 0.24,
     "hitTimes": [
       0.14,
@@ -189,16 +189,52 @@
         "pitch": 1.0
       },
       {
-        "recording": "v2-impacts",
-        "file": "impacts\\unpacked\\Audio\\impactPunch_heavy_000.ogg",
-        "duration": 0.4179,
-        "pitch": 1.0
+        "recording": "body-punch",
+        "start": 0.136,
+        "duration": 0.29,
+        "low_cut": 65,
+        "high_cut": 3500,
+        "pitch": 1.0,
+        "decay_after_seconds": 0.055,
+        "decay_time_constant_seconds": 0.085,
+        "approved_body_master_sha256": "6577f0a16eb659a7ffc7b8f537da539aeef9bb5033ddf3d7f862c424e7558d73",
+        "contact_alignment_seconds": 0.023520833333333335,
+        "revision": 8
       },
       {
-        "recording": "v2-impacts",
-        "file": "impacts\\unpacked\\Audio\\impactPunch_heavy_002.ogg",
-        "duration": 0.3205,
-        "pitch": 1.0
+        "recording": "flesh-hit",
+        "start": 0.058,
+        "duration": 0.16,
+        "low_cut": 120,
+        "high_cut": 8000,
+        "pitch": 1.0,
+        "approved_body_master_sha256": "6577f0a16eb659a7ffc7b8f537da539aeef9bb5033ddf3d7f862c424e7558d73",
+        "contact_alignment_seconds": 0.023520833333333335,
+        "revision": 8
+      },
+      {
+        "recording": "body-punch",
+        "start": 0.136,
+        "duration": 0.29,
+        "low_cut": 65,
+        "high_cut": 3500,
+        "pitch": 1.0,
+        "decay_after_seconds": 0.055,
+        "decay_time_constant_seconds": 0.085,
+        "approved_body_master_sha256": "6577f0a16eb659a7ffc7b8f537da539aeef9bb5033ddf3d7f862c424e7558d73",
+        "contact_alignment_seconds": 0.012354166666666666,
+        "revision": 8
+      },
+      {
+        "recording": "flesh-hit",
+        "start": 0.058,
+        "duration": 0.16,
+        "low_cut": 120,
+        "high_cut": 8000,
+        "pitch": 1.0,
+        "approved_body_master_sha256": "6577f0a16eb659a7ffc7b8f537da539aeef9bb5033ddf3d7f862c424e7558d73",
+        "contact_alignment_seconds": 0.012354166666666666,
+        "revision": 8
       },
       {
         "recording": "scrape",
@@ -208,7 +244,8 @@
         "high_cut": 15000,
         "pitch": 1.0
       }
-    ]
+    ],
+    "body_contact_revision": 8
   },
   {
     "id": "defend",
@@ -254,33 +291,23 @@
     "source": "taunt",
     "actor": null,
     "element": null,
-    "duration": 1.32,
-    "sha256": "93da0505a29f8026151d749b464f2648d5184a8376c5de7066ee8a4cd288e381",
-    "revision": 4,
+    "duration": 2.02,
+    "sha256": "bda6b22bc5b630072d9acbd6f13accc8618d07ab4df5e962b0cbc45c258dfa4c",
+    "revision": 5,
     "integrated_lufs": -23.0,
-    "true_peak_dbtp": -9.295,
-    "impact": 0.55,
+    "true_peak_dbtp": -16.717,
+    "impact": 0.1,
     "hitTimes": [
-      0.55
+      0.1
     ],
     "recordings": [
       {
-        "recording": "battlecry",
-        "start": 0.46799999999999997,
-        "duration": 0.85,
-        "low_cut": 110,
-        "high_cut": 11000,
-        "pitch": 1.0,
-        "revision": 4
-      },
-      {
-        "recording": "shield-hit",
-        "start": 0,
-        "duration": 0.7268,
-        "low_cut": 100,
-        "high_cut": 15000,
-        "pitch": 1.0,
-        "revision": 4
+        "recording": "warcry-dry",
+        "start": 1.33,
+        "duration": 1.86,
+        "low_cut": 75,
+        "high_cut": 14500,
+        "pitch": 1.0
       }
     ]
   },
@@ -645,10 +672,10 @@
     "actor": null,
     "element": "fire",
     "duration": 1.02,
-    "sha256": "bc565f590046aa5b8f9bb96644f841116a268780dfa66d30d2f8c71ca9c57142",
-    "revision": 3,
-    "integrated_lufs": -23.0,
-    "true_peak_dbtp": -5.215,
+    "sha256": "92789dd8654147f1de60384e58a2b4bf1d027dd4b03acc5cb406a09d67b852ae",
+    "revision": 8,
+    "integrated_lufs": -23.014,
+    "true_peak_dbtp": -2.5,
     "impact": 0.144,
     "hitTimes": [
       0.144
@@ -660,10 +687,28 @@
         "pitch": 1.0
       },
       {
-        "recording": "v2-impacts",
-        "file": "impacts\\unpacked\\Audio\\impactPunch_heavy_000.ogg",
-        "duration": 0.4179,
-        "pitch": 1.0
+        "recording": "body-punch",
+        "start": 0.136,
+        "duration": 0.29,
+        "low_cut": 65,
+        "high_cut": 3500,
+        "pitch": 1.0,
+        "decay_after_seconds": 0.055,
+        "decay_time_constant_seconds": 0.085,
+        "approved_body_master_sha256": "6577f0a16eb659a7ffc7b8f537da539aeef9bb5033ddf3d7f862c424e7558d73",
+        "contact_alignment_seconds": 0.023520833333333335,
+        "revision": 8
+      },
+      {
+        "recording": "flesh-hit",
+        "start": 0.058,
+        "duration": 0.16,
+        "low_cut": 120,
+        "high_cut": 8000,
+        "pitch": 1.0,
+        "approved_body_master_sha256": "6577f0a16eb659a7ffc7b8f537da539aeef9bb5033ddf3d7f862c424e7558d73",
+        "contact_alignment_seconds": 0.023520833333333335,
+        "revision": 8
       },
       {
         "recording": "scrape",
@@ -681,7 +726,8 @@
         "high_cut": 15000,
         "pitch": 1.0
       }
-    ]
+    ],
+    "body_contact_revision": 8
   },
   {
     "id": "infuse-ice",
@@ -690,10 +736,10 @@
     "actor": null,
     "element": "ice",
     "duration": 1.02,
-    "sha256": "30e137730329ffaaad7be14adf8b4c5697ec18c67559051852418f283396a4e9",
-    "revision": 3,
-    "integrated_lufs": -23.0,
-    "true_peak_dbtp": -5.495,
+    "sha256": "c3566b09bd85d064fa5008eb7c931372f98286d8bc11de0dd1daa7fd98ad14b4",
+    "revision": 8,
+    "integrated_lufs": -23.027,
+    "true_peak_dbtp": -2.5,
     "impact": 0.34,
     "hitTimes": [
       0.34
@@ -705,10 +751,28 @@
         "pitch": 1.0
       },
       {
-        "recording": "v2-impacts",
-        "file": "impacts\\unpacked\\Audio\\impactPunch_heavy_000.ogg",
-        "duration": 0.4179,
-        "pitch": 1.0
+        "recording": "body-punch",
+        "start": 0.136,
+        "duration": 0.29,
+        "low_cut": 65,
+        "high_cut": 3500,
+        "pitch": 1.0,
+        "decay_after_seconds": 0.055,
+        "decay_time_constant_seconds": 0.085,
+        "approved_body_master_sha256": "6577f0a16eb659a7ffc7b8f537da539aeef9bb5033ddf3d7f862c424e7558d73",
+        "contact_alignment_seconds": 0.023520833333333335,
+        "revision": 8
+      },
+      {
+        "recording": "flesh-hit",
+        "start": 0.058,
+        "duration": 0.16,
+        "low_cut": 120,
+        "high_cut": 8000,
+        "pitch": 1.0,
+        "approved_body_master_sha256": "6577f0a16eb659a7ffc7b8f537da539aeef9bb5033ddf3d7f862c424e7558d73",
+        "contact_alignment_seconds": 0.023520833333333335,
+        "revision": 8
       },
       {
         "recording": "scrape",
@@ -726,7 +790,8 @@
         "high_cut": 15000,
         "pitch": 1.0
       }
-    ]
+    ],
+    "body_contact_revision": 8
   },
   {
     "id": "infuse-thunder",
@@ -735,10 +800,10 @@
     "actor": null,
     "element": "thunder",
     "duration": 1.02,
-    "sha256": "f146d7a80b21db266eabc7ed1c2bf13ffd89c352d95dae770e3a0359c004e6d4",
-    "revision": 3,
-    "integrated_lufs": -23.0,
-    "true_peak_dbtp": -4.828,
+    "sha256": "4398bdf5fabe74247ed86d49776faa0e9768027e098eacb1c881fd7bc3deb1ae",
+    "revision": 8,
+    "integrated_lufs": -23.016,
+    "true_peak_dbtp": -2.5,
     "impact": 0.144,
     "hitTimes": [
       0.144
@@ -750,10 +815,28 @@
         "pitch": 1.0
       },
       {
-        "recording": "v2-impacts",
-        "file": "impacts\\unpacked\\Audio\\impactPunch_heavy_000.ogg",
-        "duration": 0.4179,
-        "pitch": 1.0
+        "recording": "body-punch",
+        "start": 0.136,
+        "duration": 0.29,
+        "low_cut": 65,
+        "high_cut": 3500,
+        "pitch": 1.0,
+        "decay_after_seconds": 0.055,
+        "decay_time_constant_seconds": 0.085,
+        "approved_body_master_sha256": "6577f0a16eb659a7ffc7b8f537da539aeef9bb5033ddf3d7f862c424e7558d73",
+        "contact_alignment_seconds": 0.023520833333333335,
+        "revision": 8
+      },
+      {
+        "recording": "flesh-hit",
+        "start": 0.058,
+        "duration": 0.16,
+        "low_cut": 120,
+        "high_cut": 8000,
+        "pitch": 1.0,
+        "approved_body_master_sha256": "6577f0a16eb659a7ffc7b8f537da539aeef9bb5033ddf3d7f862c424e7558d73",
+        "contact_alignment_seconds": 0.023520833333333335,
+        "revision": 8
       },
       {
         "recording": "scrape",
@@ -771,7 +854,8 @@
         "high_cut": 15000,
         "pitch": 1.0
       }
-    ]
+    ],
+    "body_contact_revision": 8
   },
   {
     "id": "infuse-earth",
@@ -780,10 +864,10 @@
     "actor": null,
     "element": "earth",
     "duration": 1.02,
-    "sha256": "ac941e8ad13002b82689d82c39344d6098a3f18eb97026d9d03a9496752bac28",
-    "revision": 3,
-    "integrated_lufs": -23.0,
-    "true_peak_dbtp": -5.805,
+    "sha256": "fac545bb5ccfca10b92461e7d0cf5b4bb461667ba8e34b5b0978f1b572f180b1",
+    "revision": 8,
+    "integrated_lufs": -23.023,
+    "true_peak_dbtp": -2.5,
     "impact": 0.144,
     "hitTimes": [
       0.144
@@ -795,10 +879,28 @@
         "pitch": 1.0
       },
       {
-        "recording": "v2-impacts",
-        "file": "impacts\\unpacked\\Audio\\impactPunch_heavy_000.ogg",
-        "duration": 0.4179,
-        "pitch": 1.0
+        "recording": "body-punch",
+        "start": 0.136,
+        "duration": 0.29,
+        "low_cut": 65,
+        "high_cut": 3500,
+        "pitch": 1.0,
+        "decay_after_seconds": 0.055,
+        "decay_time_constant_seconds": 0.085,
+        "approved_body_master_sha256": "6577f0a16eb659a7ffc7b8f537da539aeef9bb5033ddf3d7f862c424e7558d73",
+        "contact_alignment_seconds": 0.023520833333333335,
+        "revision": 8
+      },
+      {
+        "recording": "flesh-hit",
+        "start": 0.058,
+        "duration": 0.16,
+        "low_cut": 120,
+        "high_cut": 8000,
+        "pitch": 1.0,
+        "approved_body_master_sha256": "6577f0a16eb659a7ffc7b8f537da539aeef9bb5033ddf3d7f862c424e7558d73",
+        "contact_alignment_seconds": 0.023520833333333335,
+        "revision": 8
       },
       {
         "recording": "scrape",
@@ -816,7 +918,8 @@
         "high_cut": 15000,
         "pitch": 1.0
       }
-    ]
+    ],
+    "body_contact_revision": 8
   },
   {
     "id": "infuse-chaos",
@@ -825,10 +928,10 @@
     "actor": null,
     "element": "chaos",
     "duration": 1.02,
-    "sha256": "ae26374333d416acf6388625a6ee6384a0feb6e88913b2923cbcdba294ba1e6f",
-    "revision": 3,
-    "integrated_lufs": -23.0,
-    "true_peak_dbtp": -6.717,
+    "sha256": "272f75e71265c100737f3d7d83a27464e13e72839a653dfde8d6fc00a576f763",
+    "revision": 8,
+    "integrated_lufs": -23.015,
+    "true_peak_dbtp": -2.5,
     "impact": 0.144,
     "hitTimes": [
       0.144
@@ -840,10 +943,28 @@
         "pitch": 1.0
       },
       {
-        "recording": "v2-impacts",
-        "file": "impacts\\unpacked\\Audio\\impactPunch_heavy_000.ogg",
-        "duration": 0.4179,
-        "pitch": 1.0
+        "recording": "body-punch",
+        "start": 0.136,
+        "duration": 0.29,
+        "low_cut": 65,
+        "high_cut": 3500,
+        "pitch": 1.0,
+        "decay_after_seconds": 0.055,
+        "decay_time_constant_seconds": 0.085,
+        "approved_body_master_sha256": "6577f0a16eb659a7ffc7b8f537da539aeef9bb5033ddf3d7f862c424e7558d73",
+        "contact_alignment_seconds": 0.023520833333333335,
+        "revision": 8
+      },
+      {
+        "recording": "flesh-hit",
+        "start": 0.058,
+        "duration": 0.16,
+        "low_cut": 120,
+        "high_cut": 8000,
+        "pitch": 1.0,
+        "approved_body_master_sha256": "6577f0a16eb659a7ffc7b8f537da539aeef9bb5033ddf3d7f862c424e7558d73",
+        "contact_alignment_seconds": 0.023520833333333335,
+        "revision": 8
       },
       {
         "recording": "scrape",
@@ -861,7 +982,8 @@
         "high_cut": 5500,
         "pitch": 1.0
       }
-    ]
+    ],
+    "body_contact_revision": 8
   },
   {
     "id": "phoenix",
@@ -869,31 +991,30 @@
     "source": "summon",
     "actor": null,
     "element": null,
-    "duration": 2.85,
-    "sha256": "f392555777b1e28a4291fcf83096e539b77f03e87d969db82a58bd1d60bfd820",
-    "revision": 4,
+    "duration": 3.05,
+    "sha256": "e94a1ef7ef33d7c24499b172491148fe5f5dd2367c178f386c487f3c3b905727",
+    "revision": 5,
     "integrated_lufs": -23.0,
-    "true_peak_dbtp": -13.398,
-    "impact": 0.34,
+    "true_peak_dbtp": -10.239,
+    "impact": 0.53,
     "hitTimes": [
-      0.34
+      0.53
     ],
     "recordings": [
       {
-        "recording": "eagle-cry",
-        "start": 2.388,
-        "duration": 0.557,
-        "low_cut": 220,
-        "high_cut": 14000,
-        "pitch": 1.0,
-        "revision": 4
+        "recording": "raptor-away",
+        "source_duration": 1.486,
+        "tempo": 0.72,
+        "pitch_change": 0,
+        "tail_lift_limit_db": 10,
+        "result_duration": 2.0423
       },
       {
         "recording": "torch-raw",
         "start": 18.55,
-        "duration": 2.02,
+        "duration": 2.28,
         "low_cut": 95,
-        "high_cut": 13000,
+        "high_cut": 11000,
         "pitch": 1.0
       }
     ]
@@ -904,47 +1025,39 @@
     "source": "bahamut",
     "actor": null,
     "element": null,
-    "duration": 3.1,
-    "sha256": "16c84dc0d925a3710601d72201e9aff2d099ab031fd4d346367809e7141f37ad",
-    "revision": 4,
+    "duration": 3.93,
+    "sha256": "33a8494df7f5af48fa532c0468599999dcb92ec4286ac5b95f1ac0242bd94684",
+    "revision": 10,
     "integrated_lufs": -23.0,
-    "true_peak_dbtp": -9.732,
-    "impact": 1.05,
+    "true_peak_dbtp": -4.605,
+    "impact": 0.76,
     "hitTimes": [
-      1.05
+      0.76
     ],
     "recordings": [
       {
-        "recording": "torch-raw",
-        "start": 31.3,
-        "duration": 1.12,
-        "low_cut": 65,
-        "high_cut": 1800,
+        "recording": "tesla",
+        "start": 1.1,
+        "duration": 1.04,
+        "low_cut": 100,
+        "high_cut": 3100,
+        "pitch": 1.0,
+        "speed": 0.85
+      },
+      {
+        "recording": "weld-arc",
+        "start": 0.12,
+        "duration": 1.14,
+        "low_cut": 420,
+        "high_cut": 8200,
         "pitch": 1.0
       },
       {
-        "recording": "gas",
-        "start": 1.4,
-        "duration": 1.9,
-        "low_cut": 110,
-        "high_cut": 14500,
-        "pitch": 1.0
-      },
-      {
-        "recording": "thunder",
-        "start": 1.0,
-        "duration": 2.0,
-        "low_cut": 38,
-        "high_cut": 3200,
-        "pitch": 1.0
-      },
-      {
-        "recording": "rough-metal",
-        "start": 0,
-        "duration": 0.7,
-        "low_cut": 180,
-        "high_cut": 6200,
-        "pitch": 1.0
+        "recording": "pending-v7-bahamut-blast",
+        "at": 0.68,
+        "source_duration": 3.25,
+        "sha256": "9b6eedcdbf766aa66973144988c2b112fb507e15bf9a0a4bbe34d2acad260a05",
+        "timbre_and_decay_preserved": true
       }
     ]
   },
@@ -1009,308 +1122,496 @@
     "actor": "aren",
     "element": null,
     "duration": 6.3,
-    "sha256": "8c05a4dcd72573b189e5d09a12b747c66a5771e3ac5744f90b3e3f0598a6506b",
-    "revision": 4,
+    "sha256": "127812660bc941d695648b9b33ee3961cc51b3254be51ca2afba71dba78e1b2a",
+    "revision": 8,
     "integrated_lufs": -23.0,
-    "true_peak_dbtp": -6.509,
+    "true_peak_dbtp": -4.423,
     "impact": 5.32,
     "hitTimes": [
-      1.15,
-      1.37,
-      1.59,
-      1.81,
-      2.03,
-      2.25,
-      2.47,
-      2.69,
-      2.91,
-      3.13,
-      3.35,
-      3.57,
       5.32
     ],
     "recordings": [
       {
-        "recording": "sword-draw",
-        "start": 0,
-        "duration": 0.7,
-        "low_cut": 35,
-        "high_cut": 15000,
-        "pitch": 1.0
+        "recording": "approved-v8-omnislash",
+        "unchanged_ranges_seconds": [
+          [
+            0,
+            1.045
+          ],
+          [
+            4.35,
+            6.3
+          ]
+        ],
+        "source_master_sha256": "5bbb69ea067356a0a997a66b267efb4a2a5a490e0b0a115a4ae1f305f6cb4127"
       },
       {
-        "recording": "swishes",
-        "file": "swish-1.wav",
-        "pitch": 1.0
-      },
-      {
-        "recording": "v2-impacts",
-        "file": "impacts\\unpacked\\Audio\\impactPunch_heavy_000.ogg",
-        "duration": 0.4179,
-        "pitch": 1.0
-      },
-      {
-        "recording": "scrape",
-        "start": 0.19,
-        "duration": 0.22,
-        "low_cut": 160,
-        "high_cut": 15000,
-        "pitch": 1.0
-      },
-      {
-        "recording": "swishes",
-        "file": "swish-4.wav",
-        "pitch": 1.0
-      },
-      {
-        "recording": "v2-impacts",
-        "file": "impacts\\unpacked\\Audio\\impactPunch_heavy_001.ogg",
-        "duration": 0.3544,
-        "pitch": 1.0
-      },
-      {
-        "recording": "scrape",
-        "start": 0.23,
-        "duration": 0.22,
-        "low_cut": 160,
-        "high_cut": 15000,
-        "pitch": 1.0
-      },
-      {
-        "recording": "swishes",
-        "file": "swish-6.wav",
-        "pitch": 1.0
-      },
-      {
-        "recording": "v2-impacts",
-        "file": "impacts\\unpacked\\Audio\\impactPunch_heavy_002.ogg",
-        "duration": 0.3205,
-        "pitch": 1.0
-      },
-      {
-        "recording": "scrape",
-        "start": 0.27,
-        "duration": 0.22,
-        "low_cut": 160,
-        "high_cut": 15000,
-        "pitch": 1.0
-      },
-      {
-        "recording": "swishes",
-        "file": "swish-1.wav",
-        "pitch": 1.0
-      },
-      {
-        "recording": "v2-impacts",
-        "file": "impacts\\unpacked\\Audio\\impactPunch_heavy_000.ogg",
-        "duration": 0.4179,
-        "pitch": 1.0
-      },
-      {
-        "recording": "scrape",
-        "start": 0.19,
-        "duration": 0.22,
-        "low_cut": 160,
-        "high_cut": 15000,
-        "pitch": 1.0
-      },
-      {
-        "recording": "swishes",
-        "file": "swish-4.wav",
-        "pitch": 1.0
-      },
-      {
-        "recording": "v2-impacts",
-        "file": "impacts\\unpacked\\Audio\\impactPunch_heavy_001.ogg",
-        "duration": 0.3544,
-        "pitch": 1.0
-      },
-      {
-        "recording": "scrape",
-        "start": 0.23,
-        "duration": 0.22,
-        "low_cut": 160,
-        "high_cut": 15000,
-        "pitch": 1.0
-      },
-      {
-        "recording": "swishes",
-        "file": "swish-6.wav",
-        "pitch": 1.0
-      },
-      {
-        "recording": "v2-impacts",
-        "file": "impacts\\unpacked\\Audio\\impactPunch_heavy_002.ogg",
-        "duration": 0.3205,
-        "pitch": 1.0
-      },
-      {
-        "recording": "scrape",
-        "start": 0.27,
-        "duration": 0.22,
-        "low_cut": 160,
-        "high_cut": 15000,
-        "pitch": 1.0
-      },
-      {
-        "recording": "swishes",
-        "file": "swish-1.wav",
-        "pitch": 1.0
-      },
-      {
-        "recording": "v2-impacts",
-        "file": "impacts\\unpacked\\Audio\\impactPunch_heavy_000.ogg",
-        "duration": 0.4179,
-        "pitch": 1.0
-      },
-      {
-        "recording": "scrape",
-        "start": 0.19,
-        "duration": 0.22,
-        "low_cut": 160,
-        "high_cut": 15000,
-        "pitch": 1.0
-      },
-      {
-        "recording": "swishes",
-        "file": "swish-4.wav",
-        "pitch": 1.0
-      },
-      {
-        "recording": "v2-impacts",
-        "file": "impacts\\unpacked\\Audio\\impactPunch_heavy_001.ogg",
-        "duration": 0.3544,
-        "pitch": 1.0
-      },
-      {
-        "recording": "scrape",
-        "start": 0.23,
-        "duration": 0.22,
-        "low_cut": 160,
-        "high_cut": 15000,
-        "pitch": 1.0
-      },
-      {
-        "recording": "swishes",
-        "file": "swish-6.wav",
-        "pitch": 1.0
-      },
-      {
-        "recording": "v2-impacts",
-        "file": "impacts\\unpacked\\Audio\\impactPunch_heavy_002.ogg",
-        "duration": 0.3205,
-        "pitch": 1.0
-      },
-      {
-        "recording": "scrape",
-        "start": 0.27,
-        "duration": 0.22,
-        "low_cut": 160,
-        "high_cut": 15000,
-        "pitch": 1.0
-      },
-      {
-        "recording": "swishes",
-        "file": "swish-1.wav",
-        "pitch": 1.0
-      },
-      {
-        "recording": "v2-impacts",
-        "file": "impacts\\unpacked\\Audio\\impactPunch_heavy_000.ogg",
-        "duration": 0.4179,
-        "pitch": 1.0
-      },
-      {
-        "recording": "scrape",
-        "start": 0.19,
-        "duration": 0.22,
-        "low_cut": 160,
-        "high_cut": 15000,
-        "pitch": 1.0
-      },
-      {
-        "recording": "swishes",
-        "file": "swish-4.wav",
-        "pitch": 1.0
-      },
-      {
-        "recording": "v2-impacts",
-        "file": "impacts\\unpacked\\Audio\\impactPunch_heavy_001.ogg",
-        "duration": 0.3544,
-        "pitch": 1.0
-      },
-      {
-        "recording": "scrape",
-        "start": 0.23,
-        "duration": 0.22,
-        "low_cut": 160,
-        "high_cut": 15000,
-        "pitch": 1.0
-      },
-      {
-        "recording": "swishes",
-        "file": "swish-6.wav",
-        "pitch": 1.0
-      },
-      {
-        "recording": "v2-impacts",
-        "file": "impacts\\unpacked\\Audio\\impactPunch_heavy_002.ogg",
-        "duration": 0.3205,
-        "pitch": 1.0
-      },
-      {
-        "recording": "scrape",
-        "start": 0.27,
-        "duration": 0.22,
-        "low_cut": 160,
-        "high_cut": 15000,
-        "pitch": 1.0
-      },
-      {
-        "recording": "swishes",
-        "file": "swish-11.wav",
-        "pitch": 1.0
-      },
-      {
-        "recording": "swishes",
-        "file": "swish-12.wav",
-        "pitch": 1.0
-      },
-      {
-        "recording": "v2-impacts",
-        "file": "impacts\\unpacked\\Audio\\impactPunch_heavy_003.ogg",
-        "duration": 0.324,
-        "pitch": 1.0
-      },
-      {
-        "recording": "v2-impacts",
-        "file": "impacts\\unpacked\\Audio\\impactMetal_heavy_003.ogg",
-        "duration": 0.2069,
-        "pitch": 1.0
-      },
-      {
-        "recording": "v2-foley",
-        "file": "foley\\unpacked\\RPG Sound Pack\\inventory\\cloth-heavy.wav",
-        "duration": 0.2931,
-        "pitch": 1.0
-      },
-      {
-        "recording": "gas",
-        "start": 2.45,
-        "duration": 0.62,
-        "low_cut": 170,
-        "high_cut": 11000,
-        "pitch": 1.0
-      },
-      {
-        "recording": "bowl-rim",
-        "start": 47.1,
-        "duration": 0.62,
-        "low_cut": 300,
-        "high_cut": 4800,
-        "pitch": 1.0
+        "recording": "twelve-contact-body-replacement",
+        "start": 1.045,
+        "end": 4.35,
+        "revision": 8,
+        "parts": [
+          {
+            "recording": "sword-draw",
+            "start": 0,
+            "duration": 0.7,
+            "low_cut": 35,
+            "high_cut": 15000,
+            "pitch": 1.0
+          },
+          {
+            "recording": "swishes",
+            "file": "swish-1.wav",
+            "pitch": 1.0
+          },
+          {
+            "recording": "body-punch",
+            "start": 0.136,
+            "duration": 0.29,
+            "low_cut": 65,
+            "high_cut": 3500,
+            "pitch": 1.0,
+            "decay_after_seconds": 0.055,
+            "decay_time_constant_seconds": 0.085,
+            "approved_body_master_sha256": "6577f0a16eb659a7ffc7b8f537da539aeef9bb5033ddf3d7f862c424e7558d73",
+            "contact_alignment_seconds": 0.023520833333333335,
+            "revision": 8
+          },
+          {
+            "recording": "flesh-hit",
+            "start": 0.058,
+            "duration": 0.16,
+            "low_cut": 120,
+            "high_cut": 8000,
+            "pitch": 1.0,
+            "approved_body_master_sha256": "6577f0a16eb659a7ffc7b8f537da539aeef9bb5033ddf3d7f862c424e7558d73",
+            "contact_alignment_seconds": 0.023520833333333335,
+            "revision": 8
+          },
+          {
+            "recording": "scrape",
+            "start": 0.19,
+            "duration": 0.22,
+            "low_cut": 160,
+            "high_cut": 15000,
+            "pitch": 1.0
+          },
+          {
+            "recording": "swishes",
+            "file": "swish-4.wav",
+            "pitch": 1.0
+          },
+          {
+            "recording": "body-punch",
+            "start": 0.136,
+            "duration": 0.29,
+            "low_cut": 65,
+            "high_cut": 3500,
+            "pitch": 1.0,
+            "decay_after_seconds": 0.055,
+            "decay_time_constant_seconds": 0.085,
+            "approved_body_master_sha256": "6577f0a16eb659a7ffc7b8f537da539aeef9bb5033ddf3d7f862c424e7558d73",
+            "contact_alignment_seconds": 0.016541666666666666,
+            "revision": 8
+          },
+          {
+            "recording": "flesh-hit",
+            "start": 0.058,
+            "duration": 0.16,
+            "low_cut": 120,
+            "high_cut": 8000,
+            "pitch": 1.0,
+            "approved_body_master_sha256": "6577f0a16eb659a7ffc7b8f537da539aeef9bb5033ddf3d7f862c424e7558d73",
+            "contact_alignment_seconds": 0.016541666666666666,
+            "revision": 8
+          },
+          {
+            "recording": "scrape",
+            "start": 0.23,
+            "duration": 0.22,
+            "low_cut": 160,
+            "high_cut": 15000,
+            "pitch": 1.0
+          },
+          {
+            "recording": "swishes",
+            "file": "swish-6.wav",
+            "pitch": 1.0
+          },
+          {
+            "recording": "body-punch",
+            "start": 0.136,
+            "duration": 0.29,
+            "low_cut": 65,
+            "high_cut": 3500,
+            "pitch": 1.0,
+            "decay_after_seconds": 0.055,
+            "decay_time_constant_seconds": 0.085,
+            "approved_body_master_sha256": "6577f0a16eb659a7ffc7b8f537da539aeef9bb5033ddf3d7f862c424e7558d73",
+            "contact_alignment_seconds": 0.012354166666666666,
+            "revision": 8
+          },
+          {
+            "recording": "flesh-hit",
+            "start": 0.058,
+            "duration": 0.16,
+            "low_cut": 120,
+            "high_cut": 8000,
+            "pitch": 1.0,
+            "approved_body_master_sha256": "6577f0a16eb659a7ffc7b8f537da539aeef9bb5033ddf3d7f862c424e7558d73",
+            "contact_alignment_seconds": 0.012354166666666666,
+            "revision": 8
+          },
+          {
+            "recording": "scrape",
+            "start": 0.27,
+            "duration": 0.22,
+            "low_cut": 160,
+            "high_cut": 15000,
+            "pitch": 1.0
+          },
+          {
+            "recording": "swishes",
+            "file": "swish-1.wav",
+            "pitch": 1.0
+          },
+          {
+            "recording": "body-punch",
+            "start": 0.136,
+            "duration": 0.29,
+            "low_cut": 65,
+            "high_cut": 3500,
+            "pitch": 1.0,
+            "decay_after_seconds": 0.055,
+            "decay_time_constant_seconds": 0.085,
+            "approved_body_master_sha256": "6577f0a16eb659a7ffc7b8f537da539aeef9bb5033ddf3d7f862c424e7558d73",
+            "contact_alignment_seconds": 0.023520833333333335,
+            "revision": 8
+          },
+          {
+            "recording": "flesh-hit",
+            "start": 0.058,
+            "duration": 0.16,
+            "low_cut": 120,
+            "high_cut": 8000,
+            "pitch": 1.0,
+            "approved_body_master_sha256": "6577f0a16eb659a7ffc7b8f537da539aeef9bb5033ddf3d7f862c424e7558d73",
+            "contact_alignment_seconds": 0.023520833333333335,
+            "revision": 8
+          },
+          {
+            "recording": "scrape",
+            "start": 0.19,
+            "duration": 0.22,
+            "low_cut": 160,
+            "high_cut": 15000,
+            "pitch": 1.0
+          },
+          {
+            "recording": "swishes",
+            "file": "swish-4.wav",
+            "pitch": 1.0
+          },
+          {
+            "recording": "body-punch",
+            "start": 0.136,
+            "duration": 0.29,
+            "low_cut": 65,
+            "high_cut": 3500,
+            "pitch": 1.0,
+            "decay_after_seconds": 0.055,
+            "decay_time_constant_seconds": 0.085,
+            "approved_body_master_sha256": "6577f0a16eb659a7ffc7b8f537da539aeef9bb5033ddf3d7f862c424e7558d73",
+            "contact_alignment_seconds": 0.016541666666666666,
+            "revision": 8
+          },
+          {
+            "recording": "flesh-hit",
+            "start": 0.058,
+            "duration": 0.16,
+            "low_cut": 120,
+            "high_cut": 8000,
+            "pitch": 1.0,
+            "approved_body_master_sha256": "6577f0a16eb659a7ffc7b8f537da539aeef9bb5033ddf3d7f862c424e7558d73",
+            "contact_alignment_seconds": 0.016541666666666666,
+            "revision": 8
+          },
+          {
+            "recording": "scrape",
+            "start": 0.23,
+            "duration": 0.22,
+            "low_cut": 160,
+            "high_cut": 15000,
+            "pitch": 1.0
+          },
+          {
+            "recording": "swishes",
+            "file": "swish-6.wav",
+            "pitch": 1.0
+          },
+          {
+            "recording": "body-punch",
+            "start": 0.136,
+            "duration": 0.29,
+            "low_cut": 65,
+            "high_cut": 3500,
+            "pitch": 1.0,
+            "decay_after_seconds": 0.055,
+            "decay_time_constant_seconds": 0.085,
+            "approved_body_master_sha256": "6577f0a16eb659a7ffc7b8f537da539aeef9bb5033ddf3d7f862c424e7558d73",
+            "contact_alignment_seconds": 0.012354166666666666,
+            "revision": 8
+          },
+          {
+            "recording": "flesh-hit",
+            "start": 0.058,
+            "duration": 0.16,
+            "low_cut": 120,
+            "high_cut": 8000,
+            "pitch": 1.0,
+            "approved_body_master_sha256": "6577f0a16eb659a7ffc7b8f537da539aeef9bb5033ddf3d7f862c424e7558d73",
+            "contact_alignment_seconds": 0.012354166666666666,
+            "revision": 8
+          },
+          {
+            "recording": "scrape",
+            "start": 0.27,
+            "duration": 0.22,
+            "low_cut": 160,
+            "high_cut": 15000,
+            "pitch": 1.0
+          },
+          {
+            "recording": "swishes",
+            "file": "swish-1.wav",
+            "pitch": 1.0
+          },
+          {
+            "recording": "body-punch",
+            "start": 0.136,
+            "duration": 0.29,
+            "low_cut": 65,
+            "high_cut": 3500,
+            "pitch": 1.0,
+            "decay_after_seconds": 0.055,
+            "decay_time_constant_seconds": 0.085,
+            "approved_body_master_sha256": "6577f0a16eb659a7ffc7b8f537da539aeef9bb5033ddf3d7f862c424e7558d73",
+            "contact_alignment_seconds": 0.023520833333333335,
+            "revision": 8
+          },
+          {
+            "recording": "flesh-hit",
+            "start": 0.058,
+            "duration": 0.16,
+            "low_cut": 120,
+            "high_cut": 8000,
+            "pitch": 1.0,
+            "approved_body_master_sha256": "6577f0a16eb659a7ffc7b8f537da539aeef9bb5033ddf3d7f862c424e7558d73",
+            "contact_alignment_seconds": 0.023520833333333335,
+            "revision": 8
+          },
+          {
+            "recording": "scrape",
+            "start": 0.19,
+            "duration": 0.22,
+            "low_cut": 160,
+            "high_cut": 15000,
+            "pitch": 1.0
+          },
+          {
+            "recording": "swishes",
+            "file": "swish-4.wav",
+            "pitch": 1.0
+          },
+          {
+            "recording": "body-punch",
+            "start": 0.136,
+            "duration": 0.29,
+            "low_cut": 65,
+            "high_cut": 3500,
+            "pitch": 1.0,
+            "decay_after_seconds": 0.055,
+            "decay_time_constant_seconds": 0.085,
+            "approved_body_master_sha256": "6577f0a16eb659a7ffc7b8f537da539aeef9bb5033ddf3d7f862c424e7558d73",
+            "contact_alignment_seconds": 0.016541666666666666,
+            "revision": 8
+          },
+          {
+            "recording": "flesh-hit",
+            "start": 0.058,
+            "duration": 0.16,
+            "low_cut": 120,
+            "high_cut": 8000,
+            "pitch": 1.0,
+            "approved_body_master_sha256": "6577f0a16eb659a7ffc7b8f537da539aeef9bb5033ddf3d7f862c424e7558d73",
+            "contact_alignment_seconds": 0.016541666666666666,
+            "revision": 8
+          },
+          {
+            "recording": "scrape",
+            "start": 0.23,
+            "duration": 0.22,
+            "low_cut": 160,
+            "high_cut": 15000,
+            "pitch": 1.0
+          },
+          {
+            "recording": "swishes",
+            "file": "swish-6.wav",
+            "pitch": 1.0
+          },
+          {
+            "recording": "body-punch",
+            "start": 0.136,
+            "duration": 0.29,
+            "low_cut": 65,
+            "high_cut": 3500,
+            "pitch": 1.0,
+            "decay_after_seconds": 0.055,
+            "decay_time_constant_seconds": 0.085,
+            "approved_body_master_sha256": "6577f0a16eb659a7ffc7b8f537da539aeef9bb5033ddf3d7f862c424e7558d73",
+            "contact_alignment_seconds": 0.012354166666666666,
+            "revision": 8
+          },
+          {
+            "recording": "flesh-hit",
+            "start": 0.058,
+            "duration": 0.16,
+            "low_cut": 120,
+            "high_cut": 8000,
+            "pitch": 1.0,
+            "approved_body_master_sha256": "6577f0a16eb659a7ffc7b8f537da539aeef9bb5033ddf3d7f862c424e7558d73",
+            "contact_alignment_seconds": 0.012354166666666666,
+            "revision": 8
+          },
+          {
+            "recording": "scrape",
+            "start": 0.27,
+            "duration": 0.22,
+            "low_cut": 160,
+            "high_cut": 15000,
+            "pitch": 1.0
+          },
+          {
+            "recording": "swishes",
+            "file": "swish-1.wav",
+            "pitch": 1.0
+          },
+          {
+            "recording": "body-punch",
+            "start": 0.136,
+            "duration": 0.29,
+            "low_cut": 65,
+            "high_cut": 3500,
+            "pitch": 1.0,
+            "decay_after_seconds": 0.055,
+            "decay_time_constant_seconds": 0.085,
+            "approved_body_master_sha256": "6577f0a16eb659a7ffc7b8f537da539aeef9bb5033ddf3d7f862c424e7558d73",
+            "contact_alignment_seconds": 0.023520833333333335,
+            "revision": 8
+          },
+          {
+            "recording": "flesh-hit",
+            "start": 0.058,
+            "duration": 0.16,
+            "low_cut": 120,
+            "high_cut": 8000,
+            "pitch": 1.0,
+            "approved_body_master_sha256": "6577f0a16eb659a7ffc7b8f537da539aeef9bb5033ddf3d7f862c424e7558d73",
+            "contact_alignment_seconds": 0.023520833333333335,
+            "revision": 8
+          },
+          {
+            "recording": "scrape",
+            "start": 0.19,
+            "duration": 0.22,
+            "low_cut": 160,
+            "high_cut": 15000,
+            "pitch": 1.0
+          },
+          {
+            "recording": "swishes",
+            "file": "swish-4.wav",
+            "pitch": 1.0
+          },
+          {
+            "recording": "body-punch",
+            "start": 0.136,
+            "duration": 0.29,
+            "low_cut": 65,
+            "high_cut": 3500,
+            "pitch": 1.0,
+            "decay_after_seconds": 0.055,
+            "decay_time_constant_seconds": 0.085,
+            "approved_body_master_sha256": "6577f0a16eb659a7ffc7b8f537da539aeef9bb5033ddf3d7f862c424e7558d73",
+            "contact_alignment_seconds": 0.016541666666666666,
+            "revision": 8
+          },
+          {
+            "recording": "flesh-hit",
+            "start": 0.058,
+            "duration": 0.16,
+            "low_cut": 120,
+            "high_cut": 8000,
+            "pitch": 1.0,
+            "approved_body_master_sha256": "6577f0a16eb659a7ffc7b8f537da539aeef9bb5033ddf3d7f862c424e7558d73",
+            "contact_alignment_seconds": 0.016541666666666666,
+            "revision": 8
+          },
+          {
+            "recording": "scrape",
+            "start": 0.23,
+            "duration": 0.22,
+            "low_cut": 160,
+            "high_cut": 15000,
+            "pitch": 1.0
+          },
+          {
+            "recording": "swishes",
+            "file": "swish-6.wav",
+            "pitch": 1.0
+          },
+          {
+            "recording": "body-punch",
+            "start": 0.136,
+            "duration": 0.29,
+            "low_cut": 65,
+            "high_cut": 3500,
+            "pitch": 1.0,
+            "decay_after_seconds": 0.055,
+            "decay_time_constant_seconds": 0.085,
+            "approved_body_master_sha256": "6577f0a16eb659a7ffc7b8f537da539aeef9bb5033ddf3d7f862c424e7558d73",
+            "contact_alignment_seconds": 0.012354166666666666,
+            "revision": 8
+          },
+          {
+            "recording": "flesh-hit",
+            "start": 0.058,
+            "duration": 0.16,
+            "low_cut": 120,
+            "high_cut": 8000,
+            "pitch": 1.0,
+            "approved_body_master_sha256": "6577f0a16eb659a7ffc7b8f537da539aeef9bb5033ddf3d7f862c424e7558d73",
+            "contact_alignment_seconds": 0.012354166666666666,
+            "revision": 8
+          },
+          {
+            "recording": "scrape",
+            "start": 0.27,
+            "duration": 0.22,
+            "low_cut": 160,
+            "high_cut": 15000,
+            "pitch": 1.0
+          },
+          {
+            "recording": "swishes",
+            "file": "swish-11.wav",
+            "pitch": 1.0
+          }
+        ]
       }
-    ]
+    ],
+    "body_contact_revision": 8
   },
   {
     "id": "lia-salvation",
@@ -1436,8 +1737,8 @@
     "actor": "guard/soldier",
     "element": null,
     "duration": 0.8,
-    "sha256": "70be86787d39588a4348d4c7ee428cc4b74e07ccec7e2f7028f12838843fda2e",
-    "revision": 3,
+    "sha256": "28097e4d5a1e59a79909b0c2e31755fa1f4ef07b3a27a150e84d3bd87015d57d",
+    "revision": 8,
     "integrated_lufs": -23.0,
     "true_peak_dbtp": -5.341,
     "impact": 0.115,
@@ -1457,12 +1758,31 @@
         "pitch": 1.0
       },
       {
-        "recording": "v2-impacts",
-        "file": "impacts\\unpacked\\Audio\\impactPunch_heavy_001.ogg",
-        "duration": 0.3544,
-        "pitch": 1.0
+        "recording": "body-punch",
+        "start": 0.136,
+        "duration": 0.29,
+        "low_cut": 65,
+        "high_cut": 3500,
+        "pitch": 1.0,
+        "decay_after_seconds": 0.055,
+        "decay_time_constant_seconds": 0.085,
+        "approved_body_master_sha256": "6577f0a16eb659a7ffc7b8f537da539aeef9bb5033ddf3d7f862c424e7558d73",
+        "contact_alignment_seconds": 0.016541666666666666,
+        "revision": 8
+      },
+      {
+        "recording": "flesh-hit",
+        "start": 0.058,
+        "duration": 0.16,
+        "low_cut": 120,
+        "high_cut": 8000,
+        "pitch": 1.0,
+        "approved_body_master_sha256": "6577f0a16eb659a7ffc7b8f537da539aeef9bb5033ddf3d7f862c424e7558d73",
+        "contact_alignment_seconds": 0.016541666666666666,
+        "revision": 8
       }
-    ]
+    ],
+    "body_contact_revision": 8
   },
   {
     "id": "attack-pirate",
@@ -1471,10 +1791,10 @@
     "actor": "pirate",
     "element": null,
     "duration": 0.68,
-    "sha256": "31e7feef31d075b9ed7d5471d4c19d0d95022dec3363e65fcdbb06232b547a21",
-    "revision": 3,
+    "sha256": "07f52401fea2171a81b26c1e6c66347839364dfbca9a1a77bfbd7cf37e1b31c5",
+    "revision": 8,
     "integrated_lufs": -23.0,
-    "true_peak_dbtp": -6.48,
+    "true_peak_dbtp": -3.354,
     "impact": 0.114,
     "hitTimes": [
       0.114
@@ -1486,10 +1806,28 @@
         "pitch": 1.0
       },
       {
-        "recording": "v2-impacts",
-        "file": "impacts\\unpacked\\Audio\\impactPunch_heavy_000.ogg",
-        "duration": 0.4179,
-        "pitch": 1.0
+        "recording": "body-punch",
+        "start": 0.136,
+        "duration": 0.29,
+        "low_cut": 65,
+        "high_cut": 3500,
+        "pitch": 1.0,
+        "decay_after_seconds": 0.055,
+        "decay_time_constant_seconds": 0.085,
+        "approved_body_master_sha256": "6577f0a16eb659a7ffc7b8f537da539aeef9bb5033ddf3d7f862c424e7558d73",
+        "contact_alignment_seconds": 0.023520833333333335,
+        "revision": 8
+      },
+      {
+        "recording": "flesh-hit",
+        "start": 0.058,
+        "duration": 0.16,
+        "low_cut": 120,
+        "high_cut": 8000,
+        "pitch": 1.0,
+        "approved_body_master_sha256": "6577f0a16eb659a7ffc7b8f537da539aeef9bb5033ddf3d7f862c424e7558d73",
+        "contact_alignment_seconds": 0.023520833333333335,
+        "revision": 8
       },
       {
         "recording": "rough-metal",
@@ -1499,7 +1837,8 @@
         "high_cut": 15000,
         "pitch": 1.0
       }
-    ]
+    ],
+    "body_contact_revision": 8
   },
   {
     "id": "attack-wolf",
@@ -1586,10 +1925,10 @@
     "actor": null,
     "element": null,
     "duration": 1.0,
-    "sha256": "96567f6c6b3e6adfb2f0e1fbb53d70c49f1b3b919f00f97f5ddbfab1870cdfa8",
-    "revision": 3,
-    "integrated_lufs": -23.0,
-    "true_peak_dbtp": -5.571,
+    "sha256": "5b248448a96c56b9106167bc1dfc551b20369d6d40ea4362fb11ac086a9060b1",
+    "revision": 8,
+    "integrated_lufs": -23.021,
+    "true_peak_dbtp": -2.5,
     "impact": 0.114,
     "hitTimes": [
       0.114
@@ -1601,10 +1940,28 @@
         "pitch": 1.0
       },
       {
-        "recording": "v2-impacts",
-        "file": "impacts\\unpacked\\Audio\\impactPunch_heavy_000.ogg",
-        "duration": 0.4179,
-        "pitch": 1.0
+        "recording": "body-punch",
+        "start": 0.136,
+        "duration": 0.29,
+        "low_cut": 65,
+        "high_cut": 3500,
+        "pitch": 1.0,
+        "decay_after_seconds": 0.055,
+        "decay_time_constant_seconds": 0.085,
+        "approved_body_master_sha256": "6577f0a16eb659a7ffc7b8f537da539aeef9bb5033ddf3d7f862c424e7558d73",
+        "contact_alignment_seconds": 0.023520833333333335,
+        "revision": 8
+      },
+      {
+        "recording": "flesh-hit",
+        "start": 0.058,
+        "duration": 0.16,
+        "low_cut": 120,
+        "high_cut": 8000,
+        "pitch": 1.0,
+        "approved_body_master_sha256": "6577f0a16eb659a7ffc7b8f537da539aeef9bb5033ddf3d7f862c424e7558d73",
+        "contact_alignment_seconds": 0.023520833333333335,
+        "revision": 8
       },
       {
         "recording": "rough-metal",
@@ -1622,7 +1979,8 @@
         "high_cut": 6500,
         "pitch": 1.0
       }
-    ]
+    ],
+    "body_contact_revision": 8
   },
   {
     "id": "enemy-sweep",
@@ -1631,10 +1989,10 @@
     "actor": null,
     "element": null,
     "duration": 1.0,
-    "sha256": "a34e3bb72ec21751d56d7d2e5f5aaeded3701a598d57e8404cdc805728b1b3b9",
-    "revision": 3,
-    "integrated_lufs": -23.0,
-    "true_peak_dbtp": -6.948,
+    "sha256": "a3d67abe67bc93c2bb85a31ddc88579301a5af941c43f5c547c6a007b0207cbc",
+    "revision": 8,
+    "integrated_lufs": -23.024,
+    "true_peak_dbtp": -2.5,
     "impact": 0.25,
     "hitTimes": [
       0.14,
@@ -1647,10 +2005,28 @@
         "pitch": 1.0
       },
       {
-        "recording": "v2-impacts",
-        "file": "impacts\\unpacked\\Audio\\impactPunch_heavy_000.ogg",
-        "duration": 0.4179,
-        "pitch": 1.0
+        "recording": "body-punch",
+        "start": 0.136,
+        "duration": 0.29,
+        "low_cut": 65,
+        "high_cut": 3500,
+        "pitch": 1.0,
+        "decay_after_seconds": 0.055,
+        "decay_time_constant_seconds": 0.085,
+        "approved_body_master_sha256": "6577f0a16eb659a7ffc7b8f537da539aeef9bb5033ddf3d7f862c424e7558d73",
+        "contact_alignment_seconds": 0.023520833333333335,
+        "revision": 8
+      },
+      {
+        "recording": "flesh-hit",
+        "start": 0.058,
+        "duration": 0.16,
+        "low_cut": 120,
+        "high_cut": 8000,
+        "pitch": 1.0,
+        "approved_body_master_sha256": "6577f0a16eb659a7ffc7b8f537da539aeef9bb5033ddf3d7f862c424e7558d73",
+        "contact_alignment_seconds": 0.023520833333333335,
+        "revision": 8
       },
       {
         "recording": "v2-impacts",
@@ -1664,7 +2040,8 @@
         "duration": 0.2931,
         "pitch": 1.0
       }
-    ]
+    ],
+    "body_contact_revision": 8
   },
   {
     "id": "dragon-claw",
@@ -1673,10 +2050,10 @@
     "actor": "dragon",
     "element": null,
     "duration": 1.28,
-    "sha256": "70f5553d76300481a997c0cf75a0ef17dac5492fc094bc8f99e8ffa80cd323a2",
-    "revision": 3,
+    "sha256": "e7d7f0a8f8337ae1d285dfd2053a7bff1ea31ab54d3fcf9caaa2da29a31a91b1",
+    "revision": 8,
     "integrated_lufs": -23.0,
-    "true_peak_dbtp": -5.695,
+    "true_peak_dbtp": -2.714,
     "impact": 0.188,
     "hitTimes": [
       0.188
@@ -1696,10 +2073,28 @@
         "pitch": 1.0
       },
       {
-        "recording": "v2-impacts",
-        "file": "impacts\\unpacked\\Audio\\impactPunch_heavy_003.ogg",
-        "duration": 0.324,
-        "pitch": 1.0
+        "recording": "body-punch",
+        "start": 0.136,
+        "duration": 0.29,
+        "low_cut": 65,
+        "high_cut": 3500,
+        "pitch": 1.0,
+        "decay_after_seconds": 0.055,
+        "decay_time_constant_seconds": 0.085,
+        "approved_body_master_sha256": "6577f0a16eb659a7ffc7b8f537da539aeef9bb5033ddf3d7f862c424e7558d73",
+        "contact_alignment_seconds": 0.013020833333333334,
+        "revision": 8
+      },
+      {
+        "recording": "flesh-hit",
+        "start": 0.058,
+        "duration": 0.16,
+        "low_cut": 120,
+        "high_cut": 8000,
+        "pitch": 1.0,
+        "approved_body_master_sha256": "6577f0a16eb659a7ffc7b8f537da539aeef9bb5033ddf3d7f862c424e7558d73",
+        "contact_alignment_seconds": 0.013020833333333334,
+        "revision": 8
       },
       {
         "recording": "tiger",
@@ -1709,7 +2104,8 @@
         "high_cut": 5000,
         "pitch": 1.0
       }
-    ]
+    ],
+    "body_contact_revision": 8
   },
   {
     "id": "charge-breath",
@@ -1792,10 +2188,10 @@
     "actor": "tyrant",
     "element": null,
     "duration": 0.95,
-    "sha256": "b3838c649f368f22e53480b5eadf79c1f9d29ce6719502560a558c2695bf0565",
-    "revision": 3,
+    "sha256": "a13483353d7a1b16b5131aeb4cb17bc7bce1de2bc7361f446eb3ac6d41c4f603",
+    "revision": 8,
     "integrated_lufs": -23.0,
-    "true_peak_dbtp": -5.284,
+    "true_peak_dbtp": -2.57,
     "impact": 0.199,
     "hitTimes": [
       0.199
@@ -1807,10 +2203,28 @@
         "pitch": 1.0
       },
       {
-        "recording": "v2-impacts",
-        "file": "impacts\\unpacked\\Audio\\impactPunch_heavy_003.ogg",
-        "duration": 0.324,
-        "pitch": 1.0
+        "recording": "body-punch",
+        "start": 0.136,
+        "duration": 0.29,
+        "low_cut": 65,
+        "high_cut": 3500,
+        "pitch": 1.0,
+        "decay_after_seconds": 0.055,
+        "decay_time_constant_seconds": 0.085,
+        "approved_body_master_sha256": "6577f0a16eb659a7ffc7b8f537da539aeef9bb5033ddf3d7f862c424e7558d73",
+        "contact_alignment_seconds": 0.013020833333333334,
+        "revision": 8
+      },
+      {
+        "recording": "flesh-hit",
+        "start": 0.058,
+        "duration": 0.16,
+        "low_cut": 120,
+        "high_cut": 8000,
+        "pitch": 1.0,
+        "approved_body_master_sha256": "6577f0a16eb659a7ffc7b8f537da539aeef9bb5033ddf3d7f862c424e7558d73",
+        "contact_alignment_seconds": 0.013020833333333334,
+        "revision": 8
       },
       {
         "recording": "v2-impacts",
@@ -1826,7 +2240,8 @@
         "high_cut": 15000,
         "pitch": 1.0
       }
-    ]
+    ],
+    "body_contact_revision": 8
   },
   {
     "id": "royal-heavy",
@@ -1835,10 +2250,10 @@
     "actor": "tyrant",
     "element": null,
     "duration": 1.35,
-    "sha256": "914267b901c1517d59d5f8e451a5839dd4d4e1a79310d551609c658a0219d361",
-    "revision": 3,
+    "sha256": "5e9917b288cb9a18cb431d7b4fea5305d0d3517fa8e5433a8f4482ecca5b42f0",
+    "revision": 8,
     "integrated_lufs": -23.0,
-    "true_peak_dbtp": -4.407,
+    "true_peak_dbtp": -3.311,
     "impact": 0.32,
     "hitTimes": [
       0.32
@@ -1862,10 +2277,28 @@
         "pitch": 1.0
       },
       {
-        "recording": "v2-impacts",
-        "file": "impacts\\unpacked\\Audio\\impactPunch_heavy_003.ogg",
-        "duration": 0.324,
-        "pitch": 1.0
+        "recording": "body-punch",
+        "start": 0.136,
+        "duration": 0.29,
+        "low_cut": 65,
+        "high_cut": 3500,
+        "pitch": 1.0,
+        "decay_after_seconds": 0.055,
+        "decay_time_constant_seconds": 0.085,
+        "approved_body_master_sha256": "6577f0a16eb659a7ffc7b8f537da539aeef9bb5033ddf3d7f862c424e7558d73",
+        "contact_alignment_seconds": 0.013020833333333334,
+        "revision": 8
+      },
+      {
+        "recording": "flesh-hit",
+        "start": 0.058,
+        "duration": 0.16,
+        "low_cut": 120,
+        "high_cut": 8000,
+        "pitch": 1.0,
+        "approved_body_master_sha256": "6577f0a16eb659a7ffc7b8f537da539aeef9bb5033ddf3d7f862c424e7558d73",
+        "contact_alignment_seconds": 0.013020833333333334,
+        "revision": 8
       },
       {
         "recording": "rocks",
@@ -1875,7 +2308,8 @@
         "high_cut": 15000,
         "pitch": 1.0
       }
-    ]
+    ],
+    "body_contact_revision": 8
   },
   {
     "id": "tyrant-protect",

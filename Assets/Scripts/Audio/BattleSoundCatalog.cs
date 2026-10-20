@@ -22,7 +22,7 @@ namespace DragonQuest.Audio
 
     public static class BattleSoundCatalog
     {
-        // Contact markers belong to the approved V3/V4 PCM masters.
+        // Contact markers belong to the installed approved PCM masters.
         private static readonly Dictionary<string, float> impacts = new Dictionary<string, float>(StringComparer.Ordinal)
         {
             { "attack-aren", 0.11f },
@@ -46,8 +46,8 @@ namespace DragonQuest.Audio
             { "infuse-thunder", 0.144f },
             { "infuse-earth", 0.144f },
             { "infuse-chaos", 0.144f },
-            { "phoenix", 0.34f },
-            { "bahamut", 1.05f },
+            { "phoenix", 0.53f },
+            { "bahamut", 0.76f },
             { "titan", 1.38f },
             { "attack-guard", 0.115f },
             { "attack-pirate", 0.114f },

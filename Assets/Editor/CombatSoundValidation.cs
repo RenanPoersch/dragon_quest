@@ -61,7 +61,7 @@ public static class CombatSoundValidation
                 AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate);
                 using (var hash = SHA256.Create())
                     Check(BitConverter.ToString(hash.ComputeHash(File.ReadAllBytes(path))).Replace("-", "").ToLowerInvariant() == row.sha256,
-                        row.id + " is byte-identical to the approved V3/V4 preview");
+                        row.id + " is byte-identical to the installed approval manifest");
                 var clip = Resources.Load<AudioClip>("CombatSounds/" + row.id);
                 Check(clip != null && clip.channels == 2 && clip.frequency == 48000 && Math.Abs(clip.length - row.duration) < .001f,
                     row.id + " preserves stereo, rate and duration");
