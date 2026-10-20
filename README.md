@@ -13,6 +13,8 @@ A periferia atual é um **bairro compacto de fantasia industrial**, com chão pi
 - Template oficial 2D da instalação do Editor, com Universal Render Pipeline.
 - Plataforma inicial: Windows.
 
+O executável inicia em **1920 × 1080, em janela sem bordas de tela cheia**, inclusive se a sessão anterior usou outra resolução. A Unity ajusta a imagem ao monitor preservando a proporção 16:9. O Game view do Editor mantém sua configuração de preview.
+
 Use essa versão do Editor para evitar migrações involuntárias.
 
 ## Como abrir
