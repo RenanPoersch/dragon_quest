@@ -56,8 +56,11 @@ namespace DragonQuest.Prototype
             GameObject peasant = CreateNpcFigure("Camponesa", PrototypeCityLayout.Resident, "B77D8B", interactions);
             interactables.Add(AddSecret(peasant, SecretObject.Peasant));
             NpcInteraction gardener = CreateNpc("Jardineiro", PrototypeCityLayout.Gardener, "86A96B", interactions);
-            gardener.Initialize("Jardineiro", "Antes havia grandes jardins. Agora cuido das plantas que ainda crescem entre as casas.",
-                "A unica ponte da periferia fica ao norte. Atravessa o fosso seco e leva a entrada do castelo.");
+            gardener.Initialize("Jardineiro",
+                "Já houve um tempo em que estes jardins viviam cheios. As crianças vinham buscar flores... Hoje eu cuido deste cantinho. É o que as costas ainda permitem.",
+                "Perdi minha casa, enterrei amigos... Até fome eu passei. Tem manhã em que a gente acorda e pensa se ainda vale a pena levantar.",
+                "Mas aí eu venho aqui e encontro uma folha nova, uma flor que abriu durante a noite... E já começo a pensar no que vou plantar amanhã.",
+                "Eu ainda quero ver este jardim florir de novo. Tem de haver dias melhores... Até para um velho como eu.");
             interactables.Add(gardener);
             NpcInteraction explorer = CreateNpc("Exploradora", PrototypeCityLayout.Explorer, "B79458", interactions);
             explorer.Initialize("Exploradora", "Ainda encontro pedras das antigas ruinas nos alicerces destas oficinas.",
