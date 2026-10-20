@@ -518,8 +518,9 @@ namespace DragonQuest.Prototype
             }
             else if (IsDragonEncounter && Session.Outcome == BattleOutcome.Victory)
             {
-                dialogue.Open("Essencia do dragao","A sombra abandona o dragao, revelando uma chama serena. A mesma presenca que ocupava seu corpo ainda vive no castelo.",
-                    "A essencia deixou a Armadura draconica. Equipe-a pelo inventario: ela podera revelar quem se esconde atras do trono.");
+                dialogue.Open("Essência do dragão",
+                    "Minha cabeça... está clara de novo. Não ouço mais aquelas vozes. Eu já nem lembrava como era esse silêncio.",
+                    "Você me libertou... Achei que nunca mais fosse ter paz. Obrigado.");
                 movement.SetMovementEnabled(false);
             }
         }
