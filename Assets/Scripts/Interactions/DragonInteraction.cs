@@ -49,16 +49,19 @@ namespace DragonQuest.Interactions
             }
             bool wasSleeping = restingDragon?.State == DragonRestState.Sleeping;
             restingDragon?.Wake();
-            context.Dialogue.OpenWithCompletion("Dragao corrompido", () =>
+            const string outburst = "Minha mente... DEIXE-ME EM PAZ!";
+            string[] messages = wasSleeping ? new[]
+            {
+                "O dragão dorme sobre o basalto quente. Ao ouvir seus passos, abre os olhos, ergue a cabeça e estende as asas. O covil estremece com seu rugido.",
+                outburst
+            } : new[] { outburst };
+            context.Dialogue.OpenWithCompletion("Dragão corrompido", () =>
             {
                 ClearPrelude();
                 // A fast dialogue advance still switches to the awake pose before battle.
                 restingDragon?.FinishAwakening();
                 startBattle?.Invoke();
-            },
-                wasSleeping ? "O dragao dorme sobre o basalto quente. Ao ouvir seus passos, abre os olhos, ergue a cabeca e estende as asas. O covil estremece com seu rugido."
-                    : "O dragao acompanha seus movimentos. Uma sombra pulsa entre as escamas, e uma segunda voz parece vir de sua garganta.",
-                "O calor se intensifica. Prepare sua equipe: Gelo pode romper suas escamas; quando ele concentrar chamas, defenda-se!");
+            }, messages);
             battleDialogue = context.Dialogue;
             encounterPageCount = battleDialogue.PageCount;
             finalPageVersion = battleDialogue.ContentVersion + encounterPageCount - 1;

@@ -156,10 +156,10 @@ public static class MusicValidation
     }
     private static void NearEndOfDragonSpeech()
     {
-        dialogue.RevealAll(); dialogue.Advance();
-        Check(dialogue.PageNumber == dialogue.PageCount && dialogue.RevealSecondsRemaining > DragonInteraction.BattleMusicLeadSeconds,
-            "last dragon page begins before the music lead-in window");
-        ((DialogueTextReveal)Field(dialogue,"reveal")).Tick(dialogue.RevealSecondsRemaining - .75f);
+        while (dialogue.PageNumber < dialogue.PageCount) { dialogue.RevealAll(); dialogue.Advance(); }
+        Check(dialogue.PageNumber == dialogue.PageCount && dialogue.RevealSecondsRemaining > 0,
+            "the final dragon page is still revealing, including a short outburst");
+        ((DialogueTextReveal)Field(dialogue,"reveal")).Tick(Mathf.Max(0, dialogue.RevealSecondsRemaining - .75f));
         Check(dialogue.IsTyping && dragon.IsBattlePrelude,"dragon prelude starts before the last line finishes typing");
     }
     private static void BattlePlays()
@@ -445,14 +445,14 @@ public static class MusicValidation
                     Check(Voice(MusicCue.DragonLair) == lairVoice && lairVoice.timeSamples < lairVoice.clip.frequency*2,
                         "the trimmed bass cycle loops while the dragon dialogue is open");
                     lairVoice.timeSamples = lairVoice.clip.frequency*2;
-                    dialogue.RevealAll(); dialogue.Advance();
+                    ((DialogueTextReveal)Field(dialogue,"reveal")).Tick(.1f);
                     Check(dialogue.IsTyping && !dragon.IsBattlePrelude,"early dragon speech keeps the lair ambience");
                     break;
                 case 33:
                     CuePlays(MusicCue.DragonLair);
                     Check(Voice(MusicCue.DragonLair) == lairVoice && lairVoice.timeSamples > lairVoice.clip.frequency*2,
                         "ongoing lair exploration and speech do not restart the ambient cycle");
-                    ((DialogueTextReveal)Field(dialogue,"reveal")).Tick(dialogue.RevealSecondsRemaining - .75f);
+                    NearEndOfDragonSpeech();
                     Check(dialogue.IsTyping && dragon.IsBattlePrelude,"music is requested before final text finishes");
                     break;
                 case 34:
