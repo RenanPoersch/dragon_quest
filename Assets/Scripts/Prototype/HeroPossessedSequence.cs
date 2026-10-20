@@ -23,7 +23,7 @@ namespace DragonQuest.Prototype
         public int StormFlashCount => flashes.Count;
         public int LineCount { get; }
         public float Elapsed { get; private set; }
-        public float MusicGain => 1 - Smooth((Elapsed - FadeOutAt) / FadeOutDuration);
+        public float MusicGain => 1 - BlackOpacity;
         public float TextEndAt => TextStart + (TextWindowHeight + LineCount * LineHeight) / ScrollSpeed;
         // Even short/localized copy leaves time to see two strikes after the camera locks.
         public float FadeOutAt => Math.Max(TextEndAt + EndHold, CameraStopAt + 11);

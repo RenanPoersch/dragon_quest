@@ -12,7 +12,7 @@ namespace DragonQuest.Prototype
         public int SpeechLineCount { get; }
         public int EpilogueLineCount { get; }
         public float Elapsed { get; private set; }
-        public float MusicGain => 1 - Smooth((Elapsed - FadeOutAt) / FadeOutDuration);
+        public float MusicGain => 1 - BlackOpacity;
         public float SpeechTextEndAt => TextStart + ScrollDuration(SpeechLineCount);
         public float DissolveAt => SpeechTextEndAt + EndHold;
         public float ProsperityAt => DissolveAt + DissolveDuration;

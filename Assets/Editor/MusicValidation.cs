@@ -623,6 +623,8 @@ public static class MusicValidation
                     break;
                 case 61:
                     CuePlays(MusicCue.GoodEnding);
+                    Check(Voice(MusicCue.GoodEnding).volume == 0, "good-ending music waits for its first cinematic repaint");
+                    GoodClock.Advance(KingFreedSequence.FadeInDuration);
                     Check(endings.CurrentEnding == GameEnding.KingFreed,"good-ending cue follows the actual ending presentation");
                     Voice(MusicCue.GoodEnding).timeSamples = Voice(MusicCue.GoodEnding).clip.samples - Voice(MusicCue.GoodEnding).clip.frequency/3;
                     break;
@@ -650,6 +652,8 @@ public static class MusicValidation
                     break;
                 case 68:
                     CuePlays(MusicCue.MindControlEnding);
+                    Check(Voice(MusicCue.MindControlEnding).volume == 0, "mind-control music waits for its first cinematic repaint");
+                    MindClock.Advance(HeroPossessedSequence.FadeInDuration);
                     Check(endings.CurrentEnding == GameEnding.HeroPossessed,"mind-control cue follows its ending presentation");
                     Voice(MusicCue.MindControlEnding).timeSamples = Voice(MusicCue.MindControlEnding).clip.samples - Voice(MusicCue.MindControlEnding).clip.frequency/3;
                     break;
@@ -672,6 +676,8 @@ public static class MusicValidation
                     break;
                 case 74:
                     CuePlays(MusicCue.MeteorEnding);
+                    Check(Voice(MusicCue.MeteorEnding).volume == 0, "meteor music waits for its first cinematic repaint");
+                    MeteorScene.Impact.Sequence.Advance(CastleImpactSequence.FadeInDuration);
                     Check(endings.CurrentEnding == GameEnding.CastleDestroyed,"meteor cue follows its ending presentation");
                     Voice(MusicCue.MeteorEnding).timeSamples = Voice(MusicCue.MeteorEnding).clip.samples - Voice(MusicCue.MeteorEnding).clip.frequency/3;
                     break;

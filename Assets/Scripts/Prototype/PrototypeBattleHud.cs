@@ -139,6 +139,7 @@ namespace DragonQuest.Prototype
         {
             if (controller == null || !controller.IsActive || controller.IsPostBattleOpen) { numbers.Clear(); return; }
             ObserveBattle();
+            if (controller.HasEnded) return;
             if (controller.IsEnteringBattle) return;
             if (controller.IsCheatMenuBlocking) return;
             if (controller.IsPresentingAction) return;
@@ -195,7 +196,7 @@ namespace DragonQuest.Prototype
                 ChooseCommand(commandIndex, navigateOnly: true);
         }
 
-        private bool CanAcceptMenuInput => GameInput.IsFrameAvailable && !controller.IsEnteringBattle && !controller.IsCheatMenuBlocking
+        private bool CanAcceptMenuInput => GameInput.IsFrameAvailable && !controller.HasEnded && !controller.IsEnteringBattle && !controller.IsCheatMenuBlocking
             && !controller.IsPresentingAction;
         private bool InSubmenu => itemMode || menuGroup != AbilityMenuGroup.Direct;
         private bool CanOpenDefendMenu => !InSubmenu && !defendMode && defendCommand != null

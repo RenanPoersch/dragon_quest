@@ -22,9 +22,13 @@ namespace DragonQuest.Prototype
         private CastleDestroyedEndingPresentation aftermath;
         private HeroPossessedPresentation possession;
         private KingFreedPresentation liberation;
-        public GameEnding CurrentEnding => pages != null ? ending : GameEnding.None;
+        private readonly BattleExitSequence battleExit = new BattleExitSequence();
+        public bool IsFadingBattle => battleExit.IsPlaying;
+        public float BattleBlackOpacity => battleExit.BlackOpacity;
+        public float BattleMusicGain => IsFadingBattle ? battleExit.MusicGain : 1;
+        public GameEnding CurrentEnding => pages != null && !IsFadingBattle ? ending : GameEnding.None;
         public float MusicGain => liberation?.Sequence.MusicGain ?? possession?.Sequence.MusicGain
-            ?? aftermath?.Aftermath.Sequence.MusicGain ?? 1f;
+            ?? (aftermath != null ? aftermath.Impact.Sequence.MusicGain * aftermath.Aftermath.Sequence.MusicGain : 0);
 
         public void Initialize(Dictionary<string,GameObject> roots,PlayerMovement hero,Camera camera,CameraFollow cameraFollow,ObliqueScenery models)
         {maps=roots;player=hero;view=camera;follow=cameraFollow;scenery=models;}
@@ -32,6 +36,15 @@ namespace DragonQuest.Prototype
         {
             if(pages!=null||result==GameEnding.None) return;
             ending=result;pages=EndingNarrative.Pages(result);page=0;shownFrame=Time.frameCount;
+            player.SetMovementEnabled(false);
+            // Keep the live battle and its music until a fully black frame has been painted.
+            var battle = GetComponent<PrototypeBattleController>();
+            if (battle != null && battle.IsActive && battle.IsCastleEncounter) battleExit.Begin();
+            else BeginPresentation();
+        }
+        private void BeginPresentation()
+        {
+            GameEnding result = ending;
             foreach(GameObject map in maps.Values) map.SetActive(false);
             player.SetMovementEnabled(false);player.gameObject.SetActive(false);follow.enabled=false;
             if(result==GameEnding.CastleDestroyed)
@@ -64,6 +77,7 @@ namespace DragonQuest.Prototype
         }
         private void Update()
         {
+            if (IsFadingBattle) { AdvanceBattleFade(Time.unscaledDeltaTime); return; }
             if(liberation!=null)
             {
                 liberation.Update(Time.unscaledDeltaTime);
@@ -93,6 +107,7 @@ namespace DragonQuest.Prototype
         private void OnGUI()
         {
             if(pages==null) return;
+            if (IsFadingBattle) { DrawBattleFade(); return; }
             if(liberation!=null) {liberation.Draw();return;}
             if(aftermath!=null) {aftermath.Draw();return;}
             if(possession!=null) {possession.Draw();return;}
@@ -110,6 +125,26 @@ namespace DragonQuest.Prototype
                 else ReturnToMenu();
             }
             GUI.enabled=enabled;GUI.matrix=previous;
+        }
+        private void AdvanceBattleFade(float delta)
+        {
+            if (battleExit.Advance(delta)) BeginPresentation();
+        }
+        private void DrawBattleFade()
+        {
+            if (Event.current.isKey || Event.current.isMouse) Event.current.Use();
+            if (Event.current.type != EventType.Repaint) return;
+            battleExit.MarkDrawn();
+            Matrix4x4 previousMatrix = GUI.matrix;
+            Color previousColor = GUI.color;
+            int previousDepth = GUI.depth;
+            try
+            {
+                GUI.depth = -10000; GUI.matrix = Matrix4x4.identity;
+                GUI.color = new Color(0, 0, 0, BattleBlackOpacity);
+                GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), Texture2D.whiteTexture);
+            }
+            finally { GUI.matrix = previousMatrix; GUI.color = previousColor; GUI.depth = previousDepth; }
         }
         private void Panel(Rect rect)
         {

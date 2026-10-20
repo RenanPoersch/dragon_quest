@@ -53,6 +53,8 @@ namespace DragonQuest.Audio
         private void LateUpdate()
         {
             if (saves == null || locations == null || battle == null || sources[0] == null) return;
+            if (endings != null && endings.IsFadingBattle)
+            { Advance(Time.unscaledDeltaTime); return; }
             var cue = MusicCuePolicy.Select(saves.IsIntroPlaying, saves.IsFrontEndVisible, battle.HasEnded,
                 battle.IsActive, battle.IsDragonEncounter, battle.IsCastleEncounter, battle.IsPostBattleOpen,
                 battle.Session?.Outcome == BattleOutcome.Defeat && !battle.IsPresentingAction, locations.LocationId,
@@ -71,7 +73,8 @@ namespace DragonQuest.Audio
             CurrentCue = cue;
             for (int i = 0; i < 2; i++) { from[i] = sources[i].volume; target[i] = 0; }
             elapsed = 0;
-            duration = cue == MusicCue.DragonLair || cue == MusicCue.FinalBoss ? .08f
+            duration = cue == MusicCue.GoodEnding || cue == MusicCue.MindControlEnding || cue == MusicCue.MeteorEnding ? 0
+                : cue == MusicCue.DragonLair || cue == MusicCue.FinalBoss ? .08f
                 : cue == MusicCue.Silence || cue == MusicCue.Sleep ? .12f : cue == MusicCue.Victory ? .18f : .65f;
             if (cue == MusicCue.Silence) { current = -1; return; }
             if (!clips.TryGetValue(cue, out AudioClip clip))
@@ -99,11 +102,11 @@ namespace DragonQuest.Audio
             for (int i = 0; i < 2; i++)
             {
                 float gain = Mathf.Lerp(from[i], target[i], blend);
-                // Cinematic clocks drive the final fade, including the black hold.
-                // Only the ending's last fade affects music; cuts/dissolves keep playing.
+                // Cinematic clocks synchronize the opening/final fades; internal cuts keep playing.
                 if (i == current)
                 {
-                    if (CurrentCue == MusicCue.Intro) gain *= saves.IntroMusicGain;
+                    if (endings != null && endings.IsFadingBattle) gain *= endings.BattleMusicGain;
+                    else if (CurrentCue == MusicCue.Intro) gain *= saves.IntroMusicGain;
                     else if (CurrentCue == MusicCue.Voyage) gain *= saves.VoyageMusicGain;
                     else if (CurrentCue == MusicCue.GoodEnding || CurrentCue == MusicCue.MindControlEnding
                         || CurrentCue == MusicCue.MeteorEnding) gain *= endings != null ? endings.MusicGain : 1;

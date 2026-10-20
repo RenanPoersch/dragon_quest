@@ -392,13 +392,20 @@ namespace DragonQuest.Prototype
 
         private void FinishCastleBattle()
         {
-            IsActive = false; HasEnded = true; pendingEnemy = null;
+            if (HasEnded)
+            {
+                if (GetComponent<PrototypeEndingController>()?.IsFadingBattle != true) IsActive = false;
+                return;
+            }
+            HasEnded = true; pendingEnemy = null;
             movement.SetMovementEnabled(false);
             showEnding?.Invoke(CastleRules.Ending);
+            if (GetComponent<PrototypeEndingController>()?.IsFadingBattle != true) IsActive = false;
         }
 
         private void Update()
         {
+            if (HasEnded) { if (IsActive) FinishCastleBattle(); return; }
             if (IsEnteringBattle) { pendingEnemy = null; return; }
             if (IsCheatMenuBlocking) { pendingEnemy = null; return; }
             ResolveMeteorImpact();

@@ -21,6 +21,7 @@ namespace DragonQuest.Prototype
         public float MeteorOpacity => Smooth((Elapsed - MeteorStart) / 2.1f);
         public float Heat => MeteorOpacity * (.18f + .82f * Approach * Approach);
         public float BlackOpacity => 1 - Smooth(Elapsed / FadeInDuration);
+        public float MusicGain => 1 - BlackOpacity;
         public float WhiteOpacity => Smooth((Elapsed - ImpactAt) / FlashDuration);
         public float CameraZoom => 1 + .025f * Smooth(Elapsed / ImpactAt);
         public float ScreenShake
