@@ -21,6 +21,7 @@ namespace DragonQuest.Persistence
         [DataMember(IsRequired = true)] public string[] OpenedChests;
         [DataMember(IsRequired = true)] public SecretData Secrets;
         [DataMember(IsRequired = true)] public bool DragonDefeated;
+        [DataMember(EmitDefaultValue = false)] public bool CastleGuardsDefeated;
         [DataMember(IsRequired = true)] public MemberData[] Members;
         [DataMember(IsRequired = true)] public GearData[] Gear;
         [DataMember(IsRequired = true)] public MateriaData[] Materias;

@@ -56,6 +56,21 @@ internal static class SaveChecks
         }
     }
 
+    private static void CheckCastleGuardPersistence()
+    {
+        var journey = JourneySnapshot.Restore(Initial());
+        Assert(!journey.Progress.CastleGuardsDefeated, "Jornadas novas e saves antigos mantem a patrulha.");
+        int changes = 0; journey.Progress.Changed += () => changes++;
+        journey.Progress.DefeatCastleGuards(); journey.Progress.DefeatCastleGuards();
+        Assert(changes == 1 && journey.Progress.CastleGuardsDefeated, "A vitoria na ponte e registrada uma unica vez.");
+        var data = JourneySnapshot.Capture(journey.Party, journey.Progress, journey.Secrets, journey.Dragon,
+            journey.Shops, PrototypeTravel.City, 0, 11);
+        Assert(RoundTrip(data).Progress.CastleGuardsDefeated, "Salvar e carregar conserva a ponte liberada.");
+        Assert(!RoundTrip(Initial()).Progress.CastleGuardsDefeated, "Carregar outra jornada restaura sua propria patrulha.");
+        string legacy = Encoding.UTF8.GetString(SaveStore.Encode(Initial()));
+        Assert(!legacy.Contains("CastleGuardsDefeated"), "O novo campo e opcional para saves anteriores.");
+    }
+
     private static void CheckPlayTime()
     {
         var data = Initial(); data.PlaySeconds = 7 * 3600 + 2 * 60;
@@ -297,7 +312,7 @@ internal static class SaveChecks
     {
         try
         {
-            CheckDomain(); CheckInventoryEvents(); CheckLevelPersistence(); CheckConditionPersistence(); CheckCheatPersistence(); CheckPlayTime(); CheckLegacyShopSaves();
+            CheckDomain(); CheckInventoryEvents(); CheckLevelPersistence(); CheckConditionPersistence(); CheckCheatPersistence(); CheckPlayTime(); CheckLegacyShopSaves(); CheckCastleGuardPersistence();
             CheckManualPersistence(Path.Combine(args[0], "manual-" + Guid.NewGuid().ToString("N")));
             CheckFiles(Path.Combine(args[0], "saves-" + Guid.NewGuid().ToString("N")));
             Console.WriteLine("Salvamento: " + checks + " verificacoes passaram."); return 0;

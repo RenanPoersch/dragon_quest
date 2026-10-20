@@ -76,7 +76,17 @@ namespace DragonQuest.Prototype
             guardCollider.size = new Vector2(0.65f, 0.7f);
             guardCollider.sharedMaterial = frictionless;
             scenery.PixelPerson(guard.transform, "NpcRoster", 10);
-            interactables.Add(guard.AddComponent<BattleInteraction>());
+            GameObject soldier = Entity("Soldado da ponte", new Vector2(1.2f, 0), guard.transform);
+            BoxCollider2D soldierCollider = soldier.AddComponent<BoxCollider2D>();
+            soldierCollider.size = guardCollider.size;
+            soldierCollider.sharedMaterial = frictionless;
+            scenery.PixelPerson(soldier.transform, "NpcRoster", 10);
+            GameObject bridgeBarrier = Entity("Bloqueio da patrulha", new Vector2(0, 10.3f) - PrototypeCityLayout.Guard, guard.transform);
+            BoxCollider2D barrierCollider = bridgeBarrier.AddComponent<BoxCollider2D>();
+            barrierCollider.size = new Vector2(3.7f, .7f);
+            barrierCollider.sharedMaterial = frictionless;
+            BattleInteraction bridgeGuards = guard.AddComponent<BattleInteraction>();
+            interactables.Add(bridgeGuards);
 
             var mapRoots = new Dictionary<string, GameObject>
             {
@@ -126,6 +136,7 @@ namespace DragonQuest.Prototype
                 () => dialogue.IsOpen || battle.IsBusy);
             gameObject.AddComponent<PrototypeShopHud>().Initialize(shops);
             battle.SetLocationProvider(() => locations.LocationId);
+            bridgeGuards.Initialize(player.GetComponent<PlayerMovement>(), dialogue, battle, () => progress);
             gameObject.AddComponent<PrototypeBattleHud>().Initialize(battle, scenery.PixelSprites);
             gameObject.AddComponent<PrototypeMateriaHud>().Initialize(battle, secrets);
             PlayerInteraction interaction = player.AddComponent<PlayerInteraction>();
@@ -136,6 +147,7 @@ namespace DragonQuest.Prototype
             saves.Initialize(player.GetComponent<PlayerMovement>(), battle, shops, locations, dialogue, progress, secrets, dragon, journey =>
             {
                 progress = journey.Progress;
+                bridgeGuards.RestoreState();
                 var s = journey.Secrets;
                 secrets.Restore(s.KnowsPoem, s.AltarSolved, s.MonolithStep, s.HasScale, s.PassageOpen);
                 dragon.Restore(journey.Dragon.IsDefeated);

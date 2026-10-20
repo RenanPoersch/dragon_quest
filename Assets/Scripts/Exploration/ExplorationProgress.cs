@@ -19,6 +19,14 @@ namespace DragonQuest.Exploration
             Changed?.Invoke();
         }
         public event Action Changed;
+        public bool CastleGuardsDefeated { get; private set; }
+        internal void RestoreCastleGuards(bool defeated) => CastleGuardsDefeated = defeated;
+        public void DefeatCastleGuards()
+        {
+            if (CastleGuardsDefeated) return;
+            CastleGuardsDefeated = true;
+            Changed?.Invoke();
+        }
         internal string[] OpenedChests => new List<string>(openedChests).ToArray();
         internal void Restore(int gold, string[] chests)
         { this.gold = gold; openedChests.Clear(); foreach (string id in chests) openedChests.Add(id); }
