@@ -142,8 +142,8 @@ public static class UltimateChecks
         Ready(enemy); Act(incoming,HeroUltimates.Omnislash,ally);
         Check(ally.Hp==0 && survivor.Hp==1000 && incoming.Outcome==BattleOutcome.None,"Enemy overkill stays on the defeated party member.");
         Check(rolls==13 && ally.VitalChanges.Count(c=>c.IsCritical)==7,"Post-defeat hits retain their independent critical rolls.");
-        Check(ally.VitalChanges.All(c=>c.IsShielded) && ally.VitalChanges[0].Amount==-10
-            && ally.VitalChanges[1].Amount==-8 && ally.VitalChanges.Last().Amount==-28,"Defend and Shield mitigate the whole action, including overkill.");
+        Check(ally.VitalChanges.All(c=>c.IsShielded) && ally.VitalChanges[0].Amount==-19
+            && ally.VitalChanges[1].Amount==-15 && ally.VitalChanges.Last().Amount==-56,"Defend and Shield mitigate doubled enemy damage for the whole action, including overkill.");
         var expectedLimit=new LimitGauge(); expectedLimit.AddDamage(7,ally.Definition.MaxHp);
         Check(ally.Limit.Charge==expectedLimit.Charge,"Visual overkill grants no Limit beyond actual HP lost.");
         Check(!ally.IsDefending && ally.ShieldTurns==0 && !ally.IsPoisoned,"Defeat clears conditions when the sequence finishes.");

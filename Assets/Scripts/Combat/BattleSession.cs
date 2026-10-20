@@ -415,11 +415,12 @@ namespace DragonQuest.Combat
             int offense = ability.Effect == AbilityEffect.MagicDamage || ability.Effect == AbilityEffect.Drain ? actor.Definition.Magic : actor.Definition.Attack;
             long damage = Math.Max(1L, (long)offense + ability.Power - target.Definition.Defense);
             int elementalPercent = target.Definition.Affinities.DamagePercent(ability.Element);
-            // Defesa numerica, afinidade e critico (para baixo), depois Defender e Shield (para cima).
+            // Defesa numerica, afinidade e critico (para baixo), dano inimigo x2, depois Defender e Shield (para cima).
             damage = Math.Max(1L, damage * elementalPercent / 100);
             if (hitIndex == ability.HitCount) damage *= ability.FinalHitMultiplier;
             bool critical = actor.Definition.CriticalChance > 0 && criticalRoll() < actor.Definition.CriticalChance;
             if (critical) damage = damage * CombatantDefinition.CriticalDamagePercent / 100;
+            if (actor.Team == CombatTeam.Enemy) damage *= 2;
             if (target.IsDefending) damage = (damage + 1) / 2;
             int previousHp = target.Hp;
             target.TakeDamage((int)Math.Min(int.MaxValue, damage), critical, actionHitIndex: hitIndex,
