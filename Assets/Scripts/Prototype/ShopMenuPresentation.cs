@@ -11,10 +11,10 @@ namespace DragonQuest.Prototype
         private static readonly Color cyan = new Color(.1f, 1, .91f), muted = new Color(.51f, .53f, .65f);
         private static readonly Color gain = new Color(1, .94f, .12f), loss = new Color(1, .30f, .32f);
         private static readonly string[] filters = { "Armas", "Armaduras", "Acessorios" };
-        private GUIStyle text, heading, small, number, description;
+        private const int QuantityWindowId = 781402;
+        private GUIStyle text, heading, small, number, description, buttonText, slider, sliderThumb;
         private Vector2 scroll, pointer = new Vector2(-1, -1);
         private int revealed = -1, activatedFrame = -1;
-        private ShopMenuPhase lastPhase;
         private ShopEquipmentFilter lastFilter;
         private bool lastSelling;
 
@@ -29,6 +29,14 @@ namespace DragonQuest.Prototype
             small = new GUIStyle(text) { fontSize = 27 };
             number = PrototypeTypography.Style(text, 36, true); number.alignment = TextAnchor.MiddleRight;
             description = new GUIStyle(text) { fontSize = 30, wordWrap = true };
+            buttonText = new GUIStyle(text) { alignment = TextAnchor.MiddleCenter };
+            slider = new GUIStyle(GUI.skin.horizontalSlider);
+            sliderThumb = new GUIStyle(GUI.skin.horizontalSliderThumb);
+            foreach (GUIStyle style in new[] { slider, sliderThumb })
+            {
+                style.normal.background = style.hover.background = style.active.background = style.focused.background = Texture2D.whiteTexture;
+                style.border = new RectOffset();
+            }
         }
         public void Draw(InventoryMenuPresentation theme, ShopMenuSession menu, bool interactive,
             int actionIndex, Action<int> action, Action back)
@@ -38,11 +46,9 @@ namespace DragonQuest.Prototype
             bool equipment = menu.HasEquipment;
             if (menu.Selling != lastSelling || menu.Filter != lastFilter)
             { scroll = Vector2.zero; revealed = -1; }
-            if (quantity != (lastPhase == ShopMenuPhase.Quantity)) revealed = -1;
-            lastSelling = menu.Selling; lastFilter = menu.Filter; lastPhase = menu.Phase;
+            lastSelling = menu.Selling; lastFilter = menu.Filter;
             theme.Panel(new Rect(0, 0, 900, 76)); theme.Panel(new Rect(900, 0, 380, 76));
-            string prompt = quantity ? menu.Selling ? "Quantos deseja vender?" : "Quantos deseja comprar?"
-                : menu.Phase == ShopMenuPhase.Actions ? "O que deseja fazer?"
+            string prompt = menu.Phase == ShopMenuPhase.Actions ? "O que deseja fazer?"
                 : menu.Selling ? "O que deseja vender?" : "O que deseja comprar?";
             Label(new Rect(30, 10, 848, 54), prompt, heading);
             Fit(new Rect(930, 10, 320, 54), menu.Shop.Name, heading);
@@ -52,8 +58,8 @@ namespace DragonQuest.Prototype
             Label(new Rect(30, 86, 1220, 54), detail, description);
 
             float bottom = equipment ? 444 : 652;
-            Rect list = quantity ? new Rect(420, 152, 860, bottom - 152) : new Rect(0, 152, 888, bottom - 152);
-            Rect info = quantity ? new Rect(0, 152, 420, bottom - 152) : new Rect(888, 152, 392, bottom - 152);
+            Rect list = new Rect(0, 152, 888, bottom - 152);
+            Rect info = new Rect(888, 152, 392, bottom - 152);
             theme.Panel(list); theme.Panel(info);
             float listTop = list.y + 14;
             if (equipment)
@@ -68,26 +74,23 @@ namespace DragonQuest.Prototype
                 listTop += 52;
             }
             DrawList(theme, menu, new Rect(list.x + 10, listTop, list.width - 24, bottom - listTop - 14), interactive && !quantity);
-            if (quantity) DrawQuantity(theme, menu, info, interactive);
-            else DrawOwnership(menu, info);
+            DrawOwnership(menu, info);
             if (equipment) DrawComparisons(theme, menu);
             theme.Panel(new Rect(0, 652, 1280, 68));
-            if (quantity)
+            const int count = 3;
+            for (int i = 0; i < count; i++)
             {
-                if (Button(new Rect(76, 664, 300, 42), menu.Selling ? "Vender" : "Comprar", text, interactive && menu.Maximum > 0)) menu.Confirm();
-                if (Button(new Rect(1040, 664, 210, 42), "Cancelar", text, interactive, sound: MenuSound.Cancel)) back();
+                Rect rect = ActionRect(i);
+                string label = i == 0 ? "Comprar" : i == 1 ? "Vender" : "Sair";
+                bool active = i < 2 && (i == 1) == menu.Selling;
+                if (Button(rect, label, text, interactive && !quantity, active ? cyan : Color.white, i == 2 ? MenuSound.Cancel : MenuSound.Confirm)) action(i);
+                if (menu.Phase == ShopMenuPhase.Actions && actionIndex == i) theme.DrawHand(rect);
             }
-            else
+            if (menu.Phase == ShopMenuPhase.Quantity)
             {
-                const int count = 3;
-                for (int i = 0; i < count; i++)
-                {
-                    Rect rect = ActionRect(i);
-                    string label = i == 0 ? "Comprar" : i == 1 ? "Vender" : "Sair";
-                    bool active = i < 2 && (i == 1) == menu.Selling;
-                    if (Button(rect, label, text, interactive, active ? cyan : Color.white, i == 2 ? MenuSound.Cancel : MenuSound.Confirm)) action(i);
-                    if (menu.Phase == ShopMenuPhase.Actions && actionIndex == i) theme.DrawHand(rect);
-                }
+                Fill(new Rect(0, 0, 1280, 720), new Color(0, 0, 0, .58f));
+                GUI.ModalWindow(QuantityWindowId, new Rect(320, 140, 640, 440),
+                    _ => DrawQuantity(theme, menu, interactive, back), "", GUIStyle.none);
             }
             if (Event.current.type == EventType.Repaint) pointer = Event.current.mousePosition;
         }
@@ -155,27 +158,35 @@ namespace DragonQuest.Prototype
                 Fit(new Rect(rect.x + 42, y + 40, rect.width - 84, 42), values[i].ToString(), number);
             }
         }
-        private void DrawQuantity(InventoryMenuPresentation theme, ShopMenuSession menu, Rect rect, bool interactive)
+        private void DrawQuantity(InventoryMenuPresentation theme, ShopMenuSession menu, bool interactive, Action back)
         {
-            float x = rect.x + 32, y = rect.y + 18;
-            Label(new Rect(x, y, 190, 38), "Quantidade", small, cyan);
-            if (Button(new Rect(x + 202, y, 32, 38), "-", text, interactive && menu.Quantity > 1, sound: MenuSound.Navigate)) menu.AdjustQuantity(-1);
-            Fit(new Rect(x + 238, y, 72, 38), menu.Quantity.ToString(), number);
-            if (Button(new Rect(x + 318, y, 32, 38), "+", text, interactive && menu.Quantity < menu.Maximum, sound: MenuSound.Navigate)) menu.AdjustQuantity(1);
-            Label(new Rect(x, y + 48, 180, 34), "Total", small, cyan);
-            Fit(new Rect(x + 170, y + 48, 180, 34), menu.Total.ToString(), number);
-            Label(new Rect(x, y + 92, 215, 34), "Ouro restante", small, cyan);
-            Fit(new Rect(x + 180, y + 132, 170, 34), menu.RemainingGold.ToString(), number);
-            Label(new Rect(x, y + 178, 100, 32), "Possui", small, cyan);
-            Fit(new Rect(x + 105, y + 178, 62, 32), menu.Owned.ToString(), small);
-            Label(new Rect(x + 186, y + 178, 116, 32), "Equipado", small, cyan);
-            Fit(new Rect(x + 314, y + 178, 38, 32), menu.Equipped.ToString(), small);
-            if (rect.height > 310)
+            // Keyboard/controller input is handled once by the shop controller in Update.
+            if (Event.current.type == EventType.KeyDown) Event.current.Use();
+            theme.Panel(new Rect(0, 0, 640, 440));
+            Label(new Rect(36, 22, 568, 48), menu.Selling ? "Confirmar venda" : "Confirmar compra", heading);
+            InventoryPixelArt.Draw(new Rect(36, 86, 48, 48), Texture(menu.Selected));
+            Fit(new Rect(104, 84, 500, 48), menu.Selected.Name, text);
+            Label(new Rect(36, 156, 300, 40), "Quantidade", small, cyan);
+            Fit(new Rect(402, 156, 202, 40), menu.Quantity + " / " + menu.Maximum, number);
+            bool enabled = GUI.enabled;
+            try
             {
-                Label(new Rect(x, y + 246, 190, 38), "Ouro", text, cyan);
-                Fit(new Rect(x + 170, y + 246, 180, 38), menu.Service.Progress.Gold.ToString(), number);
+                GUI.enabled = enabled && interactive && menu.Maximum > 1;
+                int selected = Mathf.RoundToInt(GUI.HorizontalSlider(new Rect(36, 212, 568, 30),
+                    menu.Quantity, 1, Mathf.Max(1, menu.Maximum), slider, sliderThumb));
+                int before = menu.Quantity;
+                if (GUI.enabled) menu.AdjustQuantity(selected - before);
+                MenuSounds.Navigate(before, menu.Quantity);
             }
-            if (Button(new Rect(x + 245, rect.yMax - 48, 108, 32), "Maximo", small, interactive && menu.Maximum > 1, sound: MenuSound.Navigate)) menu.SetMaximum();
+            finally { GUI.enabled = enabled; }
+            Label(new Rect(36, 260, 250, 38), "Total", small, cyan);
+            Fit(new Rect(300, 260, 304, 38), menu.Total.ToString(), number);
+            Label(new Rect(36, 308, 250, 38), "Ouro restante", small, cyan);
+            Fit(new Rect(300, 308, 304, 38), menu.RemainingGold.ToString(), number);
+            Rect confirm = new Rect(36, 370, 270, 48), cancel = new Rect(334, 370, 270, 48);
+            theme.Panel(confirm); theme.Panel(cancel);
+            if (Button(confirm, "Confirmar", buttonText, interactive && menu.Maximum > 0)) menu.Confirm();
+            if (Button(cancel, "Voltar", buttonText, interactive, sound: MenuSound.Cancel)) back();
         }
         private void DrawComparisons(InventoryMenuPresentation theme, ShopMenuSession menu)
         {
