@@ -417,7 +417,7 @@ namespace DragonQuest.Prototype
                 && rect.Contains(Event.current.mousePosition))
                 MenuSounds.Select(ref selectedOption, option, NavigationSoundContext);
             Color previous = GUI.color;
-            if (GUI.enabled && selectedOption == option) GUI.color = new Color(0.96f, 0.8f, 0.48f);
+            if (overwriteSlot == 0 && GUI.enabled && selectedOption == option) GUI.color = new Color(0.96f, 0.8f, 0.48f);
             bool clicked = GUI.Button(rect, label, style);
             GUI.color = previous;
             return !startingNewGame && clicked;
@@ -431,7 +431,9 @@ namespace DragonQuest.Prototype
             else option = selectedOption == SaveStore.SlotCount ? SaveSelectionPresentation.BackRect
                 : SaveSelectionPresentation.SlotRect(selectedOption);
             bool row = page != MenuPage.Title && overwriteSlot == 0 && selectedOption < SaveStore.SlotCount;
-            float left = page == MenuPage.Title
+            float left = overwriteSlot != 0
+                ? option.center.x - buttonStyle.CalcSize(new GUIContent(selectedOption == 0 ? "Salvar jornada" : "Cancelar")).x / 2
+                : page == MenuPage.Title
                 ? option.center.x - titleButtonStyle.CalcSize(new GUIContent(selectedOption == 0 ? "New game" : "Continue")).x / 2
                 : row ? 92 : option.x;
             float width = Mathf.Min(row ? 72 : 44, (row ? 40 : 30) * handAspect), height = width / handAspect;
@@ -476,7 +478,15 @@ namespace DragonQuest.Prototype
             LoadHandSprite();
             titleStyle = PrototypeTypography.Style(GUI.skin.label, 48, true); titleStyle.normal.textColor = new Color(0.96f, 0.8f, 0.48f);
             textStyle = PrototypeTypography.Style(GUI.skin.label, 24); textStyle.wordWrap = true; textStyle.normal.textColor = Color.white;
-            smallStyle = PrototypeTypography.Style(textStyle, 20); buttonStyle = PrototypeTypography.Style(GUI.skin.button, 24);
+            smallStyle = PrototypeTypography.Style(textStyle, 20);
+            buttonStyle = PrototypeTypography.Style(GUI.skin.label, 24);
+            buttonStyle.alignment = TextAnchor.MiddleCenter;
+            buttonStyle.padding = new RectOffset(0, 0, 0, 0);
+            foreach (GUIStyleState state in new[] { buttonStyle.normal, buttonStyle.hover, buttonStyle.active, buttonStyle.focused })
+            {
+                state.textColor = Color.white;
+                state.background = null;
+            }
             titleButtonStyle = PrototypeTypography.Style(GUI.skin.label, 36, true); titleButtonStyle.alignment = TextAnchor.MiddleCenter;
             titleButtonStyle.normal.textColor = Color.white;
             titleButtonStyle.hover.textColor = new Color(0.96f, 0.8f, 0.48f);
