@@ -13,6 +13,8 @@ namespace DragonQuest.Exploration
         private Rigidbody2D body;
         private Vector2 movement;
         private bool movementEnabled = true;
+        private float walkingSpeedMultiplier = 1f;
+        public void SetWalkingSpeedMultiplier(float multiplier) => walkingSpeedMultiplier = multiplier;
         private System.Func<Vector2,Vector2,Vector2> movementConstraint;
         public void SetMovementConstraint(System.Func<Vector2,Vector2,Vector2> constraint)
         { movementConstraint=constraint; }
@@ -75,7 +77,7 @@ namespace DragonQuest.Exploration
             if (IsSideView)
             {
                 Vector2 velocity = movementEnabled && GameInput.IsFocused
-                    ? MovementDynamics.StepVelocity(new Vector2(lateralVelocity, 0), movement * speed * lateralSpeedMultiplier,
+                    ? MovementDynamics.StepVelocity(new Vector2(lateralVelocity, 0), movement * speed * lateralSpeedMultiplier * walkingSpeedMultiplier,
                         Time.fixedDeltaTime, acceleration, deceleration) : Vector2.zero;
                 float x = Mathf.Clamp(body.position.x + velocity.x * Time.fixedDeltaTime, lateralMin, lateralMax);
                 lateralVelocity = x == lateralMin || x == lateralMax ? 0 : velocity.x;
@@ -86,7 +88,7 @@ namespace DragonQuest.Exploration
             // Evita trocar instantaneamente a velocidade e provocar um solavanco na camera.
             // Parte da velocidade resolvida pela fisica, conservando colisao e deslizamento nas paredes.
             body.linearVelocity = movementEnabled && GameInput.IsFocused
-                ? MovementDynamics.StepVelocity(body.linearVelocity, movement * speed, Time.fixedDeltaTime, acceleration, deceleration)
+                ? MovementDynamics.StepVelocity(body.linearVelocity, movement * speed * walkingSpeedMultiplier, Time.fixedDeltaTime, acceleration, deceleration)
                 : Vector2.zero;
             if (movementConstraint != null)
             {
