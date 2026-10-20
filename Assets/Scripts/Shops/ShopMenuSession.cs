@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using DragonQuest.Equipment;
 using DragonQuest.Inventory;
 
@@ -70,6 +71,11 @@ namespace DragonQuest.Shops
             }
             else foreach (ShopProduct product in Shop.Products)
                 if (product.InitialStock > 0 && Matches(product.Equipment)) entries.Add(new ShopMenuEntry(product));
+            if (Shop.Category == ShopCategory.Materia)
+            {
+                var ordered = entries.OrderBy(entry => entry.Materia.Type).ToArray();
+                entries.Clear(); entries.AddRange(ordered);
+            }
             int found = entries.FindIndex(entry => entry.Same(previous));
             Index = found >= 0 ? found : Math.Max(0, Math.Min(Index, entries.Count - 1));
             if (Phase == ShopMenuPhase.Quantity && (found < 0 || Maximum == 0)) Phase = ShopMenuPhase.Browse;
