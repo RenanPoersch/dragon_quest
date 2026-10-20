@@ -81,7 +81,7 @@ namespace DragonQuest.Prototype
             player.SetMovementConstraint(throne ? ThroneRoomLayout.ConstrainMove : compact != null ? compact.ConstrainMove : weapons ? WeaponShopLayout.ConstrainMove : inn ? PrototypeInnLayout.ConstrainMove : forest ? EastForestLayout.ConstrainMove : quarry ? QuarryLayout.ConstrainMove : (System.Func<Vector2,Vector2,Vector2>)null);
             if (throne) arrival=ThroneRoomLayout.SafeSavedPosition(arrival);
             player.SetFrontalView(throne);
-            player.SetWalkingSpeedMultiplier(throne || LocationId == PrototypeTravel.Ruins ? .8f : 1f);
+            player.SetWalkingSpeedMultiplier(throne || LocationId == PrototypeTravel.Ruins ? .64f : 1f);
             throneDepth.enabled=throne;
             cameraFollow.SetPerspectiveView(throne,ThroneRoomLayout.CameraPosition,ThroneRoomLayout.CameraRotation,
                 ThroneRoomLayout.FieldOfView,ThroneRoomLayout.ArtAspect);
