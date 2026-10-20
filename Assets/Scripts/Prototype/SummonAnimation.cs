@@ -23,7 +23,11 @@ namespace DragonQuest.Prototype
                 default: return null;
             }
         }
-        public static int Frame(float elapsed) => Math.Max(0, Math.Min((int)((elapsed - StartDelay) / AttackDuration * 8), 7));
+        private static float AttackDurationFor(AbilityDefinition ability) => Resource(ability) == "PhoenixSummon" ? 3.2f : AttackDuration;
+        public static float DurationFor(AbilityDefinition ability) => StartDelay + AttackDurationFor(ability) + .3f;
+        public static float ImpactDelayFor(AbilityDefinition ability) => StartDelay + AttackDurationFor(ability) * .5f;
+        public static int Frame(float elapsed, AbilityDefinition ability = null)
+            => Math.Max(0, Math.Min((int)((elapsed - StartDelay) / AttackDurationFor(ability) * 8), 7));
         public static string AttackFrameResource(AbilityDefinition ability) => Resource(ability) == "BahamutSummon"
             ? "BahamutAttack" : Resource(ability) == "PhoenixSummon" ? "PhoenixAttack" : null;
         // This selects visual impact art only; the battle's damage element is untouched.
@@ -33,7 +37,8 @@ namespace DragonQuest.Prototype
         public bool Draw(AbilityDefinition ability, float elapsed)
         {
             string resource = Resource(ability);
-            if (resource == null || elapsed < StartDelay || elapsed >= StartDelay + AttackDuration) return false;
+            float attackDuration = AttackDurationFor(ability);
+            if (resource == null || elapsed < StartDelay || elapsed >= StartDelay + attackDuration) return false;
             if (!sheets.TryGetValue(resource, out BattleAnimationSheet sheet))
             {
                 sheet = new BattleAnimationSheet("PixelArt/Summons/" + resource, 4, 2, false);
@@ -43,8 +48,8 @@ namespace DragonQuest.Prototype
                 sheets[resource] = sheet;
             }
             float fade = Math.Min(1, Math.Min((elapsed - StartDelay) / .15f,
-                (StartDelay + AttackDuration - elapsed) / .2f));
-            return sheet.Draw(new Vector2(720, 390), 300, Frame(elapsed), new Color(1, 1, 1, Math.Max(0, fade)));
+                (StartDelay + attackDuration - elapsed) / .2f));
+            return sheet.Draw(new Vector2(720, 390), 300, Frame(elapsed, ability), new Color(1, 1, 1, Math.Max(0, fade)));
         }
     }
 }

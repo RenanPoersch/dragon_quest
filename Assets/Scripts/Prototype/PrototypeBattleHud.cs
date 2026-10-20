@@ -450,17 +450,18 @@ namespace DragonQuest.Prototype
             if (controller.IsPresentingAction && controller.IsPresentingSummon)
             {
                 float elapsed = Time.unscaledTime - controller.ActionStartedAt;
+                float impactDelay = SummonAnimation.ImpactDelayFor(controller.PresentingAbility);
                 summonAnimation.Draw(controller.PresentingAbility, elapsed);
                 AbilityDefinition impact = SummonAnimation.ImpactEffect(controller.PresentingAbility);
-                if (elapsed >= SummonAnimation.ImpactDelay - .15f)
+                if (elapsed >= impactDelay - .15f)
                     foreach (CombatantState target in controller.PresentingTargets)
                         spellAnimation.Draw(FigureRect(target), impact,
-                            elapsed - SummonAnimation.ImpactDelay + SpellAnimation.ImpactDelay);
+                            elapsed - impactDelay + SpellAnimation.ImpactDelayFor(impact));
                 if (controller.PresentingAbility.PartyEffect == PartyEffect.RestoreAndRevive
-                    && elapsed >= SummonAnimation.ImpactDelay - .15f)
+                    && elapsed >= impactDelay - .15f)
                     foreach (CombatantState ally in controller.PresentingPartyTargets)
                         spellAnimation.Draw(FigureRect(ally), PrototypeBattleFactory.Heal,
-                            elapsed - SummonAnimation.ImpactDelay + SpellAnimation.ImpactDelay);
+                            elapsed - impactDelay + SpellAnimation.ImpactDelayFor(PrototypeBattleFactory.Heal));
             }
             if (controller.IsPresentingAction && controller.IsPresentingSpell)
                 foreach (CombatantState target in controller.PresentingTargets)

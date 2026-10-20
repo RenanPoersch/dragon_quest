@@ -102,7 +102,7 @@ namespace DragonQuest.Prototype
         public bool IsPresentingSummon => SummonAnimation.Resource(PresentingAbility) != null;
         public float ActionDuration => IsPresentingDragonAttack ? DragonAttackAnimation.Duration(PresentingAbility.Id)
             : IsPresentingUltimate ? UltimateTimeline.Duration(PresentingAbility)
-            : IsPresentingSummon ? SummonAnimation.Duration : IsPresentingSpell ? SpellAnimation.Duration
+            : IsPresentingSummon ? SummonAnimation.DurationFor(PresentingAbility) : IsPresentingSpell ? SpellAnimation.DurationFor(PresentingAbility)
             : BattleAnimationCatalog.Duration(PresentingActor?.Id, PresentingAbility);
         public bool IsDestructiveMeteor => IsActive
             && CastleMeteorPresentation.IsMeteor(PresentingActor?.Id, PresentingAbility)
@@ -120,8 +120,8 @@ namespace DragonQuest.Prototype
         public float ActionImpactAt => ActionStartedAt
             + (IsDestructiveMeteor ? CastleMeteorPresentation.ThrowImpactAt
             : IsPresentingDragonAttack ? DragonAttackAnimation.ImpactDelay(PresentingAbility.Id)
-            : IsPresentingUltimate ? UltimateTimeline.ImpactDelay(PresentingAbility) : IsPresentingSummon ? SummonAnimation.ImpactDelay
-            : IsPresentingSpell ? SpellAnimation.ImpactDelay : BattleAnimationCatalog.ImpactDelay(PresentingActor?.Id, PresentingAbility));
+            : IsPresentingUltimate ? UltimateTimeline.ImpactDelay(PresentingAbility) : IsPresentingSummon ? SummonAnimation.ImpactDelayFor(PresentingAbility)
+            : IsPresentingSpell ? SpellAnimation.ImpactDelayFor(PresentingAbility) : BattleAnimationCatalog.ImpactDelay(PresentingActor?.Id, PresentingAbility));
         public int AttackPose => BattleAnimationCatalog.Frame(BattleAnimationCatalog.Resource(PresentingActor?.Id, PresentingAbility),
             Time.unscaledTime - ActionStartedAt, ActionDuration);
 
