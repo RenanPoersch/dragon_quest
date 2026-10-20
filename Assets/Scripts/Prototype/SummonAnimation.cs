@@ -23,12 +23,14 @@ namespace DragonQuest.Prototype
                 default: return null;
             }
         }
-        private static float AttackDurationFor(AbilityDefinition ability) => Resource(ability) == "PhoenixSummon" ? 3.2f : AttackDuration;
-        private static float TimeScaleFor(AbilityDefinition ability) => Resource(ability) == "PhoenixSummon" ? 2f : 1f;
-        public static float DurationFor(AbilityDefinition ability) => (StartDelay + AttackDurationFor(ability) + .3f) * TimeScaleFor(ability);
-        public static float ImpactDelayFor(AbilityDefinition ability) => (StartDelay + AttackDurationFor(ability) * .5f) * TimeScaleFor(ability);
+        private static float FireHoldFor(AbilityDefinition ability) => Resource(ability) == "PhoenixSummon" ? 1.3f : 0f;
+        // Hold the flame pose while arrival and recovery keep their normal speed.
+        private static float AnimationTimeFor(float elapsed, AbilityDefinition ability)
+            => elapsed < ImpactDelay ? elapsed : Math.Max(ImpactDelay, elapsed - FireHoldFor(ability));
+        public static float DurationFor(AbilityDefinition ability) => Duration + FireHoldFor(ability);
+        public static float ImpactDelayFor(AbilityDefinition ability) => ImpactDelay;
         public static int Frame(float elapsed, AbilityDefinition ability = null)
-            => Math.Max(0, Math.Min((int)((elapsed / TimeScaleFor(ability) - StartDelay) / AttackDurationFor(ability) * 8), 7));
+            => Math.Max(0, Math.Min((int)((AnimationTimeFor(elapsed, ability) - StartDelay) / AttackDuration * 8), 7));
         public static string AttackFrameResource(AbilityDefinition ability) => Resource(ability) == "BahamutSummon"
             ? "BahamutAttack" : Resource(ability) == "PhoenixSummon" ? "PhoenixAttack" : null;
         // This selects visual impact art only; the battle's damage element is untouched.
@@ -38,9 +40,8 @@ namespace DragonQuest.Prototype
         public bool Draw(AbilityDefinition ability, float elapsed)
         {
             string resource = Resource(ability);
-            float attackDuration = AttackDurationFor(ability);
-            float scaledElapsed = elapsed / TimeScaleFor(ability);
-            if (resource == null || scaledElapsed < StartDelay || scaledElapsed >= StartDelay + attackDuration) return false;
+            float animationTime = AnimationTimeFor(elapsed, ability);
+            if (resource == null || animationTime < StartDelay || animationTime >= StartDelay + AttackDuration) return false;
             if (!sheets.TryGetValue(resource, out BattleAnimationSheet sheet))
             {
                 sheet = new BattleAnimationSheet("PixelArt/Summons/" + resource, 4, 2, false);
@@ -49,8 +50,8 @@ namespace DragonQuest.Prototype
                     Debug.LogWarning("Quadro de ataque completo ausente: " + attack);
                 sheets[resource] = sheet;
             }
-            float fade = Math.Min(1, Math.Min((scaledElapsed - StartDelay) / .15f,
-                (StartDelay + attackDuration - scaledElapsed) / .2f));
+            float fade = Math.Min(1, Math.Min((animationTime - StartDelay) / .15f,
+                (StartDelay + AttackDuration - animationTime) / .2f));
             return sheet.Draw(new Vector2(720, 390), 300, Frame(elapsed, ability), new Color(1, 1, 1, Math.Max(0, fade)));
         }
     }
