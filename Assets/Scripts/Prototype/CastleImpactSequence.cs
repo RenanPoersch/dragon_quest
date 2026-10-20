@@ -5,7 +5,7 @@ namespace DragonQuest.Prototype
     // A separate unscaled clock keeps the existing hillside epilogue at its original pace.
     public sealed class CastleImpactSequence
     {
-        public const float FadeInDuration = 1.4f, MeteorStart = 3, FallDuration = 13;
+        public const float FadeInDuration = 3.2f, MeteorStart = FadeInDuration + 1.6f, FallDuration = 13;
         public const float ImpactAt = MeteorStart + FallDuration;
         public const float FlashDuration = .45f, WhiteHold = 1.4f;
         public const float CompleteAt = ImpactAt + FlashDuration + WhiteHold;

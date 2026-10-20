@@ -5,7 +5,7 @@ namespace DragonQuest.Prototype
     // Speech and prosperity share one unscaled clock; neither text is lost in the dissolve.
     public sealed class KingFreedSequence
     {
-        public const float FadeInDuration = 1.4f, TextStart = 2.2f;
+        public const float FadeInDuration = 3.2f, TextStart = FadeInDuration + .8f;
         public const float TextWindowHeight = 324, LineHeight = 34, ScrollSpeed = 29;
         public const float EndHold = 1.8f, DissolveDuration = 3, ProsperityHold = 1.4f;
         public const float FadeOutDuration = 3, BlackHold = 1;

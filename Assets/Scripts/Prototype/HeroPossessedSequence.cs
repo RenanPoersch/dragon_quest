@@ -6,11 +6,11 @@ namespace DragonQuest.Prototype
     // One unscaled clock drives the upward camera, narration, lightning and fades.
     public sealed class HeroPossessedSequence
     {
-        public const float FadeInDuration = CastleDestroyedSequence.FadeInDuration;
-        public const float CameraStart = 1.4f, CarpetDuration = 9, StairDuration = 10, RevealDuration = 8;
+        public const float FadeInDuration = 3.2f;
+        public const float CameraStart = FadeInDuration, CarpetDuration = 9, StairDuration = 10, RevealDuration = 8;
         public const float CameraStopAt = CameraStart + CarpetDuration + StairDuration + RevealDuration;
         public const float FinalCameraFocusY = .16f;
-        public const float TextStart = 2.2f, TextWindowHeight = 324, LineHeight = 34, ScrollSpeed = 29;
+        public const float TextStart = FadeInDuration + .8f, TextWindowHeight = 324, LineHeight = 34, ScrollSpeed = 29;
         public const float EndHold = CastleDestroyedSequence.EndHold;
         public const float FadeOutDuration = CastleDestroyedSequence.FadeOutDuration;
         public const float BlackHold = CastleDestroyedSequence.BlackHold;
