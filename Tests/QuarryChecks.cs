@@ -21,6 +21,27 @@ class QuarryChecks
             Check(QuarryLayout.SafeSavedPosition(block.Position) == QuarryLayout.Spawn, "Save inside totem recovers");
         }
         Check(QuarryLayout.SafeSavedPosition(QuarryLayout.Spawn) == QuarryLayout.Spawn, "Valid saved position remains valid");
+        foreach (Vector2 uv in new[] { new Vector2(.36f,.72f), new Vector2(.39f,.70f),
+            new Vector2(.42f,.75f), new Vector2(.40f,.80f), new Vector2(.44f,.79f) })
+        {
+            Vector2 stone = QuarryLayout.Ground(uv.x,uv.y);
+            Check(!QuarryLayout.IsWalkable(stone), "Entire painted inscription stone blocks walking");
+            Check(QuarryLayout.SafeSavedPosition(stone) == QuarryLayout.Spawn, "Save on painted inscription recovers");
+        }
+        foreach (Vector2 uv in new[] { new Vector2(.33f,.78f), new Vector2(.48f,.79f),
+            new Vector2(.41f,.86f), new Vector2(.40f,.65f) })
+            Check(QuarryLayout.IsWalkable(QuarryLayout.Ground(uv.x,uv.y)), "Gravel around inscription stays open");
+        foreach (var crossing in new[] { (new Vector2(.32f,.75f),new Vector2(.48f,.75f)),
+            (new Vector2(.48f,.75f),new Vector2(.32f,.75f)),
+            (new Vector2(.40f,.65f),new Vector2(.40f,.86f)),
+            (new Vector2(.40f,.86f),new Vector2(.40f,.65f)) })
+        {
+            Vector2 start = QuarryLayout.Ground(crossing.Item1.x,crossing.Item1.y);
+            Vector2 end = QuarryLayout.Ground(crossing.Item2.x,crossing.Item2.y);
+            Vector2 stop = QuarryLayout.ConstrainMove(start,end-start);
+            Check(QuarryLayout.IsWalkable(stop), "Movement into inscription stops on gravel");
+            Check(Vector2.Distance(stop,end) > .3f, "Large moves cannot cross the painted inscription");
+        }
         var seen = new HashSet<(int,int)>(); var pending = new Queue<(int,int)>();
         Vector2 spawn = QuarryLayout.ImagePoint(QuarryLayout.Spawn);
         var first = ((int)Math.Round(spawn.x*200),(int)Math.Round(spawn.y*200));

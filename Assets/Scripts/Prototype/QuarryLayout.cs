@@ -22,7 +22,14 @@ namespace DragonQuest.Prototype
             Stone("Monolito - Lua", .29f, .68f),
             Stone("Monolito - Estrela", .52f, .57f)
         });
-        public static IReadOnlyList<CityBlock> Obstacles { get; } = CreateObstacles();
+        // Trace the whole painted stone, including its sloping face, in backdrop coordinates.
+        // The physical collider and movement constraint share this convex contour.
+        public static IReadOnlyList<Vector2> InscriptionOutline { get; } = Array.AsReadOnly(new[]
+        {
+            Ground(.350f,.704f), Ground(.365f,.693f), Ground(.417f,.678f), Ground(.425f,.690f),
+            Ground(.454f,.803f), Ground(.396f,.825f), Ground(.372f,.811f), Ground(.352f,.747f)
+        });
+        private static readonly Rect InscriptionBounds = OutlineBounds();
         private static readonly Vector2[] Floor = {
             new Vector2(.19f,.60f), new Vector2(.32f,.55f), new Vector2(.43f,.51f),
             new Vector2(.48f,.48f), new Vector2(.58f,.49f), new Vector2(.65f,.55f),
@@ -39,11 +46,12 @@ namespace DragonQuest.Prototype
             return new CityBlock(name, p.x, p.y, 1.25f, .90f, "8A8A7B", true, 2);
         }
 
-        private static IReadOnlyList<CityBlock> CreateObstacles()
+        private static Rect OutlineBounds()
         {
-            var blocks = new List<CityBlock>(Monoliths);
-            blocks.Add(new CityBlock("Inscricao da pedreira", Inscription.x, Inscription.y, 1.6f, .9f, "8A8A7B", true, 2));
-            return blocks.AsReadOnly();
+            Vector2 min = InscriptionOutline[0], max = min;
+            foreach (Vector2 point in InscriptionOutline)
+            { min = Vector2.Min(min,point); max = Vector2.Max(max,point); }
+            return Rect.MinMaxRect(min.x,min.y,max.x,max.y);
         }
 
         public static Vector2 Ground(float u, float v) => EastForestLayout.Ground(u, v);
@@ -77,9 +85,31 @@ namespace DragonQuest.Prototype
             const float margin = .006f;
             if (!Inside(p + new Vector2(-margin,-margin)) || !Inside(p + new Vector2(margin,-margin))
                 || !Inside(p + new Vector2(margin,margin)) || !Inside(p + new Vector2(-margin,margin))) return false;
-            foreach (CityBlock block in Obstacles)
+            foreach (CityBlock block in Monoliths)
                 if (Overlaps(ground, block.Position, block.Size)) return false;
-            return !Overlaps(ground, Worker, new Vector2(.55f,.6f));
+            return !OverlapsInscription(ground) && !Overlaps(ground, Worker, new Vector2(.55f,.6f));
+        }
+
+        private static bool OverlapsInscription(Vector2 feet)
+        {
+            if (!Overlaps(feet,InscriptionBounds.center,InscriptionBounds.size)) return false;
+            // Separating axes test the player's full box against every sloping stone edge.
+            // These half extents include the same small clearance as the other quarry obstacles.
+            for (int i = 0; i < InscriptionOutline.Count; i++)
+            {
+                Vector2 edge = InscriptionOutline[(i+1)%InscriptionOutline.Count]-InscriptionOutline[i];
+                Vector2 axis = new Vector2(-edge.y,edge.x);
+                float min = float.PositiveInfinity, max = float.NegativeInfinity;
+                foreach (Vector2 point in InscriptionOutline)
+                {
+                    float projection = Vector2.Dot(point,axis);
+                    min = Math.Min(min,projection); max = Math.Max(max,projection);
+                }
+                float center = Vector2.Dot(feet,axis);
+                float radius = Math.Abs(axis.x)*.285f+Math.Abs(axis.y)*.31f;
+                if (max <= center-radius || min >= center+radius) return false;
+            }
+            return true;
         }
 
         private static bool Overlaps(Vector2 feet, Vector2 obstacle, Vector2 size)

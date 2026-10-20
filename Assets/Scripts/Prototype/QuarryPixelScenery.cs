@@ -71,9 +71,12 @@ namespace DragonQuest.Prototype
                 interaction.Initialize(SecretObject.Monolith, progress, symbol, glow);
                 interactions.Add(interaction);
             }
-            CityBlock plaque = QuarryLayout.Obstacles[QuarryLayout.Obstacles.Count-1];
-            GameObject inscription = Anchor(plaque.Name, plaque.Position);
-            AddCollider(inscription, plaque.Size, physics);
+            GameObject inscription = Anchor("Inscricao da pedreira", QuarryLayout.Inscription);
+            var outline = new Vector2[QuarryLayout.InscriptionOutline.Count];
+            for (int i = 0; i < outline.Length; i++)
+                outline[i] = QuarryLayout.InscriptionOutline[i]-QuarryLayout.Inscription;
+            var stoneCollider = inscription.AddComponent<PolygonCollider2D>();
+            stoneCollider.points = outline; stoneCollider.sharedMaterial = physics;
             var reading = inscription.AddComponent<AncientSecretInteraction>();
             reading.Initialize(SecretObject.Inscription, progress); interactions.Add(reading);
         }
