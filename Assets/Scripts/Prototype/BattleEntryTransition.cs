@@ -35,7 +35,6 @@ namespace DragonQuest.Prototype
         public bool HidesBattle => IsPlaying && !Sequence.ShowsBattle;
         private RenderTexture snapshot, frame;
         private Material swirl;
-        private Color coverColor = Color.black;
 
         public void Begin()
         {
@@ -50,9 +49,6 @@ namespace DragonQuest.Prototype
             Shader shader = Resources.Load<Shader>("BattleEntrySwirl");
             if (shader == null || !shader.isSupported) return;
             swirl = new Material(shader) { name = "Battle entry / swirl", hideFlags = HideFlags.HideAndDontSave };
-            bool replaceBlack = GetComponent<PrototypeBattleController>()?.IsCastleEncounter == true;
-            swirl.SetFloat("_WhiteShadows", replaceBlack ? 1 : 0);
-            coverColor = replaceBlack ? Color.white : Color.black;
             CaptureExploration(view);
             Sequence.Begin();
             RenderSwirl();
@@ -67,30 +63,46 @@ namespace DragonQuest.Prototype
             RenderTexture previousTarget = view.targetTexture;
             RenderTexture previousActive = RenderTexture.active;
             float previousAspect = view.aspect;
+            float previousFieldOfView = view.fieldOfView;
             Rect previousViewport = view.rect;
+            RenderTexture artwork = null;
             try
             {
+                RenderTexture destination = snapshot;
+                if (!view.orthographic && GetComponent<PrototypeBattleController>()?.IsCastleEncounter == true)
+                {
+                    // Capture the painting's full frame, then stretch it to the display.
+                    // Otherwise the exploration camera's letterbox becomes black spiral bands.
+                    artwork = CreateTexture("Battle entry / full artwork", Mathf.RoundToInt(height * ThroneRoomLayout.ArtAspect), height, 24);
+                    view.rect = new Rect(0, 0, 1, 1);
+                    view.aspect = ThroneRoomLayout.ArtAspect;
+                    view.fieldOfView = ThroneRoomLayout.FieldOfView;
+                    destination = artwork;
+                }
                 // Render the exploration camera directly. A screen backbuffer can be empty in
                 // the Editor or while changing views, and ScreenCapture is an optional module.
-                RenderTexture.active = snapshot;
+                RenderTexture.active = destination;
                 GL.Clear(true, true, Color.black);
                 if (GraphicsSettings.currentRenderPipeline != null)
                 {
-                    var request = new RenderPipeline.StandardRequest { destination = snapshot };
+                    var request = new RenderPipeline.StandardRequest { destination = destination };
                     RenderPipeline.SubmitRenderRequest(view, request);
                 }
                 else
                 {
-                    view.targetTexture = snapshot;
+                    view.targetTexture = destination;
                     view.Render();
                 }
+                if (artwork != null) Graphics.Blit(artwork, snapshot);
             }
             finally
             {
                 view.targetTexture = previousTarget;
                 view.aspect = previousAspect;
+                view.fieldOfView = previousFieldOfView;
                 view.rect = previousViewport;
                 RenderTexture.active = previousActive;
+                if (artwork != null) { artwork.Release(); DestroyOwned(artwork); }
             }
         }
 
@@ -142,7 +154,7 @@ namespace DragonQuest.Prototype
                 }
                 else
                 {
-                    GUI.color = new Color(coverColor.r, coverColor.g, coverColor.b, Sequence.BlackOpacity);
+                    GUI.color = new Color(0, 0, 0, Sequence.BlackOpacity);
                     GUI.DrawTexture(viewport, Texture2D.whiteTexture);
                 }
             }
@@ -153,7 +165,6 @@ namespace DragonQuest.Prototype
         public void Cancel()
         {
             Sequence.Cancel();
-            coverColor = Color.black;
             ReleaseTextures();
         }
         private void ReleaseTextures()

@@ -28,7 +28,7 @@ public static class BattleEntryUnityChecks
             ValidateFullScreenRotation();
             ValidateLiquidFlow();
             ValidateCameraCapture();
-            ValidateFinalBattleShadows();
+            ValidateFinalBattleFraming();
             Debug.Log("BATTLE_ENTRY_UNITY_CHECKS_OK: " + checks + " checks.");
             EditorApplication.Exit(0);
         }
@@ -182,20 +182,17 @@ public static class BattleEntryUnityChecks
         }
     }
 
-    private static void ValidateFinalBattleShadows()
+    private static void ValidateFinalBattleFraming()
     {
         var scene = EditorSceneManager.NewPreviewScene();
-        var root = new GameObject("Battle entry / throne room shadow visibility");
+        var root = new GameObject("Battle entry / full screen throne room");
         UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(root, scene);
         root.AddComponent<ThroneRoomPixelScenery>().Build();
         var cameraObject = new GameObject("Final encounter / actual perspective camera"); cameraObject.transform.SetParent(root.transform, false);
         var camera = cameraObject.AddComponent<Camera>();
         camera.transform.position = ThroneRoomLayout.CameraPosition; camera.transform.rotation = ThroneRoomLayout.CameraRotation;
-        camera.fieldOfView = ThroneRoomLayout.FieldOfView; camera.aspect = 1280f / 720;
         camera.overrideSceneCullingMask = EditorSceneManager.GetSceneCullingMask(scene);
         camera.clearFlags = CameraClearFlags.SolidColor; camera.backgroundColor = Color.black;
-        var originalTarget = new RenderTexture(1280, 720, 24);
-        var readback = new Texture2D(1280, 720, TextureFormat.RGBA32, false);
         var previous = RenderTexture.active;
         var heroObject = new GameObject("Party"); heroObject.transform.SetParent(root.transform, false);
         var hero = heroObject.AddComponent<PlayerMovement>(); typeof(PlayerMovement).GetMethod("Awake", Private).Invoke(hero, null);
@@ -205,73 +202,80 @@ public static class BattleEntryUnityChecks
         var begin = typeof(BattleEntryTransition).GetMethod("BeginFromCamera", Private);
         var render = typeof(BattleEntryTransition).GetMethod("RenderSwirl", Private);
         var frameField = typeof(BattleEntryTransition).GetField("frame", Private);
-        var materialField = typeof(BattleEntryTransition).GetField("swirl", Private);
+        var snapshotField = typeof(BattleEntryTransition).GetField("snapshot", Private);
         string output = Environment.GetEnvironmentVariable("DQ_BATTLE_ENTRY_OUTPUT");
         if (string.IsNullOrEmpty(output)) output = Path.GetFullPath("Temp/BattleEntryPreview");
         Directory.CreateDirectory(output);
         try
         {
-            camera.targetTexture = originalTarget; camera.Render();
-            var reference = Read(originalTarget, readback);
-            Check(reference.Count(p => p.r > 30 || p.g > 30 || p.b > 30) > reference.Length * .6,
-                "shadow correction uses the actual throne room camera and original painting");
-            begin.Invoke(transition, new object[] { camera });
-            Check(((Material)materialField.GetValue(transition)).GetFloat("_WhiteShadows") == 0,
-                "ordinary encounters keep their approved vortex colors");
-            transition.Cancel();
             battle.StartCastleBattle();
-            Check(battle.IsCastleEncounter, "the final encounter enables the throne room treatment");
-            begin.Invoke(transition, new object[] { camera });
-            var material = (Material)materialField.GetValue(transition);
-            var frame = (RenderTexture)frameField.GetValue(transition);
-            Check(material.GetFloat("_WhiteShadows") == 1, "final battle capture selects white shadows automatically");
-            var snapshot = (RenderTexture)typeof(BattleEntryTransition).GetField("snapshot", Private).GetValue(transition);
-            Check(Difference(reference, Read(snapshot, readback)) < 2, "the original exploration capture keeps its original colors");
-            var first = Read(frame, readback);
-            File.WriteAllBytes(Path.Combine(output, "throne-vortex-start-white.png"), readback.EncodeToPNG());
-            int sourceBlack = 0, convertedWhite = 0;
-            for (int i = 0; i < reference.Length; i++)
-                if (Math.Max(reference[i].r, Math.Max(reference[i].g, reference[i].b)) < 50)
+            Check(battle.IsCastleEncounter, "the final encounter uses its painting's native frame");
+            foreach (var size in new[] { new Vector2Int(1280, 720), new Vector2Int(1280, 800), new Vector2Int(960, 720), new Vector2Int(1920, 810) })
+            {
+                var originalTarget = new RenderTexture(size.x, size.y, 24);
+                var nativeTarget = new RenderTexture(Mathf.RoundToInt(size.y * ThroneRoomLayout.ArtAspect), size.y, 24)
+                    { filterMode = FilterMode.Bilinear };
+                var readback = new Texture2D(size.x, size.y, TextureFormat.RGBA32, false);
+                try
                 {
-                    sourceBlack++;
-                    if (first[i].r > 250 && first[i].g > 250 && first[i].b > 250) convertedWhite++;
+                    // Reference: the complete original painting, stretched without a color filter.
+                    camera.targetTexture = nativeTarget; camera.rect = new Rect(0, 0, 1, 1);
+                    camera.aspect = ThroneRoomLayout.ArtAspect; camera.fieldOfView = ThroneRoomLayout.FieldOfView;
+                    camera.Render(); Graphics.Blit(nativeTarget, originalTarget);
+                    var expected = Read(originalTarget, readback);
+
+                    camera.targetTexture = originalTarget; camera.aspect = (float)size.x / size.y;
+                    camera.fieldOfView = CameraFollow.PerspectiveFieldOfView(ThroneRoomLayout.FieldOfView, camera.aspect, ThroneRoomLayout.ArtAspect);
+                    // Also exercise an explicit letterboxed camera viewport.
+                    camera.rect = size.x == 1280 && size.y == 800 ? new Rect(0, .08f, 1, .84f) : new Rect(0, 0, 1, 1);
+                    float aspect = camera.aspect, fieldOfView = camera.fieldOfView;
+                    Rect viewport = camera.rect;
+                    Matrix4x4 projection = camera.projectionMatrix;
+                    camera.Render();
+                    var exploration = Read(originalTarget, readback);
+                    File.WriteAllBytes(Path.Combine(output, "throne-exploration-" + size.x + "x" + size.y + ".png"), readback.EncodeToPNG());
+                    if (size.x == 960)
+                        Check(exploration.Take(size.x).All(p => p.r < 3 && p.g < 3 && p.b < 3),
+                            "the real exploration framing reproduces the black top and bottom bars at 4:3");
+                    RenderTexture.active = previous;
+                    begin.Invoke(transition, new object[] { camera });
+                    Check(camera.targetTexture == originalTarget && camera.rect == viewport && Mathf.Approximately(camera.aspect, aspect)
+                        && Mathf.Approximately(camera.fieldOfView, fieldOfView) && camera.projectionMatrix == projection
+                        && RenderTexture.active == previous, "full screen capture restores exploration camera framing and render state at " + size);
+                    var snapshot = (RenderTexture)snapshotField.GetValue(transition);
+                    var frame = (RenderTexture)frameField.GetValue(transition);
+                    Check(snapshot.width == size.x && snapshot.height == size.y && frame.width == size.x && frame.height == size.y,
+                        "the vortex covers the entire display at " + size);
+                    var capture = Read(snapshot, readback);
+                    Check(Difference(expected, capture) < 2, "the capture stretches the entire painting and preserves its natural colors at " + size);
+                    var first = Read(frame, readback);
+                    Check(Difference(capture, first) < 2, "the first vortex frame preserves all source colors, including dark pixels at " + size);
+                    Check(first.Take(size.x).Count(p => p.r > 10 || p.g > 10 || p.b > 10) > size.x * .7
+                        && first.Skip((size.y - 1) * size.x).Count(p => p.r > 10 || p.g > 10 || p.b > 10) > size.x * .7,
+                        "scene pixels fill the top and bottom instead of black letterbox bands at " + size);
+                    File.WriteAllBytes(Path.Combine(output, "throne-vortex-start-" + size.x + "x" + size.y + ".png"), readback.EncodeToPNG());
+                    transition.Sequence.Advance(BattleEntrySequence.SwirlDuration * .5f); render.Invoke(transition, null);
+                    var winding = Read(frame, readback);
+                    Check(Difference(first, winding) > 15, "the stretched scene still forms the liquid vortex at " + size);
+                    Check(winding.Count(p => p.r < 3 && p.g < 3 && p.b < 3) < winding.Length * .01,
+                        "empty letterbox pixels do not spread into the moving vortex at " + size);
+                    File.WriteAllBytes(Path.Combine(output, "throne-vortex-moving-" + size.x + "x" + size.y + ".png"), readback.EncodeToPNG());
+                    transition.Cancel();
+                    camera.Render();
+                    Check(Difference(exploration, Read(originalTarget, readback)) < 2,
+                        "exploration renders with its original framing after the vortex capture at " + size);
                 }
-            Check(sourceBlack > 1000 && convertedWhite > sourceBlack * .99,
-                "source blacks become pure white on the first vortex frame: " + convertedWhite + " / " + sourceBlack);
-            Check((Color)typeof(BattleEntryTransition).GetField("coverColor", Private).GetValue(transition) == Color.white,
-                "the final battle reveal uses a white cover without returning to black");
-            transition.Sequence.Advance(BattleEntrySequence.SwirlDuration * .5f);
-            material.SetFloat("_WhiteShadows", 0); render.Invoke(transition, null);
-            var before = Read(frame, readback);
-            File.WriteAllBytes(Path.Combine(output, "throne-vortex-before.png"), readback.EncodeToPNG());
-            material.SetFloat("_WhiteShadows", 1); render.Invoke(transition, null);
-            var after = Read(frame, readback);
-            File.WriteAllBytes(Path.Combine(output, "throne-vortex-after.png"), readback.EncodeToPNG());
-            int darkBefore = before.Count(p => Math.Max(p.r, Math.Max(p.g, p.b)) < 30);
-            int darkAfter = after.Count(p => Math.Max(p.r, Math.Max(p.g, p.b)) < 30);
-            Check(darkBefore > 1000 && darkAfter < darkBefore * .5,
-                "near-black regions no longer dominate the final vortex: " + darkBefore + " -> " + darkAfter);
-            double brightnessBefore = before.Average(p => (.2126 * p.r + .7152 * p.g + .0722 * p.b));
-            double brightnessAfter = after.Average(p => (.2126 * p.r + .7152 * p.g + .0722 * p.b));
-            Check(brightnessAfter > brightnessBefore + 45, "white source bands dominate the vortex instead of near-black shadows");
-            Check(after.Count(p => p.r > 220 && p.g > 220 && p.b > 220) > after.Length * .20,
-                "the moving vortex contains clearly white bands rather than a subtle grey lift");
-            int highlights = 0, preserved = 0;
-            for (int i = 0; i < reference.Length; i++)
-                if (Math.Max(reference[i].r, Math.Max(reference[i].g, reference[i].b)) > 200)
+                finally
                 {
-                    highlights++;
-                    if (Math.Abs(reference[i].r - first[i].r) <= 2 && Math.Abs(reference[i].g - first[i].g) <= 2
-                        && Math.Abs(reference[i].b - first[i].b) <= 2) preserved++;
+                    transition.Cancel(); camera.targetTexture = null; RenderTexture.active = previous;
+                    originalTarget.Release(); nativeTarget.Release();
+                    UnityEngine.Object.DestroyImmediate(originalTarget); UnityEngine.Object.DestroyImmediate(nativeTarget); UnityEngine.Object.DestroyImmediate(readback);
                 }
-            Check(highlights > 100 && preserved > highlights * .99, "bright flames and stained glass keep their original colors");
-            transition.Sequence.Advance(BattleEntrySequence.SwirlDuration); render.Invoke(transition, null);
-            Check(Read(frame, readback).All(p => p.r == 255 && p.g == 255 && p.b == 255), "the final handoff is fully white instead of black");
+            }
         }
         finally
         {
             transition.Cancel(); camera.targetTexture = null; RenderTexture.active = previous;
-            originalTarget.Release(); UnityEngine.Object.DestroyImmediate(originalTarget); UnityEngine.Object.DestroyImmediate(readback);
             EditorSceneManager.ClosePreviewScene(scene);
         }
     }
@@ -377,6 +381,7 @@ public static class BattleEntryUnityChecks
         Shader shader = Resources.Load<Shader>("BattleEntrySwirl");
         Check(shader != null && shader.isSupported, "vortex shader is included and supported");
         var material = new Material(shader);
+        Check(!material.HasProperty("_WhiteShadows"), "the vortex has no black-to-white color replacement");
         string output = Environment.GetEnvironmentVariable("DQ_BATTLE_ENTRY_OUTPUT");
         if (string.IsNullOrEmpty(output)) output = Path.GetFullPath("Temp/BattleEntryPreview");
         Directory.CreateDirectory(output);

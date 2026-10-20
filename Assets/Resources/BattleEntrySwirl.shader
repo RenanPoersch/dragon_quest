@@ -5,7 +5,6 @@ Shader "Hidden/DragonQuest/BattleEntrySwirl"
         _MainTex ("Exploration screen", 2D) = "black" {}
         _Progress ("Vortex progress", Range(0,1)) = 0
         _Aspect ("Screen aspect", Float) = 1.777778
-        _WhiteShadows ("Replace dark final-encounter pixels with white", Range(0,1)) = 0
     }
     SubShader
     {
@@ -17,7 +16,7 @@ Shader "Hidden/DragonQuest/BattleEntrySwirl"
             #pragma fragment frag
             #include "UnityCG.cginc"
             sampler2D _MainTex;
-            float _Progress, _Aspect, _WhiteShadows;
+            float _Progress, _Aspect;
 
             float3 FlowSample(float2 radialPosition, float angle, float2 aspect)
             {
@@ -26,19 +25,7 @@ Shader "Hidden/DragonQuest/BattleEntrySwirl"
                 float2 source = float2(c * radialPosition.x - s * radialPosition.y, s * radialPosition.x + c * radialPosition.y) / aspect + .5;
                 // Keep the viewport filled without scaling the image toward the centre.
                 source = 1 - abs(frac(source * .5) * 2 - 1);
-                float3 color = tex2D(_MainTex, source).rgb;
-                if (_WhiteShadows > 0)
-                {
-                    float3 displayColor = color;
-                    #if !defined(UNITY_COLORSPACE_GAMMA)
-                        displayColor = LinearToGammaSpace(color);
-                    #endif
-                    float dark = 1 - smoothstep(.26, .44, max(displayColor.r, max(displayColor.g, displayColor.b)));
-                    // Replace the source blacks before they spread through the liquid blend.
-                    // This is enabled only while the final encounter's overlay is displayed.
-                    color = lerp(color, float3(1, 1, 1), _WhiteShadows * dark);
-                }
-                return color;
+                return tex2D(_MainTex, source).rgb;
             }
 
             fixed4 frag(v2f_img i) : SV_Target
@@ -63,8 +50,7 @@ Shader "Hidden/DragonQuest/BattleEntrySwirl"
                 color += FlowSample(p, angle - softness * .6, aspect) * .15;
                 color += FlowSample(p, angle - softness * .9, aspect) * .10;
                 color += FlowSample(p, angle - softness * 1.2, aspect) * .05;
-                // The last battle passes through white; other encounters keep their black fade.
-                color = lerp(color, float3(1, 1, 1) * _WhiteShadows, smoothstep(.82, 1, t));
+                color *= 1 - smoothstep(.82, 1, t);
                 return fixed4(color, 1);
             }
             ENDCG
