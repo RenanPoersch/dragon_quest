@@ -30,8 +30,13 @@ namespace DragonQuest.Interactions
                 context.Dialogue.Open("Barreira ancestral","A Escama ancestral vibra. Os tres selos se desfazem e a barreira magica ao redor do vulcao se dissipa.",
                     "A escama permanece com a equipe. O caminho ate a cratera esta livre.");
             }
-            else context.Dialogue.Open("Barreira ancestral","Uma barreira magica envolve o vulcao. Tres selos brilham sobre a superficie.",
-                context.Secrets.HasScale?"A escama vibra, mas alguns selos ainda resistem.":"A magia impede a aproximacao. Talvez os sinais antigos da ilha revelem como desfaze-la.");
+            else
+            {
+                const string description = "Uma barreira mágica envolve o vulcão. Três selos brilham sobre a superfície.";
+                if(context.Secrets.HasScale)
+                    context.Dialogue.Open("Barreira ancestral",description,"A escama vibra, mas alguns selos ainda resistem.");
+                else context.Dialogue.Open("Barreira ancestral",description);
+            }
         }
         private void Update()
         {
