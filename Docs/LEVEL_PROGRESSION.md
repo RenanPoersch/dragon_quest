@@ -27,9 +27,9 @@ A curva inicial custa `100 + 50 × (nível atual − 1)` XP para o próximo nív
 
 | Classe | HP | MP | Ataque | Defesa | Magia | Velocidade |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| Atacante / Aren | +10 | +2 | +3 | +1 | +1 | +1 |
-| Healer / Lia | +7 | +5 | +1 | +1 | +3 | +1 |
-| Tank / Bram | +14 | +2 | +1 | +3 | +1 | +1 |
+| Atacante / Aren | +10 | +2 | +1 | +1 | +1 | +1 |
+| Healer / Lia | +7 | +5 | +1 | +1 | +2 | +1 |
+| Tank / Bram | +14 | +2 | +1 | +1 | +1 | +1 |
 
 Todos ganham também **+0,25 ponto percentual de chance de crítico por nível**: 5% no nível 1, 5,25% no nível 2 e 29,5% no nível 99. São valores iniciais de balanceamento, concentrados em `PartyProgress.cs` e `CharacterProgression.cs`.
 

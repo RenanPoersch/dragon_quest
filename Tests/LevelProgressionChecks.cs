@@ -42,7 +42,7 @@ internal static class LevelProgressionChecks
             Check(progress.Level == level && progress.ExperienceInLevel == 0, "Each saved XP threshold must restore its level.");
         }
         var party = PrototypePartyFactory.Create();
-        int[,] growth = { { 10, 2, 3, 1, 1 }, { 7, 5, 1, 1, 3 }, { 14, 2, 1, 3, 1 } };
+        int[,] growth = { { 10, 2, 1, 1, 1 }, { 7, 5, 1, 1, 2 }, { 14, 2, 1, 1, 1 } };
         for (int i = 0; i < 3; i++)
         {
             var member = party.Members[i];
@@ -66,7 +66,7 @@ internal static class LevelProgressionChecks
         party.TryEquip(aren, aren.Weapon, 0, party.Materias.First(m => m.Definition == PrototypePartyFactory.HeavyMateria), out _);
         Check(aren.Attack == beforeMateria * 120 / 100, "Materia bonuses apply after class growth and equipment affinity.");
         party.TryRemoveEquipment(aren, EquipmentSlot.Weapon, out _);
-        Check(aren.Attack == aren.BaseStats.Attack + 6 && aren.Level == 3, "Removing equipment cannot remove levels or innate growth.");
+        Check(aren.Attack == aren.BaseStats.Attack + 2 && aren.Level == 3, "Removing equipment cannot remove levels or innate growth.");
         Check(PrototypePartyFactory.Create().Members.All(m => m.Level == 1 && m.Experience == 0), "New journeys reset each hero independently.");
     }
     private static void Criticals()

@@ -45,9 +45,9 @@ namespace DragonQuest.Equipment
         private int Grow(int value, int perLevel) => (int)Math.Min(int.MaxValue, (long)value + (Level - 1) * perLevel);
         private int HpGrowth => Class == CharacterClass.Tank ? 14 : Class == CharacterClass.Attacker ? 10 : 7;
         private int MpGrowth => Class == CharacterClass.Healer ? 5 : 2;
-        private int AttackGrowth => Class == CharacterClass.Attacker ? 3 : 1;
-        private int DefenseGrowth => Class == CharacterClass.Tank ? 3 : 1;
-        private int MagicGrowth => Class == CharacterClass.Healer ? 3 : 1;
+        private int AttackGrowth => 1;
+        private int DefenseGrowth => 1;
+        private int MagicGrowth => Class == CharacterClass.Healer ? 2 : 1;
         public string AffinityDescription => Class == CharacterClass.Attacker ? "+20% no ataque base da arma"
             : Class == CharacterClass.Healer ? "+25% no poder de magia, invocacao e cura" : "+25% na defesa base da armadura";
         public int Attack => AttackWith(Weapon, Armor);
