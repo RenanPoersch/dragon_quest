@@ -12,7 +12,9 @@ namespace DragonQuest.Interactions
         private MonolithSymbol symbol;
         private AncientSecrets secrets;
         private GameObject light;
-        public override bool CanInteract => base.CanInteract && !(kind == SecretObject.Altar && secrets?.AltarSolved == true);
+        public override bool CanInteract => base.CanInteract
+            && !(kind == SecretObject.Altar && secrets?.AltarSolved == true)
+            && !(kind == SecretObject.HollowTree && secrets?.HasScale == true);
         public void Initialize(SecretObject type, AncientSecrets progress, MonolithSymbol rune = MonolithSymbol.Sun, GameObject glow = null)
         { kind=type; secrets=progress; symbol=rune; light=glow; RefreshLight(); }
 
@@ -64,17 +66,12 @@ namespace DragonQuest.Interactions
             else if(kind==SecretObject.ClawStone)
                 dialogue.Open("Pedra marcada",LegendPoem.Forest);
             else
-            {
-                if(secrets.HasScale)
-                    dialogue.Open("Árvore oca","A abertura está vazia. A Escama ancestral continua guardada com a equipe.");
-                else
-                    dialogue.OpenWithCompletion("Árvore oca", () =>
-                    {
-                        if(!secrets.TryCollectScale()) return;
-                        MenuSounds.Play(MenuSound.Confirm);
-                        dialogue.OpenNotice("Recebeu Escama ancestral");
-                    }, "Entre as raízes você encontra uma Escama ancestral. Ela vibra por um instante, como se respondesse a algo distante.");
-            }
+                dialogue.OpenWithCompletion("Árvore oca", () =>
+                {
+                    if(!secrets.TryCollectScale()) return;
+                    MenuSounds.Play(MenuSound.Confirm);
+                    dialogue.OpenNotice("Recebeu Escama ancestral");
+                }, "Entre as raízes você encontra uma Escama ancestral. Ela vibra por um instante, como se respondesse a algo distante.");
         }
     }
 }
