@@ -17,11 +17,11 @@ namespace DragonQuest.Progression
             + "A chama ancestral\npermaneceu acesa.\nE, desta vez,\niluminava dias de paz.";
         public const string HeroPossessedEpilogue =
             "O Rei Rubro caiu.\nPor um instante,\na ilha pareceu livre.\n\n"
-            + "Mas a sombra deixou\no corpo do velho rei.\nE encontrou Aren.\n\n"
-            + "Agora, seus passos\njá não lhe pertencem.\nO tapete conduz\nao mesmo trono.\n\n"
-            + "Do alto do trono,\nos olhos guardam\num brilho violeta.\n\n"
-            + "Lia e Bram chamam.\nNenhuma resposta.\nSó o silêncio\nocupa o salão.\n\n"
-            + "Um relâmpago revela\na presença que reina\npor trás do novo rosto.\n\n"
+            + "Mas uma sombra\nmisteriosa deixou\no corpo do velho rei...\ne encontrou\num novo hospedeiro.\n\n"
+            + "Agora, seus passos já\nnão lhe pertencem mais.\n\n"
+            + "Do alto do castelo,\nos olhos guardam\napenas um brilho vazio.\n\n"
+            + "Nenhuma resposta.\nSó o silêncio\nocupa o salão.\n\n"
+            + "Um vulto revela\na presença que reina.\n\n"
             + "O trono tem outro rei.\nA ilha, o mesmo senhor.";
         public const string CastleDestroyedEpilogue =
             "O meteoro rompeu o céu.\nNenhuma armadura deteve\na sua queda.\n\n"
