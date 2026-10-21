@@ -9,6 +9,7 @@ namespace DragonQuest.Interactions
         private bool opening;
         private Progression.AncientSecrets secrets;
         private bool fullyOpen;
+        public override bool CanInteract => base.CanInteract && secrets?.PassageOpen != true;
         public void Initialize(GameObject ward, Progression.AncientSecrets progress = null)
         { barrier=ward; secrets=progress; RestoreBarrierState(); }
         public void RestoreBarrierState()
@@ -21,9 +22,8 @@ namespace DragonQuest.Interactions
         }
         public override void Interact(InteractionContext context)
         {
-            if(context.Secrets.PassageOpen)
-                context.Dialogue.Open("Trilha antiga","Os selos estao desfeitos. A trilha ate o vulcao permanece livre.");
-            else if(context.Secrets.TryOpenPassage())
+            if(!CanInteract || context.Secrets.PassageOpen) return;
+            if(context.Secrets.TryOpenPassage())
             {
                 barrier.GetComponent<Collider2D>().enabled=false;
                 Physics2D.SyncTransforms(); opening=true; openingTime=0;
