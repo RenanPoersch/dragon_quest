@@ -1,4 +1,5 @@
 using UnityEngine;
+using DragonQuest.Audio;
 using DragonQuest.Combat;
 using DragonQuest.Exploration;
 using DragonQuest.Equipment;
@@ -518,7 +519,11 @@ namespace DragonQuest.Prototype
             }
             else if (IsDragonEncounter && Session.Outcome == BattleOutcome.Victory)
             {
-                dialogue.Open("Essência do dragão",
+                dialogue.OpenWithCompletion("Essência do dragão", () =>
+                    {
+                        MenuSounds.Play(MenuSound.Confirm);
+                        dialogue.OpenNotice("Recebeu Armadura Dracônica");
+                    },
                     "As vozes... Minha mente... eu... eu... sou eu novamente! Estou livre!",
                     "Meu coração está em dívida com vocês. Espero que isso ajude em sua jornada...");
                 movement.SetMovementEnabled(false);
