@@ -32,7 +32,7 @@ namespace DragonQuest.Interactions
             if (context.Progress.TryOpenChest(chestId, goldReward))
                 context.Dialogue.Open("Baú da praça", "Você encontrou " + goldReward + " moedas de ouro!");
             else
-                context.Dialogue.Open("Bau da praca", "O bau esta vazio. Voce ja recolheu a recompensa.");
+                context.Dialogue.Open("Baú da praça", "O baú está vazio");
 
             opened = true;
             showState?.Invoke(true);
