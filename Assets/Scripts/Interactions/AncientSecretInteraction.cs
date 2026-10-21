@@ -1,4 +1,5 @@
 using UnityEngine;
+using DragonQuest.Audio;
 using DragonQuest.Progression;
 
 namespace DragonQuest.Interactions
@@ -63,9 +64,17 @@ namespace DragonQuest.Interactions
             else if(kind==SecretObject.ClawStone)
                 dialogue.Open("Pedra marcada",LegendPoem.Forest);
             else
-                dialogue.Open("Arvore oca",secrets.TryCollectScale()
-                    ? "Entre as raizes voce encontra uma Escama ancestral. Ela vibra por um instante, como se respondesse a algo distante."
-                    : "A abertura esta vazia. A Escama ancestral continua guardada com a equipe.");
+            {
+                if(secrets.HasScale)
+                    dialogue.Open("Árvore oca","A abertura está vazia. A Escama ancestral continua guardada com a equipe.");
+                else
+                    dialogue.OpenWithCompletion("Árvore oca", () =>
+                    {
+                        if(!secrets.TryCollectScale()) return;
+                        MenuSounds.Play(MenuSound.Confirm);
+                        dialogue.OpenNotice("Recebeu Escama ancestral");
+                    }, "Entre as raízes você encontra uma Escama ancestral. Ela vibra por um instante, como se respondesse a algo distante.");
+            }
         }
     }
 }
