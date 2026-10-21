@@ -90,7 +90,7 @@ public static class DragonLairValidation
             interaction.SendMessage("Update");
             Assert(!animation.gameObject.activeSelf && essence.activeSelf, "victory replaces body with liberated pixel essence");
             interaction.Interact(context);
-            Assert(dialogue.Title == "Essencia liberta" && battles == 3, "defeated dragon cannot restart encounter");
+            Assert(dialogue.Title == "Essência liberta" && battles == 3, "defeated dragon cannot restart encounter");
             Capture(camera, follow, hero.transform, 1280, 720, Path.Combine(output, "lair-essence.png"));
             Assert(!progress.TryComplete(victory, party), "reward cannot be claimed twice");
             Debug.Log("DRAGON_LAIR_VALIDATION_OK: lateral scenery, sleeping and waking artwork, reachable E interaction, dialogue, cancellation, repeat visit, fast advance, defeated essence and three display aspects.");

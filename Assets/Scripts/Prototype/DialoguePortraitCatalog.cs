@@ -26,7 +26,7 @@ namespace DragonQuest.Prototype
                 case "Guarda Real": return "guard";
                 case "Rei Rubro": return "tyrant";
                 case "Dragão corrompido": case "Dragao corrompido": return "dragon";
-                case "Essência do dragão": case "Essencia liberta": case "Essencia do dragao": return "dragon-essence";
+                case "Essência do dragão": case "Essência liberta": case "Essencia liberta": case "Essencia do dragao": return "dragon-essence";
                 default: return "aren";
             }
         }

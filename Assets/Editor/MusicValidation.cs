@@ -500,7 +500,7 @@ public static class MusicValidation
                     CuePlays(MusicCue.DragonFreed);
                     Check(Voice(MusicCue.DragonFreed).timeSamples < Voice(MusicCue.DragonFreed).clip.frequency*2,"dragon aftermath begins after victory results");
                     dialogue.Close(); dragon.Interact(new InteractionContext(dialogue,null,_ => { }));
-                    Check(dialogue.Title == "Essencia liberta" && !dragon.IsBattlePrelude,"liberated essence conversation keeps the aftermath track");
+                    Check(dialogue.Title == "Essência liberta" && !dragon.IsBattlePrelude,"liberated essence conversation keeps the aftermath track");
                     Voice(MusicCue.DragonFreed).timeSamples = Voice(MusicCue.DragonFreed).clip.samples - Voice(MusicCue.DragonFreed).clip.frequency/3;
                     break;
                 case 42:

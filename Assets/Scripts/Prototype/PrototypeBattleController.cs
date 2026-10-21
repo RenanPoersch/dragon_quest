@@ -519,8 +519,8 @@ namespace DragonQuest.Prototype
             else if (IsDragonEncounter && Session.Outcome == BattleOutcome.Victory)
             {
                 dialogue.Open("Essência do dragão",
-                    "Minha cabeça... está clara de novo. Não ouço mais aquelas vozes. Eu já nem lembrava como era esse silêncio.",
-                    "Você me libertou... Achei que nunca mais fosse ter paz. Obrigado.");
+                    "As vozes... Minha mente... eu... eu... sou eu novamente! Estou livre!",
+                    "Meu coração está em dívida com vocês. Espero que isso ajude em sua jornada...");
                 movement.SetMovementEnabled(false);
             }
         }

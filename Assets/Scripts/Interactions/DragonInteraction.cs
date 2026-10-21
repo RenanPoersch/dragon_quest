@@ -44,7 +44,9 @@ namespace DragonQuest.Interactions
             ClearPrelude();
             if (progress.IsDefeated)
             {
-                context.Dialogue.Open("Essencia liberta", "Minha chama esta livre. Leve minha armadura ao castelo; a sombra que me aprisionou ainda fala por seu rei.");
+                context.Dialogue.Open("Essência liberta",
+                    "As vozes... Minha mente... eu... eu... sou eu novamente! Estou livre!",
+                    "Meu coração está em dívida com vocês. Espero que isso ajude em sua jornada...");
                 return;
             }
             bool wasSleeping = restingDragon?.State == DragonRestState.Sleeping;
