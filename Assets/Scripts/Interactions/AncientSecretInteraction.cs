@@ -61,8 +61,7 @@ namespace DragonQuest.Interactions
                 RefreshLight();
             }
             else if(kind==SecretObject.ClawStone)
-                dialogue.Open("Pedra marcada","Sulcos profundos cortam a pedra. Marcas menores seguem para nordeste, ate uma arvore antiga de raizes abertas.",
-                    "Entre os sulcos ha vestigios de escamas. O tronco ao fim das marcas parece guardar algo em seu interior.");
+                dialogue.Open("Pedra marcada",LegendPoem.Forest);
             else
                 dialogue.Open("Arvore oca",secrets.TryCollectScale()
                     ? "Entre as raizes voce encontra uma Escama ancestral. Ela vibra por um instante, como se respondesse a algo distante."
