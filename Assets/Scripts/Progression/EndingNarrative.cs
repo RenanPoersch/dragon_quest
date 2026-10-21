@@ -24,11 +24,11 @@ namespace DragonQuest.Progression
             + "Um vulto revela\na presença que reina.\n\n"
             + "O trono tem outro rei.\nA ilha, o mesmo senhor.";
         public const string CastleDestroyedEpilogue =
-            "O meteoro rompeu o céu.\nNada pode deter\na sua queda.\n\n"
+            "O meteoro rompeu o céu.\nNada pôde deter\na sua queda.\n\n"
             + "Onde antes se erguia\no castelo, restam cinzas\ne pedras sobre o mar.\n\n"
-            + "Longe das muralhas,\num velho contempla\no que o fogo deixou.\nAinda espera por\ndias melhores.\nAté para um velho\ncomo ele.\n\n"
             + "O vento leva os nomes\nde Aren, Lia e Bram.\nA ilha guarda o silêncio.\n\n"
-            + "E a lenda aguarda\nquem volte a contá-la.";
+            + "Longe das muralhas,\num velho contempla\no que o fogo deixou.\nAinda na esperança\nde dias melhores.\n\n"
+            + "E apenas com a lembrança\nda lenda e do desejo\nde encontrar quem\nvolte a contá-la.";
         public static string Title(GameEnding ending) => ending==GameEnding.KingFreed?"FINAL BOM / O REI LIBERTADO"
             :ending==GameEnding.CastleDestroyed?"FINAL RUIM / CINZAS DO CASTELO":"TERCEIRO FINAL / O NOVO HOSPEDEIRO";
         public static string[] Pages(GameEnding ending)
