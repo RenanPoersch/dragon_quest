@@ -49,7 +49,7 @@ namespace DragonQuest.Interactions
                 });
             }
             else if(kind==SecretObject.Inscription)
-                dialogue.Open("Inscricao antiga",LegendPoem.Sky,"Os tres monolitos parecem esperar a passagem de um mesmo ciclo.");
+                dialogue.Open("Inscrição antiga",LegendPoem.Sky,"Os três monólitos parecem esperar a passagem de um mesmo ciclo.");
             else if(kind==SecretObject.Monolith)
             {
                 MonolithResult result=secrets.Activate(symbol);
