@@ -218,7 +218,7 @@ namespace DragonQuest.Prototype
             collider.sharedMaterial = frictionless;
             System.Action<bool> showState = scenery.Chest(chest.transform);
             ChestInteraction interaction = chest.AddComponent<ChestInteraction>();
-            interaction.Initialize("praca-primeiro-bau", 1000, showState,
+            interaction.Initialize("praca-primeiro-bau", 100, showState,
                 () => progress?.HasOpenedChest("praca-primeiro-bau") == true);
             return interaction;
         }
