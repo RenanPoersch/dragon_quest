@@ -30,7 +30,7 @@ namespace DragonQuest.Interactions
         public override void Interact(InteractionContext context)
         {
             if (context.Progress.TryOpenChest(chestId, goldReward))
-                context.Dialogue.Open("Bau da praca", "Voce encontrou " + goldReward + " moedas de ouro!");
+                context.Dialogue.Open("Baú da praça", "Você encontrou " + goldReward + " moedas de ouro!");
             else
                 context.Dialogue.Open("Bau da praca", "O bau esta vazio. Voce ja recolheu a recompensa.");
 
