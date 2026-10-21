@@ -26,7 +26,7 @@ namespace DragonQuest.Progression
         public const string CastleDestroyedEpilogue =
             "O meteoro rompeu o céu.\nNada pode deter\na sua queda.\n\n"
             + "Onde antes se erguia\no castelo, restam cinzas\ne pedras sobre o mar.\n\n"
-            + "Longe das muralhas,\num velho contempla\no que o fogo deixou.\nMesmo agora,\nainda pensa no que\nvai plantar amanhã.\n\n"
+            + "Longe das muralhas,\num velho contempla\no que o fogo deixou.\nAinda espera por\ndias melhores.\nAté para um velho\ncomo ele.\n\n"
             + "O vento leva os nomes\nde Aren, Lia e Bram.\nA ilha guarda o silêncio.\n\n"
             + "E a lenda aguarda\nquem volte a contá-la.";
         public static string Title(GameEnding ending) => ending==GameEnding.KingFreed?"FINAL BOM / O REI LIBERTADO"
