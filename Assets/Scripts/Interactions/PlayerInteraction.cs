@@ -77,7 +77,7 @@ namespace DragonQuest.Interactions
             float bestDistance = interactionRange * interactionRange;
             foreach (Interactable candidate in candidates)
             {
-                if (candidate == null || !candidate.isActiveAndEnabled) continue;
+                if (candidate == null || !candidate.CanInteract) continue;
                 float distance = ((Vector2)(candidate.transform.position - transform.position)).sqrMagnitude;
                 if (distance > bestDistance) continue;
                 bestDistance = distance;

@@ -11,6 +11,7 @@ namespace DragonQuest.Interactions
         private MonolithSymbol symbol;
         private AncientSecrets secrets;
         private GameObject light;
+        public override bool CanInteract => base.CanInteract && !(kind == SecretObject.Altar && secrets?.AltarSolved == true);
         public void Initialize(SecretObject type, AncientSecrets progress, MonolithSymbol rune = MonolithSymbol.Sun, GameObject glow = null)
         { kind=type; secrets=progress; symbol=rune; light=glow; RefreshLight(); }
 
@@ -26,6 +27,7 @@ namespace DragonQuest.Interactions
 
         public override void Interact(InteractionContext context)
         {
+            if (!CanInteract) return;
             DialogueController dialogue=context.Dialogue;
             if(kind==SecretObject.Peasant)
             {
@@ -36,8 +38,7 @@ namespace DragonQuest.Interactions
             }
             else if(kind==SecretObject.Altar)
             {
-                if(secrets.AltarSolved) dialogue.Open("Altar antigo","Uma chama silenciosa permanece acesa. A pedra ja reconheceu suas palavras.");
-                else if(!secrets.KnowsPoem) dialogue.Open("Altar antigo",
+                if(!secrets.KnowsPoem) dialogue.Open("Altar antigo",
                     "Uma inscrição em latim está gravada na pedra, você ainda não entende o que significa.");
                 else dialogue.OpenChoices("Altar antigo","Uma chama envolve um reino em ruínas. Qual verso da lenda você recita?",LegendPoem.AltarChoices,index=>
                 {
