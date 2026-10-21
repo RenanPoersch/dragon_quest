@@ -37,7 +37,9 @@ namespace DragonQuest.Interactions
             else if(kind==SecretObject.Altar)
             {
                 if(secrets.AltarSolved) dialogue.Open("Altar antigo","Uma chama silenciosa permanece acesa. A pedra ja reconheceu suas palavras.");
-                else if(!secrets.KnowsPoem) dialogue.Open("Altar antigo","Na pedra, uma chama envolve um reino em ruinas. Uma inscricao pede palavras da antiga lenda. Talvez alguem da periferia do castelo ainda as conheca.");
+                else if(!secrets.KnowsPoem) dialogue.Open("Altar antigo",
+                    "Uma inscrição em latim está gravada na pedra:\n\n" + LegendPoem.Flame,
+                    "Você ainda não entende o que significa.");
                 else dialogue.OpenChoices("Altar antigo","Uma chama envolve um reino em ruinas. Qual verso da lenda voce recita?",LegendPoem.AltarChoices,index=>
                 {
                     if(secrets.TrySolveAltar(LegendPoem.AltarChoices[index]))
