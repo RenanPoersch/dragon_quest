@@ -24,10 +24,9 @@ namespace DragonQuest.Progression
             + "Um vulto revela\na presença que reina.\n\n"
             + "O trono tem outro rei.\nA ilha, o mesmo senhor.";
         public const string CastleDestroyedEpilogue =
-            "O meteoro rompeu o céu.\nNenhuma armadura deteve\na sua queda.\n\n"
-            + "O fogo consumiu o trono,\no Rei Rubro e os heróis.\nAs torres desabaram.\n\n"
+            "O meteoro rompeu o céu.\nNada pode deter\na sua queda.\n\n"
             + "Onde antes se erguia\no castelo, restam cinzas\ne pedras sobre o mar.\n\n"
-            + "Longe das muralhas,\num velho contempla\no que o fogo deixou.\n\n"
+            + "Longe das muralhas,\num velho contempla\no que o fogo deixou.\nMesmo agora,\nainda pensa no que\nvai plantar amanhã.\n\n"
             + "O vento leva os nomes\nde Aren, Lia e Bram.\nA ilha guarda o silêncio.\n\n"
             + "E a lenda aguarda\nquem volte a contá-la.";
         public static string Title(GameEnding ending) => ending==GameEnding.KingFreed?"FINAL BOM / O REI LIBERTADO"
@@ -42,7 +41,7 @@ namespace DragonQuest.Progression
                     "O rei retoma seu governo. As portas do castelo se abrem aos moradores e a ilha recupera sua liberdade. A chama ancestral permanece acesa."};
                 case GameEnding.CastleDestroyed:
                     string[] paragraphs = CastleDestroyedEpilogue.Replace("\n\n", "|").Replace('\n', ' ').Split('|');
-                    return new[]{paragraphs[0]+" "+paragraphs[1], paragraphs[2]+" "+paragraphs[3], paragraphs[4]+" "+paragraphs[5]};
+                    return new[]{paragraphs[0]+" "+paragraphs[1], paragraphs[2], paragraphs[3]+" "+paragraphs[4]};
                 case GameEnding.HeroPossessed: return new[]{
                     "O Rei Rubro cai. Por um instante, Aren acredita ter encerrado o dominio sobre a ilha. Entao uma sombra abandona o corpo do rei.",
                     "A presenca encontra seu novo hospedeiro em Aren. Seus olhos ganham um brilho violeta, e uma segunda voz sussurra: Um trono vazio sempre encontra um novo rei.",
