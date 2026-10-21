@@ -513,9 +513,6 @@ namespace DragonQuest.Prototype
             {
                 Party.RecoverAtInn();
                 recoverAtInn?.Invoke();
-                dialogue.Open("Hospedaria","A equipe desperta em seguranca. Seus ferimentos foram tratados e o MP foi recuperado.",
-                    "O Limit acumulado permanece. Os consumiveis usados foram gastos; seus segredos, ouro e equipamentos continuam com voce.");
-                movement.SetMovementEnabled(false);
             }
             else if (IsDragonEncounter && Session.Outcome == BattleOutcome.Victory)
             {
