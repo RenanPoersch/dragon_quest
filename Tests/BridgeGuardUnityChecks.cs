@@ -40,13 +40,23 @@ public static class BridgeGuardUnityChecks
             battle.SetLocationProvider(() => PrototypeTravel.City);
             var patrol = new GameObject("Bridge patrol"); patrol.transform.SetParent(fixture.transform);
             patrol.transform.position = PrototypeCityLayout.Guard;
-            var blocker = patrol.AddComponent<BoxCollider2D>(); blocker.size = new Vector2(3.7f, .7f);
+            var barrier = new GameObject("Bridge blockade"); barrier.transform.SetParent(patrol.transform);
+            barrier.transform.position = PrototypeCityLayout.Bridge;
+            var blocker = barrier.AddComponent<BoxCollider2D>(); blocker.size = new Vector2(3.7f, .7f);
             var guards = patrol.AddComponent<BattleInteraction>();
             guards.Initialize(player, dialogue, battle, () => progress);
 
             player.Teleport(PrototypeCityLayout.Spawn); Call(guards, "LateUpdate");
             Check(!dialogue.IsOpen && !battle.IsActive, "The patrol leaves the city entrance alone.");
-            player.Teleport(new Vector2(2.2f, 9));
+            foreach (float y in new[] {5.4f, 7f, 7.6f, 8.4f, 9f, 10.3f, 11.4f})
+            {
+                player.Teleport(new Vector2(0, y)); Call(guards, "LateUpdate");
+                Check(!dialogue.IsOpen && !battle.IsActive, "Old approach positions remain clear before the deeper bridge trigger: " + y);
+            }
+            player.Teleport(new Vector2(0, 11.5f)); Call(guards, "LateUpdate");
+            Check(dialogue.IsOpen && !battle.IsActive, "The new warning starts well inside the bridge at y=11.5.");
+            guards.RestoreState(); dialogue.Close();
+            player.Teleport(new Vector2(2.2f, 11.5f));
             dialogue.Open("Another resident", "Busy"); Call(guards, "LateUpdate");
             Check(dialogue.Title == "Another resident", "The warning does not replace another conversation.");
             dialogue.Close(); Call(guards, "LateUpdate");
@@ -65,7 +75,7 @@ public static class BridgeGuardUnityChecks
             Check(patrol.activeSelf && !progress.CastleGuardsDefeated && blocker.enabled,
                 "An encounter without a victory never removes the guards or unlocks the bridge.");
             ResetBattle(battle, dialogue);
-            player.Teleport(new Vector2(-2.2f, 9)); Call(guards, "LateUpdate");
+            player.Teleport(new Vector2(-2.2f, 11.5f)); Call(guards, "LateUpdate");
             Check(dialogue.IsOpen, "The other side of the approach cannot bypass the warning.");
             dialogue.Advance(); Call(guards, "LateUpdate");
             Check(battle.IsActive, "Finishing the warning normally also starts combat.");
