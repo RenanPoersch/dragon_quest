@@ -195,7 +195,7 @@ namespace DragonQuest.Prototype
                 Party.RecoverAtInn();
                 recoverAtInn?.Invoke();
                 trackingWalk = false;
-                dialogue.Open("Hospedaria", "O veneno venceu a equipe. Voces despertam na hospedaria com HP e MP recuperados.");
+                dialogue.Open("Hospedaria", "O veneno venceu a equipe. Vocês despertam na hospedaria...");
                 movement.SetMovementEnabled(false);
                 return;
             }
