@@ -43,7 +43,7 @@ namespace DragonQuest.Interactions
                 {
                     if(secrets.TrySolveAltar(LegendPoem.AltarChoices[index]))
                         dialogue.Open("Altar antigo","Uma chama desperta no altar. Ao longe, algo parece ceder entre as montanhas.");
-                    else dialogue.Open("Altar antigo","O altar permanece frio. As palavras nao correspondem a imagem gravada na pedra.");
+                    else dialogue.Open("Altar antigo","...");
                     RefreshLight();
                 });
             }
