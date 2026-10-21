@@ -36,7 +36,7 @@ internal static class DragonChecks
         while(battle.CurrentActor.Team==CombatTeam.Party) { Defend(battle);responses++; }
         Assert(responses==3,"Cada aliado vivo precisa de um turno de resposta antes do sopro.");
         Assert(EnemyAI.ChooseAbility(battle)==PrototypeBattleFactory.DragonBreath&&EnemyAI.TryTakeTurn(battle,out _),"Sopro deve acontecer no turno seguinte a preparacao.");
-        var damage=new[]{90,94,76};
+        var damage=new[]{102,104,96};
         for(int i=0;i<party.Length;i++) Assert(hp[i]-party[i].Hp==Math.Min(hp[i],damage[i]),"Defender deve reduzir o sopro para todo aliado que escolheu a acao.");
         Assert(!dragon.IsCharging,"Aviso deve terminar depois do sopro.");
         while(battle.CurrentActor.Team==CombatTeam.Party) Defend(battle);

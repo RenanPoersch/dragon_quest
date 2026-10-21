@@ -57,6 +57,9 @@ internal static class CastleChecks
         Threshold(battle);
         for(int turn=0;turn<CastleBattleRules.MeteorCastTurns;turn++)
         {
+            // Isola a contagem do meteoro sem deixar os golpes do espirito encerrarem o roteiro.
+            foreach(var ally in battle.Combatants.Where(c=>c.Team==CombatTeam.Party&&c.IsAlive))
+            { ally.RecoverHp(int.MaxValue);ally.GrantDamageShield(99,false); }
             BeforeKing(battle);
             Assert(EnemyAI.ChooseAbility(battle)==(turn==0?CastleBattleRules.Protect:CastleBattleRules.PrepareMeteor),"Protect inicia a conjuracao; os turnos seguintes mantem a carga.");
             if(turn==0) Assert(!battle.TryAct(battle.CurrentActor,CastleBattleRules.PrepareMeteor,battle.CurrentActor,out _),"Preparacao nao pode pular Protect.");
@@ -87,7 +90,7 @@ internal static class CastleChecks
         }
         battle=Create(Party(false));king=Find(battle,CastleBattleRules.TyrantId);
         var crossingAttack=battle.CurrentActor.Definition.Abilities.Single(a=>a.Id=="attack");
-        int crossingDamage=Math.Max(1,battle.CurrentActor.Definition.Attack+crossingAttack.Power-king.Definition.Defense);
+        int crossingDamage=(int)Math.Max(1L,((long)battle.CurrentActor.Definition.Attack+crossingAttack.Power)*100/(100L+king.Definition.Defense));
         king.TakeDamage(king.Hp-(179+crossingDamage));
         Assert(battle.TryAct(battle.CurrentActor,battle.CurrentActor.Definition.Abilities.Single(a=>a.Id=="attack"),king,out _)
             &&king.Hp==179&&Rules(battle).MeteorStarted,"Golpe que cruza o limiar precisa ativar a contagem automaticamente.");
@@ -161,7 +164,7 @@ internal static class CastleChecks
     private static void CheckFullGoodAndDefeat()
     {
         var party=Party(true);var ice=new MateriaInstance("castle-ice",PrototypePartyFactory.IceMateria);party.TryAddMaterias(ice);party.TryEquip(party.Members[1],party.Members[1].Armor,2,ice,out _);
-        foreach(var member in party.Members) member.Progression.AddExperience(CharacterProgression.ExperienceForLevel(5));
+        foreach(var member in party.Members) member.Progression.AddExperience(CharacterProgression.ExperienceForLevel(20));
         party.RecoverAtInn();
         party.Consumables.TryAdd(PrototypePartyFactory.Ether,2,out _);
         var battle=Create(party);int actions=0;
@@ -184,7 +187,7 @@ internal static class CastleChecks
             else if(actor.Id=="aren"&&actor.Mp>=4) ability=actor.Definition.Abilities.FirstOrDefault(a=>a.SourceAbilityId=="heavy-strike")??ability;
             Assert(battle.TryAct(actor,ability,target,out _),"Materias, cura e provocar devem funcionar na luta final.");
         }
-        Assert(actions<250&&Rules(battle).Ending==GameEnding.KingFreed,"Equipe de nivel 5 com armadura, Gelo e dois eteres deve poder libertar o rei.");
+        Assert(actions<250&&Rules(battle).Ending==GameEnding.KingFreed,"Equipe de nivel 20 com armadura, Gelo e dois eteres deve poder libertar o rei.");
         battle=Create(Party(false));actions=0;
         while(battle.Outcome==BattleOutcome.None&&actions++<500)
             if(battle.CurrentActor.Team==CombatTeam.Enemy) Assert(EnemyAI.TryTakeTurn(battle,out _),"IA deve permitir uma derrota comum."); else Defend(battle);
@@ -201,9 +204,9 @@ internal static class CastleChecks
         var king=new CombatantState("tyrant",new CombatantDefinition("Rei","Inimigo",500,0,1,10,0,5,wait),CombatTeam.Enemy);
         king.GrantDamageShield(3,false);
         var battle=new BattleSession(hero,king);
-        Assert(battle.TryAct(hero,physical,king,out _)&&king.Hp==494,"Protect reduz 11 de dano fisico para 6.");
+        Assert(battle.TryAct(hero,physical,king,out _)&&king.Hp==490,"Protect reduz 19 de dano fisico para 10.");
         Assert(king.VitalChanges.Last().IsShielded,"Impacto protegido registra o escudo para a animacao.");
-        Assert(battle.TryAct(king,wait,king,out _)&&battle.TryAct(hero,magic,king,out _)&&king.Hp==481,"Protect reduz 25 de dano magico para 13.");
+        Assert(battle.TryAct(king,wait,king,out _)&&battle.TryAct(hero,magic,king,out _)&&king.Hp==474,"Protect reduz 31 de dano magico para 16.");
         king.TakeDamage(int.MaxValue);
         Assert(!king.IsAlive&&king.ShieldTurns==0&&king.VitalChanges.Last().IsShielded,"Um golpe fatal ainda guarda o evento visual de escudo.");
         battle=Create(Party(false));

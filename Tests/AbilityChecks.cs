@@ -46,7 +46,7 @@ internal static class AbilityChecks
         Assert(battle.GetValidTargets(cleave).Count == 2, "Area deve incluir os dois inimigos vivos.");
         Assert(!battle.TryAct(hero, cleave, hero, out _) && hero.Mp == 60, "Area em alvo aliado deve falhar sem custo.");
         Act(battle, cleave, one);
-        Assert(one.Hp == 10 && two.Hp == 0 && hero.Mp == 53, "Area deve atingir cada inimigo e gastar MP uma vez.");
+        Assert(one.Hp == 7 && two.Hp == 0 && hero.Mp == 53, "Area deve atingir cada inimigo e gastar MP uma vez.");
         Assert(battle.CurrentActor == one && hero.TurnsTaken == 1, "Area deve consumir somente um turno.");
         Act(battle, Defend, one);
         Assert(battle.Round == 2 && battle.CurrentActor == hero, "Inimigo derrotado em area deve perder seu turno.");
@@ -125,7 +125,7 @@ internal static class AbilityChecks
     {
         AbilityDefinition taunt = PrototypeBattleFactory.Taunt;
         AbilityDefinition protect = PrototypeBattleFactory.Protect;
-        var tank = Fighter("tank", CombatTeam.Party, 30, abilities: new[] { taunt, protect, Attack, Defend });
+        var tank = Fighter("tank", CombatTeam.Party, 30, hp: 150, abilities: new[] { taunt, protect, Attack, Defend });
         var ally = Fighter("ally", CombatTeam.Party, 20);
         var enemy = Fighter("enemy", CombatTeam.Enemy, 10);
         var battle = new BattleSession(tank, ally, enemy);
@@ -134,11 +134,11 @@ internal static class AbilityChecks
         Assert(battle.GetValidTargets(Attack).Count == 1 && battle.GetValidTargets(Attack)[0] == tank, "Provocar deve restringir ataques individuais ao tank.");
         Assert(!battle.TryAct(enemy, Attack, ally, out _) && enemy.TurnsTaken == 0, "Inimigo nao pode ignorar provocacao nem gastar turno na falha.");
         Assert(EnemyAI.TryTakeTurn(battle, out _), "IA deve respeitar provocacao.");
-        Assert(tank.Hp == 40 && ally.Hp == 100 && enemy.TauntTurns == 1, "Provocar deve durar por turnos do inimigo.");
+        Assert(tank.Hp == 74 && ally.Hp == 100 && enemy.TauntTurns == 1, "Provocar deve durar por turnos do inimigo.");
         Act(battle, Defend, tank);
         Act(battle, Defend, ally);
         Assert(EnemyAI.TryTakeTurn(battle, out _), "IA deve agir no segundo turno provocado.");
-        Assert(tank.Hp == 10 && enemy.TauntTurns == 0 && enemy.TauntedBy == null, "Provocacao deve terminar apos a segunda acao do alvo.");
+        Assert(tank.Hp == 36 && enemy.TauntTurns == 0 && enemy.TauntedBy == null, "Provocacao deve terminar apos a segunda acao do alvo.");
         Act(battle, Defend, tank);
         Act(battle, Defend, ally);
         Assert(battle.GetValidTargets(Attack).Count == 2, "Provocacao expirada libera ambos os alvos.");
@@ -149,7 +149,7 @@ internal static class AbilityChecks
         Act(battle, protect, ally);
         Act(battle, Defend, ally);
         Act(battle, Attack, ally);
-        Assert(tank.Hp == 40 && ally.Hp == 100 && ally.ProtectedBy == null, "Tank recebe dano usando sua defesa; protecao e consumida.");
+        Assert(tank.Hp == 74 && ally.Hp == 100 && ally.ProtectedBy == null, "Tank recebe dano usando sua defesa; protecao e consumida.");
         Act(battle, protect, ally);
         Act(battle, Defend, ally);
         Act(battle, Defend, enemy);
@@ -164,11 +164,11 @@ internal static class AbilityChecks
         Act(battle, Defend, ally);
         Assert(battle.GetValidTargets(PrototypeBattleFactory.EnemySweep).Count == 2, "Area inclui a equipe apesar da provocacao.");
         Assert(EnemyAI.TryTakeTurn(battle, out _), "IA deve conseguir usar area provocada.");
-        Assert(tank.Hp == 40 && ally.Hp == 70, "Area aplica defesa de cada alvo separadamente.");
+        Assert(tank.Hp == 24 && ally.Hp == 62, "Area aplica defesa de cada alvo separadamente.");
         Act(battle, protect, ally);
         Act(battle, Defend, ally);
         Act(battle, PrototypeBattleFactory.EnemySweep, ally);
-        Assert(tank.Hp == 0 && ally.Hp == 40 && ally.ProtectedBy == null, "Area nao transfere dano e protecao expira no inicio do turno seguinte.");
+        Assert(tank.Hp == 0 && ally.Hp == 24 && ally.ProtectedBy == null, "Area nao transfere dano e protecao expira no inicio do turno seguinte.");
 
         // O golpe interceptado tambem transfere o veneno novo para o protetor.
         tank = Fighter("tank", CombatTeam.Party, 30, abilities: new[] { protect, Defend });
@@ -285,7 +285,7 @@ internal static class AbilityChecks
 
     private static void CheckEnemyFallbackAndDefinitions()
     {
-        var hero = Fighter("hero", CombatTeam.Party, 10);
+        var hero = Fighter("hero", CombatTeam.Party, 10, hp: 200);
         var enemy = Fighter("enemy", CombatTeam.Enemy, 20, mp: 0,
             abilities: new[] { PrototypeBattleFactory.PoisonStrike, Attack, PrototypeBattleFactory.EnemySweep, Defend });
         var battle = new BattleSession(hero, enemy);

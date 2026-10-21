@@ -39,7 +39,9 @@ O crescimento entra antes dos bônus de equipamentos e dos percentuais das maté
 
 Ataques físicos, magias, invocações ofensivas e drenagem podem causar crítico. O multiplicador é fixo em **1,25×**, com sorteio individual por alvo em ações de área. A chance pertence ao atacante; proteção usa a defesa e as afinidades de quem intercepta.
 
-A ordem de cálculo é ataque/magia e poder menos defesa → afinidade elemental → crítico → Defender → Shield. Afinidade e crítico arredondam para baixo; as reduções de 50% arredondam para cima. O dano mínimo continua sendo 1. Cura, itens, veneno e o meteoro roteirizado não fazem sorteio de crítico. Limit e drenagem usam o HP realmente perdido.
+A defesa usa uma curva percentual com retornos decrescentes: `máximo(1, (ataque ou magia + poder) × 100 / (100 + defesa))`. A redução é `defesa / (100 + defesa)`: 10 de defesa reduz cerca de 9,1%, 30 reduz 23,1%, 50 reduz 33,3% e 100 reduz 50%. A mesma fórmula vale para aliados, inimigos, dano físico, magia, invocação e drenagem.
+
+A ordem de cálculo é ataque/magia e poder → defesa percentual → afinidade elemental → crítico → dano inimigo ×4 → Defender → Shield. Defesa, afinidade e crítico arredondam para baixo; as reduções de 50% arredondam para cima. O dano base mínimo continua sendo 1. Cura, itens, veneno e o meteoro roteirizado não usam essa curva de defesa nem fazem sorteio de crítico. Limit e drenagem usam o HP realmente perdido.
 
 O dano flutuante existente recebe a marca de crítico e usa sua cor de destaque. O relatório da ação indica `critico x1,25`. A apresentação definitiva de nível e XP fica para outra etapa; o relatório de vitória já registra o XP e os níveis ganhos.
 
@@ -48,6 +50,7 @@ O dano flutuante existente recebe a marca de crítico e usa sua cor de destaque.
 O save inclui somente o XP total de cada membro; nível e atributos são reconstruídos a partir dele. O novo campo é opcional, mantendo a leitura dos saves anteriores da versão 1: heróis sem XP salvo começam no nível 1. XP negativo ou acima do limite é recusado.
 
 - `Tools/Test-LevelProgression.ps1`: limiares, sobra e vários níveis, crescimento por classe, equipamentos/matérias, críticos físicos/mágicos/drenagem, área, afinidades, defesa, Shield, overflow, XP por inimigo, aliados caídos, derrotas, finais e pagamento único.
+- `Tools/Test-Defense.ps1`: curva percentual para aliados e inimigos, defesa crescente, dano físico/mágico/drenagem, afinidades, crítico, Defender, Shield, dano mínimo e overflow.
 - `Tools/Test-Saves.ps1`: roundtrip de XP individual e atributos, evolução independente da jornada carregada, saves antigos e valores inválidos, além das verificações anteriores de persistência.
 - `Tools/Test-UnityScripts.ps1`: compilação dos scripts com as bibliotecas da Unity, sem iniciar outra instância do Editor.
 

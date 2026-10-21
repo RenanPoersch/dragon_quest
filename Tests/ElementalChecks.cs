@@ -86,7 +86,7 @@ internal static class ElementalChecks
         foreach (DamageElement element in new[] { DamageElement.Fire, DamageElement.Ice, DamageElement.Lightning })
         {
             var profiles = new[] { Weak(element), Resist(element), ElementalAffinities.Neutral };
-            int[] expected = { 31, 10, 21 }; // 10 magia + 22 poder - 11 defesa = 21.
+            int[] expected = { 42, 14, 28 }; // (10 magia + 22 poder) * 100 / 111 = 28.
             for (int i = 0; i < profiles.Length; i++)
             {
                 AbilityDefinition spell = Spell(element);
@@ -109,7 +109,7 @@ internal static class ElementalChecks
             hero.IsDefending = true;
             var battle = new BattleSession(enemy, hero);
             Act(battle, fire, hero);
-            int actual = weakness ? 62 : 20;
+            int actual = weakness ? 84 : 28;
             Assert(hero.Hp == 100 - actual && hero.Limit.Charge == actual,
                 "Afinidade deve preceder Defender; Limit deve usar apenas o dano realmente recebido.");
         }
@@ -117,7 +117,7 @@ internal static class ElementalChecks
         foreach (ElementalAffinities profile in new[] { Weak(DamageElement.Fire), Resist(DamageElement.Fire) })
         {
             AbilityDefinition fire = Spell(DamageElement.Fire);
-            CombatantState hero = Caster(fire), enemy = Target("enemy", profile, defense: 1000);
+            CombatantState hero = Caster(fire), enemy = Target("enemy", profile, defense: 10000);
             enemy.IsDefending = true;
             var battle = new BattleSession(hero, enemy);
             Act(battle, fire, enemy);
@@ -138,7 +138,7 @@ internal static class ElementalChecks
             resistant = Target("resistant", Resist(DamageElement.Fire)), neutral = Target("neutral", ElementalAffinities.Neutral);
         var battle = new BattleSession(hero, weak, resistant, neutral);
         Act(battle, fireAll, weak);
-        Assert(weak.Hp == 69 && resistant.Hp == 90 && neutral.Hp == 79 && hero.Mp == 54 && hero.TurnsTaken == 1,
+        Assert(weak.Hp == 58 && resistant.Hp == 86 && neutral.Hp == 72 && hero.Mp == 54 && hero.TurnsTaken == 1,
             "Area deve calcular a afinidade de cada alvo e cobrar custo/turno uma vez.");
 
         var infusion = new AbilityDefinition("infused", "Fogo infundido", "", 6, 22, AbilityEffect.PhysicalDamage, TargetRule.Enemy, element: DamageElement.Fire);
@@ -148,7 +148,7 @@ internal static class ElementalChecks
         ally.ProtectedBy = protector;
         battle = new BattleSession(attacker, ally, protector);
         Act(battle, infusion, ally);
-        Assert(ally.Hp == 200 && protector.Hp == 60 && protector.Limit.Charge == 40 && ally.Limit.Charge == 0,
+        Assert(ally.Hp == 200 && protector.Hp == 44 && protector.Limit.Charge == 56 && ally.Limit.Charge == 0,
             "Infusao interceptada usa defesa e resistencia do protetor, e carrega somente o Limit dele.");
         Assert(ally.ProtectedBy == null && battle.LastMessage.Contains("resistencia"), "Interceptacao deve consumir a protecao e relatar a afinidade real.");
 
@@ -159,7 +159,7 @@ internal static class ElementalChecks
         ally.ProtectedBy = protector;
         battle = new BattleSession(attacker, ally, protector);
         Act(battle, fire, ally);
-        Assert(ally.Hp == 76 && protector.Hp == 100 && ally.ProtectedBy == protector, "Magia elemental nao deve ser interceptada pela protecao fisica.");
+        Assert(ally.Hp == 32 && protector.Hp == 100 && ally.ProtectedBy == protector, "Magia elemental nao deve ser interceptada pela protecao fisica.");
 
         attacker = Caster(fireAll, CombatTeam.Enemy);
         ally = Target("ally", Weak(DamageElement.Fire), hp: 200, team: CombatTeam.Party);
@@ -167,7 +167,7 @@ internal static class ElementalChecks
         ally.ProtectedBy = protector;
         battle = new BattleSession(attacker, ally, protector);
         Act(battle, fireAll, ally);
-        Assert(ally.Hp == 76 && protector.Hp == 60, "Ataque elemental em area deve atingir ambos, sem interceptacao.");
+        Assert(ally.Hp == 32 && protector.Hp == 44, "Ataque elemental em area deve atingir ambos, sem interceptacao.");
     }
 
     private static void CheckMateriaCombos()
@@ -206,7 +206,7 @@ internal static class ElementalChecks
         hero.Limit.AddDamage(100, 100);
         var battle = new BattleSession(hero, enemy);
         Act(battle, MateriaResolver.LimitBreak, enemy);
-        Assert(enemy.Hp == 365 && hero.Limit.Charge == 0, "Omnislash sem elemento nao recebe multiplicador elemental nos 13 cortes.");
+        Assert(enemy.Hp == 230 && hero.Limit.Charge == 0, "Omnislash sem elemento nao recebe multiplicador elemental nos 13 cortes.");
 
         hero = Caster(MateriaResolver.Defend);
         enemy = Target("enemy", ElementalAffinities.Neutral);
@@ -225,9 +225,9 @@ internal static class ElementalChecks
         // A IA deve aplicar exatamente as mesmas regras elementais usadas pelo jogador.
         battle = new BattleSession(enemy, hero);
         Assert(EnemyAI.TryTakeTurn(battle, out _), "IA deve poder executar magia elemental.");
-        Assert(hero.Hp == 60 && member.Limit.Charge == 40 && hero.Definition.Affinities == profile,
+        Assert(hero.Hp == 44 && member.Limit.Charge == 56 && hero.Definition.Affinities == profile,
             "Snapshot da equipe deve conservar afinidades e compartilhar Limit sobre dano real.");
-        Assert(member.CreateCombatant().Limit.Charge == 40 && member.CreateCombatant().Definition.Affinities == profile,
+        Assert(member.CreateCombatant().Limit.Charge == 56 && member.CreateCombatant().Definition.Affinities == profile,
             "Proxima batalha conserva perfil e Limit sem compartilhar HP.");
     }
 

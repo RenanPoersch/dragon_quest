@@ -31,7 +31,7 @@ O guarda tem 150 HP. Velocidade ordena os turnos: Aren, Lia, guarda, Bram. Cada 
 ## Regras básicas
 
 ```text
-Dano físico = máximo(1, ataque do usuário + poder da habilidade - defesa do alvo)
+Dano físico = máximo(1, (ataque do usuário + poder da habilidade) × 100 / (100 + defesa do alvo))
 Cura = poder da habilidade + magia do usuário, limitada ao HP máximo do alvo
 Defender = metade do dano físico, arredondada para cima
 ```

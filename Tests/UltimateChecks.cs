@@ -90,8 +90,8 @@ public static class UltimateChecks
         Ready(aren); int mp=aren.Mp;
         Check(!battle.TryAct(aren,HeroUltimates.Omnislash,aren,out _) && aren.Limit.Charge==100,"Invalid target preserves gauge.");
         Act(battle,HeroUltimates.Omnislash,first);
-        Check(first.Hp==550 && second.Hp==1000,"12 cuts of 30 plus a finisher of 90, all on the selected enemy.");
-        Check(first.VitalChanges.Count==13 && first.VitalChanges.Take(12).All(c=>c.Amount==-30) && first.VitalChanges.Last().Amount==-90,"Every cut records its own real damage.");
+        Check(first.Hp==505 && second.Hp==1000,"12 cuts of 33 plus a finisher of 99, all on the selected enemy.");
+        Check(first.VitalChanges.Count==13 && first.VitalChanges.Take(12).All(c=>c.Amount==-33) && first.VitalChanges.Last().Amount==-99,"Every cut records its own real damage.");
         Check(first.VitalChanges.Select(c=>c.ActionHitIndex).SequenceEqual(Enumerable.Range(1,13)),"Damage events carry individual cinematic hit indices.");
         Check(aren.Limit.Charge==0 && aren.Mp==mp && aren.TurnsTaken==1,"All 13 hits spend one action and one gauge.");
 
@@ -99,7 +99,7 @@ public static class UltimateChecks
         first=Fighter("first",CombatTeam.Enemy,2,hp:10); second=Fighter("second",CombatTeam.Enemy,1);
         battle=Battle(aren,first,second); Ready(aren); Act(battle,HeroUltimates.Omnislash,first);
         Check(first.Hp==0 && first.VitalChanges.Count==13 && second.Hp==1000,"Overkill keeps all thirteen damage numbers on the original target.");
-        Check(first.VitalChanges.Take(12).All(c=>c.Amount==-30) && first.VitalChanges.Last().Amount==-90,"Fatal and post-defeat cuts show calculated damage, including the triple finisher.");
+        Check(first.VitalChanges.Take(12).All(c=>c.Amount==-33) && first.VitalChanges.Last().Amount==-99,"Fatal and post-defeat cuts show calculated damage, including the triple finisher.");
         Check(first.VitalChanges.Select(c=>c.ActionHitIndex).SequenceEqual(Enumerable.Range(1,13)),"Overkill preserves every cinematic hit time.");
         var death=new DefeatedEnemyPresentation(); death.Observe(first,UltimateTimeline.FinalImpact);
         Check(death.IsVisible(first,UltimateTimeline.HangStart) && !death.IsRed(first,UltimateTimeline.HangStart),"Defeated target stays for the aerial finisher.");
@@ -117,7 +117,7 @@ public static class UltimateChecks
         Ready(aren); first.IsDefending=true; first.GrantDamageShield(3,false);
         Act(battle,HeroUltimates.Omnislash,first);
         Check(rolls==13 && first.VitalChanges.Count(c=>c.IsCritical)==7,"Every cut rolls its own critical.");
-        Check(first.VitalChanges[0].Amount==-10 && first.VitalChanges[1].Amount==-8 && first.VitalChanges[12].Amount==-28,"Each hit respects critical rounding, Defend and Shield; final remains triple.");
+        Check(first.VitalChanges[0].Amount==-11 && first.VitalChanges[1].Amount==-9 && first.VitalChanges[12].Amount==-31,"Each hit respects critical rounding, Defend and Shield; final remains triple.");
     }
     private static void OverkillFeedback()
     {
@@ -128,7 +128,7 @@ public static class UltimateChecks
             var battle=Battle(aren,target); Ready(aren);
             Act(battle,HeroUltimates.Omnislash,target);
             Check(target.Hp==0 && target.VitalChanges.Count==13,"Middle-cut and final-cut defeats both keep the complete sequence.");
-            Check(target.VitalChanges.Take(12).All(c=>c.Amount==-30) && target.VitalChanges.Last().Amount==-90,"Floating damage is independent of remaining HP.");
+            Check(target.VitalChanges.Take(12).All(c=>c.Amount==-33) && target.VitalChanges.Last().Amount==-99,"Floating damage is independent of remaining HP.");
             Check(battle.Outcome==BattleOutcome.Victory && aren.TurnsTaken==1 && aren.Limit.Charge==0,"Overkill finishes one action before resolving victory.");
         }
 
@@ -142,8 +142,8 @@ public static class UltimateChecks
         Ready(enemy); Act(incoming,HeroUltimates.Omnislash,ally);
         Check(ally.Hp==0 && survivor.Hp==1000 && incoming.Outcome==BattleOutcome.None,"Enemy overkill stays on the defeated party member.");
         Check(rolls==13 && ally.VitalChanges.Count(c=>c.IsCritical)==7,"Post-defeat hits retain their independent critical rolls.");
-        Check(ally.VitalChanges.All(c=>c.IsShielded) && ally.VitalChanges[0].Amount==-37
-            && ally.VitalChanges[1].Amount==-30 && ally.VitalChanges.Last().Amount==-112,"Defend and Shield mitigate quadrupled enemy damage for the whole action, including overkill.");
+        Check(ally.VitalChanges.All(c=>c.IsShielded) && ally.VitalChanges[0].Amount==-41
+            && ally.VitalChanges[1].Amount==-33 && ally.VitalChanges.Last().Amount==-123,"Defend and Shield mitigate quadrupled enemy damage for the whole action, including overkill.");
         var expectedLimit=new LimitGauge(); expectedLimit.AddDamage(7,ally.Definition.MaxHp);
         Check(ally.Limit.Charge==expectedLimit.Charge,"Visual overkill grants no Limit beyond actual HP lost.");
         Check(!ally.IsDefending && ally.ShieldTurns==0 && !ally.IsPoisoned,"Defeat clears conditions when the sequence finishes.");
@@ -155,11 +155,11 @@ public static class UltimateChecks
         var second=Fighter("second",CombatTeam.Enemy,1);
         var generic=Battle(hero,nextHero,first,second);
         Act(generic,combo,first);
-        Check(first.VitalChanges.Select(c=>c.Amount).SequenceEqual(new[]{-30,-30,-60})
+        Check(first.VitalChanges.Select(c=>c.Amount).SequenceEqual(new[]{-33,-33,-66})
             && first.VitalChanges.Select(c=>c.ActionHitIndex).SequenceEqual(new[]{1,2,3}),"Any multi-hit action records each overkill impact.");
         Check(hero.Mp==23 && hero.TurnsTaken==1 && generic.CurrentActor==nextHero,"Overkill spends MP and a turn exactly once.");
         Act(generic,MateriaResolver.Attack,first);
-        Check(first.VitalChanges.Count==3 && second.Hp==980,"The following action targets a survivor without adding corpse feedback.");
+        Check(first.VitalChanges.Count==3 && second.Hp==977,"The following action targets a survivor without adding corpse feedback.");
     }
     private static void TimingAndValidation()
     {

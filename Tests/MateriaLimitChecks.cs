@@ -235,7 +235,7 @@ internal static class MateriaLimitChecks
         Assert(battle.GetValidTargets(PrototypePartyFactory.Thunder).Count == 1 && battle.GetValidTargets(PrototypePartyFactory.Thunder)[0] == tank,
             "Provocacao tambem deve atrair magia individual.");
         Assert(EnemyAI.TryTakeTurn(battle, out _), "Inimigo mago deve executar sua acao.");
-        Assert(tank.Hp == 62 && ally.Hp == 80 && tank.Limit.Charge == 59, "Magia deve usar atributo magico, defesa do tank, dano inimigo quadruplicado e carregar Limit real.");
+        Assert(tank.Hp == 10 && ally.Hp == 80 && tank.Limit.Charge == 94, "Magia deve usar atributo magico, defesa do tank, dano inimigo quadruplicado e carregar Limit real.");
     }
 
     private static void CheckLimitCarryAndSpending()

@@ -36,7 +36,7 @@ All e Infusão sozinhas não concedem ações. A ordem das matérias no par não
 
 All multiplica o custo original por 1,5, arredondado para cima, e cobra apenas uma vez por ação. Infusão mantém custo e poder originais, mas usa o atributo ataque. Não converte cura, purificação ou reviver. All não modifica comandos de matérias roxas.
 
-Magia e invocação usam `máximo(1, magia do usuário + poder - defesa do alvo)`. Golpes físicos usam ataque no lugar de magia. Defender reduz ambos pela metade. Proteger intercepta apenas dano físico individual; provocar atrai ofensivas individuais físicas e mágicas. Ataques em área ignoram provocação e interceptação, preservando a defesa individual.
+Magia e invocação usam `máximo(1, (magia do usuário + poder) × 100 / (100 + defesa do alvo))`, arredondando para baixo. Golpes físicos usam ataque no lugar de magia. A defesa oferece redução percentual com retornos decrescentes. Defender reduz ambos pela metade. Proteger intercepta apenas dano físico individual; provocar atrai ofensivas individuais físicas e mágicas. Ataques em área ignoram provocação e interceptação, preservando a defesa individual.
 
 A invocação já funciona como comando de dano, mas sua criatura, animação e áudio serão acrescentados na etapa de arte. Não existem progressão de nível de matéria ou restrições por personagem nesta entrega.
 

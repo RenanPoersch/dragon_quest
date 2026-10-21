@@ -413,9 +413,9 @@ namespace DragonQuest.Combat
             }
             if (ReportBrokenChains(target, report)) return 0;
             int offense = ability.Effect == AbilityEffect.MagicDamage || ability.Effect == AbilityEffect.Drain ? actor.Definition.Magic : actor.Definition.Attack;
-            long damage = Math.Max(1L, (long)offense + ability.Power - target.Definition.Defense);
+            long damage = Math.Max(1L, ((long)offense + ability.Power) * 100 / (100L + target.Definition.Defense));
             int elementalPercent = target.Definition.Affinities.DamagePercent(ability.Element);
-            // Defesa numerica, afinidade e critico (para baixo), dano inimigo x4, depois Defender e Shield (para cima).
+            // Defesa percentual com retornos decrescentes, afinidade e critico (para baixo), dano inimigo x4, depois Defender e Shield (para cima).
             damage = Math.Max(1L, damage * elementalPercent / 100);
             if (hitIndex == ability.HitCount) damage *= ability.FinalHitMultiplier;
             bool critical = actor.Definition.CriticalChance > 0 && criticalRoll() < actor.Definition.CriticalChance;

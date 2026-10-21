@@ -80,10 +80,10 @@ internal static class LevelProgressionChecks
             var battle = new BattleSession(() => critical ? .04999 : .05, null, new ItemInventory(), hero, enemy);
             hero.TakeDamage(50);
             Check(battle.TryAct(hero, strike, enemy, out string message), "Critical test action must succeed.");
-            Check(enemy.Hp == 1000 - (critical ? 25 : 20) && enemy.VitalChanges[0].IsCritical == critical,
+            Check(enemy.Hp == 1000 - (critical ? 28 : 23) && enemy.VitalChanges[0].IsCritical == critical,
                 "Damage critical multiplies by exactly 1.25 and marks actual damage feedback.");
             Check(message.Contains("critico x1,25") == critical, "Critical report follows the probability threshold.");
-            if (effect == AbilityEffect.Drain) Check(hero.Hp == 950 + (critical ? 25 : 20), "Drain heals the actual critical HP loss.");
+            if (effect == AbilityEffect.Drain) Check(hero.Hp == 950 + (critical ? 28 : 23), "Drain heals the actual critical HP loss.");
         }
         foreach (int percent in new[] { 50, 100, 150 })
         {
@@ -94,7 +94,7 @@ internal static class LevelProgressionChecks
             var enemy = new CombatantState("enemy", Stats(1, affinities: affinities, speed: 1), CombatTeam.Enemy);
             var battle = new BattleSession(() => .999, null, new ItemInventory(), hero, enemy);
             enemy.IsDefending = true; enemy.GrantDamageShield(3, false);
-            int expected = ((20 * percent / 100 * 125 / 100 + 1) / 2 + 1) / 2;
+            int expected = ((23 * percent / 100 * 125 / 100 + 1) / 2 + 1) / 2;
             Check(battle.TryAct(hero, fire, enemy, out _) && enemy.Hp == 1000 - expected,
                 "Affinity, critical, defending and shield combine in the documented order.");
         }
