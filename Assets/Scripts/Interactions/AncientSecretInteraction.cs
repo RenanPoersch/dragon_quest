@@ -56,7 +56,7 @@ namespace DragonQuest.Interactions
                 dialogue.Open("Monolito / "+SymbolName(symbol),result==MonolithResult.Reset
                     ? "..."
                     : result==MonolithResult.Completed?"Os três símbolos se erguem acima das pedras. Um tremor distante atravessa o chão."
-                    : result==MonolithResult.AlreadyCompleted?"O ciclo foi completado. Os simbolos permanecem suspensos sobre as pedras."
+                    : result==MonolithResult.AlreadyCompleted?"O ciclo foi completado."
                     : "O simbolo ganha um brilho suave. As outras pedras continuam em silencio.");
                 RefreshLight();
             }
