@@ -27,8 +27,7 @@ namespace DragonQuest.Interactions
             {
                 barrier.GetComponent<Collider2D>().enabled=false;
                 Physics2D.SyncTransforms(); opening=true; openingTime=0;
-                context.Dialogue.Open("Barreira ancestral","A Escama ancestral vibra. Os tres selos se desfazem e a barreira magica ao redor do vulcao se dissipa.",
-                    "A escama permanece com a equipe. O caminho ate a cratera esta livre.");
+                context.Dialogue.Open("Barreira ancestral","A Escama ancestral vibra. Os três selos se desfazem e a barreira mágica ao redor do vulcão se dissipa.");
             }
             else
             {
