@@ -64,13 +64,53 @@ public static class MenuInputUnityChecks
         battle.Initialize(movement, dialogue, progress);
         cheats.Initialize(movement, battle, saves, progress);
         // Supply an empty temporary store and skip artwork/fade; never initialize real saves.
-        Field(saves, "store").SetValue(saves, new DragonQuest.Persistence.SaveStore(
-            System.IO.Path.Combine(System.IO.Path.GetTempPath(), "DQMenuInput-" + Guid.NewGuid())));
+        string saveDirectory = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "DQMenuInput-" + Guid.NewGuid());
+        var saveStore = new DragonQuest.Persistence.SaveStore(saveDirectory);
+        Field(saves, "store").SetValue(saves, saveStore);
         Field(saves, "player").SetValue(saves, movement);
         Field(saves, "dialogue").SetValue(saves, dialogue);
         Field(saves, "battle").SetValue(saves, battle);
         Field(saves, "menuHasDrawn").SetValue(saves, true);
         Field(saves, "menuFadeInElapsed").SetValue(saves, 2f);
+        Call(saves, "RefreshSlots");
+        var optionEnabled = typeof(PrototypeSaveController).GetMethod("OptionEnabled", BindingFlags.Instance | BindingFlags.NonPublic);
+        Check(!(bool)optionEnabled.Invoke(saves, new object[] { 1 }), "Continue is disabled when all three slots are empty.");
+        foreach (var key in new[] { Key.DownArrow, Key.UpArrow, Key.RightArrow, Key.LeftArrow, Key.S, Key.W })
+        {
+            State(new GamepadState(), key); Call(saves, "Update");
+            Check((int)Field(saves, "selectedOption").GetValue(saves) == 0, key + " skips disabled Continue.");
+        }
+        foreach (var button in new[] { GamepadButton.DpadDown, GamepadButton.DpadUp, GamepadButton.DpadLeft, GamepadButton.DpadRight })
+        {
+            State(new GamepadState().WithButton(button)); Call(saves, "Update");
+            Check((int)Field(saves, "selectedOption").GetValue(saves) == 0, button + " skips disabled Continue.");
+        }
+        foreach (var direction in new[] { Vector2.up, Vector2.down, Vector2.left, Vector2.right })
+        {
+            State(new GamepadState { leftStick = direction }); Call(saves, "Update");
+            Check((int)Field(saves, "selectedOption").GetValue(saves) == 0, "The stick skips disabled Continue in direction " + direction);
+        }
+        Field(saves, "selectedOption").SetValue(saves, 1);
+        State(new GamepadState(), Key.Enter); Call(saves, "Update");
+        Check(Field(saves, "page").GetValue(saves).ToString() == "Title", "Enter cannot activate a stale disabled Continue selection.");
+        State(new GamepadState().WithButton(GamepadButton.South)); Call(saves, "Update");
+        Check(Field(saves, "page").GetValue(saves).ToString() == "Title", "Gamepad confirmation cannot activate disabled Continue.");
+        System.IO.Directory.CreateDirectory(saveDirectory);
+        System.IO.File.WriteAllText(saveStore.SlotPath(3), "corrupt save");
+        Call(saves, "RefreshSlots");
+        Check(!(bool)optionEnabled.Invoke(saves, new object[] { 1 })
+            && (int)Field(saves, "selectedOption").GetValue(saves) == 0,
+            "An unreadable save cannot enable Continue, and refreshing restores the New game selection.");
+        var party = PrototypePartyFactory.Create();
+        var savedProgress = new ExplorationProgress(50);
+        var savedShops = PrototypeShopFactory.Create(party, savedProgress);
+        var snapshot = DragonQuest.Persistence.JourneySnapshot.Capture(party, savedProgress,
+            new DragonQuest.Progression.AncientSecrets(), new DragonQuest.Progression.DragonProgress(),
+            savedShops, PrototypeTravel.World, 0, -7);
+        Check(saveStore.TryWrite(2, snapshot, out _) && saveStore.TryWrite(2, snapshot, out _), "Create a valid save with a recovery backup in slot 2.");
+        System.IO.File.WriteAllText(saveStore.SlotPath(2), "corrupt primary");
+        Call(saves, "RefreshSlots");
+        Check((bool)optionEnabled.Invoke(saves, new object[] { 1 }), "A recoverable backup enables Continue even when the primary save is corrupt.");
         foreach (var key in new[] { Key.DownArrow, Key.UpArrow, Key.RightArrow, Key.LeftArrow, Key.S, Key.W })
         {
             Field(saves, "selectedOption").SetValue(saves, 0);
@@ -93,6 +133,11 @@ public static class MenuInputUnityChecks
         Check(Field(saves, "page").GetValue(saves).ToString() == "Continue", "Enter confirms Continue through the Input System.");
         State(new GamepadState().WithButton(GamepadButton.East)); Call(saves, "Update");
         Check(Field(saves, "page").GetValue(saves).ToString() == "Title", "Circle returns from Continue to the initial menu.");
+        System.IO.File.Delete(saveStore.SlotPath(2));
+        System.IO.File.Delete(saveStore.SlotPath(2) + ".bak");
+        System.IO.File.Delete(saveStore.SlotPath(3));
+        Call(saves, "RefreshSlots");
+        Check(!(bool)optionEnabled.Invoke(saves, new object[] { 1 }), "Removing the last loadable save disables Continue again.");
         Field(saves, "<IsMenuVisible>k__BackingField").SetValue(saves, false);
         var inventory = fixture.AddComponent<PrototypeMateriaHud>();
         inventory.Initialize(battle, new DragonQuest.Progression.AncientSecrets());

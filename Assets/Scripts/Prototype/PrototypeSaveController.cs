@@ -289,6 +289,7 @@ namespace DragonQuest.Prototype
             if (key == KeyCode.DownArrow || key == KeyCode.S)
                 MoveSelection(1);
             if (key != KeyCode.Return && key != KeyCode.KeypadEnter && key != KeyCode.Space) return;
+            if (!OptionEnabled(selectedOption)) return;
             if (overwriteSlot != 0)
             {
                 if (selectedOption == 0) SaveToSlot(overwriteSlot);
@@ -302,8 +303,10 @@ namespace DragonQuest.Prototype
             else if (selectedOption == SaveStore.SlotCount) Back();
             else SelectSlot(selectedOption + 1);
         }
-        private bool OptionEnabled(int option) => page != MenuPage.Continue || overwriteSlot != 0
-            || option == SaveStore.SlotCount || previews[option] != null;
+        private bool OptionEnabled(int option) => page == MenuPage.Title
+            ? option == 0 || option == 1 && Array.Exists(previews, preview => preview != null)
+            : page != MenuPage.Continue || overwriteSlot != 0
+                || option == SaveStore.SlotCount || previews[option] != null;
         private void CancelOverwrite()
         { overwriteSlot = 0; MenuSounds.Play(MenuSound.Cancel); }
         private MenuSoundContext NavigationSoundContext => page == MenuPage.Title
@@ -359,7 +362,10 @@ namespace DragonQuest.Prototype
                 if (scaleSprite != null)
                     GUI.DrawTexture(new Rect(540, 260 - TitleMenuOffsetY, 200, 200), scaleSprite, ScaleMode.ScaleToFit, true);
                 if (MenuButton(TitleOptionRect(0), "New game", 0, titleButtonStyle)) NewGame();
+                bool previousEnabled = GUI.enabled;
+                GUI.enabled = previousEnabled && OptionEnabled(1);
                 if (MenuButton(TitleOptionRect(1), "Continue", 1, titleButtonStyle)) OpenPage(MenuPage.Continue);
+                GUI.enabled = previousEnabled;
             }
             else
             {
@@ -438,7 +444,7 @@ namespace DragonQuest.Prototype
             return !startingNewGame && clicked;
         }
         private static Rect TitleOptionRect(int option)
-            => new Rect(490, (option == 0 ? 562 : 620) - TitleMenuOffsetY, 300, 48);
+            => new Rect(490, (option == 0 ? 562 : 620) - TitleMenuOffsetY * 2, 300, 48);
 
         private void DrawSelectedHand()
         {
