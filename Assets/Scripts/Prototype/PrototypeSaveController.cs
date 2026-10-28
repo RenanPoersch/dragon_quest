@@ -360,7 +360,7 @@ namespace DragonQuest.Prototype
             if (page == MenuPage.Title)
             {
                 if (scaleSprite != null)
-                    GUI.DrawTexture(new Rect(540, 270 - TitleMenuOffsetY, 200, 200), scaleSprite, ScaleMode.ScaleToFit, true);
+                    GUI.DrawTexture(new Rect(540, 250, 200, 200), scaleSprite, ScaleMode.ScaleToFit, true);
                 if (MenuButton(TitleOptionRect(0), "New game", 0, titleButtonStyle)) NewGame();
                 bool previousEnabled = GUI.enabled;
                 GUI.enabled = previousEnabled && OptionEnabled(1);
