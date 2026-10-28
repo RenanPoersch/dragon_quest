@@ -37,7 +37,7 @@ Matar Rei Rubro e espírito no mesmo ataque em área também dá o terceiro fina
 
 Os três finais começam automaticamente após sua condição específica. A libertação do rei e a possessão de Aren aguardam a animação da ação final e o desaparecimento do inimigo; em seguida, abrem a cena final sem tela de resultado ou confirmação. A experiência do final bom continua sendo concedida uma única vez. No meteoro destrutivo, o impacto e o clarão antecedem o corte automático para a cena do castelo. As cenas avançam sozinhas até o retorno ao menu e o registro da conquista. Continuar reapresenta um desfecho salvo; Novo jogo cria uma jornada com os estados iniciais no slot escolhido.
 
-Uma derrota por golpes normais, antes de qualquer desfecho, retorna à hospedaria. A equipe se recupera para tentar novamente; Limit e progresso permanecem, e consumíveis gastos continuam gastos. Essa derrota não conta como um dos três finais.
+Uma derrota por golpes normais, antes de qualquer desfecho, abre automaticamente a tela inicial de Load Game após a animação do golpe final. Não há botão de retorno à hospedaria nem salvamento automático: carregar uma jornada restaura seu último estado salvo. A morte de toda a equipe por veneno no mapa segue o mesmo retorno. Essa derrota não conta como um dos três finais.
 
 ## Roteiro em Play
 
@@ -50,7 +50,7 @@ Uma derrota por golpes normais, antes de qualquer desfecho, retorna à hospedari
 7. Ataque o espírito preservando o rei. Golpes em área e Limit atingem os dois inimigos. Ao derrotar a sombra, a batalha termina com o rei vivo e qualquer meteoro pendente cancelado. Sem apertar teclas ou clicar, aguarde a animação do golpe e confira o início automático do agradecimento do rei, sem parada na tela de experiência.
 8. Para testar a absorção, enfraqueça o Rei Rubro até 450 HP ou menos e mantenha o espírito vivo. Aguarde até o quinto turno. Com o portador vivo, o meteoro deve se contrair até ele e exibir a absorção na escama vermelha, sem tirar HP de ninguém; o confronto deve continuar.
 9. Teste também o portador derrotado: reviva-o antes do lançamento para absorver; deixá-lo derrotado deve levar à destruição. Outra pessoa não absorve somente por ter resistência a Fogo.
-10. Teste uma derrota comum sem atingir 450 HP ou menos no Rei Rubro. Volte à hospedaria, confira Limit e itens gastos, saia e retorne ao castelo para outra tentativa. Nenhum final deve ter sido registrado.
+10. Teste uma derrota comum sem atingir 450 HP ou menos no Rei Rubro. Confira o retorno automático a Load Game, sem botão de hospedaria, e carregue o último save para outra tentativa. Nenhum final deve ter sido registrado.
 11. Em cada final, deixe teclado, mouse e controle sem entrada: confira a transição automática após o gatilho, a pausa da exploração e o retorno automático ao menu ao terminar a cena. Continuar deve reapresentar o mesmo desfecho. Ao criar Novo jogo, confirme a ilha inicial, 50 moedas, 2 poções, 1 antídoto, segredos ocultos e ausência da armadura da jornada anterior.
 
 ## Código e validação

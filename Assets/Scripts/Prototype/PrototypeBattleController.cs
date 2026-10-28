@@ -31,7 +31,7 @@ namespace DragonQuest.Prototype
         public bool IsCheatMenuBlocking => cheatMenu != null && cheatMenu.BlocksInput;
         private System.Func<bool> otherMenuOpen = () => false;
         private AncientSecrets secrets;
-        private System.Action recoverAtInn;
+        private System.Action showLoadGame;
         private System.Action<GameEnding> showEnding;
         private bool notifiedCompletion;
         private readonly RandomEncounterRules randomEncounters = new RandomEncounterRules(() => UnityEngine.Random.value);
@@ -49,10 +49,10 @@ namespace DragonQuest.Prototype
         public string BattleTitle => IsCastleEncounter ? (CastleRules.IsSpiritRevealed?"REI RUBRO E ESPIRITO":"REI RUBRO")
             :IsDragonEncounter ? "DRAGAO CORROMPIDO" : RandomEncounterRules.Title(RandomEncounter);
         public string ReturnLabel => IsCastleEncounter&&Session.Outcome==BattleOutcome.Completed?"Ver final"
-            :Session.Outcome==BattleOutcome.Defeat?"Voltar para a hospedaria":"Continuar explorando";
+            :"Continuar explorando";
         public string OutcomeDescription => Session.Outcome==BattleOutcome.Completed?EndingNarrative.Title(CastleRules.Ending):Session.Outcome == BattleOutcome.Victory
             ? (IsDragonEncounter ? "A essencia do dragao foi libertada. " : "Os inimigos foram vencidos. ") + RewardMessage
-            : "Sua equipe foi vencida. Acordara na hospedaria; Limit e progresso serao mantidos.";
+            : "Sua equipe foi vencida...";
 
         private System.Func<string> currentLocation = () => PrototypeTravel.World;
         public string BattleLocationId { get; private set; } = PrototypeTravel.World;
@@ -128,7 +128,7 @@ namespace DragonQuest.Prototype
 
         public void Initialize(PlayerMovement hero, DialogueController dialogueController, ExplorationProgress progress,
             System.Func<bool> externalMenuOpen = null, DragonProgress dragonProgress = null,
-            AncientSecrets ancientSecrets = null, System.Action recovery = null, System.Action<GameEnding> endingPresentation = null,
+            AncientSecrets ancientSecrets = null, System.Action defeatPresentation = null, System.Action<GameEnding> endingPresentation = null,
             PartyProgress restoredParty = null)
         {
             movement = hero; dialogue = dialogueController;
@@ -145,7 +145,7 @@ namespace DragonQuest.Prototype
             postBattleHud.Initialize(this);
             EntryTransition = GetComponent<BattleEntryTransition>();
             if (EntryTransition == null) EntryTransition = gameObject.AddComponent<BattleEntryTransition>();
-            Dragon = dragonProgress ?? new DragonProgress(); secrets = ancientSecrets; recoverAtInn = recovery;
+            Dragon = dragonProgress ?? new DragonProgress(); secrets = ancientSecrets; showLoadGame = defeatPresentation;
             showEnding=endingPresentation;
             trackingWalk = false;
             randomEncounters.Reset(currentLocation());
@@ -192,11 +192,7 @@ namespace DragonQuest.Prototype
             }
             if (!paused && !Party.HasLivingMembers)
             {
-                Party.RecoverAtInn();
-                recoverAtInn?.Invoke();
-                trackingWalk = false;
-                dialogue.Open("Hospedaria", "O veneno venceu a equipe. Vocês despertam na hospedaria...");
-                movement.SetMovementEnabled(false);
+                FinishDefeat();
                 return;
             }
             Vector2 position = movement.transform.position;
@@ -391,6 +387,17 @@ namespace DragonQuest.Prototype
             else ErrorMessage = message;
         }
 
+        private void FinishDefeat()
+        {
+            if (HasEnded) return;
+            if (IsActive) AwardIfComplete();
+            HasEnded = true; IsActive = false; IsMenuOpen = false; IsPostBattleOpen = false;
+            pendingEnemy = null; trackingWalk = false;
+            movement.SetMovementEnabled(false);
+            GameInput.ConsumeGamepadFrame();
+            showLoadGame?.Invoke();
+        }
+
         private void FinishCastleBattle()
         {
             if (HasEnded)
@@ -414,6 +421,8 @@ namespace DragonQuest.Prototype
                 && CastleMeteorPresentation.ShouldCutToCinematic(Time.unscaledTime - ActionStartedAt))
             { FinishCastleBattle(); return; }
             if (IsPresentingAction) return;
+            if (IsActive && Session.Outcome == BattleOutcome.Defeat)
+            { FinishDefeat(); return; }
             // The final action finishes before the cinematic; no result confirmation interrupts it.
             if (IsActive && IsCastleEncounter && Session.Outcome == BattleOutcome.Completed)
             { FinishCastleBattle(); return; }
@@ -497,6 +506,7 @@ namespace DragonQuest.Prototype
         {
             if (IsEnteringBattle || IsCheatMenuBlocking) return;
             if (!IsActive || IsPresentingAction || Session.Outcome == BattleOutcome.None) return;
+            if (Session.Outcome == BattleOutcome.Defeat) { FinishDefeat(); return; }
             if (PostBattleResults.IsVictory(Session) && (!IsPostBattleOpen || !PostBattle.CanContinue(Time.unscaledTime - PostBattleStartedAt))) return;
             IsPostBattleOpen = false;
             if(IsCastleEncounter&&Session.Outcome==BattleOutcome.Completed)
@@ -509,12 +519,7 @@ namespace DragonQuest.Prototype
             trackingWalk = false;
             movement.SetMovementEnabled(true);
             pendingEnemy = null;
-            if (Session.Outcome == BattleOutcome.Defeat)
-            {
-                Party.RecoverAtInn();
-                recoverAtInn?.Invoke();
-            }
-            else if (IsDragonEncounter && Session.Outcome == BattleOutcome.Victory)
+            if (IsDragonEncounter && Session.Outcome == BattleOutcome.Victory)
             {
                 dialogue.OpenWithCompletion("Essência do dragão", () =>
                     {

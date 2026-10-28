@@ -147,7 +147,8 @@ namespace DragonQuest.Prototype
             if (!GameInput.IsFrameAvailable) return;
             if (observedBattle.Outcome != BattleOutcome.None)
             {
-                if (GameInput.ConfirmPressed) { MenuSounds.Play(MenuSound.Confirm); controller.ReturnToCity(); GameInput.ConsumeGamepadFrame(); }
+                if (observedBattle.Outcome != BattleOutcome.Defeat && GameInput.ConfirmPressed)
+                { MenuSounds.Play(MenuSound.Confirm); controller.ReturnToCity(); GameInput.ConsumeGamepadFrame(); }
                 return;
             }
             if (observedActor == null || observedActor.Team != CombatTeam.Party || observedActor.MindControlTurns > 0) return;
@@ -344,7 +345,8 @@ namespace DragonQuest.Prototype
                 GUI.Label(new Rect(40, 508, 575, 30), observedBattle.Outcome == BattleOutcome.Completed ? "DESFECHO"
                     : observedBattle.Outcome == BattleOutcome.Victory ? "VITORIA!" : "DERROTA", title);
                 GUI.Label(new Rect(40, 546, 575, 75), controller.OutcomeDescription, text);
-                if (CommandButton(new Rect(40, 645, 565, 36), controller.ReturnLabel, true, true)) controller.ReturnToCity();
+                if (observedBattle.Outcome != BattleOutcome.Defeat
+                    && CommandButton(new Rect(40, 645, 565, 36), controller.ReturnLabel, true, true)) controller.ReturnToCity();
             }
             else if (observedActor != null && observedActor.Team == CombatTeam.Enemy)
             {

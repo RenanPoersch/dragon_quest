@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using DragonQuest.Audio;
 using DragonQuest.Input;
 using DragonQuest.Exploration;
@@ -11,6 +12,7 @@ namespace DragonQuest.Prototype
 {
     public sealed class PrototypeSaveController : MonoBehaviour
     {
+        private static bool loadGameOnStart;
         private enum MenuPage { Title, Save, Continue }
         private MenuPage page = MenuPage.Title;
         private int selectedOption;
@@ -65,8 +67,10 @@ namespace DragonQuest.Prototype
             player = hero; battle = combat; shops = vendors; locations = maps; dialogue = conversations;
             progress = exploration; secrets = ancient; dragon = dragonProgress; install = installJourney;
             store = new SaveStore(System.IO.Path.Combine(Application.persistentDataPath, "Saves"));
+            page = loadGameOnStart ? MenuPage.Continue : MenuPage.Title;
+            loadGameOnStart = false;
             RefreshSlots(); player.SetMovementEnabled(false);
-            intro = new PrototypeIntroPresentation();
+            intro = page == MenuPage.Title ? new PrototypeIntroPresentation() : null;
         }
         private void RefreshSlots()
         {
@@ -125,6 +129,16 @@ namespace DragonQuest.Prototype
             ShowMessage(warning ?? "Jornada carregada / slot " + slot);
             battle.RestoreEnding((GameEnding)journey.Data.Ending);
         }
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStartupPage() { loadGameOnStart = false; }
+
+        public void ReturnToLoadGame()
+        {
+            loadGameOnStart = true;
+            GameInput.ConsumeGamepadFrame();
+            SceneManager.LoadScene(SceneManager.GetActiveScene().path);
+        }
+
         public bool CanSaveManually => store != null && !IsMenuVisible && battle != null
             && !battle.IsActive && !battle.HasEnded && !battle.IsCheatMenuBlocking
             && dialogue != null && !dialogue.IsOpen && (shops == null || !shops.IsOpen)

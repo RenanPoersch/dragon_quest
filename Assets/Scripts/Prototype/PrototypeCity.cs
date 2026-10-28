@@ -127,7 +127,7 @@ namespace DragonQuest.Prototype
             innRest = gameObject.AddComponent<InnRestController>();
             battle = gameObject.AddComponent<PrototypeBattleController>();
             var cheats = gameObject.AddComponent<PrototypeCheatMenu>();
-            battle.Initialize(player.GetComponent<PlayerMovement>(), dialogue, progress, () => shops.IsOpen || saves.IsMenuVisible || cheats.BlocksInput || innRest.IsPlaying,dragon,secrets,locations.RecoverAtInn,endings.Show);
+            battle.Initialize(player.GetComponent<PlayerMovement>(), dialogue, progress, () => shops.IsOpen || saves.IsMenuVisible || cheats.BlocksInput || innRest.IsPlaying,dragon,secrets,saves.ReturnToLoadGame,endings.Show);
             audience = new GameObject("Party diante do Rei Rubro").AddComponent<TyrantAudience>();
             audience.transform.SetParent(transform, false);
             audience.Initialize(player.GetComponent<PlayerMovement>(), () => battle.Party, scenery);
@@ -152,7 +152,7 @@ namespace DragonQuest.Prototype
                 secrets.Restore(s.KnowsPoem, s.AltarSolved, s.MonolithStep, s.HasScale, s.PassageOpen);
                 dragon.Restore(journey.Dragon.IsDefeated);
                 battle.Initialize(player.GetComponent<PlayerMovement>(), dialogue, progress, () => shops.IsOpen || saves.IsMenuVisible || cheats.BlocksInput || innRest.IsPlaying,
-                    dragon, secrets, locations.RecoverAtInn, endings.Show, journey.Party);
+                    dragon, secrets, saves.ReturnToLoadGame, endings.Show, journey.Party);
                 shops.Initialize(player.GetComponent<PlayerMovement>(), dialogue, battle, progress, journey.Shops);
                 interaction.Initialize(new InteractionContext(dialogue, progress, locations.TravelTo,
                     battle.StartBattle, () => battle.IsBusy, shops.Open, secrets), interactables.ToArray());
