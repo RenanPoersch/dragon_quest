@@ -1,8 +1,16 @@
 # Prompts de geração da abertura
 
-Ferramenta: imagegen integrada. Referência: imagem anexada pelo usuário nesta atividade.
+Ferramenta: imagegen integrada, sem CLI. Entrada da revisão atual: a paisagem já existente no projeto.
 
-## Paisagem atual — enquadramento 6:5 e árvore mais baixa
+## Paisagem atual — Full HD 1920 × 1080
+
+Entrada de edição: `Assets/Resources/PixelArt/Intro/Sunset.png` anterior ao commit `2eae473`. A ferramenta retornou 1672 × 941; a exportação final usa escala uniforme com amostragem Point para 1920 × 1080, com ajuste central inferior a um pixel na altura. Saída integrada no mesmo caminho, preservando o GUID do asset.
+
+```text
+Edit the attached existing pixel-art fantasy game opening background. The ONLY requested change is adapting its canvas to Full HD 1920 x 1080 pixels, landscape 16:9, by naturally extending the scenery horizontally on BOTH sides. Produce exactly 1920x1080 if supported, otherwise an exact 16:9 image at higher resolution. Preserve the entire existing artwork as the central scene, scaled uniformly to fit the 1080-pixel height; do not crop the original top, bottom, castle, lake, tree or three seated adventurers. Keep all original subjects, their poses, clothes, identities, their relative proportions and distance, the huge purple-blue sky, pink-orange sunset clouds, setting sun, distant mountains, castle on the left, shimmering lake and three adventurers under the tree on the right. Extend cloud formations, distant landscape, lake and dark grassy foreground naturally into the added side regions, with no duplicated edge columns, no mirror reflection of the artwork, no smears, no blurred filler, no warped or stretched subjects, no decorative borders. Match the existing crisp pixel-art style, original palette, lighting and detail. Keep the large open sky in the upper center for the title that the game renders separately. Do not add any text, logos, titles, HUD, extra characters, birds or new buildings. This is an edit target, not a general style reference. Preserve this specific existing scene as faithfully as possible.
+```
+
+## Paisagem anterior — enquadramento 6:5 e árvore mais baixa
 
 Entrada de edição: a paisagem anterior, preservada no histórico do commit `12eab36`. Saída integrada: `Assets/Resources/PixelArt/Intro/Sunset.png`, 1374 × 1145. Ferramenta imagegen integrada, sem CLI.
 
