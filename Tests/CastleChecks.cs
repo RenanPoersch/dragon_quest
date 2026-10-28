@@ -50,7 +50,7 @@ internal static class CastleChecks
     private static void Threshold(BattleSession battle)
     {
         var king=Find(battle,CastleBattleRules.TyrantId);
-        king.TakeDamage(king.Hp-180);Rules(battle).AfterAction(battle);
+        king.TakeDamage(king.Hp-450);Rules(battle).AfterAction(battle);
     }
     private static void PrepareUntilMeteor(BattleSession battle)
     {
@@ -79,10 +79,10 @@ internal static class CastleChecks
         var battle=Create(party);
         Assert(battle.Combatants.Count==4&&!Rules(battle).IsSpiritRevealed,"Armadura guardada nao revela o espirito.");
         var king=Find(battle,CastleBattleRules.TyrantId);
-        king.TakeDamage(419);Rules(battle).AfterAction(battle);
-        Assert(king.Hp==181&&!Rules(battle).MeteorStarted,"Acima de 30% nao inicia o meteoro.");
+        king.TakeDamage(king.Hp-451);Rules(battle).AfterAction(battle);
+        Assert(king.Hp==451&&!Rules(battle).MeteorStarted,"Acima de 450 HP nao inicia o meteoro.");
         king.TakeDamage(1);Rules(battle).AfterAction(battle);
-        Assert(Rules(battle).MeteorStarted&&Rules(battle).PreparationsRemaining==5&&king.IsCharging,"Em exatamente 30% inicia a conjuracao de cinco turnos.");
+        Assert(king.Hp==450&&Rules(battle).MeteorStarted&&Rules(battle).PreparationsRemaining==5&&king.IsCharging,"Em exatamente 450 HP inicia a conjuracao de cinco turnos.");
         for(int bearer=0;bearer<3;bearer++)
         {
             battle=Create(Party(true,bearer));
@@ -92,9 +92,9 @@ internal static class CastleChecks
         var crossingAttack=battle.CurrentActor.Definition.Abilities.Single(a=>a.Id=="attack");
         decimal kingDefense=king.Definition.Defense;
         int crossingDamage=(int)Math.Max(1m,((decimal)battle.CurrentActor.Definition.Attack+crossingAttack.Power)*205200m/(205200m+290m*kingDefense+79m*kingDefense*kingDefense));
-        king.TakeDamage(king.Hp-(179+crossingDamage));
+        king.TakeDamage(king.Hp-(449+crossingDamage));
         Assert(battle.TryAct(battle.CurrentActor,battle.CurrentActor.Definition.Abilities.Single(a=>a.Id=="attack"),king,out _)
-            &&king.Hp==179&&Rules(battle).MeteorStarted,"Golpe que cruza o limiar precisa ativar a contagem automaticamente.");
+            &&king.Hp==449&&Rules(battle).MeteorStarted,"Golpe que cruza o limiar precisa ativar a contagem automaticamente.");
         battle=Create(Party(false));BeforeKing(battle);
         int turns=battle.CurrentActor.TurnsTaken,hp=Find(battle,CastleBattleRules.TyrantId).Hp;
         Assert(!battle.TryAct(battle.CurrentActor,CastleBattleRules.Meteor,battle.CurrentActor,out _)
@@ -119,7 +119,7 @@ internal static class CastleChecks
             Assert(!Find(battle,CastleBattleRules.TyrantId).IsCharging&&Find(battle,CastleBattleRules.TyrantId).ShieldTurns==0,"Absorcao encerra conjuracao e Protect no sexto turno.");
             Assert(Rules(battle).MeteorAbsorberId==partyBearerId(bearer),"Animacao de absorcao aponta ao portador real.");
             BeforeKing(battle);
-            Assert(EnemyAI.ChooseAbility(battle)!=CastleBattleRules.Meteor&&EnemyAI.ChooseAbility(battle)!=CastleBattleRules.PrepareMeteor,"Meteoro nao reinicia em loop abaixo de 30%.");
+            Assert(EnemyAI.ChooseAbility(battle)!=CastleBattleRules.Meteor&&EnemyAI.ChooseAbility(battle)!=CastleBattleRules.PrepareMeteor,"Meteoro nao reinicia em loop abaixo de 450 HP.");
         }
         var party=Party(true);battle=Create(party);Find(battle,"bram").TakeDamage(150);
         PrepareUntilMeteor(battle);BeforeKing(battle);
@@ -203,13 +203,27 @@ internal static class CastleChecks
         var wait=new AbilityDefinition("wait","Esperar","",0,0,AbilityEffect.Prepare,TargetRule.Self);
         var hero=new CombatantState("hero",new CombatantDefinition("Heroi","Aliado",500,20,20,0,24,20,physical,magic),CombatTeam.Party);
         var king=new CombatantState("tyrant",new CombatantDefinition("Rei","Inimigo",500,0,1,10,0,5,wait),CombatTeam.Enemy);
-        king.GrantDamageShield(3,false);
+        king.GrantDamageShield(3,false,60);
         var battle=new BattleSession(hero,king);
-        Assert(battle.TryAct(hero,physical,king,out _)&&king.Hp==490,"Protect reduz 19 de dano fisico para 10.");
+        Assert(battle.TryAct(hero,physical,king,out _)&&king.Hp==492,"Protect reduz 19 de dano fisico para 8, arredondando para cima.");
         Assert(king.VitalChanges.Last().IsShielded,"Impacto protegido registra o escudo para a animacao.");
-        Assert(battle.TryAct(king,wait,king,out _)&&battle.TryAct(hero,magic,king,out _)&&king.Hp==473,"Protect reduz 33 de dano magico para 17.");
+        Assert(battle.TryAct(king,wait,king,out _)&&battle.TryAct(hero,magic,king,out _)&&king.Hp==478,"Protect reduz 33 de dano magico para 14, arredondando para cima.");
+        king.AdvanceShieldDuration();king.AdvanceShieldDuration();
+        king.TakeDamage(100);
+        Assert(king.Hp==378&&king.ShieldTurns==0,"Protect expirado nao reduz dano.");
+        king.GrantDamageShield(3,false);king.TakeDamage(100);
+        Assert(king.Hp==328,"Shield comum continua reduzindo 50%, sem herdar os 60% de Protect.");
+        king.GrantDamageShield(3,false,60);
         king.TakeDamage(int.MaxValue);
         Assert(!king.IsAlive&&king.ShieldTurns==0&&king.VitalChanges.Last().IsShielded,"Um golpe fatal ainda guarda o evento visual de escudo.");
+        king.RecoverHp(500);king.GrantDamageShield(3,false);king.TakeDamage(100);
+        Assert(king.Hp==450,"Morte e recuperacao nao preservam a potencia de um escudo anterior.");
+        battle=Create(Party(false));Threshold(battle);king=Find(battle,CastleBattleRules.TyrantId);
+        Assert(king.Hp==450&&king.ShieldTurns==0,"O limiar prepara Protect para o proximo turno do Rei Rubro.");
+        BeforeKing(battle);
+        Assert(EnemyAI.TryTakeTurn(battle,out _)&&king.ShieldTurns==5,"O primeiro turno da conjuracao aplica Protect por cinco turnos.");
+        king.TakeDamage(100);Assert(king.Hp==410,"Protect do encontro real reduz 100 de dano para 40.");
+        king.TakeDamage(101);Assert(king.Hp==369,"Protect do encontro real reduz 101 de dano para 41.");
         battle=Create(Party(false));
         PrepareUntilMeteor(battle);BeforeKing(battle);
         foreach(var member in battle.Combatants) member.GrantDamageShield(5,false);

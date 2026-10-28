@@ -11,12 +11,14 @@ namespace DragonQuest.Progression
         public const string TyrantId="tyrant", SpiritId="evil-spirit";
         // Protect inicia a contagem 5 a 1; o lancamento ocupa o turno seguinte do Rei Rubro.
         public const int MeteorCastTurns=5;
+        public const int MeteorHpThreshold=450;
+        public const int ProtectDamageReductionPercent=60;
         public static readonly AbilityDefinition RoyalStrike=new AbilityDefinition("royal-strike","Golpe do Rei Rubro",
             "Golpe fisico forte, sem elemento.",0,8,AbilityEffect.PhysicalDamage,TargetRule.Enemy);
         public static readonly AbilityDefinition RoyalHeavy=new AbilityDefinition("royal-heavy","Golpe esmagador",
             "Golpe fisico ainda mais forte, sem elemento.",0,14,AbilityEffect.PhysicalDamage,TargetRule.Enemy);
         public static readonly AbilityDefinition Protect=new AbilityDefinition("tyrant-protect","Protect",
-            "Uma barreira reduz pela metade o dano recebido durante a conjuracao.",0,0,AbilityEffect.Prepare,TargetRule.Self);
+            "Uma barreira reduz em 60% o dano recebido durante a conjuracao.",0,0,AbilityEffect.Prepare,TargetRule.Self);
         public static readonly AbilityDefinition PrepareMeteor=new AbilityDefinition("prepare-meteor","Carregar meteoro",
             "Concentra o meteoro flamejante.",0,0,AbilityEffect.Prepare,TargetRule.Self);
         public static readonly AbilityDefinition Meteor=new AbilityDefinition("flaming-meteor","Meteoro flamejante",
@@ -82,7 +84,7 @@ namespace DragonQuest.Progression
                 if(ability==Protect)
                 {
                     ProtectCast=true;
-                    actor.GrantDamageShield(MeteorCastTurns,true);
+                    actor.GrantDamageShield(MeteorCastTurns,true,ProtectDamageReductionPercent);
                 }
                 if(PreparationsRemaining>0) PreparationsRemaining--;
                 message=ability==Protect?"O Rei Rubro conjura Protect.":"O Rei Rubro continua a conjuracao.";
@@ -115,7 +117,7 @@ namespace DragonQuest.Progression
         {
             CombatantState tyrant=Find(battle,TyrantId);
             if(Ending==GameEnding.None&&!MeteorStarted&&tyrant!=null&&tyrant.IsAlive
-                &&(long)tyrant.Hp*100<=(long)tyrant.Definition.MaxHp*30)
+                &&tyrant.Hp<=MeteorHpThreshold)
             {MeteorStarted=true;PreparationsRemaining=MeteorCastTurns;tyrant.IsCharging=true;}
         }
         public BattleOutcome EvaluateOutcome(BattleSession battle)

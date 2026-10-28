@@ -47,6 +47,7 @@ namespace DragonQuest.Combat
         public int PoisonTurns { get; internal set; }
         public bool IsPoisoned => PoisonTurns > 0;
         public int ShieldTurns { get; private set; }
+        private int shieldDamageReductionPercent;
         private bool skipShieldTick;
         public int TauntTurns { get; internal set; }
         public CombatantState TauntedBy { get; internal set; }
@@ -81,7 +82,7 @@ namespace DragonQuest.Combat
             // Poison is a condition tick, not a hit on the prison.
             if (!damageOverTime && TryBreakChains()) return;
             bool shielded = ShieldTurns > 0 && amount > 0;
-            if (shielded) amount = (int)(((long)amount + 1) / 2);
+            if (shielded) amount = (int)(((long)amount * (100 - shieldDamageReductionPercent) + 99) / 100);
             int previousHp = Hp;
             Hp = Math.Max(0, Hp - amount);
             // Each combo impact displays its full damage, even after an earlier hit depleted HP.
@@ -126,7 +127,7 @@ namespace DragonQuest.Combat
             BoundActions = 0;
             MindControlTurns = SilenceTurns = 0;
             PoisonTurns = 0;
-            ShieldTurns = 0; skipShieldTick = false;
+            ShieldTurns = 0; shieldDamageReductionPercent = 0; skipShieldTick = false;
             TauntTurns = 0;
             TauntedBy = null;
             ProtectedBy = null;
@@ -137,10 +138,11 @@ namespace DragonQuest.Combat
             PoisonTurns = 0; BoundActions = 0; MindControlTurns = SilenceTurns = 0; TauntTurns = 0; TauntedBy = null;
         }
 
-        internal void GrantDamageShield(int turns, bool castingAction)
+        internal void GrantDamageShield(int turns, bool castingAction, int damageReductionPercent = 50)
         {
             if (!IsAlive) return;
             ShieldTurns = Math.Max(ShieldTurns, turns);
+            shieldDamageReductionPercent = Math.Max(shieldDamageReductionPercent, damageReductionPercent);
             skipShieldTick = castingAction;
         }
 
@@ -148,6 +150,7 @@ namespace DragonQuest.Combat
         {
             if (skipShieldTick) skipShieldTick = false;
             else if (ShieldTurns > 0) ShieldTurns--;
+            if (ShieldTurns == 0) shieldDamageReductionPercent = 0;
         }
     }
 }
