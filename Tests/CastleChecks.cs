@@ -90,7 +90,8 @@ internal static class CastleChecks
         }
         battle=Create(Party(false));king=Find(battle,CastleBattleRules.TyrantId);
         var crossingAttack=battle.CurrentActor.Definition.Abilities.Single(a=>a.Id=="attack");
-        int crossingDamage=(int)Math.Max(1L,((long)battle.CurrentActor.Definition.Attack+crossingAttack.Power)*100/(100L+king.Definition.Defense));
+        decimal kingDefense=king.Definition.Defense;
+        int crossingDamage=(int)Math.Max(1m,((decimal)battle.CurrentActor.Definition.Attack+crossingAttack.Power)*205200m/(205200m+290m*kingDefense+79m*kingDefense*kingDefense));
         king.TakeDamage(king.Hp-(179+crossingDamage));
         Assert(battle.TryAct(battle.CurrentActor,battle.CurrentActor.Definition.Abilities.Single(a=>a.Id=="attack"),king,out _)
             &&king.Hp==179&&Rules(battle).MeteorStarted,"Golpe que cruza o limiar precisa ativar a contagem automaticamente.");
@@ -206,7 +207,7 @@ internal static class CastleChecks
         var battle=new BattleSession(hero,king);
         Assert(battle.TryAct(hero,physical,king,out _)&&king.Hp==490,"Protect reduz 19 de dano fisico para 10.");
         Assert(king.VitalChanges.Last().IsShielded,"Impacto protegido registra o escudo para a animacao.");
-        Assert(battle.TryAct(king,wait,king,out _)&&battle.TryAct(hero,magic,king,out _)&&king.Hp==474,"Protect reduz 31 de dano magico para 16.");
+        Assert(battle.TryAct(king,wait,king,out _)&&battle.TryAct(hero,magic,king,out _)&&king.Hp==473,"Protect reduz 33 de dano magico para 17.");
         king.TakeDamage(int.MaxValue);
         Assert(!king.IsAlive&&king.ShieldTurns==0&&king.VitalChanges.Last().IsShielded,"Um golpe fatal ainda guarda o evento visual de escudo.");
         battle=Create(Party(false));

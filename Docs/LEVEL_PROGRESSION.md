@@ -39,9 +39,9 @@ O crescimento entra antes dos bônus de equipamentos e dos percentuais das maté
 
 Ataques físicos, magias, invocações ofensivas e drenagem podem causar crítico. O multiplicador é fixo em **1,25×**, com sorteio individual por alvo em ações de área. A chance pertence ao atacante; proteção usa a defesa e as afinidades de quem intercepta.
 
-A defesa usa uma curva percentual com retornos decrescentes: `máximo(1, (ataque ou magia + poder) × 100 / (100 + defesa))`. A redução é `defesa / (100 + defesa)`: 10 de defesa reduz cerca de 9,1%, 30 reduz 23,1%, 50 reduz 33,3% e 100 reduz 50%. A mesma fórmula vale para aliados, inimigos, dano físico, magia, invocação e drenagem.
+A defesa usa uma curva percentual calibrada: `fator = 205200 / (205200 + 290 × defesa + 79 × defesa²)`. Com dano original de 100, defesa 0 conserva 100, defesa 10 conserva 95 e defesa 30 conserva 72. A continuação arredondada para baixo é: defesa 20 → 84, 40 → 59, 50 → 49 e 100 → 20. A mesma fórmula vale para aliados, inimigos, dano físico, magia, invocação e drenagem.
 
-A ordem de cálculo é ataque/magia e poder → defesa percentual → afinidade elemental → crítico → dano inimigo ×4 → Defender → Shield. Defesa, afinidade e crítico arredondam para baixo; as reduções de 50% arredondam para cima. O dano base mínimo continua sendo 1. Cura, itens, veneno e o meteoro roteirizado não usam essa curva de defesa nem fazem sorteio de crítico. Limit e drenagem usam o HP realmente perdido.
+A ordem de cálculo é ataque/magia e poder → dano inimigo ×4 → defesa percentual → afinidade elemental → crítico → Defender → Shield. O multiplicador inimigo entra antes do arredondamento da defesa, para um golpe de 100 causar exatamente 95 ou 72 nos pontos definidos. Defesa, afinidade e crítico arredondam para baixo; as reduções de 50% arredondam para cima. O mínimo após a defesa é 1 para aliados e 4 para inimigos. Cura, itens, veneno e o meteoro roteirizado não usam essa curva de defesa nem fazem sorteio de crítico. Limit e drenagem usam o HP realmente perdido.
 
 O dano flutuante existente recebe a marca de crítico e usa sua cor de destaque. O relatório da ação indica `critico x1,25`. A apresentação definitiva de nível e XP fica para outra etapa; o relatório de vitória já registra o XP e os níveis ganhos.
 

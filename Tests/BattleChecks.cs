@@ -50,7 +50,7 @@ internal static class BattleChecks
         Assert(!battle.TryAct(lia, Attack, guard, out _), "Personagem fora do turno nao pode agir.");
         Assert(guard.Hp == 150 && battle.CurrentActor == aren, "Tentativa invalida nao pode causar dano ou consumir turno.");
         Act(battle, Attack, guard);
-        Assert(guard.Hp == 130 && battle.CurrentActor == lia, "Ataque deve aplicar defesa percentual e passar turno.");
+        Assert(guard.Hp == 129 && battle.CurrentActor == lia, "Ataque deve aplicar defesa percentual e passar turno.");
         Assert(battle.GetValidTargets(Heal).Count == 0, "Aliados com HP cheio nao devem ser alvos de cura.");
         Assert(!battle.TryAct(lia, Heal, guard, out _), "Cura em inimigo deve ser recusada.");
         Assert(lia.Mp == 36 && battle.CurrentActor == lia, "Cura invalida nao pode consumir MP ou turno.");
@@ -58,7 +58,7 @@ internal static class BattleChecks
         Act(battle, Defend, lia);
         Assert(battle.CurrentActor == guard, "Guarda deve agir antes do tank.");
         Assert(EnemyAI.TryTakeTurn(battle, 0, out _), "IA deve realizar uma acao valida.");
-        Assert(aren.Hp == 20 && battle.CurrentActor == bram, "IA deve atacar aliado vivo com dano quadruplicado e avancar.");
+        Assert(aren.Hp == 15 && battle.CurrentActor == bram, "IA deve atacar aliado vivo com dano quadruplicado e avancar.");
         Act(battle, Defend, bram);
         Assert(battle.Round == 2 && battle.CurrentActor == aren, "Fim da ordem deve iniciar nova rodada.");
     }
@@ -69,7 +69,7 @@ internal static class BattleChecks
         CombatantState guard = Find(battle, "guard");
         CombatantState aren = Find(battle, "aren");
         Act(battle, Heavy, guard);
-        Assert(aren.Mp == 16 && guard.Hp == 117, "Golpe forte deve consumir 4 MP e causar 33 de dano.");
+        Assert(aren.Mp == 16 && guard.Hp == 116, "Golpe forte deve consumir 4 MP e causar 34 de dano.");
 
         var limited = new CombatantState("hero", new CombatantDefinition("Heroi", "Atacante", 100, 3, 10, 0, 0, 20, Attack, Heavy), CombatTeam.Party);
         var opponent = new CombatantState("enemy", new CombatantDefinition("Inimigo", "Inimigo", 100, 0, 1, 0, 0, 1, Attack), CombatTeam.Enemy);
@@ -92,12 +92,12 @@ internal static class BattleChecks
         Act(battle, Defend, aren);
         Act(battle, Attack, Find(battle, "guard"));
         EnemyAI.TryTakeTurn(battle, 0, out _);
-        Assert(aren.Hp == 60, "Defender deve reduzir 80 de dano inimigo para 40 apos a defesa percentual.");
+        Assert(aren.Hp == 57, "Defender deve reduzir 85 de dano inimigo para 43 apos a defesa percentual.");
         Act(battle, Defend, Find(battle, "bram"));
         Assert(!aren.IsDefending, "Defesa deve expirar no inicio do proximo turno do usuario.");
         Act(battle, Attack, Find(battle, "guard"));
         Act(battle, Heal, aren);
-        Assert(aren.Hp == 98 && lia.Mp == 30, "Cura deve recuperar 38 HP e consumir MP.");
+        Assert(aren.Hp == 95 && lia.Mp == 30, "Cura deve recuperar 38 HP e consumir MP.");
 
         var victim = new CombatantState("victim", new CombatantDefinition("Alvo", "Aliado", 1, 0, 1, 0, 0, 1, Attack), CombatTeam.Party);
         var healer = new CombatantState("healer", new CombatantDefinition("Healer", "Healer", 100, 36, 1, 0, 20, 20, Heal, Defend), CombatTeam.Party);
@@ -169,14 +169,14 @@ internal static class BattleChecks
         BattleSession battle = CreateBasicEncounter();
         CombatantState guard = Find(battle, "guard");
         Act(battle, Attack, guard);
-        Assert(guard.VitalChanges.Count == 1 && guard.VitalChanges[0].Amount == -20,
+        Assert(guard.VitalChanges.Count == 1 && guard.VitalChanges[0].Amount == -21,
             "Feedback deve registrar dano real no alvo atingido.");
         Assert(!guard.VitalChanges[0].IsCritical, "Dano comum nao pode ser apresentado como critico.");
         guard.TakeDamage(5, critical: true);
         Assert(guard.VitalChanges[1].IsCritical && guard.VitalChanges[1].Amount == -5,
             "Golpe marcado como critico deve preservar sua identificacao.");
         guard.RecoverHp(999);
-        Assert(guard.VitalChanges[2].Amount == 25, "Cura flutuante deve respeitar o limite real de HP.");
+        Assert(guard.VitalChanges[2].Amount == 26, "Cura flutuante deve respeitar o limite real de HP.");
         guard.RecoverHp(10);
         Assert(guard.VitalChanges.Count == 3, "Cura sem efeito nao deve produzir numeros.");
         CombatantState lia = Find(battle, "lia");

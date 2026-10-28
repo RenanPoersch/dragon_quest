@@ -413,14 +413,17 @@ namespace DragonQuest.Combat
             }
             if (ReportBrokenChains(target, report)) return 0;
             int offense = ability.Effect == AbilityEffect.MagicDamage || ability.Effect == AbilityEffect.Drain ? actor.Definition.Magic : actor.Definition.Attack;
-            long damage = Math.Max(1L, ((long)offense + ability.Power) * 100 / (100L + target.Definition.Defense));
+            decimal defense = target.Definition.Defense;
+            int enemyMultiplier = actor.Team == CombatTeam.Enemy ? 4 : 1;
+            // Defesa 0/10/30 conserva 100%/95%/72% do dano; inclui o multiplicador antes de arredondar.
+            long damage = (long)Math.Max(enemyMultiplier, ((decimal)offense + ability.Power) * enemyMultiplier * 205200m
+                / (205200m + 290m * defense + 79m * defense * defense));
             int elementalPercent = target.Definition.Affinities.DamagePercent(ability.Element);
-            // Defesa percentual com retornos decrescentes, afinidade e critico (para baixo), dano inimigo x4, depois Defender e Shield (para cima).
+            // Defesa, afinidade e critico arredondam para baixo; Defender e Shield arredondam para cima.
             damage = Math.Max(1L, damage * elementalPercent / 100);
             if (hitIndex == ability.HitCount) damage *= ability.FinalHitMultiplier;
             bool critical = actor.Definition.CriticalChance > 0 && criticalRoll() < actor.Definition.CriticalChance;
             if (critical) damage = damage * CombatantDefinition.CriticalDamagePercent / 100;
-            if (actor.Team == CombatTeam.Enemy) damage *= 4;
             if (target.IsDefending) damage = (damage + 1) / 2;
             int previousHp = target.Hp;
             target.TakeDamage((int)Math.Min(int.MaxValue, damage), critical, actionHitIndex: hitIndex,

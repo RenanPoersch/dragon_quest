@@ -35,11 +35,11 @@ internal static class DefenseChecks
     private static void Curve()
     {
         int[] defenses = { 0, 10, 30, 50, 100, 200 };
-        int[] damages = { 30, 27, 23, 20, 15, 10 };
+        int[] damages = { 100, 95, 72, 49, 20, 5 };
         foreach (AbilityEffect effect in new[] { AbilityEffect.PhysicalDamage, AbilityEffect.MagicDamage, AbilityEffect.Drain })
         foreach (CombatTeam team in new[] { CombatTeam.Party, CombatTeam.Enemy })
         for (int i = 0; i < defenses.Length; i++)
-            Check(Strike(defenses[i], effect, team) == damages[i] * (team == CombatTeam.Enemy ? 4 : 1),
+            Check(Strike(defenses[i], effect, team, offense: team == CombatTeam.Enemy ? 25 : 100, power: 0) == damages[i],
                 "Physical, magical and drain damage must use the same gradual defense curve for both teams.");
 
         int previous = int.MaxValue;
@@ -49,28 +49,28 @@ internal static class DefenseChecks
             Check(damage > 0 && damage <= previous, "Adding defense cannot increase damage or grant immunity.");
             previous = damage;
         }
-        Check(Strike(30, team: CombatTeam.Enemy) == 92,
-            "A 30-point enemy strike against 30 defense must deal 92 damage instead of collapsing to 4.");
-        Check(Strike(100, offense: 1000, power: 0) == 500
-            && Strike(200, offense: 1000, power: 0) == 333,
-            "The second 100 defense grants less additional percentage reduction than the first.");
+        Check(Strike(10, team: CombatTeam.Enemy, offense: 25, power: 0) == 95
+            && Strike(30, team: CombatTeam.Enemy, offense: 25, power: 0) == 72,
+            "A 100-damage enemy strike must hit the requested 95/72 anchors without early rounding.");
+        Check(Strike(20, offense: 100, power: 0) == 84 && Strike(40, offense: 100, power: 0) == 59,
+            "Intermediate defense values follow the smooth calibrated curve.");
     }
 
     private static void ModifiersAndLimits()
     {
         var weak = new ElementalAffinities(weaknesses: new[] { DamageElement.Fire });
         var resistant = new ElementalAffinities(resistances: new[] { DamageElement.Fire });
-        Check(Strike(50, critical: true, defending: true, shield: true, affinities: weak) == 10,
+        Check(Strike(50, critical: true, defending: true, shield: true, affinities: weak) == 7,
             "Defense, weakness, critical, Defender and Shield must preserve their rounding order.");
-        Check(Strike(50, team: CombatTeam.Enemy, critical: true, defending: true, shield: true, affinities: weak) == 37,
-            "Enemy scaling occurs after defense, affinity and critical, before Defender and Shield.");
-        Check(Strike(50, affinities: resistant) == 10, "Resistance halves damage after the defense curve.");
-        Check(Strike(50, defending: true) == 10 && Strike(50, shield: true) == 10
-            && Strike(50, defending: true, shield: true) == 5, "Defender and Shield retain their separate halves.");
+        Check(Strike(50, team: CombatTeam.Enemy, critical: true, defending: true, shield: true, affinities: weak) == 28,
+            "Enemy scaling occurs before defense rounding, affinity, critical, Defender and Shield.");
+        Check(Strike(50, affinities: resistant) == 7, "Resistance halves damage after the defense curve.");
+        Check(Strike(50, defending: true) == 7 && Strike(50, shield: true) == 7
+            && Strike(50, defending: true, shield: true) == 4, "Defender and Shield retain their separate halves.");
         Check(Strike(int.MaxValue, offense: 0, power: 0) == 1
             && Strike(int.MaxValue, team: CombatTeam.Enemy, offense: 0, power: 0) == 4,
             "Very high defense preserves positive minimum damage and enemy scaling.");
-        Check(Strike(int.MaxValue, offense: int.MaxValue, power: int.MaxValue) == 199,
+        Check(Strike(int.MaxValue, offense: int.MaxValue, power: int.MaxValue) == 1,
             "Maximum offense, power and defense must use wide arithmetic without overflow.");
         Check(Strike(0, offense: int.MaxValue, power: int.MaxValue, critical: true) == int.MaxValue,
             "Damage beyond the HP integer range must saturate safely.");

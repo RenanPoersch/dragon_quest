@@ -7,7 +7,7 @@ Esta página registra a entrega 6A. Na versão 6B, a equipe começa com o kit ec
 ## Regras
 
 - Fraqueza: 150% do dano normal. Resistência: 50%. Os outros elementos causam 100%.
-- Primeiro se calcula `(atributo ofensivo + poder) × 100 / (100 + defesa)`, arredondando para baixo, com mínimo de 1. A defesa oferece redução percentual com retornos decrescentes. Depois se aplica a afinidade elemental, arredondando para baixo. O dano dos inimigos é multiplicado por 4 antes de Defender, que reduz o resultado pela metade, arredondando para cima.
+- Primeiro se calcula atributo ofensivo + poder, incluindo ×4 para inimigos. A defesa aplica o fator `205200 / (205200 + 290 × defesa + 79 × defesa²)`, arredondando para baixo, com mínimo de 1 para aliados e 4 para inimigos. Um golpe de 100 causa 100/95/72 com defesa 0/10/30. Depois se aplica a afinidade elemental, arredondando para baixo. Defender reduz o resultado pela metade, arredondando para cima.
 - All mantém o elemento e calcula cada alvo separadamente. Fogo/Gelo/Raio + All custam 9 MP uma vez por ação; Fênix + All custa 18 MP.
 - Infusão mantém o elemento, passa a usar ataque físico e pode ser interceptada por Proteger. Nesse caso, contam a defesa e a afinidade de quem recebeu o golpe.
 - A afinidade mágica de Lia continua dando +25% sobre o poder base de magia e cura. O comando transformado em físico por Infusão usa seu poder base original.
