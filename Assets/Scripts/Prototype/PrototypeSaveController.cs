@@ -31,6 +31,7 @@ namespace DragonQuest.Prototype
         private readonly bool[] occupied = new bool[SaveStore.SlotCount];
         private Texture2D pixel;
         private Texture2D scaleSprite;
+        private const float TitleMenuOffsetY = 50f / 1.5f; // 50 pixels up at 1920x1080.
         private Texture2D hand;
         private Rect handUv = new Rect(0, 0, 1, 1);
         private float handAspect = 1;
@@ -356,9 +357,9 @@ namespace DragonQuest.Prototype
             if (page == MenuPage.Title)
             {
                 if (scaleSprite != null)
-                    GUI.DrawTexture(new Rect(440, 160, 400, 400), scaleSprite, ScaleMode.ScaleToFit, true);
-                if (MenuButton(new Rect(490, 562, 300, 48), "New game", 0, titleButtonStyle)) NewGame();
-                if (MenuButton(new Rect(490, 620, 300, 48), "Continue", 1, titleButtonStyle)) OpenPage(MenuPage.Continue);
+                    GUI.DrawTexture(new Rect(540, 260 - TitleMenuOffsetY, 200, 200), scaleSprite, ScaleMode.ScaleToFit, true);
+                if (MenuButton(TitleOptionRect(0), "New game", 0, titleButtonStyle)) NewGame();
+                if (MenuButton(TitleOptionRect(1), "Continue", 1, titleButtonStyle)) OpenPage(MenuPage.Continue);
             }
             else
             {
@@ -436,12 +437,15 @@ namespace DragonQuest.Prototype
             GUI.color = previous;
             return !startingNewGame && clicked;
         }
+        private static Rect TitleOptionRect(int option)
+            => new Rect(490, (option == 0 ? 562 : 620) - TitleMenuOffsetY, 300, 48);
+
         private void DrawSelectedHand()
         {
             if (!IsMenuVisible || hand == null || !OptionEnabled(selectedOption)) return;
             Rect option;
             if (overwriteSlot != 0) option = new Rect(selectedOption == 0 ? 310 : 650, 365, 320, 48);
-            else if (page == MenuPage.Title) option = new Rect(490, selectedOption == 0 ? 562 : 620, 300, 48);
+            else if (page == MenuPage.Title) option = TitleOptionRect(selectedOption);
             else option = selectedOption == SaveStore.SlotCount ? SaveSelectionPresentation.BackRect
                 : SaveSelectionPresentation.SlotRect(selectedOption);
             bool row = page != MenuPage.Title && overwriteSlot == 0 && selectedOption < SaveStore.SlotCount;
