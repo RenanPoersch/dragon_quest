@@ -139,17 +139,18 @@ namespace DragonQuest.Prototype
                     source.width / texture.width, source.height / texture.height);
                 // The drawn bird faces left; mirror it while the orbit carries it to the right.
                 if (Mathf.Sin(angle) < 0) { uv.x += uv.width; uv.width = -uv.width; }
-                float height = flight.z * source.height / source.width;
+                float width = flight.z * .5f;
+                float height = width * source.height / source.width;
                 GUI.color = new Color(1, 1, 1, alpha * (bird < 4 ? 1 : .82f));
-                GUI.DrawTextureWithTexCoords(new Rect(Mathf.Round(x), Mathf.Round(y - height / 2),
-                    flight.z, height), texture, uv, true);
+                GUI.DrawTextureWithTexCoords(new Rect(Mathf.Round(x + (flight.z - width) / 2), Mathf.Round(y - height / 2),
+                    width, height), texture, uv, true);
             }
         }
 
         private void DrawTitle(float alpha)
         {
             const float spacing = 5;
-            const float titleTop = 40;
+            const float titleTop = 40 + 50f / 1.5f; // 50 pixels lower at 1920x1080.
             string title = IntroSequence.Title;
             float width = (title.Length - 1) * spacing;
             for (int i = 0; i < title.Length; i++) width += titleStyle.CalcSize(new GUIContent(title[i].ToString())).x;
