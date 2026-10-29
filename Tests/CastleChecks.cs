@@ -94,13 +94,41 @@ internal static class CastleChecks
         int crossingDamage=(int)Math.Max(1m,((decimal)battle.CurrentActor.Definition.Attack+crossingAttack.Power)*205200m/(205200m+290m*kingDefense+79m*kingDefense*kingDefense));
         king.TakeDamage(king.Hp-(449+crossingDamage));
         Assert(battle.TryAct(battle.CurrentActor,battle.CurrentActor.Definition.Abilities.Single(a=>a.Id=="attack"),king,out _)
-            &&king.Hp==449&&Rules(battle).MeteorStarted,"Golpe que cruza o limiar precisa ativar a contagem automaticamente.");
+            &&king.Hp==CastleBattleRules.MeteorHpThreshold&&Rules(battle).MeteorStarted,"Golpe que cruza o limiar precisa parar na transicao e ativar a contagem automaticamente.");
         battle=Create(Party(false));BeforeKing(battle);
         int turns=battle.CurrentActor.TurnsTaken,hp=Find(battle,CastleBattleRules.TyrantId).Hp;
         Assert(!battle.TryAct(battle.CurrentActor,CastleBattleRules.Meteor,battle.CurrentActor,out _)
             &&battle.CurrentActor.TurnsTaken==turns&&battle.CurrentActor.Hp==hp,"Nao pode lancar meteoro antes do limiar nem gastar um turno invalido.");
         Assert(EnemyAI.ChooseAbility(battle)==CastleBattleRules.RoyalStrike&&CastleBattleRules.RoyalStrike.Element==DamageElement.None
             &&CastleBattleRules.RoyalHeavy.Element==DamageElement.None,"Golpes normais do Rei Rubro devem ser fisicos e sem elemento.");
+    }
+    private static void CheckMeteorPhaseTransition()
+    {
+        foreach(var effect in new[]{AbilityEffect.PhysicalDamage,AbilityEffect.MagicDamage,AbilityEffect.Drain})
+        foreach(bool fullHealth in new[]{true,false})
+        foreach(bool multiHit in effect==AbilityEffect.PhysicalDamage?new[]{false,true}:new[]{false})
+        {
+            var battle=Create(Party(false));var king=Find(battle,CastleBattleRules.TyrantId);
+            if(!fullHealth) king.TakeDamage(king.Hp-(CastleBattleRules.MeteorHpThreshold+50));
+            var actor=battle.CurrentActor;var original=actor.Definition;
+            var strike=multiHit?HeroUltimates.Omnislash:new AbilityDefinition("phase-hit","Golpe de teste","",0,0,effect,TargetRule.Enemy);
+            actor.RefreshDefinition(new CombatantDefinition(original.Name,original.Role,original.MaxHp,original.MaxMp,
+                2000,original.Defense,2000,original.Speed,original.Affinities,0,0,1,strike,PrototypeBattleFactory.Defend));
+            actor.Limit.Restore(100);
+            Assert(battle.TryAct(actor,strike,king,out _),"O golpe que atravessa o limiar precisa ser resolvido.");
+            Assert(king.IsAlive&&king.Hp==CastleBattleRules.MeteorHpThreshold&&Rules(battle).MeteorStarted
+                &&Rules(battle).PreparationsRemaining==CastleBattleRules.MeteorCastTurns&&Rules(battle).Ending==GameEnding.None
+                &&battle.Outcome==BattleOutcome.None,"Golpe fatal, critico ou Omnislash nao pode pular a fase do meteoro.");
+            var nextActor=battle.CurrentActor;
+            Assert(battle.TryAct(nextActor,nextActor.Definition.Abilities.Single(a=>a.Id=="attack"),king,out _)
+                &&king.Hp==CastleBattleRules.MeteorHpThreshold,"O rei aguarda o proprio turno para iniciar Protect sem morrer entre aliados.");
+            BeforeKing(battle);
+            Assert(EnemyAI.ChooseAbility(battle)==CastleBattleRules.Protect&&EnemyAI.TryTakeTurn(battle,out _)
+                &&Rules(battle).ProtectCast&&Rules(battle).MeteorTurnsElapsed==1,"A transicao chega ao primeiro turno real de conjuracao.");
+            actor.Limit.Restore(100);
+            Assert(battle.TryAct(actor,strike,king,out _)&&!king.IsAlive&&Rules(battle).Ending==GameEnding.HeroPossessed,
+                "Depois de Protect o rei continua vulneravel e preserva o final de possessao.");
+        }
     }
     private static void CheckMeteor()
     {
@@ -137,12 +165,13 @@ internal static class CastleChecks
             &&Rules(battle).Ending==GameEnding.KingFreed&&Find(battle,CastleBattleRules.TyrantId).IsAlive
             &&!Find(battle,CastleBattleRules.TyrantId).IsCharging&&Rules(battle).PreparationsRemaining==0,"Matar espirito com rei vivo encerra a luta e cancela o meteoro.");
         Assert(!EnemyAI.TryTakeTurn(battle,out _)&&battle.CurrentActor==null,"Nao deve haver ataques depois do final.");
-        battle=Create(Party(false));var king=Find(battle,CastleBattleRules.TyrantId);king.TakeDamage(king.Hp-1);
+        battle=Create(Party(false));Threshold(battle);BeforeKing(battle);EnemyAI.TryTakeTurn(battle,out _);
+        var king=Find(battle,CastleBattleRules.TyrantId);king.RestoreVitals(1,king.Mp,false,0);
         Assert(battle.TryAct(battle.CurrentActor,battle.CurrentActor.Definition.Abilities.Single(a=>a.Id=="attack"),king,out _)
             &&Rules(battle).Ending==GameEnding.HeroPossessed,"Matar Rei Rubro sem armadura deve levar a possessao de Aren.");
         var party=Party(true);var cleave=new MateriaInstance("ending-cleave",PrototypePartyFactory.CleaveMateria);party.TryAddMaterias(cleave);party.TryEquip(party.Members[0],party.Members[0].Armor,2,cleave,out _);
-        battle=Create(party);
-        foreach(var enemy in battle.Combatants.Where(c=>c.Team==CombatTeam.Enemy)) enemy.TakeDamage(enemy.Hp-1);
+        battle=Create(party);Threshold(battle);BeforeKing(battle);EnemyAI.TryTakeTurn(battle,out _);
+        foreach(var enemy in battle.Combatants.Where(c=>c.Team==CombatTeam.Enemy)) enemy.RestoreVitals(1,enemy.Mp,false,0);
         Assert(battle.TryAct(battle.CurrentActor,battle.CurrentActor.Definition.Abilities.Single(a=>a.SourceAbilityId=="cleave"),Find(battle,CastleBattleRules.SpiritId),out _)
             &&Rules(battle).Ending==GameEnding.HeroPossessed,"Area que mata rei e espirito simultaneamente nao pode dar o final bom.");
         foreach(var ending in new[]{GameEnding.KingFreed,GameEnding.CastleDestroyed,GameEnding.HeroPossessed})
@@ -229,5 +258,5 @@ internal static class CastleChecks
         foreach(var member in battle.Combatants) member.GrantDamageShield(5,false);
         Assert(EnemyAI.TryTakeTurn(battle,out _)&&battle.Combatants.All(c=>!c.IsAlive),"O impacto aniquilador nao deixa sobreviventes por causa de Shield ou Protect.");
     }
-    public static int Run() {CheckProtectDamage();CheckVisibilityAndThreshold();CheckMeteor();CheckEndings();CheckSpiritEffects();CheckFullGoodAndDefeat();return checks;}
+    public static int Run() {CheckMeteorPhaseTransition();CheckProtectDamage();CheckVisibilityAndThreshold();CheckMeteor();CheckEndings();CheckSpiritEffects();CheckFullGoodAndDefeat();return checks;}
 }

@@ -426,7 +426,9 @@ namespace DragonQuest.Combat
             if (critical) damage = damage * CombatantDefinition.CriticalDamagePercent / 100;
             if (target.IsDefending) damage = (damage + 1) / 2;
             int previousHp = target.Hp;
-            target.TakeDamage((int)Math.Min(int.MaxValue, damage), critical, actionHitIndex: hitIndex,
+            int appliedDamage = (int)Math.Min(int.MaxValue, damage);
+            if (Rules is IBattleDamageRules damageRules) appliedDamage = damageRules.LimitDamage(target, appliedDamage);
+            target.TakeDamage(appliedDamage, critical, actionHitIndex: hitIndex,
                 deferDefeatCleanup: hitIndex > 0 && hitIndex < ability.HitCount);
             report.Append(target.Definition.Name).Append(" -").Append(previousHp - target.Hp).Append(" HP");
             if (ability.Element != DamageElement.None)

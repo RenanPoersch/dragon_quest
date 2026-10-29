@@ -22,6 +22,12 @@ public static class AutomaticEndingUnityChecks
     { target.GetType().GetMethod(method, Hidden).Invoke(target, null); }
     private static void Age(PrototypeBattleController controller, float elapsed)
     { typeof(PrototypeBattleController).GetField("<ActionStartedAt>k__BackingField", Hidden).SetValue(controller, Time.unscaledTime - elapsed); }
+    private static void FinishEntry(PrototypeBattleController controller)
+    {
+        controller.EntryTransition.enabled = false;
+        Call(controller.EntryTransition, "OnDisable");
+        Call(controller, "Update");
+    }
     private static void Damage(CombatantState target, int amount)
     {
         var method = typeof(CombatantState).GetMethod("TakeDamage", Hidden);
@@ -61,6 +67,29 @@ public static class AutomaticEndingUnityChecks
             Check(Endings == 1 && Completions == 1, "Further updates cannot replay the transition or completion.");
         }
     }
+    private static void CheckMeteorPhaseEntry()
+    {
+        using (var fixture = new Fixture())
+        {
+            var controller = fixture.Controller;
+            controller.Party.SetInfiniteLimit(true);
+            controller.StartCastleBattle(); FinishEntry(controller);
+            var king = controller.Session.Combatants.Single(c => c.Id == CastleBattleRules.TyrantId);
+            Damage(king, king.Hp - (CastleBattleRules.MeteorHpThreshold + 50));
+            var limit = controller.Session.CurrentActor.Definition.Abilities.Single(a => a.UsesLimit);
+            Check(controller.TryPlayerAction(limit, king), "Reproduce Omnislash at 500 HP through the actual controller.");
+            Check(king.IsAlive && king.Hp == CastleBattleRules.MeteorHpThreshold && controller.CastleRules.MeteorStarted
+                && controller.Session.Outcome == BattleOutcome.None && fixture.Completions == 0,
+                "The threshold hit enters the meteor phase instead of completing the possession ending.");
+            Age(controller, controller.ActionEndsAt - controller.ActionStartedAt + 1); Call(controller, "Update");
+            Check(fixture.Endings == 0 && controller.IsActive && !controller.HasEnded,
+                "Finishing the LIMIT animation cannot hide the king or start a cinematic.");
+            BeforeKing(controller.Session);
+            Check(EnemyAI.ChooseAbility(controller.Session) == CastleBattleRules.Protect
+                && EnemyAI.TryTakeTurn(controller.Session, out _) && controller.CastleRules.ProtectCast,
+                "The living king reaches Protect on his own turn.");
+        }
+    }
     private static void CheckFinalBlow(GameEnding expected, bool armor, bool both = false, bool longFrame = false)
     {
         using (var fixture = new Fixture(armor))
@@ -72,11 +101,24 @@ public static class AutomaticEndingUnityChecks
                 Check(controller.Party.TryAddMaterias(cleave) && controller.Party.TryEquip(controller.Party.Members[0],
                     controller.Party.Members[0].Armor, 2, cleave, out _), "Equip an area attack to test simultaneous boss deaths.");
             }
-            controller.StartCastleBattle(); Call(controller, "Update");
+            controller.StartCastleBattle(); FinishEntry(controller);
             Check(fixture.Endings == 0 && controller.IsActive, "An unfinished castle battle cannot start a cinematic.");
+            if (expected == GameEnding.HeroPossessed)
+            {
+                var king = controller.Session.Combatants.Single(c => c.Id == CastleBattleRules.TyrantId);
+                Damage(king, king.Hp - CastleBattleRules.MeteorHpThreshold);
+                controller.CastleRules.AfterAction(controller.Session);
+                BeforeKing(controller.Session);
+                Check(EnemyAI.TryTakeTurn(controller.Session, out _), "Start Protect before testing a later fatal blow.");
+                Call(king, "ClearConditions");
+            }
             var target = controller.Session.Combatants.Single(c => c.Id == (expected == GameEnding.KingFreed ? CastleBattleRules.SpiritId : CastleBattleRules.TyrantId));
             Damage(target, target.Hp - 1);
-            if (both) Damage(controller.Session.Combatants.Single(c => c.Id == CastleBattleRules.SpiritId), 279);
+            if (both)
+            {
+                var spirit = controller.Session.Combatants.Single(c => c.Id == CastleBattleRules.SpiritId);
+                Damage(spirit, spirit.Hp - 1);
+            }
             int experience = controller.Party.Members.Sum(m => m.Experience);
             var attack = controller.Session.CurrentActor.Definition.Abilities.Single(a => both ? a.SourceAbilityId == "cleave" : a.Id == "attack");
             Check(controller.TryPlayerAction(attack, target), "The final blow is accepted.");
@@ -101,7 +143,9 @@ public static class AutomaticEndingUnityChecks
         for (int turn = 0; battle.CurrentActor?.Id != CastleBattleRules.TyrantId && turn < 20; turn++)
         {
             var actor = battle.CurrentActor;
-            Check(actor != null && battle.TryAct(actor, actor.Definition.Abilities.Single(a => a.Effect == AbilityEffect.Defend), actor, out _), "Advance an allied turn during the meteor countdown.");
+            Check(actor != null && (actor.Team == CombatTeam.Enemy ? EnemyAI.TryTakeTurn(battle, 0, out _)
+                : battle.TryAct(actor, actor.Definition.Abilities.Single(a => a.Effect == AbilityEffect.Defend), actor, out _)),
+                "Advance a turn during the meteor countdown.");
         }
         Check(battle.CurrentActor?.Id == CastleBattleRules.TyrantId, "The tyrant reaches his next turn.");
     }
@@ -110,7 +154,7 @@ public static class AutomaticEndingUnityChecks
         using (var fixture = new Fixture())
         {
             var controller = fixture.Controller;
-            controller.StartCastleBattle();
+            controller.StartCastleBattle(); FinishEntry(controller);
             var battle = controller.Session;
             var king = battle.Combatants.Single(c => c.Id == CastleBattleRules.TyrantId);
             Damage(king, king.Hp - 120); controller.CastleRules.AfterAction(battle);
@@ -135,7 +179,7 @@ public static class AutomaticEndingUnityChecks
         using (var fixture = new Fixture())
         {
             var controller = fixture.Controller;
-            controller.StartBattle();
+            controller.StartBattle(); FinishEntry(controller);
             var enemies = controller.Session.Combatants.Where(c => c.Team == CombatTeam.Enemy).ToArray();
             foreach (var enemy in enemies.Skip(1)) Damage(enemy, enemy.Hp);
             Damage(enemies[0], enemies[0].Hp - 1);
@@ -151,6 +195,7 @@ public static class AutomaticEndingUnityChecks
         {
             typeof(GameInput).GetMethod("Reset", BindingFlags.Static | BindingFlags.NonPublic).Invoke(null, null);
             typeof(GameInput).GetField("hasFocus", BindingFlags.Static | BindingFlags.NonPublic).SetValue(null, (Func<bool>)(() => false));
+            CheckMeteorPhaseEntry();
             CheckFinalBlow(GameEnding.KingFreed, true);
             CheckFinalBlow(GameEnding.KingFreed, true, longFrame: true);
             CheckFinalBlow(GameEnding.HeroPossessed, false);

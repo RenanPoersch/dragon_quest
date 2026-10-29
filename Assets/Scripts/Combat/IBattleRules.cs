@@ -1,5 +1,11 @@
 namespace DragonQuest.Combat
 {
+    // Limites opcionais de dano para transicoes de fase, antes de alterar HP e registrar impactos.
+    public interface IBattleDamageRules
+    {
+        int LimitDamage(CombatantState target, int damage);
+    }
+
     // Regras particulares de um encontro, sem acoplar o combate a uma cena ou boss.
     public interface IBattleRules
     {

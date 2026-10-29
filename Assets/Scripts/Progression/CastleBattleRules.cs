@@ -6,7 +6,7 @@ namespace DragonQuest.Progression
 {
     public enum GameEnding { None, KingFreed, CastleDestroyed, HeroPossessed }
 
-    public sealed class CastleBattleRules : IBattleRules
+    public sealed class CastleBattleRules : IBattleRules, IBattleDamageRules
     {
         public const string TyrantId="tyrant", SpiritId="evil-spirit";
         // Protect inicia a contagem 5 a 1; o lancamento ocupa o turno seguinte do Rei Rubro.
@@ -57,6 +57,12 @@ namespace DragonQuest.Progression
             if(MeteorStarted&&!MeteorAbsorbed)
                 return !ProtectCast?Protect:PreparationsRemaining>0?PrepareMeteor:Meteor;
             return battle.CurrentActor.TurnsTaken%2==0?RoyalStrike:RoyalHeavy;
+        }
+        public int LimitDamage(CombatantState target,int damage)
+        {
+            if(target.Id!=TyrantId||ProtectCast||Ending!=GameEnding.None) return damage;
+            // Nem golpes fatais nem os cortes restantes de um LIMIT podem pular Protect.
+            return System.Math.Min(damage,System.Math.Max(0,target.Hp-MeteorHpThreshold));
         }
         public bool ValidateAction(CombatantState actor,AbilityDefinition ability,out string message)
         {

@@ -6,12 +6,14 @@ Entre no castelo pela periferia e use E perto do Rei Rubro. Termine o diálogo p
 
 O Rei Rubro tem 600 HP, ataque 28, defesa 10 e velocidade 7. Alterna golpes físicos individuais de poder 8 e 14, sem elemento. Ao chegar a **450 HP ou menos**, interrompe os golpes e inicia a preparação do meteoro.
 
-São **cinco turnos próprios do Rei Rubro**: Protect no primeiro, carga crescente nos três seguintes e lançamento no quinto. Protect reduz todo dano recebido em 60% durante a conjuração, exibindo um escudo quando um golpe o atinge. Shield termina antes de aparecer a pose de cast, que permanece durante as ações dos demais combatentes. Não há meteoro separado durante a carga: números flutuantes de 5 a 1 indicam cada turno próprio, com fonte levemente maior que a do dano e sem rótulos. O meteoro aparece apenas no lançamento final. Ações de jogador, itens, golpes e veneno podem atualizar o limiar; a preparação não é reiniciada a cada mudança de HP.
+São **cinco turnos próprios de preparação do Rei Rubro**: Protect no primeiro, carga crescente nos quatro seguintes e lançamento no sexto. Protect reduz todo dano recebido em 60% durante a conjuração, exibindo um escudo quando um golpe o atinge. Shield termina antes de aparecer a pose de cast, que permanece durante as ações dos demais combatentes. Não há meteoro separado durante a carga: números flutuantes de 5 a 1 indicam cada turno próprio, com fonte levemente maior que a do dano e sem rótulos. O meteoro aparece apenas no lançamento final. Ações de jogador, itens, golpes e veneno podem atualizar o limiar; a preparação não é reiniciada a cada mudança de HP.
 
 - Com um portador vivo: a Armadura dracônica absorve o meteoro inteiro, sem dano aos presentes e sem destruir o castelo. O confronto continua; não há um segundo meteoro em loop nessa tentativa.
 - Sem portador vivo: o meteoro aniquila equipe, Rei Rubro e espírito presente, ignorando Defender, Shield, Protect, defesa numérica e resistência comum a Fogo. O final de destruição começa.
 - Reviver o portador antes do lançamento restaura a absorção. Correntes não impede a propriedade passiva da armadura, desde que o portador esteja vivo.
 - Derrotar o espírito com o rei vivo cancela qualquer preparação e encerra imediatamente a luta.
+
+O golpe que atravessa o limiar para em 450 HP, inclusive críticos e os cortes restantes do Omnislash. O rei conserva essa vida até o próprio turno de Protect, garantindo a entrada na fase de conjuração. Depois de lançar Protect ele volta a receber dano normalmente, com a redução de 60%; derrotá-lo durante a carga ainda leva ao final de possessão. Derrotar o espírito primeiro continua permitindo o final bom.
 
 ## Espírito maligno
 
