@@ -40,6 +40,7 @@ namespace DragonQuest.Prototype
         private bool trackingWalk;
         public RandomEncounterType RandomEncounter { get; private set; }
         public event System.Action<BattleOutcome> EncounterCompleted;
+        public event System.Action EncounterStarted;
         public event System.Action ActionPresented;
         public bool HasEnded {get;private set;}
         public CastleBattleRules CastleRules => Session?.Rules as CastleBattleRules;
@@ -259,6 +260,7 @@ namespace DragonQuest.Prototype
             ErrorMessage = string.Empty;
             RewardMessage = string.Empty;
             movement.SetMovementEnabled(false);
+            EncounterStarted?.Invoke();
             EntryTransition.Begin();
         }
 

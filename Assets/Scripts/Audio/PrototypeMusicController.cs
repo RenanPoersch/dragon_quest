@@ -26,7 +26,9 @@ namespace DragonQuest.Audio
 
         public void Initialize(PrototypeSaveController menus, PrototypeLocations maps, PrototypeBattleController combat)
         {
+            if (battle != null) battle.EncounterStarted -= OnEncounterStarted;
             saves = menus; locations = maps; battle = combat;
+            if (battle != null) battle.EncounterStarted += OnEncounterStarted;
             dragon = GetComponentInChildren<DragonInteraction>(true);
             rest = GetComponent<InnRestController>();
             endings = GetComponent<PrototypeEndingController>();
@@ -48,6 +50,13 @@ namespace DragonQuest.Audio
                 sources[i].priority = 0;
                 sources[i].volume = 0;
             }
+        }
+
+        private void OnEncounterStarted()
+        {
+            if (!isActiveAndEnabled || sources[0] == null || !battle.IsCastleEncounter) return;
+            TransitionTo(MusicCue.FinalBoss);
+            Advance(0);
         }
 
         private void LateUpdate()
@@ -73,8 +82,8 @@ namespace DragonQuest.Audio
             CurrentCue = cue;
             for (int i = 0; i < 2; i++) { from[i] = sources[i].volume; target[i] = 0; }
             elapsed = 0;
-            duration = cue == MusicCue.GoodEnding || cue == MusicCue.MindControlEnding || cue == MusicCue.MeteorEnding ? 0
-                : cue == MusicCue.DragonLair || cue == MusicCue.FinalBoss ? .08f
+            duration = cue == MusicCue.GoodEnding || cue == MusicCue.MindControlEnding || cue == MusicCue.MeteorEnding || cue == MusicCue.FinalBoss ? 0
+                : cue == MusicCue.DragonLair ? .08f
                 : cue == MusicCue.Silence || cue == MusicCue.Sleep ? .12f : cue == MusicCue.Victory ? .18f : .65f;
             if (cue == MusicCue.Silence) { current = -1; return; }
             if (!clips.TryGetValue(cue, out AudioClip clip))
@@ -114,6 +123,11 @@ namespace DragonQuest.Audio
                 sources[i].volume = gain;
                 if (blend >= 1 && target[i] == 0 && sources[i].isPlaying) sources[i].Stop();
             }
+        }
+
+        private void OnDestroy()
+        {
+            if (battle != null) battle.EncounterStarted -= OnEncounterStarted;
         }
 
         private void OnDisable()

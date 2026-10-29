@@ -517,6 +517,9 @@ public static class MusicValidation
                     CuePlays(MusicCue.Throne);
                     Check(Voice(MusicCue.Throne).timeSamples < Voice(MusicCue.Throne).clip.frequency*2,"throne room recording loops");
                     battle.StartCastleBattle();
+                    Check(music.CurrentCue == MusicCue.FinalBoss && Voice(MusicCue.FinalBoss).isPlaying
+                        && Voice(MusicCue.FinalBoss).volume > .5f,
+                        "final music starts audibly inside encounter startup, without waiting for LateUpdate");
                     // Hold the exploration swirl so audio is checked before the battle is revealed.
                     battle.EntryTransition.enabled = false;
                     battle.EntryTransition.Sequence.Begin();
