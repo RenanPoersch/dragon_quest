@@ -4,6 +4,8 @@ A Pousada tem um cristal azul-turquesa flutuante sobre um círculo luminoso, bem
 
 O cristal é um sprite independente da pintura do ambiente. Tem oito quadros de rotação, brilhos e partículas, reproduzidos a 6 quadros por segundo, em loop. Todos compartilham a mesma escala. A base é registrada pelo círculo inferior, para a animação ficar plantada no chão. Não há colisor: o ponto luminoso pode ser atravessado e fica fora da passagem central. Pisar no círculo abre a tela uma única vez; depois de salvar ou cancelar, é preciso sair dele e voltar para reabrir. A animação não salva. Diálogos, inventário, combate, outros menus e perda de foco bloqueiam a abertura. Carregar uma jornada sobre o círculo não reabre a tela: é preciso sair e pisar nele novamente.
 
+O piso caminhável ao redor do cristal inclui espaço para contorná-lo pelos quatro lados. O recuo foi ampliado para evitar bloqueios invisíveis junto ao círculo, considerando a largura e a altura da base do personagem.
+
 `InnSavePoint` controla apresentação, animação, recursos criados em memória e entrada do jogador na área de raio 0,4. Ele chama `PrototypeSaveController.OpenInnSaveMenu`, que pausa a movimentação e abre a seleção sem gravar. `PrototypeInnLayout.SavePoint` posiciona o cristal e `SaveApproach` registra um ponto próximo para validar o acesso. `PrototypeCity.CreateInn` cria o objeto; ele não participa das interações por tecla E.
 
 ## Arte
