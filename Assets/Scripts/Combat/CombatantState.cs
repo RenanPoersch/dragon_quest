@@ -76,17 +76,23 @@ namespace DragonQuest.Combat
 
         internal void SpendMp(int cost) => Mp -= cost;
         internal void TakeDamage(int amount, bool critical = false, bool damageOverTime = false, int actionHitIndex = 0,
-            bool deferDefeatCleanup = false)
+            bool deferDefeatCleanup = false, int? displayDamage = null)
         {
             // A direct hit is absorbed by the chains even when its damage is zero.
             // Poison is a condition tick, not a hit on the prison.
             if (!damageOverTime && TryBreakChains()) return;
-            bool shielded = ShieldTurns > 0 && amount > 0;
-            if (shielded) amount = (int)(((long)amount * (100 - shieldDamageReductionPercent) + 99) / 100);
+            bool shielded = ShieldTurns > 0 && (amount > 0 || displayDamage.GetValueOrDefault() > 0);
+            if (shielded)
+            {
+                amount = (int)(((long)amount * (100 - shieldDamageReductionPercent) + 99) / 100);
+                if (displayDamage.HasValue)
+                    displayDamage = (int)(((long)displayDamage.Value * (100 - shieldDamageReductionPercent) + 99) / 100);
+            }
             int previousHp = Hp;
             Hp = Math.Max(0, Hp - amount);
-            // Each combo impact displays its full damage, even after an earlier hit depleted HP.
-            RecordVitalChange(actionHitIndex > 0 ? -amount : Hp - previousHp, critical, shielded: shielded, damageOverTime: damageOverTime, actionHitIndex: actionHitIndex);
+            // Phase transitions may ignore HP loss while retaining the full visual impact.
+            RecordVitalChange(displayDamage.HasValue ? -displayDamage.Value : actionHitIndex > 0 ? -amount : Hp - previousHp,
+                critical, shielded: shielded, damageOverTime: damageOverTime, actionHitIndex: actionHitIndex);
             if (Team == CombatTeam.Party) Limit.AddDamage(previousHp - Hp, Definition.MaxHp);
             // Keep mitigation consistent until the current multi-hit action finishes.
             if (!IsAlive && !deferDefeatCleanup) ClearConditions();

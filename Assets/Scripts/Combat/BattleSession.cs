@@ -229,7 +229,7 @@ namespace DragonQuest.Combat
                     for (int hit = 1; hit <= (prisonIntercepted ? 1 : ability.HitCount); hit++)
                     {
                         hitReport.Clear();
-                        lastDamage = ApplyDamage(actor, ability, recipient, false, hitReport, hit);
+                        lastDamage = ApplyDamage(actor, ability, recipient, false, hitReport, hit, returnDisplayedDamage: true);
                         total += lastDamage; landed++;
                     }
                     if (prisonIntercepted) report.Append("Correntes de ").Append(recipient.Definition.Name).Append(" quebradas. ");
@@ -401,7 +401,7 @@ namespace DragonQuest.Combat
         }
 
         private int ApplyDamage(CombatantState actor, AbilityDefinition ability, CombatantState target,
-            bool allowProtection, StringBuilder report, int hitIndex = 0)
+            bool allowProtection, StringBuilder report, int hitIndex = 0, bool returnDisplayedDamage = false)
         {
             if (ReportBrokenChains(target, report)) return 0;
             if (allowProtection && ability.Effect == AbilityEffect.PhysicalDamage && target.ProtectedBy != null && target.ProtectedBy.IsAlive)
@@ -426,11 +426,14 @@ namespace DragonQuest.Combat
             if (critical) damage = damage * CombatantDefinition.CriticalDamagePercent / 100;
             if (target.IsDefending) damage = (damage + 1) / 2;
             int previousHp = target.Hp;
-            int appliedDamage = (int)Math.Min(int.MaxValue, damage);
+            int calculatedDamage = (int)Math.Min(int.MaxValue, damage);
+            int appliedDamage = calculatedDamage;
             if (Rules is IBattleDamageRules damageRules) appliedDamage = damageRules.LimitDamage(target, appliedDamage);
+            int? displayDamage = appliedDamage < calculatedDamage ? calculatedDamage : (int?)null;
             target.TakeDamage(appliedDamage, critical, actionHitIndex: hitIndex,
-                deferDefeatCleanup: hitIndex > 0 && hitIndex < ability.HitCount);
-            report.Append(target.Definition.Name).Append(" -").Append(previousHp - target.Hp).Append(" HP");
+                deferDefeatCleanup: hitIndex > 0 && hitIndex < ability.HitCount, displayDamage: displayDamage);
+            int visibleDamage = displayDamage.HasValue ? -target.VitalChanges[target.VitalChanges.Count - 1].Amount : previousHp - target.Hp;
+            report.Append(target.Definition.Name).Append(" -").Append(visibleDamage).Append(" HP");
             if (ability.Element != DamageElement.None)
             {
                 report.Append(" (").Append(ElementalAffinities.NameOf(ability.Element));
@@ -446,7 +449,7 @@ namespace DragonQuest.Combat
                 report.Append(" (veneno)");
             }
             report.Append(". ");
-            return previousHp-target.Hp;
+            return returnDisplayedDamage ? visibleDamage : previousHp-target.Hp;
         }
 
         private void RemoveDeadSources()

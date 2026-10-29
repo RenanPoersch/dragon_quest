@@ -115,7 +115,12 @@ internal static class CastleChecks
             actor.RefreshDefinition(new CombatantDefinition(original.Name,original.Role,original.MaxHp,original.MaxMp,
                 2000,original.Defense,2000,original.Speed,original.Affinities,0,0,1,strike,PrototypeBattleFactory.Defend));
             actor.Limit.Restore(100);
+            int impactsBefore=king.VitalChanges.Count,hpBefore=king.Hp;
             Assert(battle.TryAct(actor,strike,king,out _),"O golpe que atravessa o limiar precisa ser resolvido.");
+            var impacts=king.VitalChanges.Skip(impactsBefore).ToArray();
+            Assert(impacts.Length==strike.HitCount&&impacts.All(hit=>hit.Amount<0)
+                &&impacts.Sum(hit=>-(long)hit.Amount)>hpBefore-king.Hp,
+                "Cada impacto exibe o dano inteiro mesmo quando a transicao ignora a perda de HP.");
             Assert(king.IsAlive&&king.Hp==CastleBattleRules.MeteorHpThreshold&&Rules(battle).MeteorStarted
                 &&Rules(battle).PreparationsRemaining==CastleBattleRules.MeteorCastTurns&&Rules(battle).Ending==GameEnding.None
                 &&battle.Outcome==BattleOutcome.None,"Golpe fatal, critico ou Omnislash nao pode pular a fase do meteoro.");
