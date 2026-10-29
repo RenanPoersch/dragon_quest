@@ -320,7 +320,7 @@ namespace DragonQuest.Equipment
         {
             var participants = new HashSet<string>();
             foreach (CombatantState combatant in battle.Combatants)
-                if (combatant.Team == CombatTeam.Party) participants.Add(combatant.Id);
+                if (combatant.Team == CombatTeam.Party && combatant.IsAlive) participants.Add(combatant.Id);
             var recipients = new List<PartyMember>();
             foreach (PartyMember member in members) if (participants.Contains(member.Id)) recipients.Add(member);
             if (recipients.Count == 0) return string.Empty;

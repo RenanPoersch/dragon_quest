@@ -141,9 +141,9 @@ internal static class LevelProgressionChecks
         var party = PrototypePartyFactory.Create(); var gold = new ExplorationProgress();
         var rewards = new BattleRewards(gold, party); var battle = RewardBattle(party, 30, 60);
         Check(!rewards.TryClaim(battle, out _) && party.Members.All(m => m.Experience == 0), "Live battles never grant XP.");
-        battle.Combatants[2].TakeDamage(battle.Combatants[2].Hp); Win(battle);
+        Win(battle);
         Check(rewards.TryClaim(battle, out string message) && party.Members.All(m => m.Experience == 30)
-            && message.Contains("XP") && gold.Gold == 2, "Each participant, including fallen heroes, receives an equal share of the enemy XP sum.");
+            && message.Contains("XP") && gold.Gold == 2, "Each surviving participant receives an equal share of the enemy XP sum.");
         Check(!rewards.TryClaim(battle, out _) && !rewards.TryClaimExperience(battle, out _)
             && party.Members.All(m => m.Experience == 30), "Reopening rewards cannot duplicate XP.");
         battle = RewardBattle(party, 210); Win(battle);

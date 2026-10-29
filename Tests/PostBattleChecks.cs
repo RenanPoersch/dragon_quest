@@ -59,21 +59,26 @@ internal static class PostBattleChecks
     private static void SharedExperience()
     {
         for (int count = 1; count <= 3; count++)
+        for (int fallen = 0; fallen < count; fallen++)
         foreach (int total in new[] { 0, 1, 2, 20, 85, 90, 101 })
         {
             var party = PrototypePartyFactory.Create();
             var battle = Encounter(party, total, count);
             var result = new PostBattleResults(party, battle);
-            if (count == 3) battle.Combatants[2].TakeDamage(battle.Combatants[2].Hp);
+            for (int i = 0; i < fallen; i++) battle.Combatants[i].TakeDamage(battle.Combatants[i].Hp);
             Win(battle);
             var rewards = new BattleRewards(new ExplorationProgress(), party);
             Check(rewards.TryClaim(battle, out _) && result.Complete(party, true), "A shared reward completes once.");
             var shares = party.Members.Take(count).Select(m => m.Experience).ToArray();
-            Check(shares.Sum() == total && shares.Max() - shares.Min() <= 1,
+            var survivingShares = shares.Skip(fallen).ToArray();
+            Check(shares.Sum() == total && survivingShares.Max() - survivingShares.Min() <= 1,
                 "Equal integer shares conserve XP, including zero XP and totals smaller than the party.");
+            Check(shares.Take(fallen).All(xp => xp == 0), "Heroes dead at victory receive no XP.");
             Check(party.Members.Skip(count).All(m => m.Experience == 0), "Absent heroes do not receive XP or enter the divisor.");
             Check(result.Members.Select(m => m.GainedExperience).SequenceEqual(shares), "Result rows match actual shares, including fallen heroes.");
-            var expected = Enumerable.Range(0, count).Select(i => total / count + (i < total % count ? 1 : 0));
+            int survivors = count - fallen;
+            var expected = Enumerable.Range(0, count).Select(i => i < fallen ? 0
+                : total / survivors + (i - fallen < total % survivors ? 1 : 0));
             Check(shares.SequenceEqual(expected), "Remainders are assigned deterministically in party order.");
             Check(!rewards.TryClaim(battle, out _) && party.Members.Take(count).Select(m => m.Experience).SequenceEqual(shares),
                 "Reopening the result cannot duplicate a shared reward.");
