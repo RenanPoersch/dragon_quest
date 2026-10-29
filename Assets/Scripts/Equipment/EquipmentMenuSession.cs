@@ -19,12 +19,15 @@ namespace DragonQuest.Equipment
             : index == 3 ? MaxHp : index == 4 ? MaxMp : index == 5 ? Speed : index == 6 ? Sockets
             : throw new ArgumentOutOfRangeException(nameof(index));
 
-        public EquipmentMenuStats(PartyMember member, EquipmentLoadout weapon, EquipmentLoadout armor, EquipmentLoadout accessory)
+        public EquipmentMenuStats(PartyMember member, EquipmentLoadout weapon, EquipmentLoadout armor, EquipmentLoadout accessory,
+            bool preserveEquippedMaterias = false)
         {
             if (member == null) return;
-            Attack = member.AttackWith(weapon, armor, accessory); Defense = member.DefenseWith(weapon, armor, accessory);
-            Magic = member.MagicWith(weapon, armor, accessory); MaxHp = member.MaxHpWith(weapon, armor);
-            MaxMp = member.MaxMpWith(weapon, armor); Speed = member.Speed;
+            Attack = member.AttackWith(weapon, armor, accessory, preserveEquippedMaterias);
+            Defense = member.DefenseWith(weapon, armor, accessory, preserveEquippedMaterias);
+            Magic = member.MagicWith(weapon, armor, accessory);
+            MaxHp = preserveEquippedMaterias ? member.MaxHp : member.MaxHpWith(weapon, armor);
+            MaxMp = preserveEquippedMaterias ? member.MaxMp : member.MaxMpWith(weapon, armor); Speed = member.Speed;
             Sockets = (weapon?.Sockets.Count ?? 0) + (armor?.Sockets.Count ?? 0);
         }
     }

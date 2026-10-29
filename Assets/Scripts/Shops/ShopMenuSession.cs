@@ -185,7 +185,8 @@ namespace DragonQuest.Shops
                 else if (definition.Slot == EquipmentSlot.Armor) armor = candidate;
                 else accessory = candidate;
             }
-            return new EquipmentMenuStats(member, weapon, armor, accessory);
+            // Shop comparisons change only the equipment's base values, preserving every current materia bonus.
+            return new EquipmentMenuStats(member, weapon, armor, accessory, preserveEquippedMaterias: true);
         }
     }
 }

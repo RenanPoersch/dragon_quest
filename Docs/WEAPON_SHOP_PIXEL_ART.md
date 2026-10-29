@@ -8,6 +8,8 @@ Arte criada com o imagegen integrado, em modo de geração com referências: a l
 
 O ID `equipment-shop`, a fachada da cidade, catálogo, preços, estoques, compra e venda permanecem conectados ao mesmo serviço. Saves da planta antiga e da pintura larga são aceitos pelos limites históricos; posições que caem fora do piso novo voltam à entrada. A câmera contém a sala inteira em 16:9, 16:10 e 4:3.
 
+A comparação de atributos na loja altera apenas os valores base do equipamento destacado e mantém os bônus das matérias atualmente equipadas, mesmo quando o candidato tem menos encaixes. As afinidades de classe continuam consideradas. A prévia não move equipamentos ou matérias; a troca efetiva pelo menu de equipamentos mantém sua regra de devolver as matérias ao inventário.
+
 `Tools > Dragon Quest > Validate Weapon Shop` verifica pintura, contornos, colisões, caminhos, limites de movimento, igualdade de metragem com as lojas pequenas, saves anteriores, entrada, saída, atendimento, compra e venda. Renderiza os três formatos e aproximações ao balcão, forja e expositores em `Temp/WeaponShopPreview` (ou `DQ_WEAPON_SHOP_OUTPUT`) e executa a validação da Pousada.
 
 Os atlas, shader e renderizadores antigos das lojas já haviam sido removidos; os dois cenários largos foram agora substituídos pelos novos PNGs compactos. Recursos atuais de itens, matérias e sala do trono permanecem iguais. Registro da primeira conversão em [COMPACT_SHOPS_PIXEL_ART.md](COMPACT_SHOPS_PIXEL_ART.md).

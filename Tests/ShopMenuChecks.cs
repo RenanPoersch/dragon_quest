@@ -49,7 +49,8 @@ internal static class ShopMenuChecks
                 var candidate = new EquipmentLoadout(menu.Selected.Equipment);
                 var slot = candidate.Definition.Slot;
                 var expected = new EquipmentMenuStats(member, slot == EquipmentSlot.Weapon ? candidate : weapon,
-                    slot == EquipmentSlot.Armor ? candidate : armor, slot == EquipmentSlot.Accessory ? candidate : accessory);
+                    slot == EquipmentSlot.Armor ? candidate : armor, slot == EquipmentSlot.Accessory ? candidate : accessory,
+                    preserveEquippedMaterias: true);
                 for (int i = 0; i < EquipmentMenuStats.Count; i++) Check(preview[i] == expected[i], "Shop preview respects class bonuses and replacement slots.");
                 Check(member.Weapon == weapon && member.Armor == armor && member.Accessory == accessory, "Preview preserves current equipment and sockets.");
             }
@@ -69,6 +70,31 @@ internal static class ShopMenuChecks
         Check(menu.BeginQuantity() && menu.Confirm(), "An unequipped weapon can be sold.");
         menu.SelectFilter(ShopEquipmentFilter.Accessories);
         Check(menu.BeginQuantity() && menu.Confirm(), "An unequipped accessory can be sold.");
+    }
+    private static void WeaponComparisonKeepsMateriaBonuses()
+    {
+        var menu = Open("equipment-shop"); menu.Browse(false);
+        var party = menu.Service.Party; var aren = party.Members[0];
+        var equipped = aren.Weapon; var force = equipped.Sockets[0];
+        var preview = menu.Preview(aren);
+        Check(aren.Attack == 33 && preview.Attack == 38, "Iron sword comparison keeps the initial Force bonus: 33 to 38 attack.");
+        Check(preview.Defense == aren.Defense && preview.Magic == aren.Magic
+            && preview.MaxHp == aren.MaxHp && preview.MaxMp == aren.MaxMp, "Changing only weapon attack preserves the other stats.");
+        Check(aren.Weapon == equipped && equipped.Sockets[0] == force, "Shop comparison never moves equipment or materia instances.");
+        var staff = new EquipmentLoadout(PrototypePartyFactory.RunicStaff, "comparison-staff");
+        var hp = new MateriaInstance("comparison-hp", PrototypePartyFactory.HpMateria);
+        var mp = new MateriaInstance("comparison-mp", PrototypePartyFactory.MpMateria);
+        var defense = new MateriaInstance("comparison-defense", PrototypePartyFactory.DefenseMateria);
+        Check(party.TryAddEquipments(staff) && party.TryEquipEquipment(aren, staff, out _)
+            && party.TryAddMaterias(hp, mp, defense), "Prepare a four-socket weapon for a smaller-weapon comparison.");
+        Check(party.TryEquip(aren, staff, 0, hp, out _) && party.TryEquip(aren, staff, 1, mp, out _)
+            && party.TryEquip(aren, staff, 2, force, out _) && party.TryEquip(aren, staff, 3, defense, out _), "Fill all four current sockets with stat materias.");
+        preview = menu.Preview(aren);
+        Check(preview.Attack == 38 && preview.Defense == 15, "A two-socket candidate preserves bonuses in current sockets 2 and 3.");
+        Check(preview.MaxHp == 120 && preview.MaxMp == 33 && preview.Sockets == 6, "HP and MP bonuses stay intact while the candidate's real socket count is shown.");
+        Check(preview.Magic == 4 && aren.Magic == 10, "The comparison still removes the runic staff's own magic bonus.");
+        Check(aren.Weapon == staff && staff.Sockets[0] == hp && staff.Sockets[1] == mp
+            && staff.Sockets[2] == force && staff.Sockets[3] == defense, "Repeated comparison leaves every real socket unchanged.");
     }
     private static void MateriaAndStaleSelection()
     {
@@ -103,7 +129,7 @@ internal static class ShopMenuChecks
     }
     public static void Main()
     {
-        BuyAndSellItems(); EquipmentAndPreviews(); MateriaAndStaleSelection(); LimitsAndEmptyCategories();
+        BuyAndSellItems(); EquipmentAndPreviews(); WeaponComparisonKeepsMateriaBonuses(); MateriaAndStaleSelection(); LimitsAndEmptyCategories();
         int commerceChecks = ShopChecks.Run();
         Console.WriteLine("SHOP_MENU_CHECKS_OK: " + checks + " menu checks; " + commerceChecks + " existing commerce checks.");
     }

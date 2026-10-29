@@ -88,13 +88,15 @@ namespace DragonQuest.Equipment
 
         private int Bonus(int value, CharacterClass affinity, int percent) => Class == affinity ? (int)Math.Min(int.MaxValue, (long)value * (100 + percent) / 100) : value;
         public int AttackWith(EquipmentLoadout weapon, EquipmentLoadout armor) => AttackWith(weapon, armor, Accessory);
-        public int AttackWith(EquipmentLoadout weapon, EquipmentLoadout armor, EquipmentLoadout accessory) => StatWithMaterias((long)Grow(BaseStats.Attack, AttackGrowth)
+        public int AttackWith(EquipmentLoadout weapon, EquipmentLoadout armor, EquipmentLoadout accessory, bool preserveEquippedMaterias = false) => StatWithMaterias((long)Grow(BaseStats.Attack, AttackGrowth)
             + Bonus(weapon?.Definition.AttackBonus ?? 0, CharacterClass.Attacker, 20) + (armor?.Definition.AttackBonus ?? 0)
-            + (accessory?.Definition.AttackBonus ?? 0), MateriaModifier.AttackUp, weapon, armor);
+            + (accessory?.Definition.AttackBonus ?? 0), MateriaModifier.AttackUp,
+                preserveEquippedMaterias ? Weapon : weapon, preserveEquippedMaterias ? Armor : armor);
         public int DefenseWith(EquipmentLoadout weapon, EquipmentLoadout armor) => DefenseWith(weapon, armor, Accessory);
-        public int DefenseWith(EquipmentLoadout weapon, EquipmentLoadout armor, EquipmentLoadout accessory) => StatWithMaterias((long)Grow(BaseStats.Defense, DefenseGrowth)
+        public int DefenseWith(EquipmentLoadout weapon, EquipmentLoadout armor, EquipmentLoadout accessory, bool preserveEquippedMaterias = false) => StatWithMaterias((long)Grow(BaseStats.Defense, DefenseGrowth)
             + (weapon?.Definition.DefenseBonus ?? 0) + Bonus(armor?.Definition.DefenseBonus ?? 0, CharacterClass.Tank, 25)
-            + (accessory?.Definition.DefenseBonus ?? 0), MateriaModifier.DefenseUp, weapon, armor);
+            + (accessory?.Definition.DefenseBonus ?? 0), MateriaModifier.DefenseUp,
+                preserveEquippedMaterias ? Weapon : weapon, preserveEquippedMaterias ? Armor : armor);
         public int MagicWith(EquipmentLoadout weapon, EquipmentLoadout armor) => MagicWith(weapon, armor, Accessory);
         public int MagicWith(EquipmentLoadout weapon, EquipmentLoadout armor, EquipmentLoadout accessory) => (int)Math.Min(int.MaxValue, (long)Grow(BaseStats.Magic, MagicGrowth)
             + (weapon?.Definition.MagicBonus ?? 0) + (armor?.Definition.MagicBonus ?? 0) + (accessory?.Definition.MagicBonus ?? 0));
