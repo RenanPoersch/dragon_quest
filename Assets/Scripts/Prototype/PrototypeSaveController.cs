@@ -305,8 +305,9 @@ namespace DragonQuest.Prototype
         }
         private bool OptionEnabled(int option) => page == MenuPage.Title
             ? option == 0 || option == 1 && Array.Exists(previews, preview => preview != null)
-            : page != MenuPage.Continue || overwriteSlot != 0
-                || option == SaveStore.SlotCount || previews[option] != null;
+            : overwriteSlot != 0 ? option >= 0 && option < 2
+            : option >= 0 && (page == MenuPage.Save ? option < SaveStore.SlotCount
+                : option == SaveStore.SlotCount || option < SaveStore.SlotCount && previews[option] != null);
         private void CancelOverwrite()
         { overwriteSlot = 0; MenuSounds.Play(MenuSound.Cancel); }
         private MenuSoundContext NavigationSoundContext => page == MenuPage.Title
@@ -314,7 +315,8 @@ namespace DragonQuest.Prototype
         private void MoveSelection(int direction)
         {
             int previous = selectedOption;
-            int count = page == MenuPage.Title || overwriteSlot != 0 ? 2 : SaveStore.SlotCount + 1;
+            int count = page == MenuPage.Title || overwriteSlot != 0 ? 2
+                : SaveStore.SlotCount + (page == MenuPage.Continue ? 1 : 0);
             for (int i = 0; i < count; i++)
             {
                 selectedOption = (selectedOption + direction + count) % count;
@@ -381,7 +383,7 @@ namespace DragonQuest.Prototype
                     GUI.enabled = previousEnabled;
                 }
                 GUI.enabled = previousEnabled && overwriteSlot == 0;
-                if (MenuButton(SaveSelectionPresentation.BackRect, "Back", SaveStore.SlotCount, saveScreen.BackStyle)) Back();
+                if (loading && MenuButton(SaveSelectionPresentation.BackRect, "Back", SaveStore.SlotCount, saveScreen.BackStyle)) Back();
                 GUI.enabled = previousEnabled;
                 if (overwriteSlot != 0)
                 {
