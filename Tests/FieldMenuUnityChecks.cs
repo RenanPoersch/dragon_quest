@@ -1,3 +1,4 @@
+using DragonQuest.Presentation.Menus;
 using System;
 using System.IO;
 using System.Linq;
@@ -17,7 +18,7 @@ using UnityEngine.InputSystem.LowLevel;
 
 public static class FieldMenuUnityChecks
 {
-    private const BindingFlags Private = BindingFlags.Instance | BindingFlags.NonPublic;
+    private const BindingFlags Private = BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public;
     private static int checks;
     private static Gamepad pad;
     private static Keyboard keys;
@@ -61,7 +62,7 @@ public static class FieldMenuUnityChecks
             Put(saves, "store", store); Put(saves, "battle", battle); Put(saves, "shops", shop); Put(saves, "locations", locations);
             Put(saves, "player", player); Put(saves, "dialogue", dialogue); Put(saves, "progress", progress);
             Put(saves, "secrets", secrets); Put(saves, "dragon", dragon); Property(saves, "IsMenuVisible", false);
-            var inventory = fixture.AddComponent<PrototypeMateriaHud>(); inventory.Initialize(battle, secrets);
+            var inventoryHost = fixture.AddComponent<PrototypeMateriaHud>(); inventoryHost.Initialize(battle, secrets); var inventory = inventoryHost.Presenter;
             Check(InventoryMenuPresentation.Commands.Count(c => c == "Materia") == 1
                 && InventoryMenuPresentation.Commands.Count(c => c == "Magic") == 1
                 && InventoryMenuPresentation.Commands.Count(c => c == "Save") == 1

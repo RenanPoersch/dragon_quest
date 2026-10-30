@@ -1,3 +1,4 @@
+using DragonQuest.Presentation.Menus;
 using System;
 using System.Linq;
 using System.Reflection;
@@ -15,7 +16,7 @@ using UnityEngine.InputSystem.LowLevel;
 
 public static class InventorySubmenuUnityChecks
 {
-    private const BindingFlags Private = BindingFlags.Instance | BindingFlags.NonPublic;
+    private const BindingFlags Private = BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public;
     private static Gamepad pad;
     private static Keyboard keys;
     private static int checks;
@@ -49,7 +50,7 @@ public static class InventorySubmenuUnityChecks
             var dialogue = fixture.AddComponent<DialogueController>();
             var battle = fixture.AddComponent<PrototypeBattleController>();
             battle.Initialize(player, dialogue, new ExplorationProgress(50));
-            var hud = fixture.AddComponent<PrototypeMateriaHud>(); hud.Initialize(battle, new AncientSecrets());
+            var hudHost = fixture.AddComponent<PrototypeMateriaHud>(); hudHost.Initialize(battle, new AncientSecrets()); var hud = hudHost.Presenter;
             Field(battle, "<IsMenuOpen>k__BackingField").SetValue(battle, true);
             Call(hud, "CheckOpened"); Field(hud, "openedFrame").SetValue(hud, -1);
             Call(hud, "OpenCommand", 0);

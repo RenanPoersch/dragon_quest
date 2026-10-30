@@ -1,3 +1,4 @@
+using DragonQuest.Presentation.Menus;
 using System;
 using System.Linq;
 using System.Reflection;
@@ -134,7 +135,7 @@ public static class MusicValidation
         => instance.GetType().GetField("<"+property+">k__BackingField",Private).SetValue(instance,value);
     private static void Page(string page)
     {
-        var type = typeof(PrototypeSaveController).GetNestedType("MenuPage", BindingFlags.NonPublic);
+        var type = typeof(JourneyMenuPage);
         Call(saves,"OpenPage",Enum.Parse(type,page));
     }
     private static AudioSource IntroVoice => music.GetComponentsInChildren<AudioSource>().First(s => s.clip?.name == "intro");

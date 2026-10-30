@@ -1,3 +1,4 @@
+using DragonQuest.Presentation.Menus;
 using System;
 using System.Linq;
 using System.Reflection;
@@ -20,7 +21,7 @@ public static class ControllerUnityChecks
     private static void Check(bool value, string message)
     { checks++; if (!value) throw new Exception(message); }
     private static void Call(object target, string method)
-    { target.GetType().GetMethod(method, BindingFlags.Instance | BindingFlags.NonPublic).Invoke(target, null); }
+    { target.GetType().GetMethod(method, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public).Invoke(target, null); }
     private static void Reset()
     {
         typeof(GameInput).GetMethod("Reset", BindingFlags.Static | BindingFlags.NonPublic).Invoke(null, null);
@@ -53,9 +54,9 @@ public static class ControllerUnityChecks
         var interaction = fixture.AddComponent<PlayerInteraction>();
         interaction.Initialize(new InteractionContext(dialogue, progress, _ => {},
             isBusy: () => battle.IsBusy, secrets: secrets), new Interactable[0]);
-        var inventory = fixture.AddComponent<PrototypeMateriaHud>(); inventory.Initialize(battle, secrets);
-        var page = typeof(PrototypeMateriaHud).GetField("page", BindingFlags.Instance | BindingFlags.NonPublic);
-        var open = typeof(PrototypeMateriaHud).GetMethod("OpenCommand", BindingFlags.Instance | BindingFlags.NonPublic);
+        var inventoryHost = fixture.AddComponent<PrototypeMateriaHud>(); inventoryHost.Initialize(battle, secrets); var inventory = inventoryHost.Presenter;
+        var page = typeof(InventoryMenuPresenter).GetField("page", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+        var open = typeof(InventoryMenuPresenter).GetMethod("OpenCommand", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
         State(new GamepadState().WithButton(GamepadButton.North)); Call(interaction, "Update"); Call(battle, "Update");
         Check(battle.IsMenuOpen && !dialogue.IsOpen && !GameInput.InventoryPressed,
             "Triangle opens inventory after learning the poem and consumes its press without opening speech.");
@@ -74,8 +75,8 @@ public static class ControllerUnityChecks
                 "Circle returns from " + InventoryMenuPresentation.Commands[command] + " to the inventory overview.");
         }
         open.Invoke(inventory, new object[] { 0 });
-        var items = (DragonQuest.Inventory.ItemMenuSession)typeof(PrototypeMateriaHud)
-            .GetField("itemMenu", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(inventory);
+        var items = (DragonQuest.Inventory.ItemMenuSession)typeof(InventoryMenuPresenter)
+            .GetField("itemMenu", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public).GetValue(inventory);
         Check(items.BeginUse(battle.Party), "An item can enter target selection.");
         int quantity = battle.Party.Consumables.QuantityOf(items.SelectedItem);
         State(new GamepadState().WithButton(GamepadButton.East)); Call(battle, "Update");
@@ -85,8 +86,8 @@ public static class ControllerUnityChecks
         State(new GamepadState().WithButton(GamepadButton.East)); Call(battle, "Update");
         Check((int)page.GetValue(inventory) == -1 && battle.IsMenuOpen, "A second Circle returns from items to the overview.");
         open.Invoke(inventory, new object[] { 1 });
-        var materia = (DragonQuest.Equipment.MateriaMenuSession)typeof(PrototypeMateriaHud)
-            .GetField("materiaMenu", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(inventory);
+        var materia = (DragonQuest.Equipment.MateriaMenuSession)typeof(InventoryMenuPresenter)
+            .GetField("materiaMenu", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public).GetValue(inventory);
         Check(materia.BeginEquip(battle.Party), "A materia can enter socket selection.");
         State(new GamepadState().WithButton(GamepadButton.East)); Call(battle, "Update");
         Check(!materia.ChoosingSocket && (int)page.GetValue(inventory) == 0 && battle.IsMenuOpen,
@@ -116,7 +117,7 @@ public static class ControllerUnityChecks
         State(keyboard);
         battle.StartBattle();
         var battleHud = fixture.AddComponent<PrototypeBattleHud>(); battleHud.Initialize(battle);
-        battleHud.Arena.GetType().GetField("observedBattle", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(battleHud.Arena, battle.Session);
+        battleHud.Arena.GetType().GetField("observedBattle", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public).SetValue(battleHud.Arena, battle.Session);
         State(new GamepadState().WithButton(GamepadButton.South)); Call(battleHud, "Update");
         var commandMenu = battleHud.Menu;
         Check(commandMenu.SelectedAbility != null, "Battle attack enters target selection.");
@@ -199,7 +200,7 @@ public static class ControllerUnityChecks
     private static void Age(object target, string property, float seconds)
     {
         if (target is PrototypeBattleController battle && property == "ActionStartedAt") target = battle.ActionPresentation;
-        target.GetType().GetField("<" + property + ">k__BackingField", BindingFlags.Instance | BindingFlags.NonPublic)
+        target.GetType().GetField("<" + property + ">k__BackingField", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
             .SetValue(target, Time.unscaledTime - seconds);
     }
     private static void CheckBattleEscape(Keyboard keyboard, PrototypeBattleController battle, PlayerMovement movement)
@@ -245,8 +246,8 @@ public static class ControllerUnityChecks
             if (battle.IsPresentingAction) Age(battle, "ActionStartedAt", 100);
             if (battle.Session.CurrentActor?.Team == CombatTeam.Enemy)
             {
-                typeof(PrototypeBattleController).GetField("pendingEnemy", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(battle, battle.Session.CurrentActor);
-                typeof(PrototypeBattleController).GetField("enemyActionTime", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(battle, Time.unscaledTime - 2);
+                typeof(PrototypeBattleController).GetField("pendingEnemy", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public).SetValue(battle, battle.Session.CurrentActor);
+                typeof(PrototypeBattleController).GetField("enemyActionTime", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public).SetValue(battle, Time.unscaledTime - 2);
             }
             Call(battle, "Update");
         }
@@ -293,7 +294,7 @@ public static class ControllerUnityChecks
             dialogue.RevealAll();
             State(keyboard, key); Call(interaction, "Update");
             // This input-only project has no artwork; skip the HUD's asset preloading.
-            hud.Arena.GetType().GetField("observedBattle", BindingFlags.Instance | BindingFlags.NonPublic)
+            hud.Arena.GetType().GetField("observedBattle", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
                 .SetValue(hud.Arena, battle.Session);
             Call(hud, "Update");
             var actor = battle.Session.CurrentActor;

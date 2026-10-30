@@ -1,3 +1,4 @@
+using DragonQuest.Gameplay.Saving;
 using DragonQuest.Presentation.Menus;
 using System;
 using UnityEngine;
@@ -14,8 +15,7 @@ namespace DragonQuest.Prototype
     public sealed class PrototypeSaveController : MonoBehaviour
     {
         private static bool loadGameOnStart;
-        private enum MenuPage { Title, Save, Continue }
-        private MenuPage page = MenuPage.Title;
+        private JourneyMenuPage page = JourneyMenuPage.Title;
         private int selectedOption;
         private SaveStore store;
         private PrototypeBattleController battle;
@@ -27,26 +27,25 @@ namespace DragonQuest.Prototype
         private AncientSecrets secrets;
         private DragonProgress dragon;
         private Action<RestoredJourney> install;
-        private readonly RestoredJourney[] previews = new RestoredJourney[SaveStore.SlotCount];
-        private readonly string[] slotMessages = new string[SaveStore.SlotCount];
-        private readonly bool[] occupied = new bool[SaveStore.SlotCount];
-        private Texture2D pixel;
-        private Texture2D hand;
-        private Rect handUv = new Rect(0, 0, 1, 1);
-        private float handAspect = 1;
-        private GUIStyle textStyle, smallStyle, buttonStyle;
+        private SaveSlotSession slotSession;
+        private SaveSlotSession Slots => slotSession ?? (slotSession = new SaveSlotSession(store));
+        private RestoredJourney[] previews => Slots.Previews;
+        private string[] slotMessages => Slots.Messages;
+        private bool[] occupied => Slots.Occupied;
+        private SaveMenuPresenter saveMenu;
+        public SaveMenuPresenter Presenter => saveMenu;
+        private readonly SaveMenuContext view = new SaveMenuContext();
         private string message;
         private float messageUntil;
         private int overwriteSlot;
         private bool awaitingFirstSave;
         private double playSeconds;
-        private SaveSelectionPresentation saveScreen;
         private readonly FrontEndPresentation frontEnd = new FrontEndPresentation();
         private readonly TitleMenuPresentation titleMenu = new TitleMenuPresentation();
         public bool IsMenuVisible { get; private set; } = true;
         public bool IsIntroPlaying => IsMenuVisible && frontEnd.IsIntroPlaying;
         public bool IsVoyagePlaying => IsMenuVisible && frontEnd.IsVoyagePlaying;
-        public bool IsFrontEndVisible => IsMenuVisible && page != MenuPage.Save;
+        public bool IsFrontEndVisible => IsMenuVisible && page != JourneyMenuPage.Save;
         public float IntroMusicGain => IsIntroPlaying ? frontEnd.IntroMusicGain : 0;
         public float VoyageMusicGain => IsVoyagePlaying ? frontEnd.VoyageMusicGain : 0;
         public int ActiveSlot { get; private set; }
@@ -59,18 +58,23 @@ namespace DragonQuest.Prototype
             player = hero; battle = combat; shops = vendors; locations = maps; dialogue = conversations;
             progress = exploration; secrets = ancient; dragon = dragonProgress; install = installJourney;
             store = new SaveStore(System.IO.Path.Combine(Application.persistentDataPath, "Saves"));
-            page = loadGameOnStart ? MenuPage.Continue : MenuPage.Title;
+            page = loadGameOnStart ? JourneyMenuPage.Continue : JourneyMenuPage.Title;
             loadGameOnStart = false;
+            slotSession = new SaveSlotSession(store);
+            saveMenu = new SaveMenuPresenter(frontEnd, titleMenu);
+            view.IsVisible = () => IsMenuVisible; view.ReadPage = () => page;
+            view.ReadSelection = () => selectedOption; view.ReadOverwriteSlot = () => overwriteSlot;
+            view.ReadMessage = () => message; view.ReadMessageUntil = () => messageUntil;
+            view.OptionEnabled = OptionEnabled; view.SelectOption = option => selectedOption = option;
+            view.NewGame = NewGame; view.OpenContinue = () => OpenPage(JourneyMenuPage.Continue);
+            view.SelectSlot = SelectSlot; view.SaveToSlot = SaveToSlot;
+            view.Back = Back; view.CancelOverwrite = CancelOverwrite;
             RefreshSlots(); player.SetMovementEnabled(false);
-            frontEnd.Initialize(page == MenuPage.Title);
+            frontEnd.Initialize(page == JourneyMenuPage.Title);
         }
         private void RefreshSlots()
         {
-            for (int slot = 1; slot <= SaveStore.SlotCount; slot++)
-            {
-                occupied[slot - 1] = store.Exists(slot);
-                store.TryRead(slot, out previews[slot - 1], out slotMessages[slot - 1]);
-            }
+            Slots.Refresh();
             if (!OptionEnabled(selectedOption)) MoveSelection(1);
         }
         private JourneyData Capture()
@@ -83,21 +87,15 @@ namespace DragonQuest.Prototype
         }
         private bool Write(string success)
         {
-            try
-            {
-                bool saved = store.TryWrite(ActiveSlot, Capture(), out string error);
-                ShowMessage(saved ? success + " / slot " + ActiveSlot : error); return saved;
-            }
-            catch (Exception ex) { ShowMessage("Nao foi possivel salvar: " + ex.Message); return false; }
+            bool saved = Slots.TryWrite(ActiveSlot, Capture, out string error);
+            ShowMessage(saved ? success + " / slot " + ActiveSlot : error); return saved;
         }
         private void NewGame() => frontEnd.NewGame();
 
         private void StartNewGameVoyage()
         {
             frontEnd.BeginVoyage();
-            ActiveSlot = 0;
-            for (int slot = 1; slot <= SaveStore.SlotCount; slot++)
-                if (!store.Exists(slot)) { ActiveSlot = slot; break; }
+            ActiveSlot = Slots.FirstEmptySlot();
             awaitingFirstSave = true;
             playSeconds = 0;
             overwriteSlot = 0;
@@ -106,7 +104,7 @@ namespace DragonQuest.Prototype
         }
         private void Continue(int slot)
         {
-            if (!store.TryRead(slot, out var journey, out string warning)) { ShowMessage(warning); RefreshSlots(); return; }
+            if (!Slots.TryRead(slot, out var journey, out string warning)) { ShowMessage(warning); RefreshSlots(); return; }
             install(journey); progress = journey.Progress; ActiveSlot = slot; IsMenuVisible = false;
             awaitingFirstSave = false;
             playSeconds = journey.Data.PlaySeconds ?? 0;
@@ -145,7 +143,7 @@ namespace DragonQuest.Prototype
             battle.CloseMenu();
             IsMenuVisible = true;
             player.SetMovementEnabled(false);
-            OpenPage(MenuPage.Save);
+            OpenPage(JourneyMenuPage.Save);
             return true;
         }
 
@@ -153,11 +151,11 @@ namespace DragonQuest.Prototype
         {
             if (!CanSaveManually)
             { ShowMessage("O salvamento manual fica disponivel no mapa global ou na hospedaria, fora de combate."); return; }
-            if (ActiveSlot == 0 || awaitingFirstSave && store.Exists(ActiveSlot))
+            if (ActiveSlot == 0 || awaitingFirstSave && Slots.Exists(ActiveSlot))
             {
                 IsMenuVisible = true;
                 player.SetMovementEnabled(false);
-                OpenPage(MenuPage.Save);
+                OpenPage(JourneyMenuPage.Save);
                 return;
             }
             if (Write("Jornada salva")) awaitingFirstSave = false;
@@ -167,7 +165,7 @@ namespace DragonQuest.Prototype
             if (IsMenuVisible || dialogue.IsOpen || battle.IsBusy || locations.LocationId != PrototypeTravel.Inn) return;
             IsMenuVisible = true;
             player.SetMovementEnabled(false);
-            OpenPage(MenuPage.Save);
+            OpenPage(JourneyMenuPage.Save);
         }
         private void SaveToSlot(int slot)
         {
@@ -190,13 +188,13 @@ namespace DragonQuest.Prototype
         private void Back()
         {
             MenuSounds.Play(MenuSound.Cancel);
-            if (page == MenuPage.Save) CloseSaveMenu();
-            else OpenPage(MenuPage.Title);
+            if (page == JourneyMenuPage.Save) CloseSaveMenu();
+            else OpenPage(JourneyMenuPage.Title);
         }
         private void Update()
         {
             if (store == null) return;
-            switch (frontEnd.Update(Time.unscaledDeltaTime, IsMenuVisible, page == MenuPage.Title, GameInput.IsFocused))
+            switch (frontEnd.Update(Time.unscaledDeltaTime, IsMenuVisible, page == JourneyMenuPage.Title, GameInput.IsFocused))
             {
                 case FrontEndStep.StartVoyage:
                     StartNewGameVoyage(); return;
@@ -227,16 +225,16 @@ namespace DragonQuest.Prototype
                 && GameInput.SavePressed) { SaveManual(); GameInput.ConsumeGamepadFrame(); }
             if (GameInput.IsFocused && !battle.HasEnded) playSeconds += Time.unscaledDeltaTime;
         }
-        private void OpenPage(MenuPage next)
+        private void OpenPage(JourneyMenuPage next)
         {
-            if (next == MenuPage.Continue) MenuSounds.Play(MenuSound.Confirm);
+            if (next == JourneyMenuPage.Continue) MenuSounds.Play(MenuSound.Confirm);
             page = next; selectedOption = 0; overwriteSlot = 0; message = null;
-            if (next != MenuPage.Title) RefreshSlots();
+            if (next != JourneyMenuPage.Title) RefreshSlots();
         }
         private void SelectSlot(int slot)
         {
             MenuSounds.Play(MenuSound.Confirm);
-            if (page == MenuPage.Continue)
+            if (page == JourneyMenuPage.Continue)
             {
                 if (previews[slot - 1] != null) Continue(slot);
             }
@@ -248,7 +246,7 @@ namespace DragonQuest.Prototype
             if (key == KeyCode.Escape)
             {
                 if (overwriteSlot != 0) CancelOverwrite();
-                else if (page != MenuPage.Title) Back();
+                else if (page != JourneyMenuPage.Title) Back();
                 return;
             }
             if (key == KeyCode.UpArrow || key == KeyCode.W)
@@ -262,28 +260,28 @@ namespace DragonQuest.Prototype
                 if (selectedOption == 0) SaveToSlot(overwriteSlot);
                 else CancelOverwrite();
             }
-            else if (page == MenuPage.Title)
+            else if (page == JourneyMenuPage.Title)
             {
                 if (selectedOption == 0) NewGame();
-                else OpenPage(MenuPage.Continue);
+                else OpenPage(JourneyMenuPage.Continue);
             }
             else if (selectedOption == SaveStore.SlotCount) Back();
             else SelectSlot(selectedOption + 1);
         }
-        private bool OptionEnabled(int option) => page == MenuPage.Title
+        private bool OptionEnabled(int option) => page == JourneyMenuPage.Title
             ? option == 0 || option == 1 && Array.Exists(previews, preview => preview != null)
             : overwriteSlot != 0 ? option >= 0 && option < 2
-            : option >= 0 && (page == MenuPage.Save ? option < SaveStore.SlotCount
+            : option >= 0 && (page == JourneyMenuPage.Save ? option < SaveStore.SlotCount
                 : option == SaveStore.SlotCount || option < SaveStore.SlotCount && previews[option] != null);
         private void CancelOverwrite()
         { overwriteSlot = 0; MenuSounds.Play(MenuSound.Cancel); }
-        private MenuSoundContext NavigationSoundContext => page == MenuPage.Title
+        private MenuSoundContext NavigationSoundContext => page == JourneyMenuPage.Title
             ? MenuSoundContext.InitialMenu : MenuSoundContext.SaveSlots;
         private void MoveSelection(int direction)
         {
             int previous = selectedOption;
-            int count = page == MenuPage.Title || overwriteSlot != 0 ? 2
-                : SaveStore.SlotCount + (page == MenuPage.Continue ? 1 : 0);
+            int count = page == JourneyMenuPage.Title || overwriteSlot != 0 ? 2
+                : SaveStore.SlotCount + (page == JourneyMenuPage.Continue ? 1 : 0);
             for (int i = 0; i < count; i++)
             {
                 selectedOption = (selectedOption + direction + count) % count;
@@ -293,153 +291,13 @@ namespace DragonQuest.Prototype
         }
         private void ShowMessage(string text)
         { message = text; messageUntil = Time.unscaledTime + 8f; }
+
         private void OnGUI()
         {
-            // Save notices belong to the journey selection menu, never to the game maps.
             if (store == null || !IsMenuVisible) return;
-            if (frontEnd.DrawStory()) return;
-            // Wait for the reveal and release of the skip input before allowing menu selection.
-            if (frontEnd.BlocksMenuInput
-                && (Event.current.isKey || Event.current.isMouse))
-                Event.current.Use();
-            // Update owns keyboard and controller input; IMGUI only handles pointer activation.
-            if (Event.current.type == EventType.KeyDown && (Event.current.keyCode == KeyCode.Return
-                || Event.current.keyCode == KeyCode.KeypadEnter || Event.current.keyCode == KeyCode.Space
-                || Event.current.keyCode == KeyCode.UpArrow || Event.current.keyCode == KeyCode.DownArrow
-                || Event.current.keyCode == KeyCode.LeftArrow || Event.current.keyCode == KeyCode.RightArrow
-                || Event.current.keyCode == KeyCode.A || Event.current.keyCode == KeyCode.D || Event.current.keyCode == KeyCode.E
-                || Event.current.keyCode == KeyCode.W || Event.current.keyCode == KeyCode.S
-                || Event.current.keyCode == KeyCode.Escape))
-            {
-                Event.current.Use();
-            }
-            EnsureStyles();
-            Matrix4x4 previousMatrix = GUI.matrix; int previousDepth = GUI.depth;
-            Color previousColor = GUI.color;
-            GUI.matrix = Matrix4x4.identity; GUI.depth = -100;
-            GUI.color = Color.black;
-            GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), pixel);
-            GUI.color = Color.white;
-            float scale = Mathf.Min(Screen.width / 1280f, Screen.height / 720f);
-            GUI.matrix = Matrix4x4.TRS(new Vector3((Screen.width - 1280 * scale) / 2, (Screen.height - 720 * scale) / 2, 0),
-                Quaternion.identity, new Vector3(scale, scale, 1));
-            if (page == MenuPage.Title)
-            {
-                titleMenu.Draw(OptionEnabled(1), MenuButton, NewGame, () => OpenPage(MenuPage.Continue));
-            }
-            else
-            {
-                bool loading = page == MenuPage.Continue;
-                saveScreen.DrawHeader(loading, selectedOption);
-                bool previousEnabled = GUI.enabled;
-                for (int i = 0; i < SaveStore.SlotCount; i++)
-                {
-                    var preview = previews[i];
-                    saveScreen.DrawSlot(i, preview, occupied[i], slotMessages[i], preview == null ? null : LocationTitle(preview));
-                    GUI.enabled = previousEnabled && overwriteSlot == 0 && (!loading || preview != null);
-                    if (MenuButton(SaveSelectionPresentation.SlotRect(i), "", i, GUIStyle.none)) SelectSlot(i + 1);
-                    GUI.enabled = previousEnabled;
-                }
-                GUI.enabled = previousEnabled && overwriteSlot == 0;
-                if (loading && MenuButton(SaveSelectionPresentation.BackRect, "Back", SaveStore.SlotCount, saveScreen.BackStyle)) Back();
-                GUI.enabled = previousEnabled;
-                if (overwriteSlot != 0)
-                {
-                    Color overlayColor = GUI.color; GUI.color = new Color(0, 0, 0, .6f);
-                    GUI.DrawTexture(new Rect(0, 0, 1280, 720), pixel); GUI.color = overlayColor;
-                    saveScreen.Panel(new Rect(280, 245, 720, 205));
-                    GUI.Label(new Rect(310, 265, 660, 74), "Salvar a jornada no slot " + overwriteSlot + " e substituir o progresso anterior?", textStyle);
-                    if (MenuButton(new Rect(310, 365, 320, 48), "Salvar jornada", 0, buttonStyle)) SaveToSlot(overwriteSlot);
-                    if (MenuButton(new Rect(650, 365, 320, 48), "Cancelar", 1, buttonStyle)) CancelOverwrite();
-                }
-            }
-            DrawSelectedHand();
-            if (IsMenuVisible && !string.IsNullOrEmpty(message) && Time.unscaledTime < messageUntil)
-            {
-                Rect rect = new Rect(110, 650, 1060, 50);
-                Panel(rect); GUI.Label(new Rect(rect.x + 12, rect.y + 6, rect.width - 24, rect.height - 10),
-                    message, smallStyle);
-            }
-            frontEnd.DrawMenuFade(pixel);
-            GUI.matrix = previousMatrix; GUI.depth = previousDepth; GUI.color = previousColor;
+            view.Slots = Slots;
+            saveMenu.Draw(view);
         }
-        private bool MenuButton(Rect rect, string label, int option, GUIStyle style)
-        {
-            if (!frontEnd.IsStartingNewGame && GUI.enabled && (Event.current.type == EventType.MouseMove
-                || Event.current.type == EventType.MouseDrag || Event.current.type == EventType.MouseDown)
-                && rect.Contains(Event.current.mousePosition))
-                MenuSounds.Select(ref selectedOption, option, NavigationSoundContext);
-            Color previous = GUI.color;
-            if (overwriteSlot == 0 && GUI.enabled && selectedOption == option) GUI.color = new Color(0.96f, 0.8f, 0.48f);
-            bool clicked = GUI.Button(rect, label, style);
-            GUI.color = previous;
-            return !frontEnd.IsStartingNewGame && clicked;
-        }
-
-        private void DrawSelectedHand()
-        {
-            if (!IsMenuVisible || hand == null || !OptionEnabled(selectedOption)) return;
-            Rect option;
-            if (overwriteSlot != 0) option = new Rect(selectedOption == 0 ? 310 : 650, 365, 320, 48);
-            else if (page == MenuPage.Title) option = TitleMenuPresentation.OptionRect(selectedOption);
-            else option = selectedOption == SaveStore.SlotCount ? SaveSelectionPresentation.BackRect
-                : SaveSelectionPresentation.SlotRect(selectedOption);
-            bool row = page != MenuPage.Title && overwriteSlot == 0 && selectedOption < SaveStore.SlotCount;
-            float left = overwriteSlot != 0
-                ? option.center.x - buttonStyle.CalcSize(new GUIContent(selectedOption == 0 ? "Salvar jornada" : "Cancelar")).x / 2
-                : page == MenuPage.Title
-                ? option.center.x - titleMenu.ButtonStyle.CalcSize(new GUIContent(selectedOption == 0 ? "New game" : "Continue")).x / 2
-                : row ? 92 : option.x;
-            float width = Mathf.Min(row ? 72 : 44, (row ? 40 : 30) * handAspect), height = width / handAspect;
-            Color previous = GUI.color; GUI.color = Color.white;
-            GUI.DrawTextureWithTexCoords(new Rect(left - width - 12, option.center.y - height / 2, width, height), hand, handUv, true);
-            GUI.color = previous;
-        }
-        private void LoadHandSprite()
-        {
-            hand = Resources.Load<Texture2D>("PixelArt/BattleGloveCursor");
-            if (hand == null) return;
-            Color32[] pixels = hand.GetPixels32();
-            int left = hand.width, right = -1, bottom = hand.height, top = -1;
-            for (int y = 0; y < hand.height; y++) for (int x = 0; x < hand.width; x++)
-            {
-                if (pixels[y * hand.width + x].a <= 16) continue;
-                left = Mathf.Min(left, x); right = Mathf.Max(right, x);
-                bottom = Mathf.Min(bottom, y); top = Mathf.Max(top, y);
-            }
-            if (right < left || top < bottom) return;
-            int width = right - left + 1, height = top - bottom + 1;
-            handUv = new Rect((float)left / hand.width, (float)bottom / hand.height,
-                (float)width / hand.width, (float)height / hand.height);
-            handAspect = (float)width / height;
-        }
-        private static string LocationTitle(RestoredJourney journey)
-        {
-            if (journey.Data.Ending != 0) return EndingNarrative.Title((GameEnding)journey.Data.Ending);
-            var navigation = new PrototypeTravel(journey.Secrets);
-            navigation.TryRestore(journey.Data.Map, new Vector2(journey.Data.X, journey.Data.Y)); return navigation.Current.Name;
-        }
-        private void Panel(Rect rect)
-        {
-            Color previous = GUI.color; GUI.color = new Color(0.04f, 0.065f, 0.1f, 0.99f); GUI.DrawTexture(rect, pixel); GUI.color = previous;
-        }
-        private void EnsureStyles()
-        {
-            if (pixel != null) return;
-            pixel = new Texture2D(1, 1); pixel.SetPixel(0, 0, Color.white); pixel.Apply();
-            saveScreen = new SaveSelectionPresentation();
-            LoadHandSprite();
-            textStyle = PrototypeTypography.Style(GUI.skin.label, 24); textStyle.wordWrap = true; textStyle.normal.textColor = Color.white;
-            smallStyle = PrototypeTypography.Style(textStyle, 20);
-            buttonStyle = PrototypeTypography.Style(GUI.skin.label, 24);
-            buttonStyle.alignment = TextAnchor.MiddleCenter;
-            buttonStyle.padding = new RectOffset(0, 0, 0, 0);
-            foreach (GUIStyleState state in new[] { buttonStyle.normal, buttonStyle.hover, buttonStyle.active, buttonStyle.focused })
-            {
-                state.textColor = Color.white;
-                state.background = null;
-            }
-        }
-        private void OnDestroy() { frontEnd.Dispose(); saveScreen?.Dispose(); if (pixel != null) Destroy(pixel); }
+        private void OnDestroy() { frontEnd.Dispose(); saveMenu?.Dispose(); }
     }
 }

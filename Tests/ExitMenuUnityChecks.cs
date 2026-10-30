@@ -1,3 +1,4 @@
+using DragonQuest.Presentation.Menus;
 using System;
 using System.IO;
 using System.Reflection;
@@ -18,7 +19,7 @@ public static class ExitMenuUnityChecks
 {
     private const string Pending = "DragonQuest.ExitMenuChecks";
     private const string ScenePath = "Assets/ExitMenuChecks.unity";
-    private const BindingFlags Private = BindingFlags.Instance | BindingFlags.NonPublic;
+    private const BindingFlags Private = BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public;
     private static int step, checks, requestedFrame;
     private static double began;
     private static GameObject original;
@@ -67,8 +68,9 @@ public static class ExitMenuUnityChecks
                 var battle = original.AddComponent<PrototypeBattleController>();
                 battle.Initialize(player, dialogue, new ExplorationProgress());
                 battle.enabled = false;
-                var inventory = original.AddComponent<PrototypeMateriaHud>();
-                inventory.Initialize(battle, new AncientSecrets()); inventory.enabled = false;
+                var inventoryHost = original.AddComponent<PrototypeMateriaHud>();
+                inventoryHost.Initialize(battle, new AncientSecrets()); inventoryHost.enabled = false;
+                var inventory = inventoryHost.Presenter;
                 saveDirectory = Path.Combine(Path.GetTempPath(), "DragonQuestExitMenu-" + Guid.NewGuid().ToString("N"));
                 Directory.CreateDirectory(saveDirectory);
                 File.WriteAllText(Path.Combine(saveDirectory, "keep.txt"), "existing save content");
@@ -80,7 +82,7 @@ public static class ExitMenuUnityChecks
                 typeof(GameInput).GetField("hasFocus", BindingFlags.Static | BindingFlags.NonPublic).SetValue(null, (Func<bool>)(() => true));
                 Check(GameInput.IsFrameAvailable && saves.CanReturnToTitle, "Sair is available from the open party menu.");
                 requestedFrame = Time.frameCount;
-                typeof(PrototypeMateriaHud).GetMethod("OpenCommand", Private).Invoke(inventory,
+                typeof(InventoryMenuPresenter).GetMethod("OpenCommand", Private).Invoke(inventory,
                     new object[] { Array.IndexOf(InventoryMenuPresentation.Commands, "Sair") });
                 Check(!GameInput.IsFrameAvailable, "Sair consumes its confirmation before loading the initial scene.");
                 step = 1;

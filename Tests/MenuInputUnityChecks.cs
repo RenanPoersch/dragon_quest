@@ -16,9 +16,9 @@ public static class MenuInputUnityChecks
     private static Gamepad pad;
     private static Keyboard keys;
     private static FieldInfo Field(object target, string name) => target.GetType()
-        .GetField(name, BindingFlags.Instance | BindingFlags.NonPublic);
+        .GetField(name, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
     private static void Call(object target, string method) => target.GetType()
-        .GetMethod(method, BindingFlags.Instance | BindingFlags.NonPublic).Invoke(target, null);
+        .GetMethod(method, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public).Invoke(target, null);
     private static void Check(bool condition, string message)
     { checks++; if (!condition) throw new Exception(message); }
     private static void State(GamepadState state, params Key[] pressed)
@@ -74,7 +74,7 @@ public static class MenuInputUnityChecks
         Field(frontEnd, "menuHasDrawn").SetValue(frontEnd, true);
         Field(frontEnd, "menuFadeInElapsed").SetValue(frontEnd, 2f);
         Call(saves, "RefreshSlots");
-        var optionEnabled = typeof(PrototypeSaveController).GetMethod("OptionEnabled", BindingFlags.Instance | BindingFlags.NonPublic);
+        var optionEnabled = typeof(PrototypeSaveController).GetMethod("OptionEnabled", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
         Check(!(bool)optionEnabled.Invoke(saves, new object[] { 1 }), "Continue is disabled when all three slots are empty.");
         foreach (var key in new[] { Key.DownArrow, Key.UpArrow, Key.RightArrow, Key.LeftArrow, Key.S, Key.W })
         {
@@ -140,8 +140,9 @@ public static class MenuInputUnityChecks
         Call(saves, "RefreshSlots");
         Check(!(bool)optionEnabled.Invoke(saves, new object[] { 1 }), "Removing the last loadable save disables Continue again.");
         Field(saves, "<IsMenuVisible>k__BackingField").SetValue(saves, false);
-        var inventory = fixture.AddComponent<PrototypeMateriaHud>();
-        inventory.Initialize(battle, new DragonQuest.Progression.AncientSecrets());
+        var inventoryHost = fixture.AddComponent<PrototypeMateriaHud>();
+        inventoryHost.Initialize(battle, new DragonQuest.Progression.AncientSecrets());
+        var inventory = inventoryHost.Presenter;
         State(new GamepadState().WithButton(GamepadButton.North)); Call(battle, "Update");
         Call(inventory, "CheckOpened"); Field(inventory, "openedFrame").SetValue(inventory, -1);
         Check(battle.IsMenuOpen, "Triangle opens the inventory before navigating.");

@@ -1,3 +1,4 @@
+using DragonQuest.Presentation.Menus;
 using System;
 using System.Linq;
 using System.Reflection;
@@ -22,7 +23,7 @@ using UnityEngine.InputSystem.LowLevel;
 public static class MenuSoundValidation
 {
     private const string Pending = "DragonQuest.MenuSoundValidation";
-    private const BindingFlags Private = BindingFlags.Instance | BindingFlags.NonPublic;
+    private const BindingFlags Private = BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public;
     private static int checks, step, nextFrame;
     private static double nextAt, began;
     private static GameObject fixture, audioRoot, listener;
@@ -31,7 +32,7 @@ public static class MenuSoundValidation
     private static PrototypeSaveController saves;
     private static DialogueController dialogue;
     private static PrototypeBattleController battle;
-    private static PrototypeMateriaHud inventory;
+    private static InventoryMenuPresenter inventory;
     private static PrototypeBattleHud battleHud;
     private static PrototypeShopController shops;
     private static PrototypeCheatMenu cheats;
@@ -128,7 +129,7 @@ public static class MenuSoundValidation
         battle.Initialize(movement,dialogue,progress);
         cheats.Initialize(movement,battle,saves,progress);
         shops.Initialize(movement,dialogue,battle,progress);
-        inventory = fixture.AddComponent<PrototypeMateriaHud>(); inventory.Initialize(battle,new AncientSecrets());
+        var inventoryHost = fixture.AddComponent<PrototypeMateriaHud>(); inventoryHost.Initialize(battle,new AncientSecrets()); inventory = inventoryHost.Presenter;
         battleHud = fixture.AddComponent<PrototypeBattleHud>(); battleHud.Initialize(battle);
         Put(saves,"store",new SaveStore(System.IO.Path.Combine(System.IO.Path.GetTempPath(),"DQMenuSound-"+Guid.NewGuid())));
         Put(saves,"player",movement); Put(saves,"dialogue",dialogue); Put(saves,"battle",battle);

@@ -56,6 +56,10 @@ Esta organização preserva os nomes de classes, namespaces, código e GUIDs dos
 
 `PrototypeSaveController` mantém a integração com a partida, a escolha dos slots, a confirmação de sobrescrita e as operações de salvar/carregar. Ele delega os tempos e o desenho da abertura às apresentações. As propriedades públicas de visibilidade e ganho de música permanecem disponíveis para os sistemas de áudio e bloqueio de entrada.
 
+`Gameplay/Saving/SaveSlotSession` concentra a leitura das prévias, ocupação dos slots e acesso ao armazenamento, incluindo falhas de captura e gravação. `SaveMenuPresenter` possui os recursos gráficos das telas de título, slots e sobrescrita e consulta a seleção atual por callbacks, sem manter uma segunda seleção. O controller conserva a instalação da jornada e os comandos de salvar/carregar.
+
+`PrototypeMateriaHud` é o componente de entrada da cena; delega entrada e desenho a `InventoryMenuPresenter`, que possui a navegação e as sessões dos submenus. Os componentes preservam seus GUIDs. A navegação de teclado/controle continua sendo processada em Update, com o consumo do frame compartilhado com os demais sistemas.
+
 As apresentações de inventário, equipamentos, itens, magia, matérias, status, loja e slots, junto dos seus ícones e retratos, ficam em `Presentation/Menus`. Os estilos e a navegação compartilhados ficam em `Presentation/Common`; a apresentação e os retratos de conversa ficam em `Presentation/Dialogue`.
 
 `Presentation/Cinematics/Opening` reúne a abertura, a viagem de novo jogo e suas sequências. `Presentation/Cinematics/Endings` reúne as sequências e apresentações dos finais, a composição das pinturas e a transição de saída da batalha para essas cenas. Os componentes que orquestram a partida e os finais continuam nas localizações existentes de `Prototype` nesta etapa.
