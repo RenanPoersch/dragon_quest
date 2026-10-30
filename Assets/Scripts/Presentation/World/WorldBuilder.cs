@@ -44,15 +44,15 @@ namespace DragonQuest.Presentation.World
 
             var interactables = new List<Interactable>();
             Transform interactions = Group("Moradores e bau", city);
-            NpcInteraction citizen = CreateNpc("Aldeão", PrototypeCityLayout.Citizen, "8D9DB0", interactions);
+            NpcInteraction citizen = CreateNpc("Aldeão", NpcAppearance.Villager, PrototypeCityLayout.Citizen, interactions);
             citizen.Initialize(DialogueCatalog.Citizen);
             interactables.Add(citizen);
-            GameObject peasant = CreateNpcFigure("Camponesa", PrototypeCityLayout.Resident, "B77D8B", interactions);
+            GameObject peasant = CreateNpcFigure("Camponesa", NpcAppearance.Peasant, PrototypeCityLayout.Resident, interactions);
             interactables.Add(AddSecret(peasant, SecretObject.Peasant));
-            NpcInteraction traveler = CreateNpc("Viajante", PrototypeCityLayout.Traveler, "C19862", interactions);
+            NpcInteraction traveler = CreateNpc("Viajante", NpcAppearance.Traveler, PrototypeCityLayout.Traveler, interactions);
             traveler.Initialize(DialogueCatalog.Traveler, CompleteTravelerConversation);
             interactables.Add(traveler);
-            NpcInteraction explorer = CreateNpc("Exploradora", PrototypeCityLayout.Explorer, "B79458", interactions);
+            NpcInteraction explorer = CreateNpc("Exploradora", NpcAppearance.Explorer, PrototypeCityLayout.Explorer, interactions);
             explorer.Initialize(DialogueCatalog.Explorer);
             interactables.Add(explorer);
             interactables.Add(CreateChest(interactions));
@@ -67,12 +67,12 @@ namespace DragonQuest.Presentation.World
             BoxCollider2D guardCollider = sentry.AddComponent<BoxCollider2D>();
             guardCollider.size = new Vector2(0.65f, 0.7f);
             guardCollider.sharedMaterial = frictionless;
-            scenery.PixelPerson(sentry.transform, "NpcRoster", 10);
+            scenery.PixelPerson(sentry.transform, "NpcRoster", PixelSpriteLibrary.NpcFrame(NpcAppearance.Guard));
             GameObject soldier = Entity("Soldado da ponte", new Vector2(1.2f, 0), guard.transform);
             BoxCollider2D soldierCollider = soldier.AddComponent<BoxCollider2D>();
             soldierCollider.size = guardCollider.size;
             soldierCollider.sharedMaterial = frictionless;
-            scenery.PixelPerson(soldier.transform, "NpcRoster", 10);
+            scenery.PixelPerson(soldier.transform, "NpcRoster", PixelSpriteLibrary.NpcFrame(NpcAppearance.Guard));
             GameObject bridgeBarrier = Entity("Bloqueio da patrulha", PrototypeCityLayout.Bridge - PrototypeCityLayout.Guard, guard.transform);
             BoxCollider2D barrierCollider = bridgeBarrier.AddComponent<BoxCollider2D>();
             barrierCollider.size = new Vector2(3.7f, .7f);
@@ -93,11 +93,11 @@ namespace DragonQuest.Presentation.World
             };
             string[] shopIds = { "item-shop", "equipment-shop", "materia-shop" };
             string[] shopNames = { "Loja de itens", "Loja de equipamentos", "Loja de matérias" };
-            string[] shopColors = { "87B5A3", "91A6B3", "85CD90" };
+            NpcAppearance[] shopAppearances = { NpcAppearance.ItemMerchant, NpcAppearance.EquipmentMerchant, NpcAppearance.MateriaMerchant };
             for (int i = 0; i < shopIds.Length; i++)
             {
                 Transform shop = Group(shopNames[i] + " - interior");
-                CreateShop(shop, interactables, shopIds[i], shopNames[i], shopColors[i]);
+                CreateShop(shop, interactables, shopIds[i], shopNames[i], shopAppearances[i]);
                 mapRoots.Add(shopIds[i], shop.gameObject);
             }
 
@@ -127,8 +127,8 @@ namespace DragonQuest.Presentation.World
             context.Dialogue.OpenNotice("Recebeu Phoenix");
         }
 
-        private NpcInteraction CreateNpc(string npcName, Vector2 position, string color, Transform parent)
-            => CreateNpcFigure(npcName, position, color, parent).AddComponent<NpcInteraction>();
+        private NpcInteraction CreateNpc(string npcName, NpcAppearance appearance, Vector2 position, Transform parent)
+            => CreateNpcFigure(npcName, appearance, position, parent).AddComponent<NpcInteraction>();
 
         private AncientSecretInteraction AddSecret(GameObject target, SecretObject kind,
             MonolithSymbol symbol = MonolithSymbol.Sun, GameObject light = null)
@@ -137,13 +137,13 @@ namespace DragonQuest.Presentation.World
             interaction.Initialize(kind, secrets, symbol, light); return interaction;
         }
 
-        private GameObject CreateNpcFigure(string npcName, Vector2 position, string color, Transform parent)
+        private GameObject CreateNpcFigure(string npcName, NpcAppearance appearance, Vector2 position, Transform parent)
         {
             GameObject npc = Entity(npcName, position, parent);
             BoxCollider2D collider = npc.AddComponent<BoxCollider2D>();
             collider.size = new Vector2(0.55f, 0.6f);
             collider.sharedMaterial = frictionless;
-            scenery.PixelPerson(npc.transform, "NpcRoster", PixelSpriteLibrary.NpcFrame(npcName));
+            scenery.PixelPerson(npc.transform, "NpcRoster", PixelSpriteLibrary.NpcFrame(appearance));
             return npc;
         }
 
@@ -217,7 +217,7 @@ namespace DragonQuest.Presentation.World
             Transform quarry = Group("Pedreira dos monolitos - interior pixel art");
             quarry.gameObject.AddComponent<QuarryPixelScenery>().Build(secrets, interactions, frictionless);
             CreatePassage("Saida da pedreira", PrototypeTravel.WestForest, quarry, PrototypeTravel.World);
-            NpcInteraction worker = CreateNpc("Lenhador", QuarryLayout.Worker, "879C6B", quarry);
+            NpcInteraction worker = CreateNpc("Lenhador", NpcAppearance.QuarryKeeper, QuarryLayout.Worker, quarry);
             worker.Initialize(DialogueCatalog.QuarryKeeper);
             interactions.Add(worker);
             return quarry;
@@ -236,7 +236,7 @@ namespace DragonQuest.Presentation.World
                 collider.size = block.Size; collider.sharedMaterial = frictionless;
             }
             CreatePassage("Saida da floresta", PrototypeTravel.EastForest, forest, PrototypeTravel.World);
-            NpcInteraction gardener = CreateNpc("Jardineiro", EastForestLayout.Gardener, "86A96B", forest);
+            NpcInteraction gardener = CreateNpc("Jardineiro", NpcAppearance.Gardener, EastForestLayout.Gardener, forest);
             gardener.Initialize(DialogueCatalog.Gardener);
             interactions.Add(gardener);
             GameObject stone = Entity("Marcas na pedra", PrototypeSecretLayout.ClawStone, forest);
@@ -296,7 +296,7 @@ namespace DragonQuest.Presentation.World
             Transform inn=Group("Hospedaria - interior");
             inn.gameObject.AddComponent<InnPixelScenery>().Build(frictionless);
             CreatePassage("Saida da hospedaria",PrototypeTravel.Inn,inn,PrototypeTravel.City);
-            InnInteraction keeper=CreateNpcFigure("Hospedeira",PrototypeInnLayout.Keeper,"B89673",inn).AddComponent<InnInteraction>();
+            InnInteraction keeper=CreateNpcFigure("Hospedeira",NpcAppearance.Innkeeper,PrototypeInnLayout.Keeper,inn).AddComponent<InnInteraction>();
             keeper.Initialize(actions.OpenInnSaveMenu, actions.RestAtInn);
             interactions.Add(keeper);
             InnInteraction reception=Entity("Recepcao / falar com a hospedeira",PrototypeInnLayout.Reception,inn).AddComponent<InnInteraction>();
@@ -306,7 +306,7 @@ namespace DragonQuest.Presentation.World
             return inn;
         }
 
-        private void CreateShop(Transform shop, List<Interactable> interactions, string shopId, string shopName, string displayColor)
+        private void CreateShop(Transform shop, List<Interactable> interactions, string shopId, string shopName, NpcAppearance appearance)
         {
             Vector2 merchantPoint,counterPoint;
             CompactShopLayout compact=CompactShopLayout.Find(shopId);
@@ -321,7 +321,7 @@ namespace DragonQuest.Presentation.World
                 merchantPoint=compact.Merchant; counterPoint=compact.Counter;
             }
             else throw new System.ArgumentException("Loja sem cenario: "+shopId);
-            MerchantInteraction merchant=CreateNpcFigure(shopName,merchantPoint,displayColor,shop).AddComponent<MerchantInteraction>();
+            MerchantInteraction merchant=CreateNpcFigure(shopName,appearance,merchantPoint,shop).AddComponent<MerchantInteraction>();
             merchant.Initialize(shopId); interactions.Add(merchant);
             MerchantInteraction counter=Entity("Balcao / negociar",counterPoint,shop).AddComponent<MerchantInteraction>();
             counter.Initialize(shopId); interactions.Add(counter);
