@@ -14,6 +14,7 @@ namespace DragonQuest.Interactions
         public bool IsOpen => pages != null;
         public bool HasChoices => IsOpen && choices != null;
         public string Title { get; private set; }
+        public string Id { get; private set; }
         public string Text => IsOpen ? pages[pageIndex] : string.Empty;
         public int PageNumber => IsOpen ? pageIndex + 1 : 0;
         public int PageCount => IsOpen ? pages.Length : 0;
@@ -23,6 +24,12 @@ namespace DragonQuest.Interactions
         {
             if (messages == null || messages.Length == 0) return;
             Close(); Title = title; pages = (string[])messages.Clone(); completion = completed;
+        }
+
+        public void OpenIdentified(string id, string title, Action completed, params string[] messages)
+        {
+            if (messages == null || messages.Length == 0) return;
+            Open(title, completed, messages); Id = id;
         }
 
         public void OpenChoices(string title, string message, IReadOnlyList<string> options, Action<int> selected)
@@ -49,6 +56,6 @@ namespace DragonQuest.Interactions
         }
 
         public void Close()
-        { pages = null; pageIndex = 0; choices = null; completion = null; choiceCallback = null; }
+        { Id = null; pages = null; pageIndex = 0; choices = null; completion = null; choiceCallback = null; }
     }
 }

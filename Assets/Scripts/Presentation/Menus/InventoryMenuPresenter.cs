@@ -1,3 +1,4 @@
+using DragonQuest.Gameplay;
 using DragonQuest.Prototype;
 using UnityEngine;
 using DragonQuest.Audio;
@@ -33,6 +34,8 @@ namespace DragonQuest.Presentation.Menus
         private Vector2 lastPointer;
 
         private readonly System.Func<PrototypeSaveController> getSaves;
+        private bool IsInputBlocked => controller.IsCheatMenuBlocking
+            || controller.Flow != null && controller.Flow.Owner != GameInputOwner.Inventory;
         private readonly System.Func<int> getGold;
         private readonly System.Func<string> getLocationName;
         public InventoryMenuPresenter(PrototypeBattleController battleController, AncientSecrets ancientSecrets,
@@ -63,7 +66,7 @@ namespace DragonQuest.Presentation.Menus
             if (controller == null || !controller.IsMenuOpen)
             { if (wasOpen) MenuSounds.Play(MenuSound.Cancel); wasOpen = false; return; }
             CheckOpened();
-            if (controller.IsCheatMenuBlocking || !GameInput.IsFocused || openedFrame == Time.frameCount) return;
+            if (IsInputBlocked || !GameInput.IsFocused || openedFrame == Time.frameCount) return;
             if (page == 0) { UpdateMateriaInput(); return; }
             if (page == 1) { UpdateEquipmentInput(); return; }
             if (page == 2) { UpdateItemInput(); return; }
@@ -295,7 +298,7 @@ namespace DragonQuest.Presentation.Menus
             float scale = Mathf.Min(Screen.width / 1280f, Screen.height / 720f);
             Matrix4x4 previous = GUI.matrix;
             bool previousEnabled = GUI.enabled;
-            acceptsInput = previousEnabled && !controller.IsCheatMenuBlocking && GameInput.IsFocused;
+            acceptsInput = previousEnabled && !IsInputBlocked && GameInput.IsFocused;
             GUI.matrix = Matrix4x4.TRS(new Vector3((Screen.width - 1280 * scale) / 2,
                 (Screen.height - 720 * scale) / 2, 0), Quaternion.identity, new Vector3(scale, scale, 1));
             PartyProgress party = controller.Party;

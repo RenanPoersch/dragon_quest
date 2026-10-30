@@ -1,3 +1,4 @@
+using DragonQuest.Content;
 using DragonQuest.Presentation.Menus;
 using System;
 using System.Linq;
@@ -518,7 +519,7 @@ public static class MusicValidation
                 case 44:
                     CuePlays(MusicCue.Throne);
                     Check(Voice(MusicCue.Throne).timeSamples < Voice(MusicCue.Throne).clip.frequency*2,"throne room recording loops");
-                    dialogue.Open("Rei Rubro", "Antes da ameaca final.", "O proprio ceu caira sobre voces!");
+                    dialogue.Open(new DialogueDefinition(DialogueCatalog.KingConfrontation.Id, "Rei Rubro", "Antes da ameaca final.", "O proprio ceu caira sobre voces!"));
                     Call(music,"LateUpdate");
                     Check(music.CurrentCue == MusicCue.Silence,"opening the royal dialogue fades the current track to silence");
                     Call(music,"Advance",2f);

@@ -1,4 +1,5 @@
 using DragonQuest.Gameplay.Saving;
+using DragonQuest.Gameplay;
 using DragonQuest.Presentation.Menus;
 using System;
 using UnityEngine;
@@ -30,7 +31,6 @@ namespace DragonQuest.Prototype
         private SaveSlotSession slotSession;
         private SaveSlotSession Slots => slotSession ?? (slotSession = new SaveSlotSession(store));
         private RestoredJourney[] previews => Slots.Previews;
-        private string[] slotMessages => Slots.Messages;
         private bool[] occupied => Slots.Occupied;
         private SaveMenuPresenter saveMenu;
         public SaveMenuPresenter Presenter => saveMenu;
@@ -113,7 +113,8 @@ namespace DragonQuest.Prototype
             battle.RestoreEnding((GameEnding)journey.Data.Ending);
         }
         public bool CanReturnToTitle => store != null && !IsMenuVisible && battle != null && battle.IsMenuOpen
-            && !battle.IsActive && !battle.HasEnded && !battle.IsCheatMenuBlocking;
+            && !battle.IsActive && !battle.HasEnded && !battle.IsCheatMenuBlocking
+            && (battle.Flow == null || battle.Flow.Owner == GameInputOwner.Inventory);
 
         public void ReturnToTitle()
         {
@@ -135,6 +136,7 @@ namespace DragonQuest.Prototype
         public bool CanSaveManually => store != null && !IsMenuVisible && battle != null
             && !battle.IsActive && !battle.HasEnded && !battle.IsCheatMenuBlocking
             && dialogue != null && !dialogue.IsOpen && (shops == null || !shops.IsOpen)
+            && (battle.Flow == null || battle.Flow.Owner == GameInputOwner.Exploration || battle.Flow.Owner == GameInputOwner.Inventory)
             && locations != null && (locations.LocationId == PrototypeTravel.Inn || locations.LocationId == PrototypeTravel.World);
 
         public bool OpenManualSaveMenu()

@@ -1,3 +1,4 @@
+using DragonQuest.Gameplay;
 using DragonQuest.Content;
 using DragonQuest.Equipment;
 using DragonQuest.Exploration;
@@ -27,17 +28,18 @@ namespace DragonQuest.Bootstrap
         private readonly PrototypeEndingController endings;
         private PlayerInteraction interaction;
         private PrototypeHud hud;
+        private readonly GameFlowState flow;
 
         public ExplorationProgress Progress { get; private set; }
 
         public JourneyInstaller(WorldScene world, PrototypeSaveController saves, DialogueController dialogue,
             PrototypeBattleController battle, PrototypeShopController shops, PrototypeLocations locations,
             PrototypeCheatMenu cheats, InnRestController innRest, AncientSecrets secrets, DragonProgress dragon,
-            PrototypeEndingController endings)
+            PrototypeEndingController endings, GameFlowState flow = null)
         {
             this.world = world; this.saves = saves; this.dialogue = dialogue; this.battle = battle;
             this.shops = shops; this.locations = locations; this.cheats = cheats; this.innRest = innRest;
-            this.secrets = secrets; this.dragon = dragon; this.endings = endings;
+            this.secrets = secrets; this.dragon = dragon; this.endings = endings; this.flow = flow;
         }
 
         public void StartNewJourney()
@@ -65,7 +67,7 @@ namespace DragonQuest.Bootstrap
             locations.Restore(journey.Data.Map, new Vector2(journey.Data.X, journey.Data.Y));
         }
 
-        private bool OtherMenuOpen() => shops.IsOpen || saves.IsMenuVisible || cheats.BlocksInput || innRest.IsPlaying;
+        private bool OtherMenuOpen() => flow?.ExternalMenuOpen ?? (shops.IsOpen || saves.IsMenuVisible || cheats.BlocksInput || innRest.IsPlaying);
 
         private void ConnectSystems(PartyProgress party, ShopService shopService)
         {
@@ -78,7 +80,7 @@ namespace DragonQuest.Bootstrap
         private void ConnectExploration()
         {
             interaction.Initialize(new InteractionContext(dialogue, Progress, locations.TravelTo,
-                battle.StartBattle, () => battle.IsBusy, shops.Open, secrets), world.Interactables);
+                battle.StartBattle, () => flow?.IsBusy ?? battle.IsBusy, shops.Open, secrets), world.Interactables);
             hud.Initialize(dialogue, battle);
         }
     }

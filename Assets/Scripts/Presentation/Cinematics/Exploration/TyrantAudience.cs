@@ -1,3 +1,4 @@
+using DragonQuest.Content;
 using System;
 using System.Collections.Generic;
 using DragonQuest.Equipment;
@@ -79,7 +80,7 @@ namespace DragonQuest.Prototype
         private void Advance(float deltaTime)
         {
             if (dialogue == null) return;
-            if (!dialogue.IsOpen || dialogue.Title != "Rei Rubro" || tyrant == null || !tyrant.gameObject.activeInHierarchy
+            if (!dialogue.IsOpen || dialogue.DialogueId != DialogueCatalog.KingConfrontation.Id || tyrant == null || !tyrant.gameObject.activeInHierarchy
                 || hero == null || !hero.gameObject.activeInHierarchy || hero.TeleportRevision != teleportRevision)
             { Hide(); return; }
             float previousTime = elapsed; elapsed += deltaTime;

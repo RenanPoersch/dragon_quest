@@ -62,7 +62,7 @@ namespace DragonQuest.Presentation.Battle
         {
             if (controller.HasEnded) return;
             if (controller.IsEnteringBattle) return;
-            if (controller.IsCheatMenuBlocking || controller.IsEscaping || GameInput.EscapeHeld) return;
+            if (controller.IsBattleInputBlocked || controller.IsEscaping || GameInput.EscapeHeld) return;
             if (controller.IsPresentingAction) return;
             Keyboard keys = Keyboard.current;
             if (!GameInput.IsFrameAvailable) return;
@@ -118,7 +118,7 @@ namespace DragonQuest.Presentation.Battle
                 ChooseCommand(commandIndex, navigateOnly: true);
         }
 
-        public bool CanAcceptMenuInput => GameInput.IsFrameAvailable && !controller.HasEnded && !controller.IsEnteringBattle && !controller.IsCheatMenuBlocking
+        public bool CanAcceptMenuInput => GameInput.IsFrameAvailable && !controller.HasEnded && !controller.IsEnteringBattle && !controller.IsBattleInputBlocked
             && !controller.IsPresentingAction;
         private bool InSubmenu => itemMode || menuGroup != AbilityMenuGroup.Direct;
         private bool CanOpenDefendMenu => !InSubmenu && !defendMode && defendCommand != null

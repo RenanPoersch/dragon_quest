@@ -13,6 +13,9 @@ namespace DragonQuest.Exploration
         private Rigidbody2D body;
         private Vector2 movement;
         private bool movementEnabled = true;
+        private System.Func<bool> movementGate;
+        private bool CanMove => movementEnabled && GameInput.IsFocused && (movementGate?.Invoke() ?? true);
+        public void SetMovementGate(System.Func<bool> gate) => movementGate = gate;
         private float walkingSpeedMultiplier = 1f;
         public void SetWalkingSpeedMultiplier(float multiplier) => walkingSpeedMultiplier = multiplier;
         private System.Func<Vector2,Vector2,Vector2> movementConstraint;
@@ -55,7 +58,7 @@ namespace DragonQuest.Exploration
 
         private void Update()
         {
-            if (!movementEnabled || !GameInput.IsFocused)
+            if (!CanMove)
             {
                 movement = Vector2.zero;
                 return;
@@ -76,7 +79,7 @@ namespace DragonQuest.Exploration
         {
             if (IsSideView)
             {
-                Vector2 velocity = movementEnabled && GameInput.IsFocused
+                Vector2 velocity = CanMove
                     ? MovementDynamics.StepVelocity(new Vector2(lateralVelocity, 0), movement * speed * lateralSpeedMultiplier * walkingSpeedMultiplier,
                         Time.fixedDeltaTime, acceleration, deceleration) : Vector2.zero;
                 float x = Mathf.Clamp(body.position.x + velocity.x * Time.fixedDeltaTime, lateralMin, lateralMax);
@@ -87,7 +90,7 @@ namespace DragonQuest.Exploration
             }
             // Evita trocar instantaneamente a velocidade e provocar um solavanco na camera.
             // Parte da velocidade resolvida pela fisica, conservando colisao e deslizamento nas paredes.
-            body.linearVelocity = movementEnabled && GameInput.IsFocused
+            body.linearVelocity = CanMove
                 ? MovementDynamics.StepVelocity(body.linearVelocity, movement * speed * walkingSpeedMultiplier, Time.fixedDeltaTime, acceleration, deceleration)
                 : Vector2.zero;
             if (movementConstraint != null)

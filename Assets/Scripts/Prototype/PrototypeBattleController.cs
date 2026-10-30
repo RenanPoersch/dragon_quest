@@ -1,3 +1,4 @@
+using DragonQuest.Gameplay;
 using DragonQuest.Gameplay.Battle;
 using DragonQuest.Gameplay.Exploration;
 using DragonQuest.Presentation.World;
@@ -35,6 +36,9 @@ namespace DragonQuest.Prototype
         public float EscapeDeparture => Session?.Outcome == BattleOutcome.Escaped
             ? Mathf.Clamp01((Time.unscaledTime - EscapeCompletedAt) / EscapeDepartureDuration) : 0;
         private DialogueController dialogue;
+        public GameFlowState Flow { get; private set; }
+        public void SetFlow(GameFlowState flow) => Flow = flow;
+        public bool IsBattleInputBlocked => IsCheatMenuBlocking || Flow != null && Flow.Owner != GameInputOwner.Battle;
         private PrototypeCheatMenu cheatMenu;
         public bool IsCheatMenuBlocking => cheatMenu != null && cheatMenu.BlocksInput;
         private System.Func<bool> otherMenuOpen = () => false;
@@ -69,7 +73,7 @@ namespace DragonQuest.Prototype
         public bool IsActive { get; private set; }
         public bool IsMenuOpen { get; private set; }
         public System.Func<bool> TryCancelInventorySelection { get; set; }
-        public bool IsBusy => HasEnded || IsActive || IsMenuOpen || otherMenuOpen();
+        public bool IsBusy => Flow?.IsBusy ?? (HasEnded || IsActive || IsMenuOpen || otherMenuOpen());
         public PartyProgress Party { get; private set; }
         public BattleSession Session { get; private set; }
         public string ErrorMessage { get; private set; }
@@ -158,7 +162,7 @@ namespace DragonQuest.Prototype
         {
             if (movement == null || dialogue == null) return;
             var step = exploration.Advance(currentLocation(), movement.transform.position, movement.TeleportRevision,
-                movement.HasMovementInput, Time.deltaTime, IsBusy || dialogue.IsOpen || !GameInput.IsFocused);
+                movement.HasMovementInput, Time.deltaTime, Flow?.BlocksMovement ?? (IsBusy || dialogue.IsOpen || !GameInput.IsFocused));
             conditions.RefreshTint();
             if (step == ExplorationStep.Defeat) FinishDefeat();
             else if (step == ExplorationStep.Encounter) StartRandomBattle();
@@ -200,7 +204,7 @@ namespace DragonQuest.Prototype
 
         public bool TryPlayerAction(AbilityDefinition ability, CombatantState target)
         {
-            if (IsEnteringBattle || IsCheatMenuBlocking) return false;
+            if (IsEnteringBattle || IsBattleInputBlocked) return false;
             if (!IsActive || IsPresentingAction || IsEscaping || GameInput.EscapeHeld || Session.CurrentActor == null || Session.CurrentActor.Team != CombatTeam.Party) return false;
             CombatantState actor = Session.CurrentActor;
             target = Session.ResolveLivingEnemyTarget(ability, target);
@@ -225,7 +229,7 @@ namespace DragonQuest.Prototype
 
         public bool TryPlayerItem(ConsumableDefinition item, CombatantState target)
         {
-            if (IsEnteringBattle || IsCheatMenuBlocking) return false;
+            if (IsEnteringBattle || IsBattleInputBlocked) return false;
             if (!IsActive || IsPresentingAction || IsEscaping || GameInput.EscapeHeld || Session.CurrentActor == null || Session.CurrentActor.Team != CombatTeam.Party) return false;
             CombatantState actor = Session.CurrentActor;
             actionPresentation.CaptureChains(Session.Combatants);
@@ -356,7 +360,7 @@ namespace DragonQuest.Prototype
                 if (!IsPostBattleOpen) { IsPostBattleOpen = true; PostBattleStartedAt = Time.unscaledTime; }
                 return;
             }
-            if (!HasEnded && !IsActive && !otherMenuOpen() && !dialogue.IsOpen && GameInput.IsFocused)
+            if (Flow?.CanToggleInventory ?? (!HasEnded && !IsActive && !otherMenuOpen() && !dialogue.IsOpen && GameInput.IsFocused))
             {
                 if (IsMenuOpen && GameInput.CancelPressed) { if (TryCancelInventorySelection?.Invoke() != true) CloseMenu(); GameInput.ConsumeGamepadFrame(); }
                 else if (GameInput.InventoryPressed)

@@ -1,3 +1,4 @@
+using DragonQuest.Gameplay;
 using DragonQuest.Content;
 using UnityEngine;
 using DragonQuest.Audio;
@@ -19,7 +20,8 @@ namespace DragonQuest.Prototype
         public ShopMenuSession Menu { get; } = new ShopMenuSession();
         public int ActionIndex { get; private set; }
         public bool IsOpen => ActiveShop != null;
-        public bool IsInputBlocked => battle == null || battle.IsCheatMenuBlocking;
+        public bool IsInputBlocked => battle == null || battle.IsCheatMenuBlocking
+            || battle.Flow != null && battle.Flow.Owner != GameInputOwner.Shop;
         public string Message => Menu.Message;
         public void Initialize(PlayerMovement hero, DialogueController dialogueController, PrototypeBattleController battleController,
             ExplorationProgress progress, ShopService restoredService = null)

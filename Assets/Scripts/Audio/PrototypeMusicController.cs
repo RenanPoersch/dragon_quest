@@ -1,3 +1,4 @@
+using DragonQuest.Content;
 using System.Collections.Generic;
 using DragonQuest.Combat;
 using DragonQuest.Interactions;
@@ -24,7 +25,7 @@ namespace DragonQuest.Audio
         private int current = -1;
         private float elapsed, duration;
         public MusicCue CurrentCue { get; private set; }
-        private bool IsKingDialogue => dialogue != null && dialogue.IsOpen && dialogue.Title == "Rei Rubro";
+        private bool IsKingDialogue => dialogue != null && dialogue.IsOpen && dialogue.DialogueId == DialogueCatalog.KingConfrontation.Id;
 
         public void Initialize(PrototypeSaveController menus, PrototypeLocations maps, PrototypeBattleController combat)
         {
@@ -106,7 +107,7 @@ namespace DragonQuest.Audio
             AudioSource voice = sources[next];
             voice.Stop(); voice.clip = clip; voice.volume = from[next] = 0;
             voice.loop = MusicCuePolicy.ShouldLoop(cue);
-            // Skip the final recording's silent lead-in so its first hit joins the entry swirl.
+            // Skip the final recording's silent lead-in so its first hit plays while the battle remains covered.
             voice.timeSamples = cue == MusicCue.FinalBoss ? Mathf.RoundToInt(clip.frequency * .66f) : 0;
             target[next] = MusicVolume;
             current = next;

@@ -17,6 +17,7 @@ namespace DragonQuest.Interactions
         public float RevealSecondsRemaining => reveal.SecondsRemaining;
         public bool ChoicesReady => HasChoices && !IsTyping;
         public string Title => session.Title;
+        public string DialogueId => session.Id;
         public string Text => session.Text;
         public string VisibleText => reveal.VisibleText;
         public int ContentVersion { get; private set; }
@@ -31,7 +32,11 @@ namespace DragonQuest.Interactions
         }
 
         public void Open(DialogueDefinition definition, System.Action completed = null)
-            => OpenWithCompletion(definition.Title, completed, definition.CreatePages());
+        {
+            notice = false;
+            session.OpenIdentified(definition.Id, definition.Title, completed, definition.CreatePages());
+            BeginPage();
+        }
 
         public void Open(string title, params string[] messages)
         {

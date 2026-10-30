@@ -48,6 +48,14 @@ As sequências de descanso na hospedaria e audiência com o rei ficam em `Presen
 
 Esta organização preserva os nomes de classes, namespaces, código e GUIDs dos scripts movidos. Os caminhos de Resources, IDs de mapas, regras de colisão e dados persistidos permanecem os mesmos.
 
+## Fluxo e entrada
+
+`Gameplay/GameFlowState` consulta os estados atuais de batalha, inventário, diálogo, lojas, save, descanso, cheats e finais. Centraliza os bloqueios de movimento e viagens e identifica o sistema que pode receber entrada. Não mantém cópias dessas flags; a mesma coordenação continua válida ao carregar outra jornada.
+
+O bootstrap liga essa coordenação ao movimento, viagens e controllers. O bloqueio do movimento é consultado tanto na leitura da entrada quanto no passo de física. `PlayerInteraction` continua tratando o diálogo antes de liberar a exploração; o consumo do frame permanece em `GameInput`, impedindo que a mesma confirmação ative duas ações.
+
+Conversas abertas por `DialogueDefinition` carregam seu ID até a conclusão ou cancelamento. Música e audiência reconhecem o confronto com o rei por `DialogueCatalog.KingConfrontation.Id`, sem depender do nome apresentado. A sequência de entrada conserva o fade, o preto efetivamente desenhado, a confirmação da música e a batalha pronta antes da revelação.
+
 ## Título, abertura e salvamento
 
 `Presentation/Menus/FrontEndPresentation` controla a abertura, os fades do menu, a notificação de conquistas e a viagem inicial. O novo jogo espera o preto ser efetivamente desenhado antes de criar a apresentação da viagem. Essa classe não acessa arquivos de save.

@@ -1,3 +1,5 @@
+using DragonQuest.Gameplay;
+using DragonQuest.Input;
 using System;
 using DragonQuest.Audio;
 using DragonQuest.Exploration;
@@ -57,15 +59,20 @@ namespace DragonQuest.Bootstrap
             battle = host.AddComponent<PrototypeBattleController>();
             var cheats = host.AddComponent<PrototypeCheatMenu>();
 
+            var flow = new GameFlowState(() => battle.HasEnded, () => battle.IsActive, () => battle.IsMenuOpen,
+                () => dialogue.IsOpen, () => shops.IsOpen, () => saves.IsMenuVisible, () => cheats.BlocksInput,
+                () => innRest.IsPlaying, () => GameInput.IsFocused);
+            battle.SetFlow(flow);
+            world.Player.SetMovementGate(() => !flow.BlocksMovement);
             journey = new JourneyInstaller(world, saves, dialogue, battle, shops, locations,
-                cheats, innRest, secrets, dragon, endings);
+                cheats, innRest, secrets, dragon, endings, flow);
             journey.StartNewJourney();
 
             audience = new GameObject("Party diante do Rei Rubro").AddComponent<TyrantAudience>();
             audience.transform.SetParent(host.transform, false);
             audience.Initialize(world.Player, () => battle.Party, scenery);
             locations.Initialize(world.Maps, world.Player, cameraFollow, navigation,
-                () => dialogue.IsOpen || battle.IsBusy);
+                () => flow.BlocksTravel);
             host.AddComponent<PrototypeShopHud>().Initialize(shops);
             battle.SetLocationProvider(() => locations.LocationId);
             world.BridgeGuards.Initialize(world.Player, dialogue, battle, () => journey.Progress);
@@ -77,8 +84,8 @@ namespace DragonQuest.Bootstrap
             saves.Initialize(world.Player, battle, shops, locations, dialogue, journey.Progress,
                 secrets, dragon, journey.Restore);
             innRest.Initialize(world.Player, () => battle.Party, scenery,
-                () => locations.LocationId == PrototypeTravel.Inn, () => dialogue.IsOpen || battle.IsBusy);
-            world.SavePoint.Initialize(world.Player, () => dialogue.IsOpen || battle.IsBusy, saves.OpenInnSaveMenu);
+                () => locations.LocationId == PrototypeTravel.Inn, () => flow.BlocksTravel);
+            world.SavePoint.Initialize(world.Player, () => flow.BlocksTravel, saves.OpenInnSaveMenu);
             host.AddComponent<PrototypeMusicController>().Initialize(saves, locations, battle);
             host.AddComponent<BattleSoundController>().Initialize(battle);
         }

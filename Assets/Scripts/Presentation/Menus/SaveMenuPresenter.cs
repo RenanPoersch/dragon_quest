@@ -51,7 +51,6 @@ namespace DragonQuest.Presentation.Menus
         private bool[] occupied => context.Slots.Occupied;
         private bool OptionEnabled(int option) => context.OptionEnabled(option);
         private void NewGame() => context.NewGame();
-        private void OpenPage(JourneyMenuPage page) => context.OpenContinue();
         private void SelectSlot(int slot) => context.SelectSlot(slot);
         private void SaveToSlot(int slot) => context.SaveToSlot(slot);
         private void Back() => context.Back();
@@ -92,7 +91,7 @@ namespace DragonQuest.Presentation.Menus
                 Quaternion.identity, new Vector3(scale, scale, 1));
             if (page == JourneyMenuPage.Title)
             {
-                titleMenu.Draw(OptionEnabled(1), MenuButton, NewGame, () => OpenPage(JourneyMenuPage.Continue));
+                titleMenu.Draw(OptionEnabled(1), MenuButton, NewGame, context.OpenContinue);
             }
             else
             {
