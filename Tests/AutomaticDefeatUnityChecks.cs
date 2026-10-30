@@ -40,7 +40,7 @@ public static class AutomaticDefeatUnityChecks
         var method = typeof(CombatantState).GetMethod("TakeDamage", Hidden);
         method.Invoke(target, method.GetParameters().Select(p => p.HasDefaultValue ? p.DefaultValue : (object)amount).ToArray());
     }
-    private static void Age(PrototypeBattleController battle, float elapsed) => Put(battle, "<ActionStartedAt>k__BackingField", Time.unscaledTime - elapsed);
+    private static void Age(PrototypeBattleController battle, float elapsed) => Put(battle.ActionPresentation, "<ActionStartedAt>k__BackingField", Time.unscaledTime - elapsed);
     private static void Focus(bool value) => typeof(GameInput).GetField("hasFocus", StaticHidden).SetValue(null, (Func<bool>)(() => value));
     private static bool LoadRequested => (bool)typeof(PrototypeSaveController).GetField("loadGameOnStart", StaticHidden).GetValue(null);
     private static string Page(PrototypeSaveController saves) => Get(saves, "page").ToString();

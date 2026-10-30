@@ -48,6 +48,10 @@ Os mesmos objetos de segredos e progresso do dragão permanecem ligados aos cen�
 
 `Combat/BattleCommandMenu` conserva o agrupamento dos comandos por origem da matéria. A execução e as regras de ações, custos e alvos permanecem em `BattleSession`; esta separação não altera essas regras.
 
+`BattleActionPresentation` mantém o ator, a habilidade e os alvos apresentados, os tempos de início/impacto/fim e os estados anteriores necessários para mostrar cura, reviver e quebra de correntes no momento correto. Centraliza a escolha dos tempos de ataques, magias, invocações e ultimates, sem executar ações nem alterar HP/MP.
+
+`PrototypeBattleController` continua orquestrando encontros, turnos, recompensas e finais. Consulta a apresentação para aguardar os efeitos e aplicar o meteoro adiado no impacto. O evento `ActionPresented` continua sendo disparado pelo controller após iniciar o estado visual, preservando a integração com o áudio. As propriedades usadas pelo HUD permanecem disponíveis como consultas delegadas à apresentação.
+
 ## Persistência
 
 Os IDs gravados nos saves permanecem estáveis. Exemplos: `aren`, `potion`, `dragon-armor` e os IDs das matérias e lojas. Nomes de exibição e localização dos arquivos não substituem esses identificadores.

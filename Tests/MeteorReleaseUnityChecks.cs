@@ -20,8 +20,8 @@ public static class MeteorReleaseUnityChecks
     { target.GetType().GetMethod(method, BindingFlags.Instance | BindingFlags.NonPublic).Invoke(target, null); }
     private static void Age(PrototypeBattleController controller, float elapsed)
     {
-        typeof(PrototypeBattleController).GetField("<ActionStartedAt>k__BackingField", BindingFlags.Instance | BindingFlags.NonPublic)
-            .SetValue(controller, Time.unscaledTime - elapsed);
+        controller.ActionPresentation.GetType().GetField("<ActionStartedAt>k__BackingField", BindingFlags.Instance | BindingFlags.NonPublic)
+            .SetValue(controller.ActionPresentation, Time.unscaledTime - elapsed);
     }
     private static void BeforeKing(BattleSession battle)
     {

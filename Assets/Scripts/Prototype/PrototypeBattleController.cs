@@ -1,3 +1,4 @@
+using DragonQuest.Presentation.Battle;
 using UnityEngine;
 using DragonQuest.Audio;
 using DragonQuest.Combat;
@@ -12,6 +13,9 @@ namespace DragonQuest.Prototype
 {
     public sealed class PrototypeBattleController : MonoBehaviour
     {
+        private readonly BattleActionPresentation actionPresentation = new BattleActionPresentation();
+        public BattleActionPresentation ActionPresentation => actionPresentation;
+
         private PlayerMovement movement;
         private SpriteRenderer explorationSprite;
         private GUIStyle poisonNumber;
@@ -74,58 +78,31 @@ namespace DragonQuest.Prototype
         public PostBattleResults PostBattle { get; private set; }
         public bool IsPostBattleOpen { get; private set; }
         public float PostBattleStartedAt { get; private set; }
-        public CombatantState PresentingActor { get; private set; }
-        public AbilityDefinition PresentingAbility { get; private set; }
-        public bool IsPresentingConfusedAction { get; private set; }
-        public System.Collections.Generic.IReadOnlyList<CombatantState> PresentingTargets { get; private set; } = new CombatantState[0];
-        public System.Collections.Generic.IReadOnlyList<CombatantState> PresentingPartyTargets { get; private set; } = new CombatantState[0];
-        public System.Collections.Generic.IReadOnlyList<CombatantState> PresentingRevivedTargets { get; private set; } = new CombatantState[0];
-        public sealed class SalvationCastState
-        {
-            public int Hp { get; }
-            public Color Tint { get; }
-            public System.Collections.Generic.IReadOnlyList<StatusIndicator> Statuses { get; }
-            public SalvationCastState(CombatantState member)
-            {
-                Hp = member.Hp;
-                Tint = member.IsAlive ? BattleStatusColors.Tint(member) : new Color(.4f, .4f, .4f);
-                Statuses = CombatStatuses.Active(member);
-            }
-        }
-        private readonly System.Collections.Generic.Dictionary<CombatantState, SalvationCastState> salvationBeforeCast
-            = new System.Collections.Generic.Dictionary<CombatantState, SalvationCastState>();
-        private bool AwaitingSalvationImpact => IsPresentingAction && PresentingAbility.SourceAbilityId == "lia-salvation"
-            && Time.unscaledTime < ActionImpactAt;
-        public SalvationCastState PendingSalvationState(CombatantState member) => AwaitingSalvationImpact
-            && salvationBeforeCast.TryGetValue(member, out var before) ? before : null;
+        public CombatantState PresentingActor => actionPresentation.PresentingActor;
+        public AbilityDefinition PresentingAbility => actionPresentation.PresentingAbility;
+        public bool IsPresentingConfusedAction => actionPresentation.IsPresentingConfusedAction;
+        public System.Collections.Generic.IReadOnlyList<CombatantState> PresentingTargets => actionPresentation.PresentingTargets;
+        public System.Collections.Generic.IReadOnlyList<CombatantState> PresentingPartyTargets => actionPresentation.PresentingPartyTargets;
+        public System.Collections.Generic.IReadOnlyList<CombatantState> PresentingRevivedTargets => actionPresentation.PresentingRevivedTargets;
+        private bool AwaitingSalvationImpact => actionPresentation.AwaitingSalvationImpact(IsPresentingAction, ActionImpactAt);
+        public BattleActionPresentation.SalvationCastState PendingSalvationState(CombatantState member)
+            => actionPresentation.PendingSalvationState(member, IsPresentingAction, ActionImpactAt);
         public string PresentedMessage => AwaitingSalvationImpact
             ? PresentingActor.Definition.Name + " esta conjurando " + PresentingAbility.Name + "..." : Session.LastMessage;
-        public bool IsPresentingUltimate => UltimateTimeline.IsUltimate(PresentingAbility);
-        public bool IsPresentingSummon => SummonAnimation.Resource(PresentingAbility) != null;
-        public float ActionDuration => IsPresentingDragonAttack ? DragonAttackAnimation.Duration(PresentingAbility.Id)
-            : IsPresentingUltimate ? UltimateTimeline.Duration(PresentingAbility)
-            : IsPresentingSummon ? SummonAnimation.DurationFor(PresentingAbility) : IsPresentingSpell ? SpellAnimation.DurationFor(PresentingAbility)
-            : BattleAnimationCatalog.Duration(PresentingActor?.Id, PresentingAbility);
+        public bool IsPresentingUltimate => actionPresentation.IsPresentingUltimate;
+        public bool IsPresentingSummon => actionPresentation.IsPresentingSummon;
+        public bool IsPresentingSpell => actionPresentation.IsPresentingSpell;
+        public bool IsPresentingDragonAttack => actionPresentation.IsPresentingDragonAttack;
+        public float ActionStartedAt => actionPresentation.ActionStartedAt;
+        public float ActionDuration => actionPresentation.ActionDuration;
         public bool IsDestructiveMeteor => IsActive
             && CastleMeteorPresentation.IsMeteor(PresentingActor?.Id, PresentingAbility)
             && (pendingMeteorImpact || CastleRules?.Ending == GameEnding.CastleDestroyed);
-        public float MeteorWhiteOpacity => IsDestructiveMeteor
-            ? CastleMeteorPresentation.WhiteOpacity(Time.unscaledTime - ActionStartedAt) : 0;
-        public bool IsPresentingSpell => SpellAnimation.Resource(PresentingAbility) != null;
-        public float ActionStartedAt { get; private set; }
-        public bool IsPresentingDragonAttack => PresentingActor?.Id == DragonProgress.EnemyId
-            && DragonAttackAnimation.Resource(PresentingAbility?.Id) != null;
-        public float ActionEndsAt => Mathf.Max(
-            DefeatedEnemyPresentation.EndOfAction(ActionStartedAt + ActionDuration, ActionImpactAt, PresentingTargets),
-            HasChainBreak ? ActionImpactAt + ChainPrisonAnimation.BreakDuration : 0);
-        public bool IsPresentingAction => IsActive && PresentingActor != null && Time.unscaledTime < ActionEndsAt;
-        public float ActionImpactAt => ActionStartedAt
-            + (IsDestructiveMeteor ? CastleMeteorPresentation.ThrowImpactAt
-            : IsPresentingDragonAttack ? DragonAttackAnimation.ImpactDelay(PresentingAbility.Id)
-            : IsPresentingUltimate ? UltimateTimeline.ImpactDelay(PresentingAbility) : IsPresentingSummon ? SummonAnimation.ImpactDelayFor(PresentingAbility)
-            : IsPresentingSpell ? SpellAnimation.ImpactDelayFor(PresentingAbility) : BattleAnimationCatalog.ImpactDelay(PresentingActor?.Id, PresentingAbility));
-        public int AttackPose => BattleAnimationCatalog.Frame(BattleAnimationCatalog.Resource(PresentingActor?.Id, PresentingAbility),
-            Time.unscaledTime - ActionStartedAt, ActionDuration);
+        public float MeteorWhiteOpacity => actionPresentation.MeteorWhiteOpacity(IsDestructiveMeteor);
+        public float ActionEndsAt => actionPresentation.EndsAt(IsDestructiveMeteor);
+        public bool IsPresentingAction => IsActive && actionPresentation.IsPlaying(IsDestructiveMeteor);
+        public float ActionImpactAt => actionPresentation.ImpactAt(IsDestructiveMeteor);
+        public int AttackPose => actionPresentation.AttackPose;
 
         public void Initialize(PlayerMovement hero, DialogueController dialogueController, ExplorationProgress progress,
             System.Func<bool> externalMenuOpen = null, DragonProgress dragonProgress = null,
@@ -248,10 +225,7 @@ namespace DragonQuest.Prototype
             PostBattle = new PostBattleResults(Party, encounter);
             IsPostBattleOpen = false; PostBattleStartedAt = 0;
             RandomEncounter = RandomEncounterType.None;
-            PresentingActor = null; PresentingAbility = null; PresentingTargets = new CombatantState[0];
-            PresentingPartyTargets = new CombatantState[0];
-            PresentingRevivedTargets = new CombatantState[0];
-            salvationBeforeCast.Clear();
+            actionPresentation.Reset();
             pendingMeteorImpact = false;
             BattleLocationId = currentLocation();
             notifiedCompletion = false;
@@ -282,25 +256,13 @@ namespace DragonQuest.Prototype
             else if (target != null)
                 effectTargets.Add(ability != null && ability.Effect == AbilityEffect.PhysicalDamage
                     && !target.IsBound && target.ProtectedBy != null && target.ProtectedBy.IsAlive ? target.ProtectedBy : target);
-            var revivedTargets = new System.Collections.Generic.List<CombatantState>();
-            salvationBeforeCast.Clear();
-            if (ability?.PartyEffect == PartyEffect.RestoreCleanseAndRevive)
-                foreach (CombatantState ally in effectTargets)
-                {
-                    salvationBeforeCast.Add(ally, new SalvationCastState(ally));
-                    if (!ally.IsAlive) revivedTargets.Add(ally);
-                }
-            CaptureChains();
+            var revivedTargets = actionPresentation.CaptureRecovery(ability, effectTargets);
+            actionPresentation.CaptureChains(Session.Combatants);
             bool accepted = Session.TryAct(actor, ability, target, out string message);
             ErrorMessage = accepted ? string.Empty : message;
             if (accepted)
             {
-                var partyTargets = new System.Collections.Generic.List<CombatantState>();
-                if (ability.PartyEffect != PartyEffect.None)
-                    foreach (CombatantState ally in Session.Combatants)
-                        if (ally.Team == actor.Team) partyTargets.Add(ally);
-                PresentingPartyTargets = partyTargets;
-                PresentingRevivedTargets = revivedTargets;
+                actionPresentation.CapturePartyTargets(ability, actor, Session.Combatants, revivedTargets);
                 PresentAction(actor, ability, effectTargets);
                 AwardIfComplete();
             }
@@ -312,7 +274,7 @@ namespace DragonQuest.Prototype
             if (IsEnteringBattle || IsCheatMenuBlocking) return false;
             if (!IsActive || IsPresentingAction || Session.CurrentActor == null || Session.CurrentActor.Team != CombatTeam.Party) return false;
             CombatantState actor = Session.CurrentActor;
-            CaptureChains();
+            actionPresentation.CaptureChains(Session.Combatants);
             bool accepted = Session.TryUseItem(actor, item, target, out string message);
             ErrorMessage = accepted ? string.Empty : message;
             if (accepted)
@@ -324,35 +286,17 @@ namespace DragonQuest.Prototype
             return accepted;
         }
 
-        private readonly System.Collections.Generic.Dictionary<CombatantState, bool> chainsBeforeAction
-            = new System.Collections.Generic.Dictionary<CombatantState, bool>();
-        private void CaptureChains()
-        {
-            chainsBeforeAction.Clear();
-            foreach (CombatantState member in Session.Combatants) chainsBeforeAction[member] = member.IsBound;
-        }
-        private bool HasChainBreak
-        {
-            get
-            {
-                foreach (var before in chainsBeforeAction)
-                    if (before.Value && !before.Key.IsBound) return true;
-                return false;
-            }
-        }
-        public bool ChainsVisible(CombatantState member) => IsPresentingAction && Time.unscaledTime < ActionImpactAt
-            && chainsBeforeAction.TryGetValue(member, out bool before) ? before : member.IsBound;
-        public float ChainBreakAge(CombatantState member) => IsPresentingAction && !member.IsBound
-            && chainsBeforeAction.TryGetValue(member, out bool before) && before ? Time.unscaledTime - ActionImpactAt : -1;
-        public bool IsChainBreakTarget(CombatantState member) => IsPresentingAction && !member.IsBound
-            && chainsBeforeAction.TryGetValue(member, out bool before) && before;
+        public bool ChainsVisible(CombatantState member)
+            => actionPresentation.ChainsVisible(member, IsPresentingAction, ActionImpactAt);
+        public float ChainBreakAge(CombatantState member)
+            => actionPresentation.ChainBreakAge(member, IsPresentingAction, ActionImpactAt);
+        public bool IsChainBreakTarget(CombatantState member)
+            => actionPresentation.IsChainBreakTarget(member, IsPresentingAction);
 
         private void PresentAction(CombatantState actor, AbilityDefinition ability,
             System.Collections.Generic.IReadOnlyList<CombatantState> targets)
         {
-            PresentingActor = actor; PresentingAbility = ability; PresentingTargets = targets;
-            IsPresentingConfusedAction = ability == BattleSession.MindControlAttack;
-            ActionStartedAt = Time.unscaledTime;
+            actionPresentation.Begin(actor, ability, targets);
             ActionPresented?.Invoke();
         }
 
@@ -432,7 +376,7 @@ namespace DragonQuest.Prototype
             { Session.TryTakeBoundTurn(out _); AwardIfComplete(); return; }
             if (IsActive && Session.CurrentActor?.MindControlTurns > 0)
             {
-                CaptureChains();
+                actionPresentation.CaptureChains(Session.Combatants);
                 CombatantState confused = Session.CurrentActor;
                 if (Session.TryTakeMindControlTurn(System.Math.Min(UnityEngine.Random.value, .999999d), out var victim, out _))
                 {
@@ -485,7 +429,7 @@ namespace DragonQuest.Prototype
                 else effectTargets.AddRange(Session.Combatants);
             }
             string message = "Inimigo sem acao valida.";
-            CaptureChains();
+            actionPresentation.CaptureChains(Session.Combatants);
             if (CastleMeteorPresentation.IsMeteor(actor.Id, ability) && CastleRules.LivingArmorBearer(Session) == null)
             {
                 // O HP e o resultado so mudam quando a carga termina, junto com o clarao.

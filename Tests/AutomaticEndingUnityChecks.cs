@@ -21,7 +21,7 @@ public static class AutomaticEndingUnityChecks
     private static void Call(object target, string method)
     { target.GetType().GetMethod(method, Hidden).Invoke(target, null); }
     private static void Age(PrototypeBattleController controller, float elapsed)
-    { typeof(PrototypeBattleController).GetField("<ActionStartedAt>k__BackingField", Hidden).SetValue(controller, Time.unscaledTime - elapsed); }
+    { controller.ActionPresentation.GetType().GetField("<ActionStartedAt>k__BackingField", Hidden).SetValue(controller.ActionPresentation, Time.unscaledTime - elapsed); }
     private static void FinishEntry(PrototypeBattleController controller)
     {
         controller.EntryTransition.enabled = false;
