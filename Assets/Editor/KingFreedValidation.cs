@@ -57,7 +57,8 @@ public static class KingFreedValidation
             sequence.Advance(sequence.CompleteAt);
             Assert(sequence.IsComplete && sequence.BlackOpacity == 1, "the menu is reached only after black");
         }
-        Assert(EndingNarrative.Pages(GameEnding.KingFreed).Length == 3, "legacy narrative API remains compatible");
+        Assert(!string.IsNullOrWhiteSpace(EndingNarrative.KingFreedSpeech)
+            && !string.IsNullOrWhiteSpace(EndingNarrative.KingFreedEpilogue), "the current speech and epilogue remain available");
         Debug.Log("GOOD_ENDING_VALIDATION_OK: original unfiltered painting colors, framing, complete speech, prosperity and black hold.");
     }
 

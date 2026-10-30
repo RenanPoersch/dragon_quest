@@ -66,9 +66,9 @@ public static class FinalOneValidation
             sequence.Advance(sequence.CompleteAt);
             Assert(sequence.BlackOpacity == 1 && sequence.IsComplete, "the ending finishes at black");
         }
-        Assert(EndingNarrative.Pages(GameEnding.CastleDestroyed).Length == 3
-            && EndingNarrative.Pages(GameEnding.KingFreed).Length == 3
-            && EndingNarrative.Pages(GameEnding.HeroPossessed).Length == 3, "the other endings retain their pages");
+        Assert(!string.IsNullOrWhiteSpace(EndingNarrative.CastleDestroyedEpilogue)
+            && !string.IsNullOrWhiteSpace(EndingNarrative.KingFreedEpilogue)
+            && !string.IsNullOrWhiteSpace(EndingNarrative.HeroPossessedEpilogue), "the current ending narratives remain available");
         Debug.Log("FINAL_ONE_VALIDATION_OK: level left ground, curved right slope, seated gardener, smooth opposing drift, narrative and fade.");
     }
 

@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using UnityEngine;
-using DragonQuest.Input;
 using UnityEngine.SceneManagement;
 using DragonQuest.Exploration;
 using DragonQuest.Progression;
@@ -11,14 +10,9 @@ namespace DragonQuest.Prototype
     {
         private Dictionary<string,GameObject> maps;
         private PlayerMovement player;
-        private Camera view;
         private CameraFollow follow;
-        private ObliqueScenery scenery;
-        private string[] pages;
-        private int page,shownFrame;
+        private bool started;
         private GameEnding ending;
-        private Texture2D pixel;
-        private GUIStyle titleStyle,textStyle,smallStyle,buttonStyle;
         private CastleDestroyedEndingPresentation aftermath;
         private HeroPossessedPresentation possession;
         private KingFreedPresentation liberation;
@@ -26,16 +20,16 @@ namespace DragonQuest.Prototype
         public bool IsFadingBattle => battleExit.IsPlaying;
         public float BattleBlackOpacity => battleExit.BlackOpacity;
         public float BattleMusicGain => IsFadingBattle ? battleExit.MusicGain : 1;
-        public GameEnding CurrentEnding => pages != null && !IsFadingBattle ? ending : GameEnding.None;
+        public GameEnding CurrentEnding => started && !IsFadingBattle ? ending : GameEnding.None;
         public float MusicGain => liberation?.Sequence.MusicGain ?? possession?.Sequence.MusicGain
             ?? (aftermath != null ? aftermath.Impact.Sequence.MusicGain * aftermath.Aftermath.Sequence.MusicGain : 0);
 
         public void Initialize(Dictionary<string,GameObject> roots,PlayerMovement hero,Camera camera,CameraFollow cameraFollow,ObliqueScenery models)
-        {maps=roots;player=hero;view=camera;follow=cameraFollow;scenery=models;}
+        {maps=roots;player=hero;follow=cameraFollow;}
         public void Show(GameEnding result)
         {
-            if(pages!=null||result==GameEnding.None) return;
-            ending=result;pages=EndingNarrative.Pages(result);page=0;shownFrame=Time.frameCount;
+            if(started||(result!=GameEnding.KingFreed&&result!=GameEnding.CastleDestroyed&&result!=GameEnding.HeroPossessed)) return;
+            ending=result;started=true;
             player.SetMovementEnabled(false);
             // Keep the live battle and its music until a fully black frame has been painted.
             var battle = GetComponent<PrototypeBattleController>();
@@ -62,13 +56,6 @@ namespace DragonQuest.Prototype
                 liberation=new KingFreedPresentation();
                 return;
             }
-            scenery.Show("Cena final / "+result,ObliqueScenery.EndingSceneData(result),transform);
-            view.orthographic=true;view.rect=new Rect(0,0,1,1);view.ResetAspect();
-            view.transform.rotation=Quaternion.AngleAxis(ObliqueProjection.YawDegrees,Vector3.forward)
-                *Quaternion.Euler(-ObliqueProjection.TiltDegrees,0,0);
-            view.orthographicSize=5.8f;
-            view.transform.position=-view.transform.forward*ObliqueProjection.Distance;
-            view.backgroundColor=result==GameEnding.KingFreed?new Color(0.22f,0.33f,0.3f):new Color(0.13f,0.1f,0.17f);
         }
         private void ReturnToMenu()
         {
@@ -96,35 +83,14 @@ namespace DragonQuest.Prototype
                 if(aftermath.IsComplete) ReturnToMenu();
                 return;
             }
-            if(pages==null||Time.frameCount<=shownFrame||!GameInput.IsFocused) return;
-            if(GameInput.ConfirmPressed)
-            {
-                GameInput.ConsumeGamepadFrame();
-                if(page<pages.Length-1) page++;
-                else ReturnToMenu();
-            }
         }
         private void OnGUI()
         {
-            if(pages==null) return;
+            if(!started) return;
             if (IsFadingBattle) { DrawBattleFade(); return; }
             if(liberation!=null) {liberation.Draw();return;}
             if(aftermath!=null) {aftermath.Draw();return;}
             if(possession!=null) {possession.Draw();return;}
-            EnsureStyles();
-            float scale=Mathf.Min(Screen.width/1280f,Screen.height/720f);
-            Matrix4x4 previous=GUI.matrix;
-            GUI.matrix=Matrix4x4.TRS(new Vector3((Screen.width-1280*scale)/2,(Screen.height-720*scale)/2,0),Quaternion.identity,new Vector3(scale,scale,1));
-            Panel(new Rect(28,25,630,78));GUI.Label(new Rect(46,38,590,52),EndingNarrative.Title(ending),titleStyle);
-            Panel(new Rect(28,540,1224,153));GUI.Label(new Rect(48,558,1180,69),pages[page],textStyle);
-            GUI.Label(new Rect(48,645,960,33),page<pages.Length-1?"E / Espaco / Enter ou Continuar / "+(page+1)+" de "+pages.Length:"Fim da demo. Seu desfecho fica registrado no slot da jornada.",smallStyle);
-            bool enabled=GUI.enabled;GUI.enabled=Time.frameCount>shownFrame;
-            if(GUI.Button(new Rect(1058,645,174,35),page<pages.Length-1?"Continuar":"Voltar ao menu",buttonStyle))
-            {
-                if(page<pages.Length-1) page++;
-                else ReturnToMenu();
-            }
-            GUI.enabled=enabled;GUI.matrix=previous;
         }
         private void AdvanceBattleFade(float delta)
         {
@@ -146,18 +112,6 @@ namespace DragonQuest.Prototype
             }
             finally { GUI.matrix = previousMatrix; GUI.color = previousColor; GUI.depth = previousDepth; }
         }
-        private void Panel(Rect rect)
-        {
-            Color previous=GUI.color;GUI.color=new Color(0.055f,0.07f,0.1f,0.96f);GUI.DrawTexture(rect,pixel);GUI.color=previous;
-        }
-        private void EnsureStyles()
-        {
-            if(pixel!=null) return;
-            pixel=new Texture2D(1,1);pixel.SetPixel(0,0,Color.white);pixel.Apply();
-            titleStyle=PrototypeTypography.Style(GUI.skin.label,28,true);titleStyle.wordWrap=true;titleStyle.normal.textColor=new Color(0.96f,0.8f,0.48f);
-            textStyle=PrototypeTypography.Style(GUI.skin.label,24);textStyle.wordWrap=true;textStyle.normal.textColor=Color.white;
-            smallStyle=PrototypeTypography.Style(textStyle,16);buttonStyle=PrototypeTypography.Style(GUI.skin.button,20);
-        }
-        private void OnDestroy() {aftermath?.Dispose();possession?.Dispose();liberation?.Dispose();if(pixel!=null) Destroy(pixel);}
+        private void OnDestroy() {aftermath?.Dispose();possession?.Dispose();liberation?.Dispose();}
     }
 }

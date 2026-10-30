@@ -180,7 +180,12 @@ internal static class CastleChecks
         Assert(battle.TryAct(battle.CurrentActor,battle.CurrentActor.Definition.Abilities.Single(a=>a.SourceAbilityId=="cleave"),Find(battle,CastleBattleRules.SpiritId),out _)
             &&Rules(battle).Ending==GameEnding.HeroPossessed,"Area que mata rei e espirito simultaneamente nao pode dar o final bom.");
         foreach(var ending in new[]{GameEnding.KingFreed,GameEnding.CastleDestroyed,GameEnding.HeroPossessed})
-            Assert(EndingNarrative.Pages(ending).Length==3&&!string.IsNullOrEmpty(EndingNarrative.Title(ending)),"Tres finais precisam de suas cenas e textos completos.");
+        {
+            string epilogue=ending==GameEnding.KingFreed?EndingNarrative.KingFreedEpilogue
+                :ending==GameEnding.CastleDestroyed?EndingNarrative.CastleDestroyedEpilogue:EndingNarrative.HeroPossessedEpilogue;
+            Assert(!string.IsNullOrWhiteSpace(epilogue)&&!string.IsNullOrEmpty(EndingNarrative.Title(ending)),"Tres finais precisam dos textos das animacoes atuais.");
+        }
+        Assert(!string.IsNullOrWhiteSpace(EndingNarrative.KingFreedSpeech),"O discurso do rei libertado permanece disponivel.");
     }
     private static void CheckSpiritEffects()
     {

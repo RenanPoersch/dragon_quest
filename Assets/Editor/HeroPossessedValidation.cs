@@ -62,9 +62,9 @@ public static class HeroPossessedValidation
             sequence.Advance(sequence.CompleteAt);
             Assert(sequence.BlackOpacity == 1 && sequence.IsComplete, "the sequence ends at black before returning to menu");
         }
-        Assert(EndingNarrative.Pages(GameEnding.KingFreed).Length == 3
-            && EndingNarrative.Pages(GameEnding.CastleDestroyed).Length == 3
-            && EndingNarrative.Pages(GameEnding.HeroPossessed).Length == 3, "ending/save compatibility remains intact");
+        Assert(!string.IsNullOrWhiteSpace(EndingNarrative.KingFreedEpilogue)
+            && !string.IsNullOrWhiteSpace(EndingNarrative.CastleDestroyedEpilogue)
+            && !string.IsNullOrWhiteSpace(EndingNarrative.HeroPossessedEpilogue), "the current ending narratives remain available");
         Debug.Log("HERO_POSSESSED_VALIDATION_OK: animated background rain, four storm sprites, natural spirit RGB with slight transparency, expanded sky, locked composition, foreground protection, narrative and fade.");
     }
     [MenuItem("Tools/Dragon Quest/Preview Possessed Ending")]
