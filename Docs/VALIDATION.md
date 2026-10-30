@@ -205,7 +205,7 @@ O usuário confirmou que as interações funcionaram em Play. Não houve valida�
 
 - Vulcão com caminho curto, lava sólida e arena; novo interior de hospedaria. Onze mapas, 20 rotas direcionais e recuperação especial após derrota no boss.
 - POIs globais abrangem 2,8 × 2,2 unidades ao redor do ícone; testes conferem entrada pelos quatro lados. Portas locais mantêm 1,4 × 1. Mar e selos continuam bloqueando atalhos; o modelo de navegação também exige passagem aberta para entrar no vulcão.
-- Ciclo de garra/preparação/sopro com aviso persistente e oportunidade de todos os aliados defenderem; Gelo causa 150% e Fogo 50% no dragão. Boss inicial: 520 HP, recompensa própria de 100 moedas.
+- Ciclo de garra/preparação/sopro com aviso persistente e oportunidade de todos os aliados defenderem; Gelo causa 150% e Fogo 50% no dragão. Boss inicial: 2000 HP, recompensa própria de 100 moedas.
 - Vitória entrega armadura uma vez, liberta essência e bloqueia repetição. Armadura: defesa 16, resistência a Fogo, dois pares de matérias, uso livre por classe e venda protegida. Tank aplica +25% sobre defesa base; remover o equipamento retira resistência e devolve matérias.
 - Derrota volta à hospedaria. Próxima batalha inicia com HP/MP completos, conservando Limit, segredos e consumíveis já gastos. O retorno à hospedaria não é uma rota normal nem um atalho para outros cenários.
 - Passaram 1.697 verificações de combate, 58 da periferia, 268 de viagens/interiores, 1.716 de câmera/malhas e 159 de segredos. Compilação passou; prévias técnicas da geometria e retrato foram inspecionadas fora do Editor.

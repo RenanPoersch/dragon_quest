@@ -10,7 +10,7 @@ Use E próximo do dragão e termine a conversa para iniciar o combate. Esc cance
 
 | Atributo | Valor inicial |
 | --- | --- |
-| HP / MP | 520 / 0 |
+| HP / MP | 2000 / 0 |
 | Ataque / defesa / magia / velocidade | 25 / 10 / 22 / 6 |
 | Fraqueza | Gelo: dano ×1,5 |
 | Resistência | Fogo: dano ×0,5 |

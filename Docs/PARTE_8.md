@@ -4,7 +4,7 @@ Entre no castelo pela periferia e use E perto do Rei Rubro. Termine o diálogo p
 
 ## Rei Rubro e meteoro
 
-O Rei Rubro tem 600 HP, ataque 28, defesa 10 e velocidade 7. Alterna golpes físicos individuais de poder 8 e 14, sem elemento. Ao chegar a **450 HP ou menos**, interrompe os golpes e inicia a preparação do meteoro.
+O Rei Rubro tem 1200 HP, ataque 28, defesa 10 e velocidade 7. Alterna golpes físicos individuais de poder 8 e 14, sem elemento. Ao chegar a **450 HP ou menos**, interrompe os golpes e inicia a preparação do meteoro.
 
 São **cinco turnos próprios de preparação do Rei Rubro**: Protect no primeiro, carga crescente nos quatro seguintes e lançamento no sexto. Protect reduz todo dano recebido em 60% durante a conjuração, exibindo um escudo quando um golpe o atinge. Shield termina antes de aparecer a pose de cast, que permanece durante as ações dos demais combatentes. Não há meteoro separado durante a carga: números flutuantes de 5 a 1 indicam cada turno próprio, com fonte levemente maior que a do dano e sem rótulos. O meteoro aparece apenas no lançamento final. Ações de jogador, itens, golpes e veneno podem atualizar o limiar; a preparação não é reiniciada a cada mudança de HP.
 
@@ -17,7 +17,7 @@ O golpe que atravessa o limiar para em 450 HP, inclusive críticos e os cortes r
 
 ## Espírito maligno
 
-O espírito tem 280 HP, defesa 8, magia 26 e velocidade 10. Não possui afinidades elementais nesta versão. Seu ciclo de ações é:
+O espírito tem 440 HP, defesa 8, magia 26 e velocidade 10. Não possui afinidades elementais nesta versão. Seu ciclo de ações é:
 
 | Golpe | Efeito |
 | --- | --- |

@@ -45,8 +45,11 @@ internal static class DragonChecks
 
     private static BattleSession Win(PartyProgress party)
     {
+        foreach(var member in party.Members) member.Progression.AddExperience(CharacterProgression.ExperienceForLevel(5));
+        party.RecoverAtInn();
         var ice=new MateriaInstance("dragon-test-ice",PrototypePartyFactory.IceMateria);
         Assert(party.TryAddMaterias(ice)&&party.TryEquip(party.Members[1],party.Members[1].Armor,2,ice,out _),"Gelo comprado deve poder ser equipado por Lia.");
+        party.Consumables.TryAdd(PrototypePartyFactory.Ether,8,out _);
         var battle=PrototypeBattleFactory.CreateDragonEncounter(party);
         int turns=0;
         while(battle.Outcome==BattleOutcome.None && turns++<250)
@@ -54,8 +57,10 @@ internal static class DragonChecks
             var actor=battle.CurrentActor;
             if(actor.Team==CombatTeam.Enemy) { Assert(EnemyAI.TryTakeTurn(battle,out _),"IA deve concluir uma batalha completa.");continue; }
             if(Dragon(battle).IsCharging) { Defend(battle);continue; }
+            if(actor.Id=="lia"&&actor.Mp<6&&battle.Inventory.QuantityOf(PrototypePartyFactory.Ether)>0)
+            { Assert(battle.TryUseItem(actor,PrototypePartyFactory.Ether,actor,out _),"Eter sustenta cura e Gelo no confronto prolongado.");continue; }
             AbilityDefinition action=actor.Definition.Abilities.Single(a=>a.Id=="attack");
-            var heal=actor.Definition.Abilities.FirstOrDefault(a=>a.Effect==AbilityEffect.Heal);
+            var heal=actor.Definition.Abilities.FirstOrDefault(a=>a.Effect==AbilityEffect.Heal&&!a.UsesLimit);
             if(heal!=null&&actor.Mp>=heal.MpCost && battle.Combatants.Any(c=>c.Team==CombatTeam.Party&&c.IsAlive&&c.Hp*2<c.Definition.MaxHp)) action=heal;
             else
             {
@@ -64,9 +69,9 @@ internal static class DragonChecks
                 if(special!=null&&actor.Mp>=special.MpCost) action=special;
             }
             var target=battle.GetValidTargets(action).OrderBy(c=>(double)c.Hp/c.Definition.MaxHp).First();
-            Assert(battle.TryAct(actor,action,target,out _),"Estrategia de cura, gelo e defesa deve progredir.");
+            Assert(battle.TryAct(actor,action,target,out var message),"Estrategia de cura, gelo e defesa deve progredir: "+message);
         }
-        Assert(turns<250&&battle.Outcome==BattleOutcome.Victory,"Equipe inicial com Gelo e defesa do sopro deve vencer o boss.");
+        Assert(turns<250&&battle.Outcome==BattleOutcome.Victory,"Equipe de nivel 5 com Gelo, eteres e defesa do sopro deve vencer o boss.");
         return battle;
     }
 
@@ -86,14 +91,15 @@ internal static class DragonChecks
         Assert(!progress.HasEquippedArmor(party),"Guardar a armadura nao deve contar como usa-la para revelar o espirito.");
         foreach(var member in party.Members)
         {
+            int defense=member.Defense;
             Assert(party.TryEquipEquipment(member,armor,out _)&&progress.HasEquippedArmor(party),"Qualquer classe pode usar a armadura.");
-            Assert(member.Defense==member.BaseStats.Defense+(member.Class==CharacterClass.Tank?20:16),"Tank recebe 25% sobre a defesa base da armadura.");
+            Assert(member.Defense==defense+(member.Class==CharacterClass.Tank?20:16),"Tank recebe 25% sobre a defesa base da armadura.");
             Assert(member.CreateCombatant().Definition.Affinities.DamagePercent(DamageElement.Fire)==50,"Resistencia equipada deve entrar na batalha.");
             var state=member.CreateCombatant();
             var flame=new AbilityDefinition("test-flame","Fogo","",0,0,AbilityEffect.MagicDamage,TargetRule.Enemy,element:DamageElement.Fire);
             var caster=new CombatantState("caster",new CombatantDefinition("Chama","Inimigo",100,0,0,0,60,99,flame),CombatTeam.Enemy);
             var fireBattle=new BattleSession(state,caster);
-            Assert(EnemyAI.TryTakeTurn(fireBattle,out _)&&state.Definition.MaxHp-state.Hp==(member.Id=="aren"?72:member.Id=="lia"?76:52),"Armadura deve cortar o dano de Fogo pela metade depois da defesa numerica.");
+            Assert(EnemyAI.TryTakeTurn(fireBattle,out _)&&state.Definition.MaxHp-state.Hp==(member.Id=="aren"?64:member.Id=="lia"?68:28),"Armadura deve cortar o dano de Fogo pela metade depois da defesa numerica.");
             Assert(party.TryRemoveEquipment(member,EquipmentSlot.Armor,out _)&&!progress.HasEquippedArmor(party),"Remover a armadura retira sua condicao narrativa.");
             Assert(member.CreateCombatant().Definition.Affinities.DamagePercent(DamageElement.Fire)==100,"Resistencia nao pode ficar no personagem depois de desequipar.");
         }

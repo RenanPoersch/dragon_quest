@@ -91,7 +91,7 @@ public static class CastlePresentationChecks
         var battle=new BattleSession(()=>1d,source.Rules,source.Inventory,source.Combatants.ToArray());
         var rules=(CastleBattleRules)battle.Rules;
         var king=battle.Combatants.Single(c=>c.Id==CastleBattleRules.TyrantId);
-        king.TakeDamage(480);rules.AfterAction(battle);
+        king.TakeDamage(king.Hp-360);rules.AfterAction(battle);
         var counter=new CastleCastCounter();
         Check(rules.MeteorTurnsElapsed==0&&!counter.IsVisible(0),"Atingir o limiar nao conta como turno concluido.");
         Check(!CastleMeteorPresentation.HoldCastPose(rules,false),"O rei aguarda Shield na postura normal.");

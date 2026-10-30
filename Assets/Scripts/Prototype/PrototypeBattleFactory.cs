@@ -27,7 +27,7 @@ namespace DragonQuest.Prototype
         {
             var participants = new System.Collections.Generic.List<CombatantState>();
             foreach (PartyMember member in party.Members) participants.Add(member.CreateCombatant());
-            var dragon = new CombatantDefinition("Dragao corrompido","Boss secreto",520,0,25,10,22,6,
+            var dragon = new CombatantDefinition("Dragao corrompido","Boss secreto",2000,0,25,10,22,6,
                 new ElementalAffinities(new[]{DamageElement.Ice},new[]{DamageElement.Fire}),100,300,0,
                 DragonClaw,ChargeBreath,DragonBreath);
             participants.Add(new CombatantState(DragonProgress.EnemyId,dragon,CombatTeam.Enemy));
