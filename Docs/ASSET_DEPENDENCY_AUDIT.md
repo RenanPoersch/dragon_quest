@@ -4,12 +4,12 @@ A revisão conferiu referências de código, GUIDs em assets e metadados, compon
 
 ## Limpeza aplicada
 
-- Retirados `SampleScene`, a cena/template Lit 2D e a pasta `Welcome` do template. A configuração local do tutorial, regenerada pelo Editor aberto, foi preservada; ela não instala nem mantém o pacote como dependência.
+- Retirados `SampleScene`, a cena/template Lit 2D, a pasta `Welcome` e a configuração antiga do tutorial.
 - Retirado `Resources/SpiritPortrait.png`, sem leitura pelo jogo. O espírito atual continua usando `PixelArt/SpiritBattle.png`; o exportador histórico conserva sua geometria fora do runtime.
-- As pastas vazias `Art`, `Audio`, `Data` e `Prefabs` foram identificadas. A exclusão física foi bloqueada pela revisão automática do ambiente mesmo após permissão específica; elas conservam seus metadados originais, evitando regeneração de GUIDs.
+- Retiradas as pastas vazias `Art`, `Audio`, `Data` e `Prefabs`, junto de seus metadados. A exclusão foi concluída após fechar o Editor.
 - Preservados os backups em `Assets/_Recovery`, os shaders, pinturas, sprites, fontes, sons e os caminhos atuais de Resources.
 
-São 22 arquivos retirados, aproximadamente 4,57 MiB do projeto. Esse valor inclui conteúdo de Editor e não equivale a uma redução medida no executável.
+São 27 arquivos retirados, aproximadamente 4,57 MiB do projeto. Esse valor inclui conteúdo de Editor e não equivale a uma redução medida no executável.
 
 ## Dependências
 
