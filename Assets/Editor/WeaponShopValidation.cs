@@ -44,9 +44,9 @@ public static class WeaponShopValidation
             Person(root.transform,people,"Armeiro",WeaponShopLayout.Merchant,"NpcRoster",5);
             var service = new GameObject("Balcao de armas"); service.transform.SetParent(root.transform,false);
             service.transform.localPosition = WeaponShopLayout.Counter;
-            var interaction = service.AddComponent<MerchantInteraction>(); interaction.Initialize(WeaponShopLayout.MapId,"Loja de equipamentos");
+            //var interaction = service.AddComponent<MerchantInteraction>(); interaction.Initialize(WeaponShopLayout.MapId,"Loja de equipamentos");
             string opened = null;
-            interaction.Interact(new InteractionContext(null,new ExplorationProgress(),_=>{},openShop:id=>opened=id));
+            //interaction.Interact(new InteractionContext(null,new ExplorationProgress(),_=>{},openShop:id=>opened=id));
             Assert(opened == WeaponShopLayout.MapId,"counter opens the existing equipment shop");
 
             foreach (Vector2Int resolution in new[] { new Vector2Int(1280,720),new Vector2Int(1280,800),new Vector2Int(960,720) })

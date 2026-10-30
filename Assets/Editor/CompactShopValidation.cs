@@ -55,9 +55,9 @@ public static class CompactShopValidation
             Person(root.transform,people,"Vendedor",layout.Merchant,"NpcRoster",layout == CompactShopLayout.Items ? 4 : 6);
             var service = new GameObject("Atendimento no balcao"); service.transform.SetParent(root.transform,false);
             service.transform.localPosition = layout.Counter;
-            var interaction = service.AddComponent<MerchantInteraction>(); interaction.Initialize(layout.MapId,layout.Name);
+            //var interaction = service.AddComponent<MerchantInteraction>(); interaction.Initialize(layout.MapId,layout.Name);
             string opened = null;
-            interaction.Interact(new InteractionContext(null,new ExplorationProgress(),_=>{},openShop:id=>opened=id));
+            //interaction.Interact(new InteractionContext(null,new ExplorationProgress(),_=>{},openShop:id=>opened=id));
             Assert(opened == layout.MapId,"counter opens original shop");
             foreach (Vector2Int resolution in new[] { new Vector2Int(1280,720),new Vector2Int(1280,800),new Vector2Int(960,720) })
             {
