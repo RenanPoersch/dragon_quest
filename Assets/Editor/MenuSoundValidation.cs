@@ -208,7 +208,7 @@ public static class MenuSoundValidation
                     State(); battle.StartBattle();
                     var actor = battle.Session.CurrentActor;
                     Check(actor != null && actor.Team == CombatTeam.Party,"battle fixture starts on a party command");
-                    Put(battleHud,"observedBattle",battle.Session); Put(battleHud.Menu,"observedBattle",battle.Session); Put(battleHud.Menu,"observedActor",actor);
+                    Put(battleHud.Arena,"observedBattle",battle.Session); Put(battleHud.Menu,"observedBattle",battle.Session); Put(battleHud.Menu,"observedActor",actor);
                     Put(battleHud.Menu,"observedDefinition",actor.Definition); Put(battleHud.Menu,"observedLimitReady",actor.Limit.IsReady);
                     Put(battleHud.Menu,"rootCommands",BattleCommandMenu.Root(actor)); Put(battleHud.Menu,"defendCommand",BattleCommandMenu.Defend(actor));
                     break;

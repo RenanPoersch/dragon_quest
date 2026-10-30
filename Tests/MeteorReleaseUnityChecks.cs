@@ -68,8 +68,8 @@ public static class MeteorReleaseUnityChecks
             int[] hp = battle.Combatants.Select(c => c.Hp).ToArray();
             var hud = fixture.AddComponent<PrototypeBattleHud>(); hud.Initialize(controller);
             // Only observe combat events here; the isolated project omits unrelated Ultimate atlases.
-            typeof(PrototypeBattleHud).GetField("observedBattle", BindingFlags.Instance | BindingFlags.NonPublic)
-                .SetValue(hud, battle);
+            hud.Arena.GetType().GetField("observedBattle", BindingFlags.Instance | BindingFlags.NonPublic)
+                .SetValue(hud.Arena, battle);
             Call(hud, "ObserveBattle");
             Call(controller, "Update");
             typeof(PrototypeBattleController).GetField("enemyActionTime", BindingFlags.Instance | BindingFlags.NonPublic)
@@ -91,8 +91,8 @@ public static class MeteorReleaseUnityChecks
                     "Damage and full-screen white begin together after the charge.");
                 Check(completions == 1 && endings == 0 && controller.IsActive, "The white frame precedes the automatic cut.");
                 Call(hud, "ObserveBattle");
-                var displayed = ((System.Collections.IEnumerable)typeof(PrototypeBattleHud)
-                    .GetField("numbers", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(hud)).Cast<object>();
+                var displayed = ((System.Collections.IEnumerable)hud.Arena.GetType()
+                    .GetField("numbers", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(hud.Arena)).Cast<object>();
                 Check(displayed.Count(value => (int)value.GetType().GetField("DisplayAmount").GetValue(value)
                     == -CastleMeteorPresentation.MeteorDamageDisplay) == battle.Combatants.Count,
                     "Every target has a visible 9999 number ready to draw over the white screen.");

@@ -115,7 +115,7 @@ public static class ControllerUnityChecks
         State(keyboard);
         battle.StartBattle();
         var battleHud = fixture.AddComponent<PrototypeBattleHud>(); battleHud.Initialize(battle);
-        typeof(PrototypeBattleHud).GetField("observedBattle", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(battleHud, battle.Session);
+        battleHud.Arena.GetType().GetField("observedBattle", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(battleHud.Arena, battle.Session);
         State(new GamepadState().WithButton(GamepadButton.South)); Call(battleHud, "Update");
         var commandMenu = battleHud.Menu;
         Check(commandMenu.SelectedAbility != null, "Battle attack enters target selection.");
@@ -218,8 +218,8 @@ public static class ControllerUnityChecks
             dialogue.RevealAll();
             State(keyboard, key); Call(interaction, "Update");
             // This input-only project has no artwork; skip the HUD's asset preloading.
-            typeof(PrototypeBattleHud).GetField("observedBattle", BindingFlags.Instance | BindingFlags.NonPublic)
-                .SetValue(hud, battle.Session);
+            hud.Arena.GetType().GetField("observedBattle", BindingFlags.Instance | BindingFlags.NonPublic)
+                .SetValue(hud.Arena, battle.Session);
             Call(hud, "Update");
             var actor = battle.Session.CurrentActor;
             var commandMenu = hud.Menu;

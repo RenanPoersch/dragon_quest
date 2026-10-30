@@ -5,7 +5,7 @@ using UnityEngine;
 namespace DragonQuest.Prototype
 {
     // Small pixel glyphs match the existing GUI and remain legible at battle scale.
-    public sealed class BattleStatusIcons
+    public sealed class BattleStatusIcons : System.IDisposable
     {
         private readonly Dictionary<CombatStatus, Texture2D> textures = new Dictionary<CombatStatus, Texture2D>();
         private GUIStyle count;
@@ -97,6 +97,13 @@ namespace DragonQuest.Prototype
                 GUI.DrawTexture(rect, Icon(indicator.Status), ScaleMode.ScaleToFit, true);
                 if (indicator.Turns > 0) GUI.Label(new Rect(rect.x+8,rect.y+6,10,12), indicator.Turns.ToString(), count);
             }
+        }
+
+        public void Dispose()
+        {
+            foreach (Texture2D texture in textures.Values)
+                if (texture != null) UnityEngine.Object.Destroy(texture);
+            textures.Clear();
         }
     }
 }

@@ -40,7 +40,11 @@ Os mesmos objetos de segredos e progresso do dragão permanecem ligados aos cen�
 
 `Presentation/Battle/BattleMenuPresenter` mantém o estado do menu: comandos, submenus de magia/invocação/itens, alternância para Defender, ação e alvo selecionados, rolagem e último inimigo preferido. Ele processa os controles e encaminha as ações aceitas ao controller da batalha. O desenho das listas usa os mesmos estilos e botões fornecidos pelo HUD.
 
-`PrototypeBattleHud` continua como componente da cena e responsável pela arena, lutadores, animações, números flutuantes e status. Consulta o ator e a seleção do presenter para desenhar os indicadores e encaminha os cliques nos lutadores ao menu. O presenter atualiza a seleção quando a batalha, o ator, a definição dos comandos ou a disponibilidade do LIMIT mudam.
+`BattleArenaPresentation` desenha o cenário de batalha, lutadores, animações, indicadores de turno/alvo e números flutuantes. Mantém as poses de inimigos derrotados e os tempos visuais de impactos, conjuração e meteoro. Consulta a seleção do menu e encaminha os cliques nos lutadores ao presenter.
+
+`BattleHudGraphics` reúne os estilos, a skin, o cursor e os elementos compartilhados da interface. Arena e painéis usam as mesmas instâncias. Ao encerrar a cena, libera a skin, o pixel de desenho e as texturas de ícones geradas em runtime; os assets carregados de Resources e a biblioteca de sprites da exploração conservam seus proprietários existentes.
+
+`PrototypeBattleHud` permanece como componente da cena: coordena menu e arena, desenha mensagens e status e confirma que a batalha foi desenhada antes da revelação. O presenter atualiza a seleção quando a batalha, o ator, a definição dos comandos ou a disponibilidade do LIMIT mudam.
 
 `Combat/BattleCommandMenu` conserva o agrupamento dos comandos por origem da matéria. A execução e as regras de ações, custos e alvos permanecem em `BattleSession`; esta separação não altera essas regras.
 
