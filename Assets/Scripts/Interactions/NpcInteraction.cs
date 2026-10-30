@@ -1,3 +1,4 @@
+using DragonQuest.Content;
 namespace DragonQuest.Interactions
 {
     public sealed class NpcInteraction : Interactable
@@ -6,6 +7,12 @@ namespace DragonQuest.Interactions
         private string[] messages;
         private System.Action<InteractionContext> completed;
 
+
+        public void Initialize(DialogueDefinition definition, System.Action<InteractionContext> onCompleted = null)
+        {
+            Initialize(definition.Title, definition.CreatePages());
+            completed = onCompleted;
+        }
 
         public void Initialize(string name, params string[] dialogue)
         {

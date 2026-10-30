@@ -1,3 +1,4 @@
+using DragonQuest.Content;
 using UnityEngine;
 using DragonQuest.Audio;
 using UnityEngine.InputSystem;
@@ -24,7 +25,7 @@ namespace DragonQuest.Prototype
             ExplorationProgress progress, ShopService restoredService = null)
         {
             movement = hero; dialogue = dialogueController; battle = battleController;
-            Service = restoredService ?? PrototypeShopFactory.Create(battle.Party, progress);
+            Service = restoredService ?? ShopCatalog.Create(battle.Party, progress);
         }
         public void Open(string id)
         {

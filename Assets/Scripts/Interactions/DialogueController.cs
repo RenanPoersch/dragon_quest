@@ -1,3 +1,4 @@
+using DragonQuest.Content;
 using UnityEngine;
 using DragonQuest.Audio;
 
@@ -28,6 +29,9 @@ namespace DragonQuest.Interactions
         {
             if (IsOpen && Application.isFocused) reveal.Tick(Time.unscaledDeltaTime);
         }
+
+        public void Open(DialogueDefinition definition, System.Action completed = null)
+            => OpenWithCompletion(definition.Title, completed, definition.CreatePages());
 
         public void Open(string title, params string[] messages)
         {

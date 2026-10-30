@@ -50,22 +50,7 @@ namespace DragonQuest.Prototype
         public static readonly MateriaDefinition DefenseMateria = MateriaCatalog.DefenseMateria;
         public static readonly MateriaDefinition HpMateria = MateriaCatalog.HpMateria;
         public static readonly MateriaDefinition MpMateria = MateriaCatalog.MpMateria;
-        public static PartyProgress Create()
-        {
-            var aren = CharacterCatalog.CreateAren();
-            var lia = CharacterCatalog.CreateLia();
-            var bram = CharacterCatalog.CreateBram();
-            var materias = new[] { new MateriaInstance("start-heavy", HeavyMateria), new MateriaInstance("start-thunder", ThunderMateria),
-                new MateriaInstance("start-cure", CureMateria), new MateriaInstance("start-cleanse", CleanseMateria), new MateriaInstance("start-guardian", GuardianMateria) };
-            var party = new PartyProgress(new[] { aren, lia, bram }, materias, consumables:
-                new ItemInventory(new ItemStack(Potion, 2), new ItemStack(Antidote, 1)));
-            party.TryEquip(aren, aren.Weapon, 0, materias[0], out _);
-            party.TryEquip(aren, aren.Armor, 0, materias[1], out _);
-            party.TryEquip(lia, lia.Weapon, 0, materias[2], out _);
-            party.TryEquip(lia, lia.Armor, 0, materias[3], out _);
-            party.TryEquip(bram, bram.Weapon, 0, materias[4], out _);
-            return party;
-        }
+        public static PartyProgress Create() => PartySetup.Create();
 
         // Fixture das entregas 5/6A para manter os testes de combos e troca independentes da economia inicial.
         public static PartyProgress CreateTestParty()

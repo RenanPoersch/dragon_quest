@@ -1,3 +1,4 @@
+using DragonQuest.Content;
 using DragonQuest.Presentation.Battle;
 using UnityEngine;
 using DragonQuest.Audio;
@@ -122,7 +123,7 @@ namespace DragonQuest.Prototype
             cheatMenu = GetComponent<PrototypeCheatMenu>();
             otherMenuOpen = externalMenuOpen ?? (() => false);
             if (Party != null) Party.PoisonDamage -= ShowMapPoison;
-            Party = restoredParty ?? PrototypePartyFactory.Create();
+            Party = restoredParty ?? PartySetup.Create();
             Party.PoisonDamage += ShowMapPoison;
             mapPoisonNumbers.Clear();
             explorationSprite = hero.GetComponentInChildren<PixelCharacter>()?.GetComponent<SpriteRenderer>();

@@ -1,3 +1,4 @@
+using DragonQuest.Content;
 using System;
 using UnityEngine;
 using DragonQuest.Combat;
@@ -61,7 +62,7 @@ namespace DragonQuest.Interactions
         {
             challenged = true;
             player.SetMovementEnabled(false);
-            dialogue.Open("Guarda Real", "Alto! Ninguém atravessa esta ponte. Por ordem do Rei Rubro, vocês não passarão! Preparem-se para lutar!");
+            dialogue.Open(DialogueCatalog.BridgeGuards);
         }
 
         private void CompleteEncounter(BattleOutcome outcome)

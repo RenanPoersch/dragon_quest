@@ -1,3 +1,4 @@
+using DragonQuest.Content;
 using DragonQuest.Equipment;
 using DragonQuest.Exploration;
 using DragonQuest.Interactions;
@@ -41,7 +42,7 @@ namespace DragonQuest.Bootstrap
 
         public void StartNewJourney()
         {
-            Progress = new ExplorationProgress(PrototypeShopFactory.StartingGold);
+            Progress = new ExplorationProgress(ShopCatalog.StartingGold);
             ConnectSystems(null, null);
         }
 

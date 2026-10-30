@@ -46,5 +46,18 @@ namespace DragonQuest.Content
         public static readonly AbilityDefinition Chaos = new AbilityDefinition("chaos", "Caos", "Magia de Caos, poder 28, 8 MP.", 8, 28, AbilityEffect.MagicDamage, TargetRule.Enemy, element: DamageElement.Chaos);
         public static readonly AbilityDefinition Bahamut = new AbilityDefinition("bahamut", "Invocar Bahamut", "Dano alto de Caos em todos os inimigos, poder 70, 20 MP.", 20, 70, AbilityEffect.MagicDamage, TargetRule.AllEnemies, element: DamageElement.Chaos);
         public static readonly AbilityDefinition Titan = new AbilityDefinition("titan", "Invocar Titan", "Dano baixo de Terra e Shield: reduz todo dano recebido pela equipe em 50% por 3 turnos de cada aliado. 16 MP.", 16, 10, AbilityEffect.MagicDamage, TargetRule.AllEnemies, element: DamageElement.Earth, partyEffect: PartyEffect.DamageShield, shieldDuration: 3);
+        public static readonly AbilityDefinition DrainLife=new AbilityDefinition("drain-life","Drenar vida",
+            "Dano magico individual; o espirito recupera o HP realmente drenado.",0,8,AbilityEffect.Drain,TargetRule.Enemy);
+        public static readonly AbilityDefinition MindControl = new AbilityDefinition("mind-control", "Mind Control",
+            "Confunde um heroi por uma acao: ele ataca automaticamente um aliado ou inimigo aleatorio.",
+            0, 1, AbilityEffect.MindControl, TargetRule.Enemy);
+        public static readonly AbilityDefinition Silence = new AbilityDefinition("silence", "Silence",
+            "Impede um heroi de usar magias e invocacoes por uma acao. Ataque, defesa e itens continuam disponiveis.",
+            0, 1, AbilityEffect.Silence, TargetRule.Enemy);
+        public static readonly AbilityDefinition Chains=new AbilityDefinition("chains","Correntes",
+            "Prende o alvo e impede suas acoes ate as correntes receberem qualquer acerto, independentemente do dano.",0,1,AbilityEffect.Bind,TargetRule.Enemy);
+        public static readonly AbilityDefinition ChaosMagic=new AbilityDefinition("chaos-magic","Caos Magic",
+            "Dano magico sem elemento em toda a equipe.",0,5,AbilityEffect.MagicDamage,TargetRule.AllEnemies);
+
     }
 }

@@ -1,3 +1,4 @@
+using DragonQuest.Content;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -101,7 +102,7 @@ namespace DragonQuest.Persistence
                 Require(item != null && item.Quantity >= 0 && itemIds.Add(item.Definition), "Pilha de item invalida.");
                 stacks.Add(new ItemStack(SaveCatalog.Item(item.Definition), item.Quantity));
             }
-            var party = PrototypePartyFactory.Create();
+            var party = PartySetup.Create();
             var gearList = new List<EquipmentLoadout>(); foreach (var g in data.Gear) gearList.Add(gear[g.Id]);
             var materiaList = new List<MateriaInstance>(); foreach (var m in data.Materias) materiaList.Add(materias[m.Id]);
             party.RestoreInventory(gearList.ToArray(), materiaList.ToArray(), new ItemInventory(stacks.ToArray()));
@@ -135,7 +136,7 @@ namespace DragonQuest.Persistence
                             && (hp > 0 || !saved.Poisoned && saved.BoundActions == 0), "HP, MP ou condicoes invalidos.");
                         member.RestoreVitals(hp, mp, saved.Poisoned, saved.BoundActions);
                     }
-            var shops = PrototypeShopFactory.Create(party, progress); var products = new Dictionary<string, ShopProduct>();
+            var shops = ShopCatalog.Create(party, progress); var products = new Dictionary<string, ShopProduct>();
             foreach (var shop in shops.Shops) foreach (var product in shop.Products) products.Add(shop.Id + "/" + product.Id, product);
             CheckArray(data.Stocks, products.Count);
             var stockIds = new HashSet<string>();

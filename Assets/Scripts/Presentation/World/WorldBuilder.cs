@@ -1,3 +1,4 @@
+using DragonQuest.Content;
 using System.Collections.Generic;
 using DragonQuest.Audio;
 using DragonQuest.Exploration;
@@ -44,20 +45,15 @@ namespace DragonQuest.Presentation.World
             var interactables = new List<Interactable>();
             Transform interactions = Group("Moradores e bau", city);
             NpcInteraction citizen = CreateNpc("Aldeão", PrototypeCityLayout.Citizen, "8D9DB0", interactions);
-            citizen.Initialize("Aldeão",
-                "Ah, então vocês são os aventureiros que vieram do sul? Devem estar cansados da viagem.",
-                "Podem dormir e se recuperar na pousada. E, se precisarem de mantimentos, deem uma olhada nas lojas da cidade.",
-                "Não temos muita coisa por aqui, mas deve ser o suficiente.");
+            citizen.Initialize(DialogueCatalog.Citizen);
             interactables.Add(citizen);
             GameObject peasant = CreateNpcFigure("Camponesa", PrototypeCityLayout.Resident, "B77D8B", interactions);
             interactables.Add(AddSecret(peasant, SecretObject.Peasant));
             NpcInteraction traveler = CreateNpc("Viajante", PrototypeCityLayout.Traveler, "C19862", interactions);
-            traveler.InitializeWithCompletion("Viajante", CompleteTravelerConversation,
-                "Encontrei marcas incomuns numa pedra ao norte. Não parecem ter sido feitas por nenhum animal que eu conheça.",
-                "Havia esse objeto vermelho perto dela...");
+            traveler.Initialize(DialogueCatalog.Traveler, CompleteTravelerConversation);
             interactables.Add(traveler);
             NpcInteraction explorer = CreateNpc("Exploradora", PrototypeCityLayout.Explorer, "B79458", interactions);
-            explorer.Initialize("Exploradora", "Cavar, cavar... Explorar, explorar...");
+            explorer.Initialize(DialogueCatalog.Explorer);
             interactables.Add(explorer);
             interactables.Add(CreateChest(interactions));
             CreatePassage("Loja de itens", PrototypeTravel.City, city, "item-shop");
@@ -222,9 +218,7 @@ namespace DragonQuest.Presentation.World
             quarry.gameObject.AddComponent<QuarryPixelScenery>().Build(secrets, interactions, frictionless);
             CreatePassage("Saida da pedreira", PrototypeTravel.WestForest, quarry, PrototypeTravel.World);
             NpcInteraction worker = CreateNpc("Lenhador", QuarryLayout.Worker, "879C6B", quarry);
-            worker.Initialize("Guardião da pedreira",
-                "Acho que existe algum mecanismo nessas pedras. Os símbolos, o jeito como estão dispostas... Mas não tenho certeza. Pode ser só coisa da minha cabeça.",
-                "Volto aqui sempre que preciso pensar. Fico olhando para elas e imaginando quantas coisas neste mundo a gente ainda não entende... Às vezes esqueço até de ir embora.");
+            worker.Initialize(DialogueCatalog.QuarryKeeper);
             interactions.Add(worker);
             return quarry;
         }
@@ -243,11 +237,7 @@ namespace DragonQuest.Presentation.World
             }
             CreatePassage("Saida da floresta", PrototypeTravel.EastForest, forest, PrototypeTravel.World);
             NpcInteraction gardener = CreateNpc("Jardineiro", EastForestLayout.Gardener, "86A96B", forest);
-            gardener.Initialize("Jardineiro",
-                "Já houve um tempo em que estes jardins viviam cheios. As crianças vinham buscar flores... Hoje eu cuido deste cantinho. É o que as costas ainda permitem.",
-                "Perdi minha casa, enterrei amigos... Até fome eu passei. Tem manhã em que a gente acorda e pensa se ainda vale a pena levantar.",
-                "Mas aí eu venho aqui e encontro uma folha nova, uma flor que abriu durante a noite... E já começo a pensar no que vou plantar amanhã.",
-                "Eu ainda quero ver este jardim florir de novo. Tem de haver dias melhores... Até para um velho como eu.");
+            gardener.Initialize(DialogueCatalog.Gardener);
             interactions.Add(gardener);
             GameObject stone = Entity("Marcas na pedra", PrototypeSecretLayout.ClawStone, forest);
             interactions.Add(AddSecret(stone, SecretObject.ClawStone));

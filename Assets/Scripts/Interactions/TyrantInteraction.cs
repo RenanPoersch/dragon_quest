@@ -1,3 +1,4 @@
+using DragonQuest.Content;
 using System;
 using UnityEngine;
 using DragonQuest.Equipment;
@@ -26,8 +27,7 @@ namespace DragonQuest.Interactions
         }
         public override void Interact(InteractionContext context)
         {
-            context.Dialogue.OpenWithCompletion("Rei Rubro", startBattle,
-                "Todo caminho nesta ilha termina diante do meu trono. Curvem-se, ou o próprio céu cairá sobre vocês!");
+            context.Dialogue.Open(DialogueCatalog.KingConfrontation, startBattle);
             presentParty?.Invoke(context.Dialogue);
         }
     }

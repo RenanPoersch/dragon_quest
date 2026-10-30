@@ -12,6 +12,10 @@
 
 As definições são compartilhadas. HP, MP, experiência, encaixes, quantidades, estoques e outros estados de uma jornada continuam nos objetos de sessão correspondentes.
 
+`EncounterCatalog` monta patrulhas, encontros regionais e chefes com as mesmas regras e atributos. `PartySetup` monta a equipe inicial, e `ShopCatalog` cria estoques independentes para cada jornada. A restauração de saves usa esses pontos diretamente, sem depender das factories de protótipo. As factories antigas encaminham para eles durante a migração.
+
+`DialogueCatalog` reúne as falas fixas dos moradores, da patrulha e do confronto com o rei. Cada `DialogueDefinition` possui ID estável e entrega uma cópia de suas páginas; texto e progresso da conversa permanecem independentes.
+
 `PrototypePartyFactory` monta a equipe e o inventário inicial. `PrototypeBattleFactory` monta os encontros. Seus campos antigos encaminham para as mesmas instâncias dos catálogos, conservando a compatibilidade dos consumidores durante a reorganização. Novos consumidores de definições devem usar diretamente `DragonQuest.Content`.
 
 Persistência, lojas, ícones de inventário e a recompensa do viajante já consultam os catálogos diretamente. A navegação e os controllers de apresentação ainda usam os componentes existentes de `Prototype`.
