@@ -185,12 +185,14 @@ public static class InnValidation
         Assert(store.TryWrite(2,snapshot,out _),"existing slot fixture is saved");
         string existing=File.ReadAllText(store.SlotPath(2));
         var cityObject=new GameObject("Atendimento real / validacao");cityObject.transform.SetParent(root.transform,false);
-        var city=cityObject.AddComponent<PrototypeCity>();
-        SetPrivate(city,"scenery",new ObliqueScenery());SetPrivate(city,"navigation",travel);
-        SetPrivate(city,"saves",controller);
+        using var scenery = new ObliqueScenery();
+        var actions = new DragonQuest.Presentation.World.WorldActions(() => combat.Party, () => progress,
+            () => {}, () => {}, (king, conversation) => {}, controller.OpenInnSaveMenu, () => {});
+        var builder = new DragonQuest.Presentation.World.WorldBuilder(cityObject.transform, scenery, null,
+            secrets, dragon, travel, actions);
         var interactions=new List<Interactable>();
-        typeof(PrototypeCity).GetMethod("CreateInn",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Instance)
-            .Invoke(city,new object[] { interactions });
+        typeof(DragonQuest.Presentation.World.WorldBuilder).GetMethod("CreateInn",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Instance)
+            .Invoke(builder,new object[] { interactions });
         var services=interactions.OfType<InnInteraction>().ToArray();
         Assert(services.Length==2,"actual inn provides keeper and reception interactions");
         var context=new InteractionContext(dialogue,progress,_=>{},isBusy:()=>combat.IsBusy);

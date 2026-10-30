@@ -14,7 +14,19 @@ As definições são compartilhadas. HP, MP, experiência, encaixes, quantidades
 
 `PrototypePartyFactory` monta a equipe e o inventário inicial. `PrototypeBattleFactory` monta os encontros. Seus campos antigos encaminham para as mesmas instâncias dos catálogos, conservando a compatibilidade dos consumidores durante a reorganização. Novos consumidores de definições devem usar diretamente `DragonQuest.Content`.
 
-Persistência, lojas, ícones de inventário e a recompensa do viajante já consultam os catálogos diretamente. A criação da jornada e a navegação ainda passam pelos componentes existentes de `Prototype`; a extração dos catálogos é a primeira etapa da reorganização.
+Persistência, lojas, ícones de inventário e a recompensa do viajante já consultam os catálogos diretamente. A navegação e os controllers de apresentação ainda usam os componentes existentes de `Prototype`.
+
+## Inicialização, mundo e jornada
+
+`PrototypeCity` permanece como componente de entrada da cena, com o mesmo GUID. Ele delega a inicialização e a liberação dos recursos para `Bootstrap/GameBootstrap`.
+
+- `GameBootstrap`: cria os sistemas, conecta os HUDs, áudio e navegação e mantém a propriedade dos recursos de cenário, física e ritmo de quadros.
+- `Presentation/World/WorldBuilder`: monta os mapas, colisores, jogador e interações. Não instala uma jornada nem carrega saves.
+- `WorldScene`: reúne os objetos criados que precisam ser conectados aos sistemas da partida.
+- `WorldActions`: fornece as ações das interações e consultas à equipe/progresso atuais, sem prender os cenários ao primeiro estado da sessão.
+- `JourneyInstaller`: usa o mesmo caminho de conexão de batalha, lojas e cheats para a jornada inicial e a carregada. Atualiza o contexto das interações e do diálogo, restaura os segredos e a recompensa do dragão e aplica o mapa/posição carregados.
+
+Os mesmos objetos de segredos e progresso do dragão permanecem ligados aos cenários; seus dados são restaurados ao carregar a jornada. Equipe, ouro e serviço de lojas passam a apontar para o estado carregado. Os callbacks de baú, patrulha e chefes consultam esse estado atual.
 
 ## Persistência
 
@@ -24,6 +36,6 @@ Os IDs gravados nos saves permanecem estáveis. Exemplos: `aren`, `potion`, `dra
 
 ## Apresentação e ferramentas
 
-Os cenários ainda são montados pelo bootstrap existente em `PrototypeCity`. `ObliqueScenery` conserva a geometria e as utilidades usadas pelo jogo e pelas ferramentas de autoria. Os geradores sem chamadas de chama do altar, símbolos antigos, marcas de garras, oco, essência do dragão e ícones antigos foram retirados.
+Os cenários são montados por `Presentation/World/WorldBuilder`. `ObliqueScenery` conserva a geometria e as utilidades usadas pelo jogo e pelas ferramentas de autoria. Os geradores sem chamadas de chama do altar, símbolos antigos, marcas de garras, oco, essência do dragão e ícones antigos foram retirados.
 
-O trecho comentado de enquadramento esticado da entrada do rei permanece disponível para a decisão de acabamento. As alterações anteriores de música, finais, menus e combate não fazem parte desta etapa de extração dos catálogos.
+O trecho comentado de enquadramento esticado da entrada do rei permanece disponível para a decisão de acabamento. As alterações anteriores de música, finais, menus e combate não fazem parte destas etapas de reorganização.
