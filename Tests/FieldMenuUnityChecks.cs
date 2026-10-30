@@ -64,8 +64,9 @@ public static class FieldMenuUnityChecks
             var inventory = fixture.AddComponent<PrototypeMateriaHud>(); inventory.Initialize(battle, secrets);
             Check(InventoryMenuPresentation.Commands.Count(c => c == "Materia") == 1
                 && InventoryMenuPresentation.Commands.Count(c => c == "Magic") == 1
-                && InventoryMenuPresentation.Commands.Count(c => c == "Save") == 1, "Overview exposes independent Materia, Magic and Save commands.");
-            Check(InventoryMenuPresentation.CommandRect(6).yMax < 416, "Seven commands fit inside the expanded command panel.");
+                && InventoryMenuPresentation.Commands.Count(c => c == "Save") == 1
+                && InventoryMenuPresentation.Commands.Count(c => c == "Sair") == 1, "Overview exposes independent Materia, Magic, Save and Sair commands.");
+            Check(InventoryMenuPresentation.CommandRect(InventoryMenuPresentation.Commands.Length - 1).yMax < 464, "All eight commands fit inside the expanded command panel.");
             Property(battle, "IsMenuOpen", true); Call(inventory, "CheckOpened"); Put(inventory, "openedFrame", -1);
             int magicCommand = Array.IndexOf(InventoryMenuPresentation.Commands, "Magic");
             Call(inventory, "OpenCommand", magicCommand);
@@ -107,14 +108,18 @@ public static class FieldMenuUnityChecks
             Call(inventory, "OpenCommand", saveCommand);
             Check(!saves.IsMenuVisible && battle.IsMenuOpen && (int)Field(inventory, "page").GetValue(inventory) == -1, "Direct confirmation cannot bypass disabled Save.");
             Put(inventory, "selectedMenu", 5); State(new GamepadState().WithButton(GamepadButton.DpadDown)); Call(inventory, "Update");
-            Check((int)Field(inventory, "selectedMenu").GetValue(inventory) == 0, "Gamepad navigation skips disabled Save and wraps.");
+            int exitCommand = Array.IndexOf(InventoryMenuPresentation.Commands, "Sair");
+            Check((int)Field(inventory, "selectedMenu").GetValue(inventory) == exitCommand
+                && saves.CanReturnToTitle, "Gamepad navigation skips disabled Save and reaches Sair even in the city.");
+            State(new GamepadState().WithButton(GamepadButton.DpadDown)); Call(inventory, "Update");
+            Check((int)Field(inventory, "selectedMenu").GetValue(inventory) == 0, "Navigation wraps after Sair.");
             travel.TryTravel(PrototypeTravel.Inn, out _);
             Check(saves.CanSaveManually, "The inn enables Save.");
             dialogue.Open("Check", "Busy"); Check(!saves.CanSaveManually && !saves.OpenManualSaveMenu(), "Dialogue blocks Save and its opening API."); dialogue.Close();
-            Property(battle, "IsActive", true); Check(!saves.CanSaveManually, "Combat blocks Save."); Property(battle, "IsActive", false);
+            Property(battle, "IsActive", true); Check(!saves.CanSaveManually && !saves.CanReturnToTitle, "Combat blocks journey menu actions."); Property(battle, "IsActive", false);
             Property(battle, "HasEnded", true); Check(!saves.CanSaveManually, "Endings block Save."); Property(battle, "HasEnded", false);
             battle.CloseMenu(); shop.Open("item-shop"); Check(shop.IsOpen && !saves.CanSaveManually, "Shopping blocks Save."); shop.Close();
-            Check(saves.OpenManualSaveMenu() && !saves.CanSaveManually && !saves.OpenManualSaveMenu(), "An open save screen cannot reopen itself.");
+            Check(saves.OpenManualSaveMenu() && !saves.CanSaveManually && !saves.CanReturnToTitle && !saves.OpenManualSaveMenu(), "An open save screen cannot reopen itself.");
             Call(saves, "Back");
             UnityEngine.Object.DestroyImmediate(fixture); fixture = null;
             Debug.Log("FIELD_MENU_UNITY_CHECKS_OK: " + checks + " checks passed."); EditorApplication.Exit(0);

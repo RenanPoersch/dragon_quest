@@ -101,6 +101,11 @@ namespace DragonQuest.Prototype
                 GetComponent<PrototypeSaveController>().OpenManualSaveMenu();
                 return;
             }
+            if (index == 7)
+            {
+                GetComponent<PrototypeSaveController>().ReturnToTitle();
+                return;
+            }
             page = index == 0 ? 2 : index == 1 ? 0 : index == 2 ? 1 : index == 4 ? 5 : index == 5 ? 4 : index;
             if (page == 0) { materiaMenu.Reset(controller.Party); materiaScreen.Reset(); }
             if (page == 1) { equipmentMenu.Reset(controller.Party, memberIndex); equipmentScreen.Reset(); }
@@ -110,7 +115,8 @@ namespace DragonQuest.Prototype
         }
 
         private bool CommandEnabled(int index) => index >= 0 && index < InventoryMenuPresentation.Commands.Length
-            && (index != 6 || GetComponent<PrototypeSaveController>()?.CanSaveManually == true);
+            && (index != 6 || GetComponent<PrototypeSaveController>()?.CanSaveManually == true)
+            && (index != 7 || GetComponent<PrototypeSaveController>()?.CanReturnToTitle == true);
 
         private void UpdateMagicInput()
         {

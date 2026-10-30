@@ -114,6 +114,16 @@ namespace DragonQuest.Prototype
             ShowMessage(warning ?? "Jornada carregada / slot " + slot);
             battle.RestoreEnding((GameEnding)journey.Data.Ending);
         }
+        public bool CanReturnToTitle => store != null && !IsMenuVisible && battle != null && battle.IsMenuOpen
+            && !battle.IsActive && !battle.HasEnded && !battle.IsCheatMenuBlocking;
+
+        public void ReturnToTitle()
+        {
+            if (!CanReturnToTitle) return;
+            GameInput.ConsumeGamepadFrame();
+            SceneManager.LoadScene(SceneManager.GetActiveScene().path);
+        }
+
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void ResetStartupPage() { loadGameOnStart = false; }
 
