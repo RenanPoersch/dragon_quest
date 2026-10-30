@@ -185,99 +185,52 @@ public static class BattleEntryUnityChecks
     private static void ValidateFinalBattleFraming()
     {
         var scene = EditorSceneManager.NewPreviewScene();
-        var root = new GameObject("Battle entry / full screen throne room");
+        var root = new GameObject("King entry / fade without distortion");
         UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(root, scene);
         root.AddComponent<ThroneRoomPixelScenery>().Build();
-        var cameraObject = new GameObject("Final encounter / actual perspective camera"); cameraObject.transform.SetParent(root.transform, false);
+        var cameraObject = new GameObject("King entry camera"); cameraObject.transform.SetParent(root.transform, false);
         var camera = cameraObject.AddComponent<Camera>();
         camera.transform.position = ThroneRoomLayout.CameraPosition; camera.transform.rotation = ThroneRoomLayout.CameraRotation;
         camera.overrideSceneCullingMask = EditorSceneManager.GetSceneCullingMask(scene);
         camera.clearFlags = CameraClearFlags.SolidColor; camera.backgroundColor = Color.black;
-        var previous = RenderTexture.active;
         var heroObject = new GameObject("Party"); heroObject.transform.SetParent(root.transform, false);
         var hero = heroObject.AddComponent<PlayerMovement>(); typeof(PlayerMovement).GetMethod("Awake", Private).Invoke(hero, null);
-        var dialogue = root.AddComponent<DialogueController>();
-        var battle = root.AddComponent<PrototypeBattleController>(); battle.Initialize(hero, dialogue, new ExplorationProgress());
+        var battle = root.AddComponent<PrototypeBattleController>();
+        battle.Initialize(hero, root.AddComponent<DialogueController>(), new ExplorationProgress());
         var transition = battle.EntryTransition;
         var begin = typeof(BattleEntryTransition).GetMethod("BeginFromCamera", Private);
-        var render = typeof(BattleEntryTransition).GetMethod("RenderSwirl", Private);
-        var frameField = typeof(BattleEntryTransition).GetField("frame", Private);
         var snapshotField = typeof(BattleEntryTransition).GetField("snapshot", Private);
-        string output = Environment.GetEnvironmentVariable("DQ_BATTLE_ENTRY_OUTPUT");
-        if (string.IsNullOrEmpty(output)) output = Path.GetFullPath("Temp/BattleEntryPreview");
-        Directory.CreateDirectory(output);
+        var swirlField = typeof(BattleEntryTransition).GetField("swirl", Private);
+        var previous = RenderTexture.active;
         try
         {
             battle.StartCastleBattle();
-            Check(battle.IsCastleEncounter, "the final encounter uses its painting's native frame");
-            foreach (var size in new[] { new Vector2Int(1280, 720), new Vector2Int(1280, 800), new Vector2Int(960, 720), new Vector2Int(1920, 810) })
+            foreach(var size in new[]{new Vector2Int(1280,720),new Vector2Int(1280,800),new Vector2Int(960,720)})
             {
-                var originalTarget = new RenderTexture(size.x, size.y, 24);
-                var nativeTarget = new RenderTexture(Mathf.RoundToInt(size.y * ThroneRoomLayout.ArtAspect), size.y, 24)
-                    { filterMode = FilterMode.Bilinear };
-                var readback = new Texture2D(size.x, size.y, TextureFormat.RGBA32, false);
+                var target = new RenderTexture(size.x,size.y,24);
+                var readback = new Texture2D(size.x,size.y,TextureFormat.RGBA32,false);
                 try
                 {
-                    // Reference: the complete original painting, stretched without a color filter.
-                    camera.targetTexture = nativeTarget; camera.rect = new Rect(0, 0, 1, 1);
-                    camera.aspect = ThroneRoomLayout.ArtAspect; camera.fieldOfView = ThroneRoomLayout.FieldOfView;
-                    camera.Render(); Graphics.Blit(nativeTarget, originalTarget);
-                    var expected = Read(originalTarget, readback);
-
-                    camera.targetTexture = originalTarget; camera.aspect = (float)size.x / size.y;
-                    camera.fieldOfView = CameraFollow.PerspectiveFieldOfView(ThroneRoomLayout.FieldOfView, camera.aspect, ThroneRoomLayout.ArtAspect);
-                    // Also exercise an explicit letterboxed camera viewport.
-                    camera.rect = size.x == 1280 && size.y == 800 ? new Rect(0, .08f, 1, .84f) : new Rect(0, 0, 1, 1);
-                    float aspect = camera.aspect, fieldOfView = camera.fieldOfView;
-                    Rect viewport = camera.rect;
-                    Matrix4x4 projection = camera.projectionMatrix;
-                    camera.Render();
-                    var exploration = Read(originalTarget, readback);
-                    File.WriteAllBytes(Path.Combine(output, "throne-exploration-" + size.x + "x" + size.y + ".png"), readback.EncodeToPNG());
-                    if (size.x == 960)
-                        Check(exploration.Take(size.x).All(p => p.r < 3 && p.g < 3 && p.b < 3),
-                            "the real exploration framing reproduces the black top and bottom bars at 4:3");
-                    RenderTexture.active = previous;
-                    begin.Invoke(transition, new object[] { camera });
-                    Check(camera.targetTexture == originalTarget && camera.rect == viewport && Mathf.Approximately(camera.aspect, aspect)
-                        && Mathf.Approximately(camera.fieldOfView, fieldOfView) && camera.projectionMatrix == projection
-                        && RenderTexture.active == previous, "full screen capture restores exploration camera framing and render state at " + size);
-                    var snapshot = (RenderTexture)snapshotField.GetValue(transition);
-                    var frame = (RenderTexture)frameField.GetValue(transition);
-                    Check(snapshot.width == size.x && snapshot.height == size.y && frame.width == size.x && frame.height == size.y,
-                        "the vortex covers the entire display at " + size);
-                    var capture = Read(snapshot, readback);
-                    Check(Difference(expected, capture) < 2, "the capture stretches the entire painting and preserves its natural colors at " + size);
-                    var first = Read(frame, readback);
-                    Check(Difference(capture, first) < 2, "the first vortex frame preserves all source colors, including dark pixels at " + size);
-                    Check(first.Take(size.x).Count(p => p.r > 10 || p.g > 10 || p.b > 10) > size.x * .7
-                        && first.Skip((size.y - 1) * size.x).Count(p => p.r > 10 || p.g > 10 || p.b > 10) > size.x * .7,
-                        "scene pixels fill the top and bottom instead of black letterbox bands at " + size);
-                    File.WriteAllBytes(Path.Combine(output, "throne-vortex-start-" + size.x + "x" + size.y + ".png"), readback.EncodeToPNG());
-                    transition.Sequence.Advance(BattleEntrySequence.SwirlDuration * .5f); render.Invoke(transition, null);
-                    var winding = Read(frame, readback);
-                    Check(Difference(first, winding) > 15, "the stretched scene still forms the liquid vortex at " + size);
-                    Check(winding.Count(p => p.r < 3 && p.g < 3 && p.b < 3) < winding.Length * .01,
-                        "empty letterbox pixels do not spread into the moving vortex at " + size);
-                    File.WriteAllBytes(Path.Combine(output, "throne-vortex-moving-" + size.x + "x" + size.y + ".png"), readback.EncodeToPNG());
-                    transition.Cancel();
-                    camera.Render();
-                    Check(Difference(exploration, Read(originalTarget, readback)) < 2,
-                        "exploration renders with its original framing after the vortex capture at " + size);
+                    camera.targetTexture=target; camera.aspect=(float)size.x/size.y;
+                    camera.fieldOfView=CameraFollow.PerspectiveFieldOfView(ThroneRoomLayout.FieldOfView,camera.aspect,ThroneRoomLayout.ArtAspect);
+                    camera.rect=new Rect(0,0,1,1); camera.Render();
+                    var expected=Read(target,readback);
+                    begin.Invoke(transition,new object[]{camera});
+                    Check(transition.Sequence.IsFadeOnly && swirlField.GetValue(transition)==null,"king entry does not create or use the swirl shader");
+                    Check(Difference(expected,Read((RenderTexture)snapshotField.GetValue(transition),readback))<2,"king fade preserves the exploration camera without stretching");
+                    Check(transition.Sequence.BlackOpacity==0,"the captured throne room starts visible");
+                    transition.Sequence.Advance(BattleEntrySequence.KingFadeOutDuration/2);
+                    Check(Mathf.Abs(transition.Sequence.BlackOpacity-.5f)<.001f,"the throne room fades to black normally");
+                    transition.Sequence.Advance(100);
+                    Check(transition.Sequence.BlackOpacity==1&&!transition.Sequence.CanStartFinalMusic,"a black repaint must precede music");
+                    transition.Sequence.MarkBlackDrawn();transition.Sequence.MarkMusicReady();transition.Sequence.MarkBattleReady();
+                    transition.Sequence.Advance(BattleEntrySequence.KingBlackDuration+BattleEntrySequence.KingFadeInDuration+.01f);
+                    Check(!transition.IsPlaying,"the battle is released after music and fade-in");
                 }
-                finally
-                {
-                    transition.Cancel(); camera.targetTexture = null; RenderTexture.active = previous;
-                    originalTarget.Release(); nativeTarget.Release();
-                    UnityEngine.Object.DestroyImmediate(originalTarget); UnityEngine.Object.DestroyImmediate(nativeTarget); UnityEngine.Object.DestroyImmediate(readback);
-                }
+                finally { transition.Cancel();camera.targetTexture=null;target.Release();UnityEngine.Object.DestroyImmediate(target);UnityEngine.Object.DestroyImmediate(readback); }
             }
         }
-        finally
-        {
-            transition.Cancel(); camera.targetTexture = null; RenderTexture.active = previous;
-            EditorSceneManager.ClosePreviewScene(scene);
-        }
+        finally { RenderTexture.active=previous;UnityEngine.Object.DestroyImmediate(root);EditorSceneManager.ClosePreviewScene(scene); }
     }
 
     private static void ValidateFullScreenRotation()

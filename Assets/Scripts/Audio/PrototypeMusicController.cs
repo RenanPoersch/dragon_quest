@@ -17,17 +17,20 @@ namespace DragonQuest.Audio
         private PrototypeSaveController saves;
         private PrototypeLocations locations;
         private PrototypeBattleController battle;
+        private DialogueController dialogue;
         private DragonInteraction dragon;
         private InnRestController rest;
         private PrototypeEndingController endings;
         private int current = -1;
         private float elapsed, duration;
         public MusicCue CurrentCue { get; private set; }
+        private bool IsKingDialogue => dialogue != null && dialogue.IsOpen && dialogue.Title == "Rei Rubro";
 
         public void Initialize(PrototypeSaveController menus, PrototypeLocations maps, PrototypeBattleController combat)
         {
             if (battle != null) battle.EncounterStarted -= OnEncounterStarted;
             saves = menus; locations = maps; battle = combat;
+            dialogue = GetComponent<DialogueController>();
             if (battle != null) battle.EncounterStarted += OnEncounterStarted;
             dragon = GetComponentInChildren<DragonInteraction>(true);
             rest = GetComponent<InnRestController>();
@@ -55,7 +58,7 @@ namespace DragonQuest.Audio
         private void OnEncounterStarted()
         {
             if (!isActiveAndEnabled || sources[0] == null || !battle.IsCastleEncounter) return;
-            TransitionTo(MusicCue.FinalBoss);
+            TransitionTo(MusicCue.Silence);
             Advance(0);
         }
 
@@ -71,8 +74,13 @@ namespace DragonQuest.Audio
                 new MusicStoryState(saves.IsVoyagePlaying, rest != null && rest.IsSleeping,
                     battle.Dragon != null && battle.Dragon.IsDefeated,
                     endings != null ? endings.CurrentEnding : DragonQuest.Progression.GameEnding.None));
+            if (cue == MusicCue.Throne && IsKingDialogue) cue = MusicCue.Silence;
+            var entry = battle.EntryTransition?.Sequence;
+            if (cue == MusicCue.FinalBoss && entry != null && entry.IsPlaying && entry.IsFadeOnly && !entry.CanStartFinalMusic)
+                cue = MusicCue.Silence;
             if (!MusicCuePolicy.IsAvailable(cue)) cue = MusicCue.Silence;
             TransitionTo(cue);
+            if (cue == MusicCue.FinalBoss && entry != null) entry.MarkMusicReady();
             Advance(Time.unscaledDeltaTime);
         }
 
@@ -84,6 +92,7 @@ namespace DragonQuest.Audio
             elapsed = 0;
             duration = cue == MusicCue.GoodEnding || cue == MusicCue.MindControlEnding || cue == MusicCue.MeteorEnding || cue == MusicCue.FinalBoss ? 0
                 : cue == MusicCue.DragonLair ? .08f
+                : cue == MusicCue.Silence && (IsKingDialogue || battle != null && battle.IsActive && battle.IsCastleEncounter) ? 2f
                 : cue == MusicCue.Silence || cue == MusicCue.Sleep ? .12f : cue == MusicCue.Victory ? .18f : .65f;
             if (cue == MusicCue.Silence) { current = -1; return; }
             if (!clips.TryGetValue(cue, out AudioClip clip))

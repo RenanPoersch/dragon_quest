@@ -8,24 +8,34 @@ namespace DragonQuest.Prototype
     public sealed class BattleEntrySequence
     {
         public const float SwirlDuration = 3.2f, CoveredDuration = .12f, RevealDuration = .32f;
+        public const float KingFadeOutDuration = 2f, KingBlackDuration = 3f, KingFadeInDuration = 2f;
         public float Elapsed { get; private set; }
         public bool IsPlaying { get; private set; }
-        public bool ShowsBattle => IsPlaying && Elapsed >= SwirlDuration;
+        public bool IsFadeOnly { get; private set; }
+        private float CoverAt => IsFadeOnly ? KingFadeOutDuration : SwirlDuration;
+        private float HoldDuration => IsFadeOnly ? KingBlackDuration : CoveredDuration;
+        private float UncoverDuration => IsFadeOnly ? KingFadeInDuration : RevealDuration;
+        public bool ShowsBattle => IsPlaying && Elapsed >= CoverAt;
+        public bool CanStartFinalMusic => IsPlaying && IsFadeOnly && blackDrawn;
         public float SwirlProgress => Mathf.Clamp01(Elapsed / SwirlDuration);
-        public float BlackOpacity => 1 - Mathf.SmoothStep(0, 1,
-            (Elapsed - SwirlDuration - CoveredDuration) / RevealDuration);
-        private bool battleReady;
+        public float BlackOpacity => IsFadeOnly && Elapsed < CoverAt
+            ? Mathf.SmoothStep(0, 1, Elapsed / CoverAt)
+            : 1 - Mathf.SmoothStep(0, 1, (Elapsed - CoverAt - HoldDuration) / UncoverDuration);
+        private bool battleReady, blackDrawn, musicReady;
 
-        public void Begin() { Elapsed = 0; battleReady = false; IsPlaying = true; }
+        public void Begin(bool fadeOnly = false)
+        { Elapsed = 0; battleReady = blackDrawn = musicReady = false; IsFadeOnly = fadeOnly; IsPlaying = true; }
+        public void MarkBlackDrawn() { if (ShowsBattle && BlackOpacity >= 1) blackDrawn = true; }
+        public void MarkMusicReady() { if (CanStartFinalMusic) musicReady = true; }
         public void MarkBattleReady() { if (ShowsBattle) battleReady = true; }
         public void Advance(float delta)
         {
             if (!IsPlaying) return;
             Elapsed += Mathf.Max(0, delta);
-            if (!battleReady) Elapsed = Mathf.Min(Elapsed, SwirlDuration);
-            if (Elapsed >= SwirlDuration + CoveredDuration + RevealDuration) Cancel();
+            if (!battleReady || IsFadeOnly && (!blackDrawn || !musicReady)) Elapsed = Mathf.Min(Elapsed, CoverAt);
+            if (Elapsed >= CoverAt + HoldDuration + UncoverDuration) Cancel();
         }
-        public void Cancel() { IsPlaying = false; Elapsed = 0; battleReady = false; }
+        public void Cancel() { IsPlaying = IsFadeOnly = false; Elapsed = 0; battleReady = blackDrawn = musicReady = false; }
     }
 
     public sealed class BattleEntryTransition : MonoBehaviour
@@ -46,12 +56,16 @@ namespace DragonQuest.Prototype
         {
             Cancel();
             if (view == null) return;
-            Shader shader = Resources.Load<Shader>("BattleEntrySwirl");
-            if (shader == null || !shader.isSupported) return;
-            swirl = new Material(shader) { name = "Battle entry / swirl", hideFlags = HideFlags.HideAndDontSave };
+            bool fadeOnly = GetComponent<PrototypeBattleController>()?.IsCastleEncounter == true;
+            if (!fadeOnly)
+            {
+                Shader shader = Resources.Load<Shader>("BattleEntrySwirl");
+                if (shader == null || !shader.isSupported) return;
+                swirl = new Material(shader) { name = "Battle entry / swirl", hideFlags = HideFlags.HideAndDontSave };
+            }
             CaptureExploration(view);
-            Sequence.Begin();
-            RenderSwirl();
+            Sequence.Begin(fadeOnly);
+            if (!fadeOnly) RenderSwirl();
         }
 
         private void CaptureExploration(Camera view)
@@ -69,6 +83,7 @@ namespace DragonQuest.Prototype
             try
             {
                 RenderTexture destination = snapshot;
+                /* Temporariamente desativado para testar a captura normal, sem esticar o salao.
                 if (!view.orthographic && GetComponent<PrototypeBattleController>()?.IsCastleEncounter == true)
                 {
                     // Capture the painting's full frame, then stretch it to the display.
@@ -79,6 +94,7 @@ namespace DragonQuest.Prototype
                     view.fieldOfView = ThroneRoomLayout.FieldOfView;
                     destination = artwork;
                 }
+                */
                 // Render the exploration camera directly. A screen backbuffer can be empty in
                 // the Editor or while changing views, and ScreenCapture is an optional module.
                 RenderTexture.active = destination;
@@ -93,7 +109,7 @@ namespace DragonQuest.Prototype
                     view.targetTexture = destination;
                     view.Render();
                 }
-                if (artwork != null) Graphics.Blit(artwork, snapshot);
+                // if (artwork != null) Graphics.Blit(artwork, snapshot);
             }
             finally
             {
@@ -128,7 +144,7 @@ namespace DragonQuest.Prototype
             if (!IsPlaying) return;
             Sequence.Advance(Time.unscaledDeltaTime);
             if (!IsPlaying) { ReleaseTextures(); GameInput.ConsumeGamepadFrame(); }
-            else if (!Sequence.ShowsBattle) RenderSwirl();
+            else if (!Sequence.ShowsBattle && !Sequence.IsFadeOnly) RenderSwirl();
         }
 
         public void MarkBattleReady()
@@ -150,12 +166,13 @@ namespace DragonQuest.Prototype
                 var viewport = new Rect(0, 0, Screen.width, Screen.height);
                 if (!Sequence.ShowsBattle)
                 {
-                    GUI.DrawTexture(viewport, frame, ScaleMode.StretchToFill, false);
+                    GUI.DrawTexture(viewport, Sequence.IsFadeOnly ? snapshot : frame, ScaleMode.StretchToFill, false);
                 }
-                else
+                if (Sequence.ShowsBattle || Sequence.IsFadeOnly)
                 {
                     GUI.color = new Color(0, 0, 0, Sequence.BlackOpacity);
                     GUI.DrawTexture(viewport, Texture2D.whiteTexture);
+                    Sequence.MarkBlackDrawn();
                 }
             }
             finally { GUI.matrix = previousMatrix; GUI.color = previousColor; GUI.depth = previousDepth; }
