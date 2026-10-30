@@ -14,7 +14,7 @@ New-Item -ItemType Directory -Path $WorkDirectory -Force | Out-Null
 $impactOutput = Join-Path $WorkDirectory 'CastleImpactChecks.dll'
 $impactArguments = @('-nologo', '-target:exe', '-nostdlib+', "-out:$impactOutput")
 $impactArguments += Get-ChildItem -LiteralPath $impactRefs.FullName -Filter '*.dll' | ForEach-Object { "-reference:$($_.FullName)" }
-$impactArguments += Join-Path $impactRoot 'Assets/Scripts/Prototype/CastleImpactSequence.cs'
+$impactArguments += Join-Path $impactRoot 'Assets/Scripts/Presentation/Cinematics/Endings/CastleImpactSequence.cs'
 $impactArguments += Join-Path $impactRoot 'Tests/CastleImpactChecks.cs'
 $impactResponse = Join-Path $WorkDirectory 'CastleImpactChecks.rsp'
 $impactArguments | ForEach-Object { '"' + $_ + '"' } | Set-Content -LiteralPath $impactResponse -Encoding utf8

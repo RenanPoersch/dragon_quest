@@ -36,6 +36,10 @@ Os mesmos objetos de segredos e progresso do dragão permanecem ligados aos cen�
 
 `PrototypeSaveController` mantém a integração com a partida, a escolha dos slots, a confirmação de sobrescrita e as operações de salvar/carregar. Ele delega os tempos e o desenho da abertura às apresentações. As propriedades públicas de visibilidade e ganho de música permanecem disponíveis para os sistemas de áudio e bloqueio de entrada.
 
+As apresentações de inventário, equipamentos, itens, magia, matérias, status, loja e slots, junto dos seus ícones e retratos, ficam em `Presentation/Menus`. Os estilos e a navegação compartilhados ficam em `Presentation/Common`; a apresentação e os retratos de conversa ficam em `Presentation/Dialogue`.
+
+`Presentation/Cinematics/Opening` reúne a abertura, a viagem de novo jogo e suas sequências. `Presentation/Cinematics/Endings` reúne as sequências e apresentações dos finais, a composição das pinturas e a transição de saída da batalha para essas cenas. Os componentes que orquestram a partida e os finais continuam nas localizações existentes de `Prototype` nesta etapa.
+
 ## Comandos e apresentação da batalha
 
 `Presentation/Battle/BattleMenuPresenter` mantém o estado do menu: comandos, submenus de magia/invocação/itens, alternância para Defender, ação e alvo selecionados, rolagem e último inimigo preferido. Ele processa os controles e encaminha as ações aceitas ao controller da batalha. O desenho das listas usa os mesmos estilos e botões fornecidos pelo HUD.

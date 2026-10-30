@@ -14,7 +14,7 @@ New-Item -ItemType Directory -Path $WorkDirectory -Force | Out-Null
 $goodOutput = Join-Path $WorkDirectory 'GoodEndingChecks.dll'
 $goodArguments = @('-nologo', '-target:exe', '-nostdlib+', "-out:$goodOutput")
 $goodArguments += Get-ChildItem -LiteralPath $goodRefs.FullName -Filter '*.dll' | ForEach-Object { "-reference:$($_.FullName)" }
-$goodArguments += Join-Path $goodRoot 'Assets/Scripts/Prototype/KingFreedSequence.cs'
+$goodArguments += Join-Path $goodRoot 'Assets/Scripts/Presentation/Cinematics/Endings/KingFreedSequence.cs'
 $goodArguments += Join-Path $goodRoot 'Tests/KingFreedChecks.cs'
 $goodResponse = Join-Path $WorkDirectory 'GoodEndingChecks.rsp'
 $goodArguments | ForEach-Object { '"' + $_ + '"' } | Set-Content -LiteralPath $goodResponse -Encoding utf8

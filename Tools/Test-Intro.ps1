@@ -15,7 +15,7 @@ New-Item -ItemType Directory -Path $WorkDirectory -Force | Out-Null
 $introOutput = Join-Path $WorkDirectory 'IntroChecks.dll'
 $introArguments = @('-nologo', '-target:exe', '-nostdlib+', "-out:$introOutput")
 $introArguments += Get-ChildItem -LiteralPath $introRefs.FullName -Filter '*.dll' | ForEach-Object { "-reference:$($_.FullName)" }
-$introArguments += Join-Path $introRoot 'Assets/Scripts/Prototype/IntroSequence.cs'
+$introArguments += Join-Path $introRoot 'Assets/Scripts/Presentation/Cinematics/Opening/IntroSequence.cs'
 $introArguments += Join-Path $introRoot 'Tests/IntroChecks.cs'
 & $introDotnet $introCsc.FullName @introArguments
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

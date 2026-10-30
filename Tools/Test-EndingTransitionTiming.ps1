@@ -15,7 +15,7 @@ $timingOutput = Join-Path $WorkDirectory 'EndingTransitionChecks.dll'
 $timingArguments = @('-nologo', '-target:exe', '-nostdlib+', "-out:$timingOutput")
 $timingArguments += Get-ChildItem -LiteralPath $timingRefs.FullName -Filter '*.dll' | ForEach-Object { "-reference:$($_.FullName)" }
 foreach ($timingSource in @('BattleExitSequence', 'KingFreedSequence', 'HeroPossessedSequence', 'CastleImpactSequence', 'CastleDestroyedSequence')) {
-    $timingArguments += Join-Path $timingRoot "Assets/Scripts/Prototype/$timingSource.cs"
+    $timingArguments += Join-Path $timingRoot "Assets/Scripts/Presentation/Cinematics/Endings/$timingSource.cs"
 }
 $timingArguments += Join-Path $timingRoot 'Tests/EndingTransitionChecks.cs'
 $timingResponse = Join-Path $WorkDirectory 'EndingTransitionChecks.rsp'
