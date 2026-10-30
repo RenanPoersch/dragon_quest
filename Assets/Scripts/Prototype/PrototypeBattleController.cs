@@ -1,3 +1,6 @@
+using DragonQuest.Gameplay.Battle;
+using DragonQuest.Gameplay.Exploration;
+using DragonQuest.Presentation.World;
 using DragonQuest.Content;
 using DragonQuest.Presentation.Battle;
 using UnityEngine;
@@ -18,16 +21,9 @@ namespace DragonQuest.Prototype
         public BattleActionPresentation ActionPresentation => actionPresentation;
 
         private PlayerMovement movement;
-        private SpriteRenderer explorationSprite;
-        private GUIStyle poisonNumber;
-        private readonly System.Collections.Generic.List<MapPoisonNumber> mapPoisonNumbers = new System.Collections.Generic.List<MapPoisonNumber>();
-        private sealed class MapPoisonNumber
-        {
-            public string Name;
-            public int Damage, Lane;
-            public float Started;
-            public Vector3 Position;
-        }
+        private readonly PartyConditionPresentation conditions = new PartyConditionPresentation();
+        private ExplorationSession exploration;
+        private BattleResolution resolution;
         private CombatantState pendingEnemy;
         private float enemyActionTime;
         private bool pendingMeteorImpact;
@@ -45,11 +41,6 @@ namespace DragonQuest.Prototype
         private AncientSecrets secrets;
         private System.Action showLoadGame;
         private System.Action<GameEnding> showEnding;
-        private bool notifiedCompletion;
-        private readonly RandomEncounterRules randomEncounters = new RandomEncounterRules(() => UnityEngine.Random.value);
-        private Vector2 lastWalkPosition;
-        private int lastTeleportRevision;
-        private bool trackingWalk;
         public RandomEncounterType RandomEncounter { get; private set; }
         public event System.Action<BattleOutcome> EncounterCompleted;
         public event System.Action EncounterStarted;
@@ -71,8 +62,8 @@ namespace DragonQuest.Prototype
         private System.Func<string> currentLocation = () => PrototypeTravel.World;
         public string BattleLocationId { get; private set; } = PrototypeTravel.World;
         public void SetLocationProvider(System.Func<string> provider) => currentLocation = provider ?? (() => PrototypeTravel.World);
-        public bool AreRandomEncountersEnabled => randomEncounters.IsEnabled;
-        public void SetRandomEncountersEnabled(bool enabled) => randomEncounters.SetEnabled(enabled, currentLocation());
+        public bool AreRandomEncountersEnabled => exploration?.IsEnabled ?? true;
+        public void SetRandomEncountersEnabled(bool enabled) => exploration?.SetEnabled(enabled, currentLocation());
         public BattleEntryTransition EntryTransition { get; private set; }
         public bool IsEnteringBattle => EntryTransition != null && EntryTransition.IsPlaying;
         public bool IsActive { get; private set; }
@@ -82,8 +73,8 @@ namespace DragonQuest.Prototype
         public PartyProgress Party { get; private set; }
         public BattleSession Session { get; private set; }
         public string ErrorMessage { get; private set; }
-        public BattleRewards Rewards { get; private set; }
-        public string RewardMessage { get; private set; }
+        public BattleRewards Rewards => resolution?.Rewards;
+        public string RewardMessage => resolution?.RewardMessage;
         public PostBattleResults PostBattle { get; private set; }
         public bool IsPostBattleOpen { get; private set; }
         public float PostBattleStartedAt { get; private set; }
@@ -122,12 +113,8 @@ namespace DragonQuest.Prototype
             movement = hero; dialogue = dialogueController;
             cheatMenu = GetComponent<PrototypeCheatMenu>();
             otherMenuOpen = externalMenuOpen ?? (() => false);
-            if (Party != null) Party.PoisonDamage -= ShowMapPoison;
             Party = restoredParty ?? PartySetup.Create();
-            Party.PoisonDamage += ShowMapPoison;
-            mapPoisonNumbers.Clear();
-            explorationSprite = hero.GetComponentInChildren<PixelCharacter>()?.GetComponent<SpriteRenderer>();
-            Rewards = new BattleRewards(progress, Party);
+            conditions.Bind(hero, Party);
             var postBattleHud = GetComponent<PrototypePostBattleHud>();
             if (postBattleHud == null) postBattleHud = gameObject.AddComponent<PrototypePostBattleHud>();
             postBattleHud.Initialize(this);
@@ -135,9 +122,8 @@ namespace DragonQuest.Prototype
             if (EntryTransition == null) EntryTransition = gameObject.AddComponent<BattleEntryTransition>();
             Dragon = dragonProgress ?? new DragonProgress(); secrets = ancientSecrets; showLoadGame = defeatPresentation;
             showEnding=endingPresentation;
-            trackingWalk = false;
-            randomEncounters.Reset(currentLocation());
-            randomEncounters.SetEnabled(true, currentLocation());
+            exploration = new ExplorationSession(Party, currentLocation(), () => UnityEngine.Random.value);
+            resolution = new BattleResolution(Party, progress, Dragon);
         }
 
         public void RestoreEnding(GameEnding ending)
@@ -155,7 +141,7 @@ namespace DragonQuest.Prototype
         public void StartBattle()
         {
             if (IsBusy || !Party.HasLivingMembers) return;
-            StartEncounter(PrototypeBattleFactory.CreateEncounter(Party),false);
+            StartEncounter(EncounterCatalog.CreateEncounter(Party),false);
         }
 
         public bool StartRandomBattle()
@@ -163,7 +149,7 @@ namespace DragonQuest.Prototype
             if (!AreRandomEncountersEnabled || IsBusy || dialogue.IsOpen || !Party.HasLivingMembers) return false;
             RandomEncounterType type = RandomEncounterRules.TypeAt(currentLocation());
             if (type == RandomEncounterType.None) return false;
-            StartEncounter(PrototypeBattleFactory.CreateRegionEncounter(Party, type, UnityEngine.Random.Range(1, 4)), false);
+            StartEncounter(EncounterCatalog.CreateRegionEncounter(Party, type, UnityEngine.Random.Range(1, 4)), false);
             RandomEncounter = type;
             return true;
         }
@@ -171,61 +157,19 @@ namespace DragonQuest.Prototype
         private void LateUpdate()
         {
             if (movement == null || dialogue == null) return;
-            bool paused = IsBusy || dialogue.IsOpen || !GameInput.IsFocused;
-            Party.AdvancePoison(Time.deltaTime, paused);
-            if (explorationSprite != null && Party.Members.Count > 0)
-            {
-                var leader = Party.Members[0];
-                explorationSprite.color = leader.IsAlive ? BattleStatusColors.Tint(leader.IsPoisoned, leader.BoundActions) : new Color(.4f, .4f, .4f);
-            }
-            if (!paused && !Party.HasLivingMembers)
-            {
-                FinishDefeat();
-                return;
-            }
-            Vector2 position = movement.transform.position;
-            bool teleported = !trackingWalk || lastTeleportRevision != movement.TeleportRevision;
-            float distance = trackingWalk ? Vector2.Distance(position, lastWalkPosition) : 0;
-            lastWalkPosition = position; lastTeleportRevision = movement.TeleportRevision; trackingWalk = true;
-            bool blocked = IsBusy || dialogue.IsOpen || !GameInput.IsFocused || !movement.HasMovementInput;
-            if (randomEncounters.Advance(currentLocation(), distance, blocked, teleported)) StartRandomBattle();
+            var step = exploration.Advance(currentLocation(), movement.transform.position, movement.TeleportRevision,
+                movement.HasMovementInput, Time.deltaTime, IsBusy || dialogue.IsOpen || !GameInput.IsFocused);
+            conditions.RefreshTint();
+            if (step == ExplorationStep.Defeat) FinishDefeat();
+            else if (step == ExplorationStep.Encounter) StartRandomBattle();
         }
-
-        private void ShowMapPoison(PartyMember member, int damage)
-        {
-            mapPoisonNumbers.Add(new MapPoisonNumber { Name = member.Name, Damage = damage,
-                Lane = mapPoisonNumbers.Count % Party.Members.Count, Started = Time.unscaledTime,
-                Position = movement.transform.position });
-        }
-
-        private void OnGUI()
-        {
-            mapPoisonNumbers.RemoveAll(number => Time.unscaledTime - number.Started > 1.4f);
-            if (IsBusy || dialogue == null || dialogue.IsOpen || Camera.main == null) return;
-            if (poisonNumber == null)
-            {
-                poisonNumber = PrototypeTypography.Style(GUI.skin.label, 24, true);
-                poisonNumber.alignment = TextAnchor.MiddleCenter;
-            }
-            foreach (var number in mapPoisonNumbers)
-            {
-                float elapsed = Time.unscaledTime - number.Started;
-                Vector3 point = Camera.main.WorldToScreenPoint(number.Position);
-                Rect rect = new Rect(point.x - 120, Screen.height - point.y - 75 - elapsed * 40 - number.Lane * 28, 240, 36);
-                Color color = BattleStatusColors.DamageOverTime;
-                color.a = Mathf.Clamp01((1.4f - elapsed) / .35f);
-                string label = number.Name + " -" + number.Damage;
-                poisonNumber.normal.textColor = new Color(0, 0, 0, color.a);
-                GUI.Label(new Rect(rect.x + 2, rect.y + 2, rect.width, rect.height), label, poisonNumber);
-                poisonNumber.normal.textColor = color;
-                GUI.Label(rect, label, poisonNumber);
-            }
-        }
+        private void OnGUI() => conditions.Draw(IsBusy || dialogue == null || dialogue.IsOpen);
+        private void OnDestroy() => conditions.Dispose();
 
         public void StartDragonBattle()
         {
             if (IsBusy || dialogue.IsOpen || !Party.HasLivingMembers || Dragon.IsDefeated || secrets?.PassageOpen != true) return;
-            StartEncounter(PrototypeBattleFactory.CreateDragonEncounter(Party),true);
+            StartEncounter(EncounterCatalog.CreateDragonEncounter(Party),true);
         }
 
         private void StartEncounter(BattleSession encounter, bool dragonEncounter)
@@ -239,11 +183,10 @@ namespace DragonQuest.Prototype
             actionPresentation.Reset();
             pendingMeteorImpact = false;
             BattleLocationId = currentLocation();
-            notifiedCompletion = false;
+            resolution.Begin();
             IsActive = true;
             pendingEnemy = null;
             ErrorMessage = string.Empty;
-            RewardMessage = string.Empty;
             movement.SetMovementEnabled(false);
             EncounterStarted?.Invoke();
             EntryTransition.Begin();
@@ -252,7 +195,7 @@ namespace DragonQuest.Prototype
         public void StartCastleBattle()
         {
             if(IsBusy||dialogue.IsOpen||!Party.HasLivingMembers) return;
-            StartEncounter(PrototypeCastleBattleFactory.Create(Party),false);
+            StartEncounter(EncounterCatalog.CreateCastle(Party),false);
         }
 
         public bool TryPlayerAction(AbilityDefinition ability, CombatantState target)
@@ -313,26 +256,7 @@ namespace DragonQuest.Prototype
 
         private void AwardIfComplete()
         {
-            if (Session.Outcome == BattleOutcome.None) return;
-            if (!notifiedCompletion) Party.CaptureBattleState(Session);
-            if (Session.Outcome == BattleOutcome.Victory)
-            {
-                if (IsDragonEncounter) Dragon.TryComplete(Session,Party);
-                if (!Rewards.HasClaimed(Session))
-                {
-                    Rewards.TryClaim(Session,out string message);
-                    RewardMessage = message + (IsDragonEncounter && Dragon.IsDefeated ? " Armadura draconica recebida!" : "");
-                }
-            }
-            else if (Session.Outcome == BattleOutcome.Completed && CastleRules?.Ending == GameEnding.KingFreed)
-            {
-                if (Rewards.TryClaimExperience(Session, out string message)) RewardMessage = message;
-            }
-            if (PostBattleResults.IsVictory(Session) && !PostBattle.IsComplete)
-                PostBattle.Complete(Party, Rewards.HasClaimed(Session),
-                    IsDragonEncounter && Dragon.IsDefeated ? "Armadura draconica recebida!" : "");
-            if (notifiedCompletion) return;
-            notifiedCompletion = true; EncounterCompleted?.Invoke(Session.Outcome);
+            if (resolution.Resolve(Session, IsDragonEncounter, PostBattle)) EncounterCompleted?.Invoke(Session.Outcome);
         }
 
         private void UpdateEscapeInput()
@@ -378,7 +302,7 @@ namespace DragonQuest.Prototype
             if (HasEnded) return;
             if (IsActive) AwardIfComplete();
             HasEnded = true; IsActive = false; IsMenuOpen = false; IsPostBattleOpen = false;
-            pendingEnemy = null; trackingWalk = false;
+            pendingEnemy = null; exploration.ResetWalk();
             movement.SetMovementEnabled(false);
             GameInput.ConsumeGamepadFrame();
             showLoadGame?.Invoke();
@@ -503,8 +427,7 @@ namespace DragonQuest.Prototype
             }
             AwardIfComplete();
             IsActive = false;
-            randomEncounters.Reset(currentLocation());
-            trackingWalk = false;
+            exploration.Reset(currentLocation());
             movement.SetMovementEnabled(true);
             pendingEnemy = null;
             if (IsDragonEncounter && Session.Outcome == BattleOutcome.Victory)

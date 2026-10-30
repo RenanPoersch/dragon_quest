@@ -76,6 +76,10 @@ As apresentações de inventário, equipamentos, itens, magia, matérias, status
 
 `PrototypeBattleController` continua orquestrando encontros, turnos, recompensas e finais. Consulta a apresentação para aguardar os efeitos e aplicar o meteoro adiado no impacto. O evento `ActionPresented` continua sendo disparado pelo controller após iniciar o estado visual, preservando a integração com o áudio. As propriedades usadas pelo HUD permanecem disponíveis como consultas delegadas à apresentação.
 
+`Gameplay/Battle/BattleResolution` é responsável pela captura do estado final da equipe, entrega de recompensas, armadura do dragão e conclusão dos resultados, notificando a conclusão uma única vez. O controller conserva os eventos públicos e a ordem de apresentação dos finais.
+
+`Gameplay/Exploration/ExplorationSession` controla o avanço do veneno e dos encontros por caminhada, incluindo a distinção entre movimento e teleporte. `Presentation/World/PartyConditionPresentation` assina os eventos da equipe atual e desenha os números e tons das condições. Ao trocar de jornada ou encerrar a cena, libera a assinatura da equipe anterior.
+
 ## Persistência
 
 Os IDs gravados nos saves permanecem estáveis. Exemplos: `aren`, `potion`, `dragon-armor` e os IDs das matérias e lojas. Nomes de exibição e localização dos arquivos não substituem esses identificadores.
