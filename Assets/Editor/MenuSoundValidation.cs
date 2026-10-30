@@ -43,6 +43,7 @@ public static class MenuSoundValidation
     }
     private static void Check(bool condition, string message)
     { checks++; if (!condition) throw new Exception("Menu sound step " + step + ": " + message); }
+    private static object FrontEnd => Field(saves, "frontEnd").GetValue(saves);
     private static FieldInfo Field(object target, string name) => target.GetType().GetField(name,Private);
     private static void Put(object target, string name, object value) => Field(target,name).SetValue(target,value);
     private static void Property(object target, string name, object value) => Put(target,"<"+name+">k__BackingField",value);
@@ -131,7 +132,7 @@ public static class MenuSoundValidation
         battleHud = fixture.AddComponent<PrototypeBattleHud>(); battleHud.Initialize(battle);
         Put(saves,"store",new SaveStore(System.IO.Path.Combine(System.IO.Path.GetTempPath(),"DQMenuSound-"+Guid.NewGuid())));
         Put(saves,"player",movement); Put(saves,"dialogue",dialogue); Put(saves,"battle",battle);
-        Put(saves,"menuHasDrawn",true); Put(saves,"menuFadeInElapsed",2f);
+        Put(FrontEnd,"menuHasDrawn",true); Put(FrontEnd,"menuFadeInElapsed",2f);
         foreach (var component in fixture.GetComponents<MonoBehaviour>()) component.enabled = false;
         var maps = fixture.AddComponent<PrototypeLocations>(); maps.enabled = false;
         var music = fixture.AddComponent<PrototypeMusicController>(); music.enabled = false; music.Initialize(saves,maps,battle);
@@ -165,8 +166,8 @@ public static class MenuSoundValidation
                 case 5: Key(UnityEngine.InputSystem.Key.Enter); Call(saves,"Update"); Sound(MenuSound.NewGame); break;
                 case 6:
                     Call(saves,"NewGame"); Call(saves,"NewGame"); Quiet();
-                    Check((bool)Field(saves,"startingNewGame").GetValue(saves),"New Game is guarded against repeated activations");
-                    Put(saves,"startingNewGame",false); Property(saves,"IsMenuVisible",false); break;
+                    Check((bool)Field(FrontEnd,"startingNewGame").GetValue(FrontEnd),"New Game is guarded against repeated activations");
+                    Put(FrontEnd,"startingNewGame",false); Property(saves,"IsMenuVisible",false); break;
                 case 7: Property(battle,"IsMenuOpen",true); State(); Call(inventory,"Update"); Sound(MenuSound.Confirm); break;
                 case 8: State(new GamepadState().WithButton(GamepadButton.DpadDown)); Call(inventory,"Update"); Quiet(); break;
                 case 9: Key(UnityEngine.InputSystem.Key.Enter); Call(inventory,"Update"); Sound(MenuSound.Confirm); break;

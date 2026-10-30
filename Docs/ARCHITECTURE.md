@@ -28,6 +28,14 @@ Persistência, lojas, ícones de inventário e a recompensa do viajante já cons
 
 Os mesmos objetos de segredos e progresso do dragão permanecem ligados aos cenários; seus dados são restaurados ao carregar a jornada. Equipe, ouro e serviço de lojas passam a apontar para o estado carregado. Os callbacks de baú, patrulha e chefes consultam esse estado atual.
 
+## Título, abertura e salvamento
+
+`Presentation/Menus/FrontEndPresentation` controla a abertura, os fades do menu, a notificação de conquistas e a viagem inicial. O novo jogo espera o preto ser efetivamente desenhado antes de criar a apresentação da viagem. Essa classe não acessa arquivos de save.
+
+`TitleMenuPresentation` desenha a escama e os botões do título, com os estilos e posições originais. O controller continua cuidando da seleção e dos comandos, compartilhados com a navegação dos slots.
+
+`PrototypeSaveController` mantém a integração com a partida, a escolha dos slots, a confirmação de sobrescrita e as operações de salvar/carregar. Ele delega os tempos e o desenho da abertura às apresentações. As propriedades públicas de visibilidade e ganho de música permanecem disponíveis para os sistemas de áudio e bloqueio de entrada.
+
 ## Persistência
 
 Os IDs gravados nos saves permanecem estáveis. Exemplos: `aren`, `potion`, `dragon-armor` e os IDs das matérias e lojas. Nomes de exibição e localização dos arquivos não substituem esses identificadores.

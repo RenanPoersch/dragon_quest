@@ -60,7 +60,7 @@ public static class EndingAchievementValidation
         Assert(endingSource.Contains("PrototypeAchievements.Complete(ending);"), "Endings save the profile before returning.");
         Assert(endingSource.Split(new[] { "SceneManager.LoadScene(" }, StringSplitOptions.None).Length == 2,
             "There is one shared scene reload path.");
-        string titleSource = File.ReadAllText("Assets/Scripts/Prototype/PrototypeSaveController.cs");
+        string titleSource = File.ReadAllText("Assets/Scripts/Presentation/Menus/FrontEndPresentation.cs");
         Assert(titleSource.Contains("achievementScreen.Draw();"),
             "The title uses persistent achievement progress.");
         Debug.Log("ENDING_ACHIEVEMENT_UNITY_OK: three imported icons, pixel settings, transparency, font widths, layout and ending/menu hooks.");

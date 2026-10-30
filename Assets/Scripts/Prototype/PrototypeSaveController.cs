@@ -1,3 +1,4 @@
+using DragonQuest.Presentation.Menus;
 using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -30,34 +31,24 @@ namespace DragonQuest.Prototype
         private readonly string[] slotMessages = new string[SaveStore.SlotCount];
         private readonly bool[] occupied = new bool[SaveStore.SlotCount];
         private Texture2D pixel;
-        private Texture2D scaleSprite;
-        private const float TitleMenuOffsetY = 50f / 1.5f; // 50 pixels up at 1920x1080.
         private Texture2D hand;
         private Rect handUv = new Rect(0, 0, 1, 1);
         private float handAspect = 1;
-        private GUIStyle titleStyle, textStyle, smallStyle, buttonStyle, titleButtonStyle;
+        private GUIStyle textStyle, smallStyle, buttonStyle;
         private string message;
         private float messageUntil;
         private int overwriteSlot;
         private bool awaitingFirstSave;
         private double playSeconds;
         private SaveSelectionPresentation saveScreen;
-        private readonly EndingAchievementPresentation achievementScreen = new EndingAchievementPresentation();
-        private PrototypeIntroPresentation intro;
-        private NewGameVoyagePresentation voyage;
-        private const float MenuFadeInDuration = 1.2f;
-        private const float NewGameFadeOutDuration = 1.2f;
-        private bool startingNewGame, newGameBlackHasDrawn;
-        private float newGameFadeOutElapsed;
-        private float menuFadeInElapsed;
-        private bool menuHasDrawn;
-        private bool IsMenuFadingIn => menuFadeInElapsed < MenuFadeInDuration;
+        private readonly FrontEndPresentation frontEnd = new FrontEndPresentation();
+        private readonly TitleMenuPresentation titleMenu = new TitleMenuPresentation();
         public bool IsMenuVisible { get; private set; } = true;
-        public bool IsIntroPlaying => IsMenuVisible && intro != null && intro.IsPlaying;
-        public bool IsVoyagePlaying => IsMenuVisible && voyage != null && voyage.IsPlaying;
+        public bool IsIntroPlaying => IsMenuVisible && frontEnd.IsIntroPlaying;
+        public bool IsVoyagePlaying => IsMenuVisible && frontEnd.IsVoyagePlaying;
         public bool IsFrontEndVisible => IsMenuVisible && page != MenuPage.Save;
-        public float IntroMusicGain => IsIntroPlaying ? intro.Sequence.Opacity : 0;
-        public float VoyageMusicGain => IsVoyagePlaying ? voyage.Sequence.MusicGain : 0;
+        public float IntroMusicGain => IsIntroPlaying ? frontEnd.IntroMusicGain : 0;
+        public float VoyageMusicGain => IsVoyagePlaying ? frontEnd.VoyageMusicGain : 0;
         public int ActiveSlot { get; private set; }
         public long PlaySeconds => (long)playSeconds;
 
@@ -71,7 +62,7 @@ namespace DragonQuest.Prototype
             page = loadGameOnStart ? MenuPage.Continue : MenuPage.Title;
             loadGameOnStart = false;
             RefreshSlots(); player.SetMovementEnabled(false);
-            intro = page == MenuPage.Title ? new PrototypeIntroPresentation() : null;
+            frontEnd.Initialize(page == MenuPage.Title);
         }
         private void RefreshSlots()
         {
@@ -99,18 +90,11 @@ namespace DragonQuest.Prototype
             }
             catch (Exception ex) { ShowMessage("Nao foi possivel salvar: " + ex.Message); return false; }
         }
-        private void NewGame()
-        {
-            if (voyage != null || startingNewGame) return;
-            MenuSounds.Play(MenuSound.NewGame);
-            startingNewGame = true;
-            newGameFadeOutElapsed = 0;
-            newGameBlackHasDrawn = false;
-        }
+        private void NewGame() => frontEnd.NewGame();
+
         private void StartNewGameVoyage()
         {
-            voyage = new NewGameVoyagePresentation();
-            startingNewGame = false;
+            frontEnd.BeginVoyage();
             ActiveSlot = 0;
             for (int slot = 1; slot <= SaveStore.SlotCount; slot++)
                 if (!store.Exists(slot)) { ActiveSlot = slot; break; }
@@ -202,46 +186,19 @@ namespace DragonQuest.Prototype
         private void Update()
         {
             if (store == null) return;
-            intro?.Update(Time.unscaledDeltaTime);
-            bool titleVisible = IsMenuVisible && page == MenuPage.Title && voyage == null
-                && intro != null && intro.IsPlaying;
-            if (!titleVisible) achievementScreen.Dismiss();
-            else if (GameInput.IsFocused)
+            switch (frontEnd.Update(Time.unscaledDeltaTime, IsMenuVisible, page == MenuPage.Title, GameInput.IsFocused))
             {
-                if (!achievementScreen.IsVisible)
-                {
-                    var notification = PrototypeAchievements.TakeNotification();
-                    if (notification != null) achievementScreen.Show(notification, PrototypeAchievements.Progress.Counter);
-                }
-                achievementScreen.Update(Time.unscaledDeltaTime);
-            }
-            if (startingNewGame)
-            {
-                if (GameInput.IsFocused)
-                {
-                    // Render a fully black frame before loading the voyage's assets.
-                    if (newGameBlackHasDrawn) StartNewGameVoyage();
-                    else newGameFadeOutElapsed = Mathf.Min(NewGameFadeOutDuration,
-                        newGameFadeOutElapsed + Time.unscaledDeltaTime);
-                }
-                return;
-            }
-            if (voyage != null)
-            {
-                if (GameInput.IsFocused) voyage.Update(Time.unscaledDeltaTime);
-                if (!voyage.IsPlaying)
-                {
-                    voyage.Dispose(); voyage = null;
+                case FrontEndStep.StartVoyage:
+                    StartNewGameVoyage(); return;
+                case FrontEndStep.FinishVoyage:
                     IsMenuVisible = false;
                     player.SetMovementEnabled(!dialogue.IsOpen && !battle.IsBusy);
-                }
-                return;
+                    return;
+                case FrontEndStep.Busy: return;
             }
             if (IsMenuVisible)
             {
-                if ((intro == null || !intro.IsPlaying) && menuHasDrawn)
-                    menuFadeInElapsed = Mathf.Min(MenuFadeInDuration, menuFadeInElapsed + Time.unscaledDeltaTime);
-                if (!IsMenuFadingIn && (intro == null || !intro.BlocksMenuInput) && GameInput.IsFrameAvailable)
+                if (frontEnd.AcceptsMenuInput && GameInput.IsFrameAvailable)
                 {
                     MenuDirection direction = GameInput.Navigation;
                     if (GameInput.CancelPressed)
@@ -330,10 +287,9 @@ namespace DragonQuest.Prototype
         {
             // Save notices belong to the journey selection menu, never to the game maps.
             if (store == null || !IsMenuVisible) return;
-            if (intro != null && intro.IsPlaying) { intro.Draw(); DrawAchievementNotification(); return; }
-            if (voyage != null) { voyage.Draw(); return; }
+            if (frontEnd.DrawStory()) return;
             // Wait for the reveal and release of the skip input before allowing menu selection.
-            if ((startingNewGame || IsMenuFadingIn || intro != null && intro.BlocksMenuInput)
+            if (frontEnd.BlocksMenuInput
                 && (Event.current.isKey || Event.current.isMouse))
                 Event.current.Use();
             // Update owns keyboard and controller input; IMGUI only handles pointer activation.
@@ -346,8 +302,6 @@ namespace DragonQuest.Prototype
                 || Event.current.keyCode == KeyCode.Escape))
             {
                 Event.current.Use();
-                if (!IsMenuVisible) return;
-                if (voyage != null) { voyage.Draw(); return; }
             }
             EnsureStyles();
             Matrix4x4 previousMatrix = GUI.matrix; int previousDepth = GUI.depth;
@@ -361,13 +315,7 @@ namespace DragonQuest.Prototype
                 Quaternion.identity, new Vector3(scale, scale, 1));
             if (page == MenuPage.Title)
             {
-                if (scaleSprite != null)
-                    GUI.DrawTexture(new Rect(540, 250, 200, 200), scaleSprite, ScaleMode.ScaleToFit, true);
-                if (MenuButton(TitleOptionRect(0), "New game", 0, titleButtonStyle)) NewGame();
-                bool previousEnabled = GUI.enabled;
-                GUI.enabled = previousEnabled && OptionEnabled(1);
-                if (MenuButton(TitleOptionRect(1), "Continue", 1, titleButtonStyle)) OpenPage(MenuPage.Continue);
-                GUI.enabled = previousEnabled;
+                titleMenu.Draw(OptionEnabled(1), MenuButton, NewGame, () => OpenPage(MenuPage.Continue));
             }
             else
             {
@@ -402,40 +350,12 @@ namespace DragonQuest.Prototype
                 Panel(rect); GUI.Label(new Rect(rect.x + 12, rect.y + 6, rect.width - 24, rect.height - 10),
                     message, smallStyle);
             }
-            if (IsMenuFadingIn || startingNewGame)
-            {
-                // Fade the whole menu, including the cursor and highlighted buttons.
-                GUI.matrix = Matrix4x4.identity; GUI.depth = -101;
-                float opacity = startingNewGame
-                    ? Mathf.SmoothStep(0, 1, newGameFadeOutElapsed / NewGameFadeOutDuration)
-                    : Mathf.SmoothStep(1, 0, menuFadeInElapsed / MenuFadeInDuration);
-                GUI.color = new Color(0, 0, 0, opacity);
-                GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), pixel);
-                if (startingNewGame && newGameFadeOutElapsed >= NewGameFadeOutDuration
-                    && Event.current.type == EventType.Repaint) newGameBlackHasDrawn = true;
-            }
-            if (Event.current.type == EventType.Repaint) menuHasDrawn = true;
+            frontEnd.DrawMenuFade(pixel);
             GUI.matrix = previousMatrix; GUI.depth = previousDepth; GUI.color = previousColor;
-        }
-        private void DrawAchievementNotification()
-        {
-            if (!achievementScreen.IsVisible) return;
-            Matrix4x4 previousMatrix = GUI.matrix;
-            Color previousColor = GUI.color;
-            int previousDepth = GUI.depth;
-            float scale = Mathf.Min(Screen.width / 1280f, Screen.height / 720f);
-            GUI.matrix = Matrix4x4.TRS(new Vector3((Screen.width - 1280 * scale) / 2,
-                (Screen.height - 720 * scale) / 2, 0), Quaternion.identity, new Vector3(scale, scale, 1));
-            GUI.depth = -110;
-            GUI.color = Color.white;
-            achievementScreen.Draw();
-            GUI.matrix = previousMatrix;
-            GUI.color = previousColor;
-            GUI.depth = previousDepth;
         }
         private bool MenuButton(Rect rect, string label, int option, GUIStyle style)
         {
-            if (!startingNewGame && GUI.enabled && (Event.current.type == EventType.MouseMove
+            if (!frontEnd.IsStartingNewGame && GUI.enabled && (Event.current.type == EventType.MouseMove
                 || Event.current.type == EventType.MouseDrag || Event.current.type == EventType.MouseDown)
                 && rect.Contains(Event.current.mousePosition))
                 MenuSounds.Select(ref selectedOption, option, NavigationSoundContext);
@@ -443,24 +363,22 @@ namespace DragonQuest.Prototype
             if (overwriteSlot == 0 && GUI.enabled && selectedOption == option) GUI.color = new Color(0.96f, 0.8f, 0.48f);
             bool clicked = GUI.Button(rect, label, style);
             GUI.color = previous;
-            return !startingNewGame && clicked;
+            return !frontEnd.IsStartingNewGame && clicked;
         }
-        private static Rect TitleOptionRect(int option)
-            => new Rect(490, (option == 0 ? 562 : 620) - TitleMenuOffsetY * 2, 300, 48);
 
         private void DrawSelectedHand()
         {
             if (!IsMenuVisible || hand == null || !OptionEnabled(selectedOption)) return;
             Rect option;
             if (overwriteSlot != 0) option = new Rect(selectedOption == 0 ? 310 : 650, 365, 320, 48);
-            else if (page == MenuPage.Title) option = TitleOptionRect(selectedOption);
+            else if (page == MenuPage.Title) option = TitleMenuPresentation.OptionRect(selectedOption);
             else option = selectedOption == SaveStore.SlotCount ? SaveSelectionPresentation.BackRect
                 : SaveSelectionPresentation.SlotRect(selectedOption);
             bool row = page != MenuPage.Title && overwriteSlot == 0 && selectedOption < SaveStore.SlotCount;
             float left = overwriteSlot != 0
                 ? option.center.x - buttonStyle.CalcSize(new GUIContent(selectedOption == 0 ? "Salvar jornada" : "Cancelar")).x / 2
                 : page == MenuPage.Title
-                ? option.center.x - titleButtonStyle.CalcSize(new GUIContent(selectedOption == 0 ? "New game" : "Continue")).x / 2
+                ? option.center.x - titleMenu.ButtonStyle.CalcSize(new GUIContent(selectedOption == 0 ? "New game" : "Continue")).x / 2
                 : row ? 92 : option.x;
             float width = Mathf.Min(row ? 72 : 44, (row ? 40 : 30) * handAspect), height = width / handAspect;
             Color previous = GUI.color; GUI.color = Color.white;
@@ -499,10 +417,8 @@ namespace DragonQuest.Prototype
         {
             if (pixel != null) return;
             pixel = new Texture2D(1, 1); pixel.SetPixel(0, 0, Color.white); pixel.Apply();
-            scaleSprite = Resources.Load<Texture2D>("PixelArt/DragonScale");
             saveScreen = new SaveSelectionPresentation();
             LoadHandSprite();
-            titleStyle = PrototypeTypography.Style(GUI.skin.label, 48, true); titleStyle.normal.textColor = new Color(0.96f, 0.8f, 0.48f);
             textStyle = PrototypeTypography.Style(GUI.skin.label, 24); textStyle.wordWrap = true; textStyle.normal.textColor = Color.white;
             smallStyle = PrototypeTypography.Style(textStyle, 20);
             buttonStyle = PrototypeTypography.Style(GUI.skin.label, 24);
@@ -513,12 +429,7 @@ namespace DragonQuest.Prototype
                 state.textColor = Color.white;
                 state.background = null;
             }
-            titleButtonStyle = PrototypeTypography.Style(GUI.skin.label, 36, true); titleButtonStyle.alignment = TextAnchor.MiddleCenter;
-            titleButtonStyle.normal.textColor = Color.white;
-            titleButtonStyle.hover.textColor = new Color(0.96f, 0.8f, 0.48f);
-            titleButtonStyle.active.textColor = new Color(0.96f, 0.8f, 0.48f);
-            titleButtonStyle.focused.textColor = Color.white;
         }
-        private void OnDestroy() { voyage?.Dispose(); intro?.Dispose(); saveScreen?.Dispose(); if (pixel != null) Destroy(pixel); }
+        private void OnDestroy() { frontEnd.Dispose(); saveScreen?.Dispose(); if (pixel != null) Destroy(pixel); }
     }
 }

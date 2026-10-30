@@ -209,7 +209,8 @@ public static class MusicValidation
         Check(music.CurrentCue == MusicCue.Silence, "expected silence at step " + step);
         Check(music.GetComponentsInChildren<AudioSource>().All(s => !s.isPlaying), "both music sources stop at step " + step);
     }
-    private static NewGameVoyageSequence VoyageClock => ((NewGameVoyagePresentation)Field(saves,"voyage")).Sequence;
+    private static object FrontEnd => Field(saves, "frontEnd");
+    private static NewGameVoyageSequence VoyageClock => ((NewGameVoyagePresentation)Field(FrontEnd,"voyage")).Sequence;
     private static KingFreedSequence GoodClock => ((KingFreedPresentation)Field(endings,"liberation")).Sequence;
     private static HeroPossessedSequence MindClock => ((HeroPossessedPresentation)Field(endings,"possession")).Sequence;
     private static CastleDestroyedEndingPresentation MeteorScene => (CastleDestroyedEndingPresentation)Field(endings,"aftermath");
@@ -269,7 +270,7 @@ public static class MusicValidation
                     Check(saves != null && battle != null && music != null && maps != null, "scene wires music dependencies");
                     Check(music.CurrentCue == MusicCue.Intro, "intro is selected in the real scene");
                     Check(music.GetComponentsInChildren<AudioSource>().Length == 2, "only two music sources");
-                    intro = (PrototypeIntroPresentation)Field(saves,"intro");
+                    intro = (PrototypeIntroPresentation)Field(FrontEnd,"intro");
                     // Batch mode has no visible Game view: simulate its first rendered frame.
                     typeof(PrototypeIntroPresentation).GetField("hasDrawn",Private).SetValue(intro,true);
                     break;
@@ -293,8 +294,8 @@ public static class MusicValidation
                     CuePlays(MusicCue.Voyage);
                     Check(saves.IsVoyagePlaying,"voyage music follows the actual boat introduction");
                     Check(saves.IsFrontEndVisible, "new game voyage remains a front-end screen");
-                    ((NewGameVoyagePresentation)Field(saves,"voyage")).Dispose();
-                    typeof(PrototypeSaveController).GetField("voyage",Private).SetValue(saves,null);
+                    ((NewGameVoyagePresentation)Field(FrontEnd,"voyage")).Dispose();
+                    FrontEnd.GetType().GetField("voyage",Private).SetValue(FrontEnd,null);
                     typeof(PrototypeSaveController).GetField("<IsMenuVisible>k__BackingField",Private).SetValue(saves,false);
                     saves.enabled = false; battle.enabled = false;
                     maps.enabled = false; battle.SetRandomEncountersEnabled(true);

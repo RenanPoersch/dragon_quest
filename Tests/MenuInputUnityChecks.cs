@@ -70,8 +70,9 @@ public static class MenuInputUnityChecks
         Field(saves, "player").SetValue(saves, movement);
         Field(saves, "dialogue").SetValue(saves, dialogue);
         Field(saves, "battle").SetValue(saves, battle);
-        Field(saves, "menuHasDrawn").SetValue(saves, true);
-        Field(saves, "menuFadeInElapsed").SetValue(saves, 2f);
+        var frontEnd = Field(saves, "frontEnd").GetValue(saves);
+        Field(frontEnd, "menuHasDrawn").SetValue(frontEnd, true);
+        Field(frontEnd, "menuFadeInElapsed").SetValue(frontEnd, 2f);
         Call(saves, "RefreshSlots");
         var optionEnabled = typeof(PrototypeSaveController).GetMethod("OptionEnabled", BindingFlags.Instance | BindingFlags.NonPublic);
         Check(!(bool)optionEnabled.Invoke(saves, new object[] { 1 }), "Continue is disabled when all three slots are empty.");
