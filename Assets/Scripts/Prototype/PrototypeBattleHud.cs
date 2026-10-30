@@ -1,10 +1,9 @@
+using DragonQuest.Presentation.Battle;
 using System.Collections.Generic;
 using UnityEngine;
 using DragonQuest.Audio;
-using UnityEngine.InputSystem;
 using DragonQuest.Input;
 using DragonQuest.Combat;
-using DragonQuest.Inventory;
 using DragonQuest.Progression;
 using DragonQuest.Exploration;
 
@@ -12,6 +11,9 @@ namespace DragonQuest.Prototype
 {
     public sealed class PrototypeBattleHud : MonoBehaviour
     {
+        private readonly BattleMenuPresenter commands = new BattleMenuPresenter();
+        public BattleMenuPresenter Menu => commands;
+
         private PrototypeBattleController controller;
         private PixelSpriteLibrary pixelSprites;
         private readonly DragonBattleSprites dragonSprites = new DragonBattleSprites();
@@ -33,18 +35,6 @@ namespace DragonQuest.Prototype
         private Rect handUv = new Rect(0, 0, 1, 1);
         private float handAspect = 1;
         private BattleSession observedBattle;
-        private CombatantState observedActor;
-        private CombatantState preferredEnemyTarget;
-        private AbilityDefinition selected;
-        private ConsumableDefinition selectedItem;
-        private bool itemMode, defendMode;
-        private AbilityDefinition defendCommand;
-        private AbilityMenuGroup menuGroup;
-        private List<BattleMenuCommand> rootCommands = new List<BattleMenuCommand>();
-        private List<AbilityDefinition> groupAbilities = new List<AbilityDefinition>();
-        private int rootIndex;
-        private int commandIndex, targetIndex;
-        private Vector2 actionsScroll, targetsScroll;
         private readonly Dictionary<CombatantState, int> seenChanges = new Dictionary<CombatantState, int>();
         private readonly List<FloatingNumber> numbers = new List<FloatingNumber>();
         private readonly DefeatedEnemyPresentation defeatedEnemies = new DefeatedEnemyPresentation();
@@ -67,38 +57,25 @@ namespace DragonQuest.Prototype
         }
 
         public void Initialize(PrototypeBattleController battleController, PixelSpriteLibrary sprites = null)
-        { controller = battleController; pixelSprites = sprites; }
+        { controller = battleController; pixelSprites = sprites; commands.Initialize(battleController); }
 
         private float spiritFloatStartedAt;
-        private CombatantDefinition observedDefinition;
-        private bool observedLimitReady;
 
         private void ObserveBattle()
         {
             BattleSession battle = controller.Session;
             if (observedBattle != battle)
             {
-                observedBattle = battle; observedActor = null; seenChanges.Clear(); numbers.Clear();
+                observedBattle = battle; seenChanges.Clear(); numbers.Clear();
                 defeatedEnemies.Reset(); castCounter.Reset(); enemyPoses.Clear();
                 heroKnockouts.Reset();
                 ultimateAnimation.Prepare();
                 spiritFloatStartedAt = Time.unscaledTime;
-                preferredEnemyTarget = null;
                 // Optional map-specific art; the menu and fighter anchors do not depend on the background.
                 background = Resources.Load<Texture2D>("BattleBackgrounds/" + controller.BattleLocationId);
                 if (controller.IsCastleEncounter) { castleSpells.Prepare(); spiritAttacks.Prepare(); }
             }
-            if (observedActor != battle.CurrentActor || observedDefinition != battle.CurrentActor?.Definition
-                || observedLimitReady != (battle.CurrentActor?.Limit.IsReady ?? false))
-            {
-                observedActor = battle.CurrentActor; selected = null; selectedItem = null;
-                observedDefinition = observedActor?.Definition;
-                observedLimitReady = observedActor?.Limit.IsReady ?? false;
-                itemMode = defendMode = false; menuGroup = AbilityMenuGroup.Direct; rootIndex = commandIndex = targetIndex = 0;
-                rootCommands = observedActor == null ? new List<BattleMenuCommand>() : BattleCommandMenu.Root(observedActor);
-                defendCommand = observedActor == null ? null : BattleCommandMenu.Defend(observedActor);
-                groupAbilities.Clear(); actionsScroll = targetsScroll = Vector2.zero;
-            }
+            commands.ObserveBattle();
             foreach (CombatantState participant in battle.Combatants)
             {
                 float deathTime = Time.unscaledTime;
@@ -139,165 +116,7 @@ namespace DragonQuest.Prototype
         {
             if (controller == null || !controller.IsActive || controller.IsPostBattleOpen) { numbers.Clear(); return; }
             ObserveBattle();
-            if (controller.HasEnded) return;
-            if (controller.IsEnteringBattle) return;
-            if (controller.IsCheatMenuBlocking) return;
-            if (controller.IsPresentingAction) return;
-            Keyboard keys = Keyboard.current;
-            if (!GameInput.IsFrameAvailable) return;
-            if (observedBattle.Outcome != BattleOutcome.None)
-            {
-                if (observedBattle.Outcome != BattleOutcome.Defeat && GameInput.ConfirmPressed)
-                { MenuSounds.Play(MenuSound.Confirm); controller.ReturnToCity(); GameInput.ConsumeGamepadFrame(); }
-                return;
-            }
-            if (observedActor == null || observedActor.Team != CombatTeam.Party || observedActor.MindControlTurns > 0) return;
-            if (GameInput.CancelPressed)
-            { Cancel(); GameInput.ConsumeGamepadFrame(); return; }
-            bool targeting = selected != null || selectedItem != null;
-            MenuDirection navigation = GameInput.Navigation;
-            bool leftPressed = navigation == MenuDirection.Left || keys?.leftArrowKey.wasPressedThisFrame == true || keys?.aKey.wasPressedThisFrame == true;
-            bool rightPressed = navigation == MenuDirection.Right || keys?.rightArrowKey.wasPressedThisFrame == true || keys?.dKey.wasPressedThisFrame == true;
-            if (leftPressed)
-            {
-                if (!targeting && CanOpenDefendMenu)
-                {
-                    defendMode = true; MenuSounds.Play(MenuSound.Navigate);
-                }
-                else if (targeting || InSubmenu) Cancel();
-                GameInput.ConsumeGamepadFrame(); return;
-            }
-            if (rightPressed && !targeting && !InSubmenu && defendMode && commandIndex == 0)
-            { defendMode = false; MenuSounds.Play(MenuSound.Navigate); GameInput.ConsumeGamepadFrame(); return; }
-            int count = targeting ? TargetRowCount() : CommandCount();
-            if (targeting) targetIndex = Mathf.Clamp(targetIndex, 0, Mathf.Max(0, count - 1));
-            int delta = navigation == MenuDirection.Down || keys?.downArrowKey.wasPressedThisFrame == true || keys?.sKey.wasPressedThisFrame == true ? 1
-                : navigation == MenuDirection.Up || keys?.upArrowKey.wasPressedThisFrame == true || keys?.wKey.wasPressedThisFrame == true ? -1 : 0;
-            if (count > 0 && delta != 0)
-            {
-                if (count > 1) MenuSounds.Play(MenuSound.Navigate);
-                if (targeting)
-                {
-                    targetIndex = (targetIndex + delta + count) % count;
-                    targetsScroll.y = BattleCommandMenu.KeepRowVisible(targetsScroll.y, targetIndex, count, 88);
-                }
-                else
-                {
-                    commandIndex = (commandIndex + delta + count) % count;
-                    actionsScroll.y = BattleCommandMenu.KeepRowVisible(actionsScroll.y, commandIndex, count, 120);
-                }
-            }
-            if (GameInput.ConfirmPressed)
-            {
-                if (targeting && count > 0) ExecuteTarget(Targets()[targetIndex]);
-                else if (!targeting) ChooseCommand(commandIndex);
-                GameInput.ConsumeGamepadFrame();
-            }
-            else if (!targeting && rightPressed)
-                ChooseCommand(commandIndex, navigateOnly: true);
-        }
-
-        private bool CanAcceptMenuInput => GameInput.IsFrameAvailable && !controller.HasEnded && !controller.IsEnteringBattle && !controller.IsCheatMenuBlocking
-            && !controller.IsPresentingAction;
-        private bool InSubmenu => itemMode || menuGroup != AbilityMenuGroup.Direct;
-        private bool CanOpenDefendMenu => !InSubmenu && !defendMode && defendCommand != null
-            && commandIndex == 0 && rootCommands.Count > 0
-            && (rootCommands[commandIndex].Ability?.SourceAbilityId == "attack" || rootCommands[commandIndex].Ability?.UsesLimit == true);
-        private int CommandCount() => itemMode ? observedBattle.Inventory.Items.Count
-            : InSubmenu ? groupAbilities.Count : rootCommands.Count;
-        private AbilityDefinition CommandAbility(int index) => !InSubmenu && defendMode && index == 0 ? defendCommand : InSubmenu
-            ? index < groupAbilities.Count ? groupAbilities[index] : null : rootCommands[index].Ability;
-        private string CommandLabel(int index)
-        {
-            if (!InSubmenu && defendMode && index == 0) return defendCommand.Name;
-            if (itemMode)
-            {
-                ItemStack stack = observedBattle.Inventory.Items[index];
-                return stack.Definition.Name + "  x" + stack.Quantity;
-            }
-            if (!InSubmenu) return rootCommands[index].Label;
-            AbilityDefinition ability = groupAbilities[index];
-            return ability.Name + (ability.MpCost > 0 ? "  " + ability.MpCost + " MP" : "");
-        }
-        private bool CommandEnabled(int index)
-        {
-            if (observedActor.MindControlTurns > 0) return false;
-            if (!InSubmenu && observedActor.IsSilenced && (rootCommands[index].Kind == BattleCommandKind.Magic
-                || rootCommands[index].Kind == BattleCommandKind.Summon)) return false;
-            if (itemMode) return observedBattle.Inventory.Items[index].Quantity > 0;
-            AbilityDefinition ability = CommandAbility(index);
-            return ability == null || (!observedActor.IsSilenced || !ability.IsMagic)
-                && observedActor.Mp >= ability.MpCost && (!ability.UsesLimit || observedActor.Limit.IsReady);
-        }
-        private IReadOnlyList<CombatantState> Targets() => selectedItem != null ? observedBattle.GetValidItemTargets(selectedItem)
-            : observedBattle.GetValidTargets(selected);
-        private int TargetRowCount() => selected != null && (selected.Targets == TargetRule.AllEnemies || selected.Targets == TargetRule.AllAllies)
-            ? Mathf.Min(1, Targets().Count) : Targets().Count;
-        private void Cancel()
-        {
-            if (selected != null || selectedItem != null || InSubmenu || defendMode) MenuSounds.Play(MenuSound.Cancel);
-            if (selected != null || selectedItem != null) { selected = null; selectedItem = null; targetIndex = 0; }
-            else if (InSubmenu)
-            {
-                itemMode = false; menuGroup = AbilityMenuGroup.Direct; groupAbilities.Clear();
-                commandIndex = rootIndex;
-                actionsScroll = new Vector2(0, BattleCommandMenu.KeepRowVisible(0, commandIndex, CommandCount(), 120));
-            }
-            else defendMode = false;
-        }
-        private void ChooseCommand(int index, bool navigateOnly = false)
-        {
-            if (index < 0 || index >= CommandCount()) return;
-            commandIndex = index;
-            if (!CommandEnabled(index)) return;
-            if (!InSubmenu && rootCommands[index].Kind != BattleCommandKind.Ability)
-            {
-                BattleCommandKind kind = rootCommands[index].Kind;
-                rootIndex = index; itemMode = kind == BattleCommandKind.Items;
-                menuGroup = kind == BattleCommandKind.Magic ? AbilityMenuGroup.Magic
-                    : kind == BattleCommandKind.Summon ? AbilityMenuGroup.Summon : AbilityMenuGroup.Direct;
-                groupAbilities = itemMode ? new List<AbilityDefinition>() : BattleCommandMenu.Group(observedActor, menuGroup);
-                commandIndex = 0; actionsScroll = Vector2.zero;
-                MenuSounds.Play(navigateOnly ? MenuSound.Navigate : MenuSound.Confirm); return;
-            }
-            if (itemMode)
-            {
-                ItemStack stack = observedBattle.Inventory.Items[index];
-                if (stack.Quantity > 0) selectedItem = stack.Definition;
-            }
-            else
-            {
-                AbilityDefinition ability = CommandAbility(index);
-                if (observedActor.Mp < ability.MpCost || ability.UsesLimit && !observedActor.Limit.IsReady) return;
-                if (ability.Targets == TargetRule.Self)
-                {
-                    if (navigateOnly) return;
-                    controller.TryPlayerAction(ability, observedActor);
-                }
-                else selected = ability;
-            }
-            MenuSounds.Play(navigateOnly ? MenuSound.Navigate : MenuSound.Confirm);
-            targetIndex = 0; targetsScroll = Vector2.zero;
-            if (selected != null && selected.Targets == TargetRule.Enemy && preferredEnemyTarget != null)
-            {
-                IReadOnlyList<CombatantState> valid = Targets();
-                for (int i = 0; i < valid.Count; i++)
-                    if (valid[i] == preferredEnemyTarget) { targetIndex = i; break; }
-                targetsScroll.y = BattleCommandMenu.KeepRowVisible(0, targetIndex, valid.Count, 88);
-            }
-        }
-        private void ExecuteTarget(CombatantState target)
-        {
-            CombatantState actualTarget = selected != null ? observedBattle.ResolveLivingEnemyTarget(selected, target) : target;
-            bool accepted = selectedItem != null ? controller.TryPlayerItem(selectedItem, target)
-                : controller.TryPlayerAction(selected, target);
-            if (accepted)
-            {
-                MenuSounds.Play(MenuSound.Confirm);
-                if (actualTarget != null && actualTarget.Team == CombatTeam.Enemy)
-                    preferredEnemyTarget = actualTarget.IsAlive ? actualTarget : observedBattle.NextLivingEnemyAfter(actualTarget);
-                selected = null; selectedItem = null;
-            }
+            commands.UpdateInput();
         }
 
         private void OnGUI()
@@ -348,11 +167,11 @@ namespace DragonQuest.Prototype
                 if (observedBattle.Outcome != BattleOutcome.Defeat
                     && CommandButton(new Rect(40, 645, 565, 36), controller.ReturnLabel, true, true)) controller.ReturnToCity();
             }
-            else if (observedActor != null && observedActor.Team == CombatTeam.Enemy)
+            else if (commands.Actor != null && commands.Actor.Team == CombatTeam.Enemy)
             {
-                GUI.Label(new Rect(40, 512, 570, 30), "Turno de " + observedActor.Definition.Name, title);
+                GUI.Label(new Rect(40, 512, 570, 30), "Turno de " + commands.Actor.Definition.Name, title);
             }
-            else if (observedActor != null) DrawActions();
+            else if (commands.Actor != null) commands.DrawActions(title, small, CommandButton);
             if (!string.IsNullOrEmpty(controller.ErrorMessage)) GUI.Label(new Rect(40, 668, 560, 25), controller.ErrorMessage, small);
             GUI.skin = previousSkin;
             GUI.matrix = previous;
@@ -414,7 +233,7 @@ namespace DragonQuest.Prototype
                 foreach (CombatantState target in controller.PresentingTargets) ultimateTargets.Add(FigureRect(target));
                 ultimateAnimation.DrawBackdrop(controller.PresentingAbility, ultimateElapsed, ultimateCaster, ultimateAllies);
             }
-            IReadOnlyList<CombatantState> targets = Targets();
+            IReadOnlyList<CombatantState> targets = commands.Targets();
             foreach (CombatantState participant in observedBattle.Combatants)
             {
                 if (!defeatedEnemies.IsVisible(participant, Time.unscaledTime)) continue;
@@ -435,18 +254,18 @@ namespace DragonQuest.Prototype
                     statusIcons.DrawOverhead(figure, participant.MindControlTurns > 0
                         || controller.IsPresentingAction && controller.IsPresentingConfusedAction && controller.PresentingActor == participant,
                         participant.IsSilenced, Time.unscaledTime, participant.TauntTurns > 0);
-                if (!ultimate && participant.IsAlive && participant == (controller.IsPresentingAction ? controller.PresentingActor : observedActor))
+                if (!ultimate && participant.IsAlive && participant == (controller.IsPresentingAction ? controller.PresentingActor : commands.Actor))
                     DrawTurnArrow(figure.center.x + castStep, figure.y - 30 + Mathf.Sin(Time.unscaledTime * 5) * 3);
-                bool group = selected != null && (selected.Targets == TargetRule.AllEnemies || selected.Targets == TargetRule.AllAllies);
+                bool group = commands.SelectedAbility != null && (commands.SelectedAbility.Targets == TargetRule.AllEnemies || commands.SelectedAbility.Targets == TargetRule.AllAllies);
                 for (int i = 0; i < targets.Count; i++)
                 {
                     if (targets[i] != participant) continue;
-                    if (group || i == targetIndex) DrawHand(new Rect(figure.x - 60, figure.center.y - 18, 56, 36));
+                    if (group || i == commands.TargetIndex) DrawHand(new Rect(figure.x - 60, figure.center.y - 18, 56, 36));
                     bool previousEnabled = GUI.enabled;
-                    GUI.enabled = previousEnabled && CanAcceptMenuInput;
+                    GUI.enabled = previousEnabled && commands.CanAcceptMenuInput;
                     bool clicked = GUI.Button(figure, GUIContent.none, GUIStyle.none);
                     GUI.enabled = previousEnabled;
-                    if (clicked) { GameInput.ConsumeGamepadFrame(); targetIndex = i; ExecuteTarget(participant); }
+                    if (clicked) { GameInput.ConsumeGamepadFrame(); commands.ChooseTarget(i, participant); }
                 }
             }
             if (controller.IsPresentingAction && controller.IsPresentingSummon)
@@ -567,31 +386,6 @@ namespace DragonQuest.Prototype
             return new Rect(260 + index * 145, 155 + index * 72, 80, 110);
         }
 
-        private void DrawActions()
-        {
-            bool targeting = selected != null || selectedItem != null;
-            GUI.Label(new Rect(40, 506, 555, 30), observedActor.Definition.Name, title);
-            actionsScroll = GUI.BeginScrollView(new Rect(38, 542, 280, 120), actionsScroll, new Rect(0, 0, 253, CommandCount() * 36));
-            for (int i = 0; i < CommandCount(); i++)
-            {
-                if (CommandButton(new Rect(0, i * 36, 253, 34), CommandLabel(i), !targeting && i == commandIndex,
-                    CommandEnabled(i) && !targeting, itemMode && i < observedBattle.Inventory.Items.Count
-                        ? InventoryPixelArt.Texture(observedBattle.Inventory.Items[i].Definition) : null,
-                    limitReady: !itemMode && CommandAbility(i)?.UsesLimit == true && observedActor.Limit.IsReady)) { ChooseCommand(i); break; }
-            }
-            GUI.EndScrollView();
-            if (!targeting) return;
-            IReadOnlyList<CombatantState> targets = Targets();
-            targetIndex = Mathf.Clamp(targetIndex, 0, Mathf.Max(0, targets.Count - 1));
-            bool group = selected != null && (selected.Targets == TargetRule.AllEnemies || selected.Targets == TargetRule.AllAllies);
-            targetsScroll = GUI.BeginScrollView(new Rect(333, 542, 280, 88), targetsScroll, new Rect(0, 0, 253, (group ? 1 : targets.Count) * 36));
-            for (int i = 0; i < (group ? Mathf.Min(1, targets.Count) : targets.Count); i++)
-                if (CommandButton(new Rect(0, i * 36, 253, 34), group ? "Todos os alvos (" + targets.Count + ")" : (selected != null && (selected.Targets == TargetRule.Enemy || selected.Targets == TargetRule.AllEnemies)
-                        && targets[i].Team == observedActor.Team && targets[i].IsBound ? "Correntes - " : "") + targets[i].Definition.Name,
-                    group || targetIndex == i, true)) { targetIndex = i; ExecuteTarget(targets[i]); break; }
-            GUI.EndScrollView();
-            if (targets.Count == 0) GUI.Label(new Rect(337, 546, 270, 78), "Nenhum alvo valido para esta acao.", small);
-        }
 
         private void DrawPartyStatus()
         {
@@ -603,7 +397,7 @@ namespace DragonQuest.Prototype
             {
                 if (participant.Team != CombatTeam.Party) continue;
                 float y = 544 + i++ * 48;
-                if (participant == observedActor) RectBox(new Rect(650, y - 2, 600, 45), new Color(.16f, .29f, .65f));
+                if (participant == commands.Actor) RectBox(new Rect(650, y - 2, 600, 45), new Color(.16f, .29f, .65f));
                 GUI.Label(new Rect(665, y, 95, 25), participant.Definition.Name, text);
                 var beforeSalvation = controller.PendingSalvationState(participant);
                 statusIcons.Draw(770, y + 2, beforeSalvation?.Statuses ?? CombatStatuses.Active(participant));
@@ -621,7 +415,7 @@ namespace DragonQuest.Prototype
         }
         private bool CommandButton(Rect rect, string label, bool focused, bool enabled, Texture2D icon = null, bool limitReady = false)
         {
-            bool previous = GUI.enabled; GUI.enabled = previous && enabled && CanAcceptMenuInput;
+            bool previous = GUI.enabled; GUI.enabled = previous && enabled && commands.CanAcceptMenuInput;
             bool clicked = LimitCommandGlow.Button(rect, label,
                 limitReady,
                 icon == null ? button : itemButton);

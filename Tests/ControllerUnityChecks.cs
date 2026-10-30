@@ -117,10 +117,10 @@ public static class ControllerUnityChecks
         var battleHud = fixture.AddComponent<PrototypeBattleHud>(); battleHud.Initialize(battle);
         typeof(PrototypeBattleHud).GetField("observedBattle", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(battleHud, battle.Session);
         State(new GamepadState().WithButton(GamepadButton.South)); Call(battleHud, "Update");
-        var selected = typeof(PrototypeBattleHud).GetField("selected", BindingFlags.Instance | BindingFlags.NonPublic);
-        Check(selected.GetValue(battleHud) != null, "Battle attack enters target selection.");
+        var commandMenu = battleHud.Menu;
+        Check(commandMenu.SelectedAbility != null, "Battle attack enters target selection.");
         State(new GamepadState().WithButton(GamepadButton.East)); Call(battleHud, "Update");
-        Check(selected.GetValue(battleHud) == null && battle.Session.CurrentActor.TurnsTaken == 0 && !GameInput.CancelPressed,
+        Check(commandMenu.SelectedAbility == null && battle.Session.CurrentActor.TurnsTaken == 0 && !GameInput.CancelPressed,
             "Circle cancels the battle target without spending a turn.");
         UnityEngine.Object.DestroyImmediate(fixture);
         State(keyboard);
@@ -222,15 +222,15 @@ public static class ControllerUnityChecks
                 .SetValue(hud, battle.Session);
             Call(hud, "Update");
             var actor = battle.Session.CurrentActor;
-            var selected = typeof(PrototypeBattleHud).GetField("selected", BindingFlags.Instance | BindingFlags.NonPublic);
+            var commandMenu = hud.Menu;
             Check(battle.IsActive && actor.Team == DragonQuest.Combat.CombatTeam.Party
-                && actor.TurnsTaken == 0 && selected.GetValue(hud) == null,
+                && actor.TurnsTaken == 0 && commandMenu.SelectedAbility == null,
                 key + " opens the battle without also selecting its first command.");
             State(keyboard); Call(hud, "Update"); Call(battle, "Update");
             Check(actor.TurnsTaken == 0 && !battle.IsPresentingAction,
                 "A new battle waits for the player's command when input is idle.");
             State(keyboard, key); Call(hud, "Update");
-            Check(selected.GetValue(hud) != null && actor.TurnsTaken == 0,
+            Check(commandMenu.SelectedAbility != null && actor.TurnsTaken == 0,
                 "A fresh " + key + " selects attack and waits for target confirmation.");
             Call(hud, "Update");
             Check(actor.TurnsTaken == 0 && !battle.IsPresentingAction,

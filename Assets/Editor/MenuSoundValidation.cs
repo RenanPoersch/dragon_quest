@@ -208,12 +208,12 @@ public static class MenuSoundValidation
                     State(); battle.StartBattle();
                     var actor = battle.Session.CurrentActor;
                     Check(actor != null && actor.Team == CombatTeam.Party,"battle fixture starts on a party command");
-                    Put(battleHud,"observedBattle",battle.Session); Put(battleHud,"observedActor",actor);
-                    Put(battleHud,"observedDefinition",actor.Definition); Put(battleHud,"observedLimitReady",actor.Limit.IsReady);
-                    Put(battleHud,"rootCommands",BattleCommandMenu.Root(actor)); Put(battleHud,"defendCommand",BattleCommandMenu.Defend(actor));
+                    Put(battleHud,"observedBattle",battle.Session); Put(battleHud.Menu,"observedBattle",battle.Session); Put(battleHud.Menu,"observedActor",actor);
+                    Put(battleHud.Menu,"observedDefinition",actor.Definition); Put(battleHud.Menu,"observedLimitReady",actor.Limit.IsReady);
+                    Put(battleHud.Menu,"rootCommands",BattleCommandMenu.Root(actor)); Put(battleHud.Menu,"defendCommand",BattleCommandMenu.Defend(actor));
                     break;
                 case 42: Key(UnityEngine.InputSystem.Key.DownArrow); Call(battleHud,"Update"); Quiet(); break;
-                case 43: Put(battleHud,"commandIndex",0); Key(UnityEngine.InputSystem.Key.Enter); Call(battleHud,"Update"); Sound(MenuSound.Confirm); break;
+                case 43: Put(battleHud.Menu,"commandIndex",0); Key(UnityEngine.InputSystem.Key.Enter); Call(battleHud,"Update"); Sound(MenuSound.Confirm); break;
                 case 44: Key(UnityEngine.InputSystem.Key.Escape); Call(battleHud,"Update"); Sound(MenuSound.Cancel); break;
                 case 45: Key(UnityEngine.InputSystem.Key.RightArrow); Call(battleHud,"Update"); Quiet(); break;
                 case 46: Key(UnityEngine.InputSystem.Key.Escape); Call(battleHud,"Update"); Sound(MenuSound.Cancel); break;

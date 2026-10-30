@@ -36,6 +36,14 @@ Os mesmos objetos de segredos e progresso do dragão permanecem ligados aos cen�
 
 `PrototypeSaveController` mantém a integração com a partida, a escolha dos slots, a confirmação de sobrescrita e as operações de salvar/carregar. Ele delega os tempos e o desenho da abertura às apresentações. As propriedades públicas de visibilidade e ganho de música permanecem disponíveis para os sistemas de áudio e bloqueio de entrada.
 
+## Comandos e apresentação da batalha
+
+`Presentation/Battle/BattleMenuPresenter` mantém o estado do menu: comandos, submenus de magia/invocação/itens, alternância para Defender, ação e alvo selecionados, rolagem e último inimigo preferido. Ele processa os controles e encaminha as ações aceitas ao controller da batalha. O desenho das listas usa os mesmos estilos e botões fornecidos pelo HUD.
+
+`PrototypeBattleHud` continua como componente da cena e responsável pela arena, lutadores, animações, números flutuantes e status. Consulta o ator e a seleção do presenter para desenhar os indicadores e encaminha os cliques nos lutadores ao menu. O presenter atualiza a seleção quando a batalha, o ator, a definição dos comandos ou a disponibilidade do LIMIT mudam.
+
+`Combat/BattleCommandMenu` conserva o agrupamento dos comandos por origem da matéria. A execução e as regras de ações, custos e alvos permanecem em `BattleSession`; esta separação não altera essas regras.
+
 ## Persistência
 
 Os IDs gravados nos saves permanecem estáveis. Exemplos: `aren`, `potion`, `dragon-armor` e os IDs das matérias e lojas. Nomes de exibição e localização dos arquivos não substituem esses identificadores.
