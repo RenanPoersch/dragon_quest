@@ -108,4 +108,8 @@ O preview de ultimates fica em `Assets/Editor/Tools/UltimatePreviewRenderer.cs`,
 
 Os cenários são montados por `Presentation/World/WorldBuilder`. `ObliqueScenery` conserva a geometria e as utilidades usadas pelo jogo e pelas ferramentas de autoria. Os geradores sem chamadas de chama do altar, símbolos antigos, marcas de garras, oco, essência do dragão e ícones antigos foram retirados.
 
+Os modelos geométricos substituídos de personagens, dragão e finais ficam em `Assets/Editor/Tools/LegacySceneryGeometry.cs`, no namespace `DragonQuest.Authoring`. O exportador oblíquo inclui esse arquivo explicitamente; esses modelos não entram na assembly do jogador. `ObliqueScenery` conserva os construtores ainda usados no mundo atual. Os wrappers sem chamadas e o componente antigo `ObliqueCharacter`, sem referências de código ou GUID, foram removidos.
+
+A inicialização dos finais recebe apenas mapas, jogador e câmera de acompanhamento. Os antigos parâmetros de câmera e geometria não eram utilizados e foram retirados junto de seus argumentos nos chamadores.
+
 O trecho comentado de enquadramento esticado da entrada do rei permanece disponível para a decisão de acabamento. As alterações anteriores de música, finais, menus e combate não fazem parte destas etapas de reorganização.

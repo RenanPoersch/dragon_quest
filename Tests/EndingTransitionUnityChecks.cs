@@ -54,8 +54,7 @@ public static class EndingTransitionUnityChecks
             var movement = hero.AddComponent<PlayerMovement>();
             var follow = camera.AddComponent<CameraFollow>();
             var endings = root.AddComponent<PrototypeEndingController>(); endings.enabled = false;
-            endings.Initialize(new Dictionary<string, GameObject> { { "castle", map } }, movement,
-                camera.GetComponent<Camera>(), follow, null);
+            endings.Initialize(new Dictionary<string, GameObject> { { "castle", map } }, movement, follow);
             var battle = root.AddComponent<PrototypeBattleController>(); battle.enabled = false;
             battle.Initialize(movement, root.AddComponent<DialogueController>(), new ExplorationProgress(), endingPresentation: endings.Show);
             var saves = root.AddComponent<PrototypeSaveController>(); saves.enabled = false;

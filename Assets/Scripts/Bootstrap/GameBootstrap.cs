@@ -54,7 +54,7 @@ namespace DragonQuest.Bootstrap
             var locations = host.AddComponent<PrototypeLocations>();
             var shops = host.AddComponent<PrototypeShopController>();
             var endings = host.AddComponent<PrototypeEndingController>();
-            endings.Initialize(world.Maps, world.Player, camera, cameraFollow, scenery);
+            endings.Initialize(world.Maps, world.Player, cameraFollow);
             innRest = host.AddComponent<InnRestController>();
             battle = host.AddComponent<PrototypeBattleController>();
             var cheats = host.AddComponent<PrototypeCheatMenu>();

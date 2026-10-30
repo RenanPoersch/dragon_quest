@@ -24,7 +24,7 @@ namespace DragonQuest.Prototype
         public float MusicGain => liberation?.Sequence.MusicGain ?? possession?.Sequence.MusicGain
             ?? (aftermath != null ? aftermath.Impact.Sequence.MusicGain * aftermath.Aftermath.Sequence.MusicGain : 0);
 
-        public void Initialize(Dictionary<string,GameObject> roots,PlayerMovement hero,Camera camera,CameraFollow cameraFollow,ObliqueScenery models)
+        public void Initialize(Dictionary<string,GameObject> roots,PlayerMovement hero,CameraFollow cameraFollow)
         {maps=roots;player=hero;follow=cameraFollow;}
         public void Show(GameEnding result)
         {
