@@ -31,7 +31,7 @@ namespace DragonQuest.Prototype
                 new ElementalAffinities(new[]{DamageElement.Ice},new[]{DamageElement.Fire}),100,300,0,
                 DragonClaw,ChargeBreath,DragonBreath);
             participants.Add(new CombatantState(DragonProgress.EnemyId,dragon,CombatTeam.Enemy));
-            return new BattleSession(party.Consumables,participants.ToArray());
+            return new BattleSession(false, null, party.Consumables, participants.ToArray());
         }
 
         public static BattleSession CreateRegionEncounter(PartyProgress party, RandomEncounterType type, int enemyCount)

@@ -39,6 +39,73 @@ internal static class BattleChecks
         Assert(battle.TryAct(battle.CurrentActor, ability, target, out string message), "Acao recusada: " + message);
     }
 
+    private static void CheckEscape()
+    {
+        var battle = CreateBasicEncounter();
+        var aren = Find(battle, "aren");
+        Assert(battle.CanEscape && !battle.EscapePending, "Encontros comuns permitem fuga sem inicia-la sozinhos.");
+        Assert(battle.SetEscapeHeld(true) && battle.CurrentActor == aren && aren.TurnsTaken == 0,
+            "Segurar apenas solicita fuga; nao deve concluir nem consumir o turno imediatamente.");
+        Assert(!battle.TryAct(aren, Attack, Find(battle, "guard"), out _)
+            && !battle.TryUseItem(aren, null, aren, out _), "Fugir bloqueia comandos e itens da equipe.");
+        Assert(battle.TryTakeEscapeTurn(out _) && battle.Outcome == BattleOutcome.None && aren.TurnsTaken == 1
+            && battle.CurrentActor == Find(battle, "lia") && aren.Mp == 20 && aren.Hp == 100,
+            "Preparar fuga ocupa a acao atual; o proximo turno aliado ainda deve confirmar a fuga.");
+        battle.SetEscapeHeld(false);
+        Assert(!battle.EscapePending && !battle.TryTakeEscapeTurn(out _), "Soltar cancela a fuga antes do proximo turno.");
+        Act(battle, Defend, Find(battle, "lia"));
+        Assert(battle.CurrentActor.Team == CombatTeam.Enemy && battle.SetEscapeHeld(true), "Fuga pode comecar no turno inimigo.");
+        Assert(!battle.TryTakeEscapeTurn(out _) && battle.Outcome == BattleOutcome.None, "Fuga deve aguardar um turno aliado.");
+        Assert(EnemyAI.TryTakeTurn(battle, out _), "Inimigos continuam agindo durante a tentativa.");
+        Assert(battle.TryTakeEscapeTurn(out _) && battle.Outcome == BattleOutcome.Escaped && battle.CurrentActor == null,
+            "No proximo turno aliado a equipe foge, sem exigir outra rodada.");
+        var rewards = new DragonQuest.Progression.BattleRewards(new DragonQuest.Exploration.ExplorationProgress());
+        Assert(!rewards.TryClaim(battle, out _) && !rewards.TryClaimExperience(battle, out _)
+            && !DragonQuest.Progression.PostBattleResults.IsVictory(battle), "Fuga nao entrega ouro, XP ou tela de vitoria.");
+        Assert(!battle.SetEscapeHeld(true) && !EnemyAI.TryTakeTurn(battle, out _), "Acoes e novas fugas sao bloqueadas apos escapar.");
+
+        var hero = new CombatantState("solo", new CombatantDefinition("Solo", "", 100, 10, 10, 0, 0, 20, Attack), CombatTeam.Party);
+        var enemy = new CombatantState("enemy", new CombatantDefinition("Enemy", "", 100, 0, 5, 0, 0, 10, Attack), CombatTeam.Enemy);
+        battle = new BattleSession(hero, enemy);
+        battle.SetEscapeHeld(true); battle.TryTakeEscapeTurn(out _);
+        Assert(battle.Outcome == BattleOutcome.None && battle.CurrentActor == enemy && !hero.IsDefending,
+            "Um aliado sozinho espera o inimigo e nao recebe defesa gratuita ao fugir.");
+        EnemyAI.TryTakeTurn(battle, out _);
+        Assert(hero.Hp == 80 && battle.Round == 2 && battle.TryTakeEscapeTurn(out _)
+            && battle.Outcome == BattleOutcome.Escaped, "O mesmo aliado pode fugir em seu proximo turno, preservando o dano sofrido.");
+
+        hero = new CombatantState("fragile", new CombatantDefinition("Fragile", "", 20, 0, 1, 0, 0, 20, Attack), CombatTeam.Party);
+        enemy = new CombatantState("enemy", new CombatantDefinition("Enemy", "", 100, 0, 99, 0, 0, 10, Attack), CombatTeam.Enemy);
+        battle = new BattleSession(hero, enemy);
+        battle.SetEscapeHeld(true); battle.TryTakeEscapeTurn(out _); EnemyAI.TryTakeTurn(battle, out _);
+        Assert(battle.Outcome == BattleOutcome.Defeat && !battle.EscapePending && !battle.TryTakeEscapeTurn(out _),
+            "Derrota durante a tentativa encerra a fuga sem substituir o resultado.");
+
+        hero = new CombatantState("poisoned", new CombatantDefinition("Poisoned", "", 20, 0, 1, 0, 0, 20, Attack), CombatTeam.Party);
+        hero.TakeDamage(19); hero.PoisonTurns = 1;
+        battle = new BattleSession(hero, new CombatantState("enemy", enemy.Definition, CombatTeam.Enemy));
+        battle.SetEscapeHeld(true); battle.TryTakeEscapeTurn(out _);
+        Assert(battle.Outcome == BattleOutcome.Defeat && !battle.EscapePending,
+            "Preparar fuga aplica veneno normalmente e nao permite fugir apos a morte.");
+
+        battle = CreateBasicEncounter();
+        aren = Find(battle, "aren");
+        Act(battle, Defend, aren);
+        var nextActor = battle.CurrentActor;
+        battle.SetEscapeHeld(true, currentActionCommitted: true);
+        Assert(battle.TryTakeEscapeTurn(out _) && battle.Outcome == BattleOutcome.Escaped && nextActor.TurnsTaken == 0,
+            "Solicitar durante a animacao da acao anterior foge no proximo turno ja agendado, sem consumir mais uma acao.");
+
+        var party = PrototypePartyFactory.Create();
+        foreach (var boss in new[] { PrototypeBattleFactory.CreateDragonEncounter(party), PrototypeCastleBattleFactory.Create(party) })
+        {
+            var actor = boss.CurrentActor;
+            Assert(!boss.CanEscape && !boss.SetEscapeHeld(true) && !boss.TryTakeEscapeTurn(out _)
+                && !boss.EscapePending && boss.CurrentActor == actor && actor.TurnsTaken == 0 && boss.Outcome == BattleOutcome.None,
+                "Chefes bloqueiam fuga nas regras, sem consumir turno, alterar estado ou encerrar a batalha.");
+        }
+    }
+
     private static void CheckBasicRound()
     {
         BattleSession battle = CreateBasicEncounter();
@@ -267,10 +334,16 @@ internal static class BattleChecks
             "Alvo de grupo em uma unica linha nao deve rolar para uma selecao invisivel.");
     }
 
-    public static int Main()
+    public static int Main(string[] args)
     {
         try
         {
+            CheckEscape();
+            if (args.Length == 1 && args[0] == "--escape-only")
+            {
+                Console.WriteLine(checks + " verificacoes de fuga passaram.");
+                return 0;
+            }
             CheckMenuScrolling();
             CheckCommandMenu();
             CheckVitalFeedback();

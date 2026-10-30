@@ -66,6 +66,11 @@ namespace DragonQuest.Prototype
                 if (!controller.IsCastleEncounter || controller.PresentingActor.Team == CombatTeam.Party)
                     GUI.Label(new Rect(40, 556, 570, 55), controller.PresentingAbility.Name, graphics.Text);
             }
+            else if (controller.IsEscaping)
+            {
+                GUI.Label(new Rect(40, 512, 570, 30), "FUGINDO...", graphics.Title);
+                GUI.Label(new Rect(40, 556, 570, 55), "A equipe fugira no proximo turno aliado.", graphics.Text);
+            }
             else if (controller.Session.Outcome != BattleOutcome.None)
             {
                 GUI.Label(new Rect(40, 508, 575, 30), controller.Session.Outcome == BattleOutcome.Completed ? "DESFECHO"

@@ -1,6 +1,7 @@
 param(
     [string]$UnityEditorPath = 'C:\Program Files\Unity\Hub\Editor\6000.6.5f1\Editor',
-    [string]$WorkDirectory = (Join-Path ([System.IO.Path]::GetTempPath()) 'DragonQuestBattleChecks')
+    [string]$WorkDirectory = (Join-Path ([System.IO.Path]::GetTempPath()) 'DragonQuestBattleChecks'),
+    [switch]$EscapeOnly
 )
 
 $ErrorActionPreference = 'Stop'
@@ -41,5 +42,6 @@ $testArguments += Join-Path $testProjectRoot 'Tests/CastleChecks.cs'
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 $testRuntimeConfig = @{ runtimeOptions = @{ tfm = $testReferenceDirectory.Name; framework = @{ name = 'Microsoft.NETCore.App'; version = $testRuntimeFolder.Name } } }
 $testRuntimeConfig | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (Join-Path $WorkDirectory 'BattleChecks.runtimeconfig.json') -Encoding utf8
-& $testDotnet $testOutputFile
+if ($EscapeOnly) { & $testDotnet $testOutputFile '--escape-only' }
+else { & $testDotnet $testOutputFile }
 exit $LASTEXITCODE

@@ -79,6 +79,9 @@ namespace DragonQuest.Input
                 return navigation;
             }
         }
+        public static bool EscapeHeld => IsFocused && (Keyboard.current != null
+            && Keyboard.current.qKey.isPressed && Keyboard.current.eKey.isPressed
+            || PadAvailable && Gamepad.current.leftTrigger.isPressed && Gamepad.current.rightTrigger.isPressed);
         public static bool GamepadConfirmPressed => PadAvailable && Gamepad.current.buttonSouth.wasPressedThisFrame;
         public static bool GamepadCancelPressed => PadAvailable && Gamepad.current.buttonEast.wasPressedThisFrame;
         public static bool ConfirmPressed => IsFrameAvailable && (GamepadConfirmPressed

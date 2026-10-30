@@ -180,7 +180,7 @@ namespace DragonQuest.Presentation.Battle
                 foreach (CombatantState target in controller.PresentingTargets) ultimateTargets.Add(FigureRect(target));
                 ultimateAnimation.DrawBackdrop(controller.PresentingAbility, ultimateElapsed, ultimateCaster, ultimateAllies);
             }
-            IReadOnlyList<CombatantState> targets = commands.Targets();
+            IReadOnlyList<CombatantState> targets = controller.IsEscaping ? new CombatantState[0] : commands.Targets();
             foreach (CombatantState participant in observedBattle.Combatants)
             {
                 if (!defeatedEnemies.IsVisible(participant, Time.unscaledTime)) continue;
@@ -201,7 +201,7 @@ namespace DragonQuest.Presentation.Battle
                     graphics.StatusIcons.DrawOverhead(figure, participant.MindControlTurns > 0
                         || controller.IsPresentingAction && controller.IsPresentingConfusedAction && controller.PresentingActor == participant,
                         participant.IsSilenced, Time.unscaledTime, participant.TauntTurns > 0);
-                if (!ultimate && participant.IsAlive && participant == (controller.IsPresentingAction ? controller.PresentingActor : commands.Actor))
+                if (!controller.IsEscaping && !ultimate && participant.IsAlive && participant == (controller.IsPresentingAction ? controller.PresentingActor : commands.Actor))
                     graphics.DrawTurnArrow(figure.center.x + castStep, figure.y - 30 + Mathf.Sin(Time.unscaledTime * 5) * 3);
                 bool group = commands.SelectedAbility != null && (commands.SelectedAbility.Targets == TargetRule.AllEnemies || commands.SelectedAbility.Targets == TargetRule.AllAllies);
                 for (int i = 0; i < targets.Count; i++)
@@ -316,9 +316,11 @@ namespace DragonQuest.Presentation.Battle
             int index = 0;
             foreach (CombatantState other in observedBattle.Combatants)
             { if (other == participant) break; if (other.Team == participant.Team) index++; }
+            float escapeOffset = controller.IsEscaping && participant.IsAlive
+                ? 18 * Mathf.Clamp01((Time.unscaledTime - controller.EscapeStartedAt) / .2f) + 420 * controller.EscapeDeparture : 0;
             if (participant.Team == CombatTeam.Party)
             {
-                Rect ground = new Rect(925 + (index % 2) * 60,
+                Rect ground = new Rect(925 + (index % 2) * 60 + escapeOffset,
                     background != null ? 125 + index * 78 : 103 + index * 83, 64, 90);
                 return floating && IsMeteorAbsorber(participant)
                     ? MeteorAbsorptionAnimation.BearerRect(ground, Time.unscaledTime - controller.ActionStartedAt) : ground;
@@ -360,6 +362,15 @@ namespace DragonQuest.Presentation.Battle
                             || controller.PresentingAbility.Effect == AbilityEffect.MagicDamage
                             || controller.PresentingAbility.Effect == AbilityEffect.Drain))
                     { rect.x += Mathf.Sin(sinceImpact * 75f) * (controller.IsPresentingUltimate ? 9 : 5); break; }
+            }
+            if (controller.IsEscaping && participant.Team == CombatTeam.Party && participant.IsAlive && !acting && pixelSprites != null)
+            {
+                float elapsed = Time.unscaledTime - controller.EscapeStartedAt;
+                int frame = PixelSpriteLayout.WalkFrame(PixelDirection.Right,
+                    elapsed * PixelSpriteLayout.WalkPoseDistance * 12, true);
+                rect.y -= Mathf.Abs(Mathf.Sin(elapsed * Mathf.PI * 12)) * 3;
+                pixelSprites.Party(participant.Id).Draw(rect, frame, tint);
+                return;
             }
             if (acting && controller.IsPresentingUltimate && battleSprites != null)
             {

@@ -33,7 +33,7 @@ namespace DragonQuest.Prototype
                 var spirit=new CombatantDefinition("Espirito maligno","Possessor",440,0,0,8,26,10,ElementalAffinities.Neutral,0,500,0,DrainLife,MindControl,Silence,Chains,ChaosMagic);
                 participants.Add(new CombatantState(CastleBattleRules.SpiritId,spirit,CombatTeam.Enemy));
             }
-            return new BattleSession(rules,party.Consumables,participants.ToArray());
+            return new BattleSession(false, rules, party.Consumables, participants.ToArray());
         }
     }
 }

@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Reflection;
 using DragonQuest.Input;
+using DragonQuest.Combat;
 using DragonQuest.Exploration;
 using DragonQuest.Interactions;
 using DragonQuest.Prototype;
@@ -195,6 +196,80 @@ public static class ControllerUnityChecks
         Check(!dialogue.IsOpen && activations == beforeCancel, "Cancel closes the selector without executing a response.");
         State(keyboard);
     }
+    private static void Age(object target, string property, float seconds)
+    {
+        if (target is PrototypeBattleController battle && property == "ActionStartedAt") target = battle.ActionPresentation;
+        target.GetType().GetField("<" + property + ">k__BackingField", BindingFlags.Instance | BindingFlags.NonPublic)
+            .SetValue(target, Time.unscaledTime - seconds);
+    }
+    private static void CheckBattleEscape(Keyboard keyboard, PrototypeBattleController battle, PlayerMovement movement)
+    {
+        State(keyboard, Key.Q); Check(!GameInput.EscapeHeld, "Q alone cannot request escape.");
+        State(keyboard, Key.E); Check(!GameInput.EscapeHeld, "E alone keeps its existing behavior.");
+        State(keyboard, Key.Q, Key.E); Check(GameInput.EscapeHeld, "Q and E together request escape.");
+        Focus(false); Check(!GameInput.EscapeHeld, "Losing focus releases the escape chord.");
+        State(keyboard);
+        State(new GamepadState { leftTrigger = 1 }); Check(!GameInput.EscapeHeld, "L2 alone cannot request escape.");
+        State(new GamepadState { rightTrigger = 1 }); Check(!GameInput.EscapeHeld, "R2 alone cannot request escape.");
+        State(new GamepadState { leftTrigger = 1, rightTrigger = 1 });
+        Check(GameInput.EscapeHeld, "Both triggers request escape without keyboard input.");
+        InputSystem.QueueStateEvent(pad, new GamepadState { leftTrigger = 1, rightTrigger = 1 }); InputSystem.Update();
+        Check(GameInput.EscapeHeld, "Escape uses continuous hold, not a one-frame press.");
+        InputSystem.RemoveDevice(pad); Reset(); Check(!GameInput.EscapeHeld, "Disconnecting a held controller cancels escape input.");
+        pad = InputSystem.AddDevice<Gamepad>();
+        State(keyboard);
+        battle.StartBattle();
+        var actor = battle.Session.CurrentActor;
+        State(keyboard, Key.Q, Key.E); Call(battle, "Update");
+        Check(battle.IsEscaping && battle.Session.Outcome == BattleOutcome.None && actor.TurnsTaken == 0,
+            "The real controller starts the run animation before advancing turns.");
+        Check(!battle.TryPlayerAction(actor.Definition.Abilities[0], actor), "The chord cannot also confirm a battle command.");
+        State(keyboard, Key.Q); Call(battle, "Update");
+        Check(!battle.IsEscaping && actor.TurnsTaken == 0, "Releasing E cancels preparation without spending the turn.");
+        State(new GamepadState { leftTrigger = 1, rightTrigger = 1 }); Call(battle, "Update");
+        Check(battle.IsEscaping, "The battle controller accepts L2 and R2.");
+        Focus(false); Call(battle, "Update"); Check(!battle.IsEscaping, "Focus loss cancels an actual pending battle escape.");
+        State(keyboard);
+        var defend = actor.Definition.Abilities.First(a => a.Effect == AbilityEffect.Defend);
+        Check(battle.TryPlayerAction(defend, actor) && battle.IsPresentingAction, "Start a real action before requesting escape.");
+        State(keyboard, Key.Q, Key.E); Call(battle, "Update");
+        Check(battle.IsEscaping && battle.IsPresentingAction, "Escape can be requested while an existing animation finishes.");
+        State(keyboard); Call(battle, "Update");
+        Check(!battle.IsEscaping && battle.IsPresentingAction, "Release cancels escape even during an action presentation.");
+        Age(battle, "ActionStartedAt", 100);
+        var experience = battle.Party.Members.Select(m => m.Experience).ToArray();
+        int completed = 0; battle.EncounterCompleted += outcome => { if (outcome == BattleOutcome.Escaped) completed++; };
+        State(keyboard, Key.Q, Key.E); Call(battle, "Update"); Age(battle, "EscapeStartedAt", 2);
+        for (int i = 0; i < 30 && battle.Session.Outcome == BattleOutcome.None; i++)
+        {
+            if (battle.IsPresentingAction) Age(battle, "ActionStartedAt", 100);
+            if (battle.Session.CurrentActor?.Team == CombatTeam.Enemy)
+            {
+                typeof(PrototypeBattleController).GetField("pendingEnemy", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(battle, battle.Session.CurrentActor);
+                typeof(PrototypeBattleController).GetField("enemyActionTime", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(battle, Time.unscaledTime - 2);
+            }
+            Call(battle, "Update");
+        }
+        Check(battle.Session.Outcome == BattleOutcome.Escaped && battle.IsActive && battle.IsEscaping && completed == 1,
+            "Holding escapes on the next allied turn and shows the final run offscreen exactly once.");
+        Check(!battle.IsPostBattleOpen && !battle.PostBattle.IsComplete && !battle.Rewards.HasClaimed(battle.Session)
+            && battle.Party.Members.Select(m => m.Experience).SequenceEqual(experience), "Escape bypasses XP, gold and victory screens.");
+        foreach (var member in battle.Party.Members)
+        {
+            var state = battle.Session.Combatants.First(c => c.Id == member.Id);
+            Check(member.Hp == state.Hp && member.Mp == state.Mp, "Escape captures remaining HP and MP.");
+        }
+        Age(battle, "EscapeCompletedAt", 1); Call(battle, "Update");
+        Check(!battle.IsActive && !battle.IsBusy && completed == 1, "Run completion automatically restores exploration without confirmation.");
+        State(keyboard, Key.D); Call(movement, "Update"); Check(movement.HasMovementInput, "Movement resumes after escaping.");
+        State(keyboard);
+        battle.StartCastleBattle(); actor = battle.Session.CurrentActor;
+        State(keyboard, Key.Q, Key.E); Call(battle, "Update");
+        Check(!battle.IsEscaping && !battle.Session.EscapePending && battle.Session.CurrentActor == actor
+            && actor.TurnsTaken == 0 && battle.ErrorMessage.Contains("chefes"), "Boss attempts show feedback without running or spending a turn.");
+        State(keyboard);
+    }
+
     private static void CheckBattleConfirmation(Keyboard keyboard)
     {
         foreach (Key key in new[] { Key.Enter, Key.NumpadEnter, Key.Space, Key.E })
@@ -341,6 +416,7 @@ public static class ControllerUnityChecks
             CheckInventoryControls(keyboard);
             CheckDialogueNavigation(keyboard, interaction, dialogue, movement);
             CheckBattleConfirmation(keyboard);
+            CheckBattleEscape(keyboard, battle, movement);
             UnityEngine.Object.DestroyImmediate(hero);
             Debug.Log("CONTROLLER_UNITY_CHECKS_OK: " + checks + " virtual gamepad, movement, dialogue, inventory, shops, reconnection and keyboard checks.");
             EditorApplication.Exit(0);

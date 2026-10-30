@@ -30,6 +30,13 @@ namespace DragonQuest.Prototype
         private CombatantState pendingEnemy;
         private float enemyActionTime;
         private bool pendingMeteorImpact;
+        private const float EscapePreparationDuration = .75f, EscapeDepartureDuration = .45f;
+        private const string BossEscapeMessage = "Nao e possivel fugir de chefes.";
+        public float EscapeStartedAt { get; private set; }
+        public float EscapeCompletedAt { get; private set; }
+        public bool IsEscaping => IsActive && (Session.Outcome == BattleOutcome.None && Session.EscapePending || Session.Outcome == BattleOutcome.Escaped);
+        public float EscapeDeparture => Session?.Outcome == BattleOutcome.Escaped
+            ? Mathf.Clamp01((Time.unscaledTime - EscapeCompletedAt) / EscapeDepartureDuration) : 0;
         private DialogueController dialogue;
         private PrototypeCheatMenu cheatMenu;
         public bool IsCheatMenuBlocking => cheatMenu != null && cheatMenu.BlocksInput;
@@ -57,6 +64,7 @@ namespace DragonQuest.Prototype
             :"Continuar explorando";
         public string OutcomeDescription => Session.Outcome==BattleOutcome.Completed?EndingNarrative.Title(CastleRules.Ending):Session.Outcome == BattleOutcome.Victory
             ? (IsDragonEncounter ? "A essencia do dragao foi libertada. " : "Os inimigos foram vencidos. ") + RewardMessage
+            : Session.Outcome == BattleOutcome.Escaped ? "A equipe fugiu sem receber ouro ou experiencia."
             : "Sua equipe foi vencida...";
 
         private System.Func<string> currentLocation = () => PrototypeTravel.World;
@@ -88,7 +96,8 @@ namespace DragonQuest.Prototype
         public BattleActionPresentation.SalvationCastState PendingSalvationState(CombatantState member)
             => actionPresentation.PendingSalvationState(member, IsPresentingAction, ActionImpactAt);
         public string PresentedMessage => AwaitingSalvationImpact
-            ? PresentingActor.Definition.Name + " esta conjurando " + PresentingAbility.Name + "..." : Session.LastMessage;
+            ? PresentingActor.Definition.Name + " esta conjurando " + PresentingAbility.Name + "..."
+            : IsEscaping && !IsPresentingAction ? "A equipe esta fugindo..." : Session.LastMessage;
         public bool IsPresentingUltimate => actionPresentation.IsPresentingUltimate;
         public bool IsPresentingSummon => actionPresentation.IsPresentingSummon;
         public bool IsPresentingSpell => actionPresentation.IsPresentingSpell;
@@ -222,6 +231,7 @@ namespace DragonQuest.Prototype
         {
             GameInput.ConsumeGamepadFrame();
             Session = encounter; IsDragonEncounter = dragonEncounter;
+            EscapeStartedAt = EscapeCompletedAt = 0;
             PostBattle = new PostBattleResults(Party, encounter);
             IsPostBattleOpen = false; PostBattleStartedAt = 0;
             RandomEncounter = RandomEncounterType.None;
@@ -247,7 +257,7 @@ namespace DragonQuest.Prototype
         public bool TryPlayerAction(AbilityDefinition ability, CombatantState target)
         {
             if (IsEnteringBattle || IsCheatMenuBlocking) return false;
-            if (!IsActive || IsPresentingAction || Session.CurrentActor == null || Session.CurrentActor.Team != CombatTeam.Party) return false;
+            if (!IsActive || IsPresentingAction || IsEscaping || GameInput.EscapeHeld || Session.CurrentActor == null || Session.CurrentActor.Team != CombatTeam.Party) return false;
             CombatantState actor = Session.CurrentActor;
             target = Session.ResolveLivingEnemyTarget(ability, target);
             var effectTargets = new System.Collections.Generic.List<CombatantState>();
@@ -272,7 +282,7 @@ namespace DragonQuest.Prototype
         public bool TryPlayerItem(ConsumableDefinition item, CombatantState target)
         {
             if (IsEnteringBattle || IsCheatMenuBlocking) return false;
-            if (!IsActive || IsPresentingAction || Session.CurrentActor == null || Session.CurrentActor.Team != CombatTeam.Party) return false;
+            if (!IsActive || IsPresentingAction || IsEscaping || GameInput.EscapeHeld || Session.CurrentActor == null || Session.CurrentActor.Team != CombatTeam.Party) return false;
             CombatantState actor = Session.CurrentActor;
             actionPresentation.CaptureChains(Session.Combatants);
             bool accepted = Session.TryUseItem(actor, item, target, out string message);
@@ -324,6 +334,35 @@ namespace DragonQuest.Prototype
             notifiedCompletion = true; EncounterCompleted?.Invoke(Session.Outcome);
         }
 
+        private void UpdateEscapeInput()
+        {
+            if (!IsActive || Session.Outcome != BattleOutcome.None) return;
+            bool held = !IsCheatMenuBlocking && GameInput.EscapeHeld;
+            bool wasPending = Session.EscapePending;
+            if (Session.SetEscapeHeld(held, IsPresentingAction) && !wasPending)
+            {
+                EscapeStartedAt = Time.unscaledTime;
+                ErrorMessage = string.Empty;
+            }
+            if (held && !Session.CanEscape) ErrorMessage = BossEscapeMessage;
+            else if (ErrorMessage == BossEscapeMessage) ErrorMessage = string.Empty;
+        }
+
+        private bool AdvanceEscape()
+        {
+            if (!IsActive) return false;
+            if (Session.Outcome == BattleOutcome.Escaped)
+            {
+                if (EscapeDeparture >= 1) ReturnToCity();
+                return true;
+            }
+            if (!Session.EscapePending || Time.unscaledTime - EscapeStartedAt < EscapePreparationDuration
+                || !Session.TryTakeEscapeTurn(out _)) return false;
+            if (Session.Outcome == BattleOutcome.Escaped) EscapeCompletedAt = Time.unscaledTime;
+            AwardIfComplete();
+            return true;
+        }
+
         private void ResolveMeteorImpact()
         {
             if (!IsActive || !pendingMeteorImpact || Time.unscaledTime < ActionImpactAt) return;
@@ -361,6 +400,7 @@ namespace DragonQuest.Prototype
         {
             if (HasEnded) { if (IsActive) FinishCastleBattle(); return; }
             if (IsEnteringBattle) { pendingEnemy = null; return; }
+            UpdateEscapeInput();
             if (IsCheatMenuBlocking) { pendingEnemy = null; return; }
             ResolveMeteorImpact();
             if (IsDestructiveMeteor && CastleRules.Ending == GameEnding.CastleDestroyed
@@ -385,6 +425,7 @@ namespace DragonQuest.Prototype
                     return;
                 }
             }
+            if (AdvanceEscape()) return;
             if (IsActive && PostBattle?.IsComplete == true)
             {
                 if (!IsPostBattleOpen) { IsPostBattleOpen = true; PostBattleStartedAt = Time.unscaledTime; }

@@ -62,7 +62,7 @@ namespace DragonQuest.Presentation.Battle
         {
             if (controller.HasEnded) return;
             if (controller.IsEnteringBattle) return;
-            if (controller.IsCheatMenuBlocking) return;
+            if (controller.IsCheatMenuBlocking || controller.IsEscaping || GameInput.EscapeHeld) return;
             if (controller.IsPresentingAction) return;
             Keyboard keys = Keyboard.current;
             if (!GameInput.IsFrameAvailable) return;

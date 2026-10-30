@@ -5,7 +5,7 @@ using DragonQuest.Inventory;
 
 namespace DragonQuest.Combat
 {
-    public enum BattleOutcome { None, Victory, Defeat, Completed }
+    public enum BattleOutcome { None, Victory, Defeat, Completed, Escaped }
 
     // Regras puras em C#: não dependem de cenas, menus ou animações da Unity.
     public sealed class BattleSession
@@ -18,6 +18,10 @@ namespace DragonQuest.Combat
         private int turnIndex;
         private bool skippingBoundTurns;
         private readonly Func<double> criticalRoll;
+        private CombatantState escapeStartingActor;
+        private int escapeStartingTurns;
+        public bool CanEscape { get; } = true;
+        public bool EscapePending { get; private set; }
 
         public IReadOnlyList<CombatantState> Combatants { get; }
         public ItemInventory Inventory { get; }
@@ -33,6 +37,9 @@ namespace DragonQuest.Combat
 
         public BattleSession(IBattleRules rules, ItemInventory inventory, params CombatantState[] participants)
             : this(new Random().NextDouble, rules, inventory, participants) { }
+
+        public BattleSession(bool canEscape, IBattleRules rules, ItemInventory inventory, params CombatantState[] participants)
+            : this(rules, inventory, participants) { CanEscape = canEscape; }
 
         public BattleSession(Func<double> criticalRoll, IBattleRules rules, ItemInventory inventory, params CombatantState[] participants)
         {
@@ -54,6 +61,41 @@ namespace DragonQuest.Combat
             Combatants = combatants.AsReadOnly();
             LastMessage = string.Empty;
             BeginRound();
+        }
+
+        // Holding the chord requests escape; releasing it cancels before the next allied turn.
+        public bool SetEscapeHeld(bool held, bool currentActionCommitted = false)
+        {
+            if (!held || !CanEscape || Outcome != BattleOutcome.None)
+            { EscapePending = false; escapeStartingActor = null; return false; }
+            if (!EscapePending)
+            {
+                // An action advances the model before its presentation finishes.
+                escapeStartingActor = currentActionCommitted ? null : CurrentActor;
+                escapeStartingTurns = CurrentActor.TurnsTaken;
+                EscapePending = true;
+            }
+            return true;
+        }
+
+        public bool TryTakeEscapeTurn(out string message)
+        {
+            message = string.Empty;
+            if (!CanEscape || !EscapePending || CurrentActor?.Team != CombatTeam.Party) return false;
+            CombatantState actor = CurrentActor;
+            if (actor == escapeStartingActor && actor.TurnsTaken == escapeStartingTurns)
+            {
+                // Preparing uses the current action, including poison and normal turn advancement.
+                message = "A equipe se prepara para fugir no proximo turno aliado.";
+                CompleteAction(actor, ref message);
+            }
+            else
+            {
+                Outcome = BattleOutcome.Escaped;
+                EscapePending = false;
+                LastMessage = message = "A equipe fugiu da batalha.";
+            }
+            return true;
         }
 
         public IReadOnlyList<CombatantState> GetValidItemTargets(ConsumableDefinition item)
@@ -81,6 +123,7 @@ namespace DragonQuest.Combat
             if (Outcome != BattleOutcome.None) { message = "A batalha ja terminou."; return false; }
             if (actor == null || actor != CurrentActor || actor.Team != CombatTeam.Party)
             { message = "Itens so podem ser usados no turno de um aliado."; return false; }
+            if (EscapePending) { message = "A equipe esta tentando fugir."; return false; }
             if (actor.IsBound) { message = "Este personagem esta acorrentado."; return false; }
             if (actor.MindControlTurns > 0) { message = "O controle mental obriga um ataque aleatorio."; return false; }
             if (item == null || Inventory.QuantityOf(item) == 0) { message = "Item indisponivel no inventario."; return false; }
@@ -178,6 +221,8 @@ namespace DragonQuest.Combat
         {
             if (Outcome != BattleOutcome.None) { message = "A batalha ja terminou."; return false; }
             if (actor == null || actor != CurrentActor) { message = "Nao e o turno deste personagem."; return false; }
+            if (EscapePending && actor.Team == CombatTeam.Party)
+            { message = "A equipe esta tentando fugir."; return false; }
             bool knownAbility = false;
             foreach (AbilityDefinition known in actor.Definition.Abilities)
                 if (known == ability) knownAbility = true;
@@ -372,6 +417,7 @@ namespace DragonQuest.Combat
                 Rules?.AfterAction(this);
                 CheckOutcome();
             }
+            if (Outcome != BattleOutcome.None) EscapePending = false;
             LastMessage = message;
             actor.AdvanceShieldDuration();
             if (Outcome == BattleOutcome.None) NextTurn();
