@@ -45,7 +45,7 @@ Trilha de basalto, lava, arena, rochas, camas e dragão são modelos originais g
 
 Rei com coroa, espírito, castelo em ruínas e figuras dos três finais são malhas originais de `ObliqueScenery.KingData`, `SpiritData`, `RuinedCastleData` e `EndingSceneData`, adicionadas em 12 de outubro de 2026. Os textos de `EndingNarrative` foram escritos para a demo.
 
-`Assets/Resources/KingPortrait.png` e `SpiritPortrait.png` são retratos transparentes derivados dessas malhas, usando os JSONs exportados por `Test-Oblique.ps1` e `Render-MeshPortrait.py` com a opção `--crop`. O jogo usa os PNGs prontos e não requer Python. Não foram usados modelos, imagens ou sons de terceiros.
+`Assets/Resources/KingPortrait.png` é um retrato transparente derivado dessas malhas, usando os JSONs exportados por `Test-Oblique.ps1` e `Render-MeshPortrait.py` com a opção `--crop`. O antigo `SpiritPortrait.png` foi retirado de Resources na limpeza de assets; sua geometria continua disponível no exportador histórico. O jogo usa os PNGs prontos e não requer Python. Não foram usados modelos, imagens ou sons de terceiros.
 
 ## Pixel art — 12 de outubro de 2026
 
@@ -110,7 +110,7 @@ WorldGroundMap.png foi recriado inteiro em uma geração com image_gen: terreno,
 
 ## Aparência escolhida do espírito
 
-`Assets/Resources/PixelArt/SpiritBattle.png` usa o modelo 3 de `ArtInputs/SpiritVariants/03-espectro-glacial.png`, gerado pela ferramenta integrada `image_gen` e escolhido pelo usuário. O PNG foi copiado sem edição, redimensionamento ou mudança de alpha. Prompts completos em `ArtInputs/SpiritVariants/prompts.json`. O jogo usa essa mesma imagem inteira no castelo, no combate e no retrato de fallback; o antigo `SpiritPortrait.png` derivado de malha permanece apenas como asset histórico. A paleta azul não muda elementos, afinidades ou habilidades.
+`Assets/Resources/PixelArt/SpiritBattle.png` usa o modelo 3 de `ArtInputs/SpiritVariants/03-espectro-glacial.png`, gerado pela ferramenta integrada `image_gen` e escolhido pelo usuário. O PNG foi copiado sem edição, redimensionamento ou mudança de alpha. Prompts completos em `ArtInputs/SpiritVariants/prompts.json`. O jogo usa essa mesma imagem inteira no castelo, no combate e no retrato de fallback; o antigo `SpiritPortrait.png` derivado de malha foi retirado de Resources por não ter uso no jogo. A paleta azul não muda elementos, afinidades ou habilidades.
 
 ## Retratos ilustrados de conversa — 16 de outubro de 2026
 

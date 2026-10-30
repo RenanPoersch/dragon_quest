@@ -112,4 +112,6 @@ Os modelos geométricos substituídos de personagens, dragão e finais ficam em 
 
 A inicialização dos finais recebe apenas mapas, jogador e câmera de acompanhamento. Os antigos parâmetros de câmera e geometria não eram utilizados e foram retirados junto de seus argumentos nos chamadores.
 
+A cena de exemplo e o conteúdo de boas-vindas/tutorial do template foram retirados. `Packages/manifest.json` declara os pacotes usados e os módulos nativos necessários ao jogo; o lock preserva as versões mantidas e somente seu grafo alcançável. A revisão de assets, dependências e tamanho das fontes está em `ASSET_DEPENDENCY_AUDIT.md`. A cena principal, os recursos ativos e a importação das músicas foram preservados.
+
 O trecho comentado de enquadramento esticado da entrada do rei permanece disponível para a decisão de acabamento. As alterações anteriores de música, finais, menus e combate não fazem parte destas etapas de reorganização.
