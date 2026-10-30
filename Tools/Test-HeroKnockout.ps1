@@ -18,6 +18,7 @@ $testOutputFile = Join-Path $WorkDirectory 'HeroKnockoutChecks.dll'
 $testArguments = @('-nologo', '-target:exe', '-nostdlib+', "-out:$testOutputFile")
 $testArguments += Get-ChildItem -LiteralPath $testReferenceDirectory.FullName -Filter '*.dll' | ForEach-Object { "-reference:$($_.FullName)" }
 $testArguments += Get-ChildItem -LiteralPath (Join-Path $testProjectRoot 'Assets/Scripts/Combat') -Filter '*.cs' | ForEach-Object { $_.FullName }
+$testArguments += Get-ChildItem -LiteralPath (Join-Path $testProjectRoot 'Assets/Scripts/Content') -Filter '*.cs' | ForEach-Object { $_.FullName }
 $testArguments += Get-ChildItem -LiteralPath (Join-Path $testProjectRoot 'Assets/Scripts/Equipment') -Filter '*.cs' | ForEach-Object { $_.FullName }
 $testArguments += Get-ChildItem -LiteralPath (Join-Path $testProjectRoot 'Assets/Scripts/Inventory') -Filter '*.cs' | ForEach-Object { $_.FullName }
 $testArguments += Get-ChildItem -LiteralPath (Join-Path $testProjectRoot 'Assets/Scripts/Shops') -Filter '*.cs' | ForEach-Object { $_.FullName }

@@ -16,7 +16,7 @@ $saveOutputFile = Join-Path $WorkDirectory 'SaveChecks.dll'
 $saveCoreAssembly = Join-Path $saveUnityData 'Managed/UnityEngine/UnityEngine.CoreModule.dll'
 $saveArguments = @('-nologo', '-target:exe', '-nostdlib+', "-out:$saveOutputFile", "-reference:$saveCoreAssembly")
 $saveArguments += Get-ChildItem -LiteralPath $saveReferenceDirectory.FullName -Filter '*.dll' | ForEach-Object { "-reference:$($_.FullName)" }
-foreach ($saveFolder in @('Combat', 'Equipment', 'Inventory', 'Shops', 'Progression', 'Persistence')) {
+foreach ($saveFolder in @('Combat','Content', 'Equipment', 'Inventory', 'Shops', 'Progression', 'Persistence')) {
     $saveArguments += Get-ChildItem -LiteralPath (Join-Path $saveProjectRoot "Assets/Scripts/$saveFolder") -Filter '*.cs' | ForEach-Object { $_.FullName }
 }
 $saveArguments += Join-Path $saveProjectRoot 'Assets/Scripts/Exploration/ExplorationProgress.cs'

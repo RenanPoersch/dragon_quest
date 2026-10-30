@@ -314,56 +314,6 @@ namespace DragonQuest.Prototype
             return seal;
         }
 
-        public GameObject AltarFlame(Transform parent)
-        {
-            var mesh=new ObliqueMeshData();mesh.Cone(0,0,0.2f,0.72f,1.32f,ObliqueMeshData.Hex("E1AE61"),5);
-            GameObject flame=Show("Chama antiga",mesh,parent).gameObject;flame.SetActive(false);return flame;
-        }
-
-        public GameObject MonolithRune(MonolithSymbol symbol,Transform parent)
-        {
-            var mesh=new ObliqueMeshData();float y=-0.41f, h=0.75f;
-            Color rune=ObliqueMeshData.Hex("C4C0A5");
-            int points=symbol==MonolithSymbol.Star?10:12;
-            for(int i=0;i<points;i++)
-            {
-                double a=i*Math.PI*2/points,b=(i+1)*Math.PI*2/points;
-                float radiusA=symbol==MonolithSymbol.Star&&i%2==1?0.1f:0.22f;
-                float radiusB=symbol==MonolithSymbol.Star&&(i+1)%2==1?0.1f:0.22f;
-                mesh.Triangle(ObliqueMeshData.V(0,y,h),ObliqueMeshData.V((float)Math.Sin(a)*radiusA,y,h+(float)Math.Cos(a)*radiusA),
-                    ObliqueMeshData.V((float)Math.Sin(b)*radiusB,y,h+(float)Math.Cos(b)*radiusB),rune,false);
-            }
-            Show("Simbolo gravado / "+symbol,mesh,parent);
-            if(symbol==MonolithSymbol.Moon)
-            {
-                var cut=new ObliqueMeshData();
-                cut.Quad(ObliqueMeshData.V(0.05f,y-0.005f,h-0.18f),ObliqueMeshData.V(-0.08f,y-0.005f,h),
-                    ObliqueMeshData.V(0.05f,y-0.005f,h+0.18f),ObliqueMeshData.V(0.22f,y-0.005f,h),ObliqueMeshData.Hex("727264"),false);
-                Show("Lua - recorte",cut,parent);
-            }
-            var glow=new ObliqueMeshData();glow.Cone(0,0,0.18f,1.28f,1.65f,ObliqueMeshData.Hex("DDD098"),6,0.09f);
-            GameObject light=Show("Luz do monolito",glow,parent).gameObject;light.SetActive(false);return light;
-        }
-
-        public void ClawMarks(Transform parent)
-        {
-            var mesh=new ObliqueMeshData();
-            foreach(float x in new[]{-0.2f,-0.07f,0.06f})
-                mesh.Quad(ObliqueMeshData.V(x-0.015f,-0.5f+0.18f/0.85f*0.6f-0.01f,0.18f),
-                    ObliqueMeshData.V(x+0.005f,-0.5f+0.5f/0.85f*0.6f-0.01f,0.5f),
-                    ObliqueMeshData.V(x+0.035f,-0.5f+0.5f/0.85f*0.6f-0.01f,0.5f),
-                    ObliqueMeshData.V(x+0.015f,-0.5f+0.18f/0.85f*0.6f-0.01f,0.18f),ObliqueMeshData.Hex("3F4B45"),false);
-            Show("Sulcos de garras",mesh,parent);
-        }
-
-        public void Hollow(Transform parent)
-        {
-            var mesh=new ObliqueMeshData();
-            mesh.Quad(ObliqueMeshData.V(-0.1f,-0.15f,0.1f),ObliqueMeshData.V(-0.09f,-0.15f,0.65f),
-                ObliqueMeshData.V(0.09f,-0.15f,0.65f),ObliqueMeshData.V(0.1f,-0.15f,0.1f),ObliqueMeshData.Hex("303F36"),false);
-            Show("Abertura entre raizes",mesh,parent);
-        }
-
         public void CastleIcon(Transform parent)
         {
             WorldPoi(parent, 0);
@@ -372,8 +322,6 @@ namespace DragonQuest.Prototype
             BoxCollider2D collider=parent.gameObject.AddComponent<BoxCollider2D>();
             collider.size=footprint.Size; collider.offset=footprint.Position;
         }
-
-        public static ObliqueMeshData CastleIconData() => CastleFortressArt.Icon();
 
         public void ForestIcon(Transform parent)
             => WorldPoi(parent, 2);
@@ -413,15 +361,6 @@ namespace DragonQuest.Prototype
             }
             return mesh;
         }
-        public static ObliqueMeshData ForestIconData()
-        {
-            var mesh=new ObliqueMeshData();
-            Tree(mesh,-0.45f,0,0.48f,1.5f,ObliqueMeshData.Hex("405B4D"));
-            Tree(mesh,0.45f,0,0.48f,1.4f,ObliqueMeshData.Hex("4A6451"));
-            Tree(mesh,0,0.45f,0.46f,1.8f,ObliqueMeshData.Hex("526D57"));
-            return mesh;
-        }
-
         public void RuinsIcon(Transform parent)
         {
             WorldPoi(parent, 3);
@@ -430,31 +369,10 @@ namespace DragonQuest.Prototype
             collider.size=footprint.Size;collider.offset=footprint.Position;
         }
 
-        public static ObliqueMeshData RuinsIconData()
-        {
-            var mesh=new ObliqueMeshData {DefaultSurface=PixelSurface.Wall};Color stone=ObliqueMeshData.Hex("A4A491");
-            mesh.Shadow(0.1f,-0.1f,1.1f,0.6f);
-            mesh.Box(0,0.1f,1.8f,0.8f,0,0.12f,ObliqueMeshData.Hex("818576"));
-            mesh.Cone(-0.55f,0.2f,0.2f,0.12f,1.5f,stone,7,0.17f);
-            mesh.Roof(-0.55f,0.2f,0.34f,0.34f,1.5f,1.7f,stone);
-            mesh.Cone(0.55f,0.2f,0.2f,0.12f,0.95f,stone,7,0.17f);
-            mesh.Box(-0.25f,0.2f,0.6f,0.26f,1.3f,1.43f,stone);
-            mesh.Roof(0.4f,-0.15f,0.45f,0.3f,0.12f,0.36f,stone);
-            return mesh;
-        }
-
         public void VolcanoIcon(Transform parent)
             => WorldPoi(parent, 4);
 
         public Transform Dragon(Transform parent) => PixelSprites.Create(parent, "Dragon");
-        public Transform DragonEssence(Transform parent)
-        {
-            var mesh=new ObliqueMeshData();
-            mesh.Cone(0,0,0.3f,0.8f,1.4f,ObliqueMeshData.Hex("F2C879"),8,0);
-            mesh.Cone(0,0,0.16f,0.85f,1.25f,ObliqueMeshData.Hex("FFF0BE"),8,0);
-            return Show("Essencia do dragao",mesh,parent);
-        }
-
         public static ObliqueMeshData DragonData()
         {
             var mesh=new ObliqueMeshData();
@@ -481,15 +399,6 @@ namespace DragonQuest.Prototype
             mesh.Box(0,-1.94f,0.62f,0.04f,1.45f,1.52f,ObliqueMeshData.Hex("30282E"));
             mesh.Triangle(ObliqueMeshData.V(-0.36f,1,0.8f),ObliqueMeshData.V(0.36f,1,0.8f),ObliqueMeshData.V(0,3.1f,0.18f),scales);
             for(int i=0;i<4;i++) mesh.Cone(0,0.3f+i*0.32f,0.12f,1.8f,2.25f,bone,5,0);
-            return mesh;
-        }
-
-        public static ObliqueMeshData VolcanoIconData()
-        {
-            var mesh=new ObliqueMeshData();
-            mesh.Cone(0,0,0.9f,0,1.55f,ObliqueMeshData.Hex("777979"),9,0.35f);
-            mesh.Cone(0,0,0.34f,1.55f,1.56f,ObliqueMeshData.Hex("BF805D"),9,0.34f);
-            mesh.Cone(0,0,0.21f,1.56f,1.565f,ObliqueMeshData.Hex("553F3F"),9,0.21f);
             return mesh;
         }
 

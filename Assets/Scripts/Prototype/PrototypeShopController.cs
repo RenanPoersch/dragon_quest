@@ -56,18 +56,6 @@ namespace DragonQuest.Prototype
             else Close();
             GameInput.ConsumeGamepadFrame();
         }
-        public bool Buy(ShopProduct product, int quantity)
-        {
-            if (!IsOpen) return false;
-            bool accepted = Service.TryBuy(ActiveShop, product, quantity, out string message);
-            Menu.Notify(message); return accepted;
-        }
-        public bool Sell(SaleEntry entry, int quantity)
-        {
-            if (!IsOpen) return false;
-            bool accepted = Service.TrySell(ActiveShop, entry, quantity, out string message);
-            Menu.Notify(message); return accepted;
-        }
         private void Update()
         {
             if (!IsOpen || IsInputBlocked || !GameInput.IsFrameAvailable) return;

@@ -15,7 +15,7 @@ New-Item -ItemType Directory -Path $WorkDirectory -Force | Out-Null
 $achievementOutput = Join-Path $WorkDirectory 'EndingAchievementChecks.dll'
 $achievementArguments = @('-nologo', '-target:exe', '-nostdlib+', "-out:$achievementOutput")
 $achievementArguments += Get-ChildItem -LiteralPath $achievementRefs.FullName -Filter '*.dll' | ForEach-Object { "-reference:$($_.FullName)" }
-foreach ($achievementFolder in @('Combat', 'Equipment', 'Inventory', 'Progression', 'Shops')) {
+foreach ($achievementFolder in @('Combat','Content', 'Equipment', 'Inventory', 'Progression', 'Shops')) {
     $achievementArguments += Get-ChildItem -LiteralPath (Join-Path $achievementRoot "Assets/Scripts/$achievementFolder") -Filter '*.cs' | ForEach-Object { $_.FullName }
 }
 $achievementArguments += Join-Path $achievementRoot 'Assets/Scripts/Exploration/ExplorationProgress.cs'

@@ -14,7 +14,7 @@ New-Item -ItemType Directory -Path $WorkDirectory -Force | Out-Null
 $equipmentOutput = Join-Path $WorkDirectory 'EquipmentMenuChecks.dll'
 $equipmentArguments = @('-nologo', '-target:exe', '-nostdlib+', "-out:$equipmentOutput")
 $equipmentArguments += Get-ChildItem -LiteralPath $equipmentRefDir.FullName -Filter '*.dll' | ForEach-Object { "-reference:$($_.FullName)" }
-foreach ($equipmentFolder in @('Combat', 'Equipment', 'Inventory', 'Shops', 'Progression')) {
+foreach ($equipmentFolder in @('Combat','Content', 'Equipment', 'Inventory', 'Shops', 'Progression')) {
     $equipmentArguments += Get-ChildItem -LiteralPath (Join-Path $equipmentRoot "Assets/Scripts/$equipmentFolder") -Filter '*.cs' | ForEach-Object { $_.FullName }
 }
 foreach ($equipmentSource in @('Assets/Scripts/Exploration/ExplorationProgress.cs', 'Assets/Scripts/Prototype/PrototypeBattleFactory.cs',

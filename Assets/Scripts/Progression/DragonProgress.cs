@@ -1,3 +1,4 @@
+using DragonQuest.Content;
 using DragonQuest.Combat;
 using DragonQuest.Equipment;
 
@@ -6,8 +7,7 @@ namespace DragonQuest.Progression
     public sealed class DragonProgress
     {
         public const string EnemyId = "ancient-dragon";
-        public static readonly EquipmentDefinition Armor = new EquipmentDefinition("Armadura draconica", 0, 16, 4,
-            EquipmentSlot.Armor, affinities: new ElementalAffinities(resistances: new[] { DamageElement.Fire }), isStoryItem: true);
+        public static readonly EquipmentDefinition Armor = EquipmentCatalog.DragonArmor;
         public bool IsDefeated { get; private set; }
         internal void Restore(bool defeated) => IsDefeated = defeated;
 

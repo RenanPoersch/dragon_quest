@@ -1,9 +1,9 @@
+using DragonQuest.Content;
 using System;
 using System.Collections.Generic;
 using DragonQuest.Equipment;
 using DragonQuest.Inventory;
 using DragonQuest.Progression;
-using P = DragonQuest.Prototype.PrototypePartyFactory;
 
 namespace DragonQuest.Persistence
 {
@@ -11,18 +11,18 @@ namespace DragonQuest.Persistence
     {
         private static readonly Dictionary<string, EquipmentDefinition> gear = new Dictionary<string, EquipmentDefinition>
         {
-            {"initial-weapon", P.InitialWeapon}, {"initial-armor", P.InitialArmor}, {"iron-sword", P.IronSword},
-            {"runic-staff", P.RunicStaff}, {"iron-armor", P.IronArmor}, {"arcane-robe", P.ArcaneRobe}, {"dragon-armor", DragonProgress.Armor},
-            {"power-ring", P.PowerRing}, {"guardian-bracelet", P.GuardianBracelet}, {"arcane-pendant", P.ArcanePendant}
+            {"initial-weapon", EquipmentCatalog.InitialWeapon}, {"initial-armor", EquipmentCatalog.InitialArmor}, {"iron-sword", EquipmentCatalog.IronSword},
+            {"runic-staff", EquipmentCatalog.RunicStaff}, {"iron-armor", EquipmentCatalog.IronArmor}, {"arcane-robe", EquipmentCatalog.ArcaneRobe}, {"dragon-armor", EquipmentCatalog.DragonArmor},
+            {"power-ring", EquipmentCatalog.PowerRing}, {"guardian-bracelet", EquipmentCatalog.GuardianBracelet}, {"arcane-pendant", EquipmentCatalog.ArcanePendant}
         };
         private static readonly Dictionary<string, MateriaDefinition> materia = new Dictionary<string, MateriaDefinition>();
         private static readonly Dictionary<string, ConsumableDefinition> items = new Dictionary<string, ConsumableDefinition>();
         static SaveCatalog()
         {
-            foreach (var definition in new[] {P.ThunderMateria, P.FireMateria, P.IceMateria, P.CureMateria, P.CleanseMateria,
-                P.ReviveMateria, P.SummonMateria, P.AllMateria, P.InfuseMateria, P.HeavyMateria, P.CleaveMateria, P.GuardianMateria, P.EarthMateria, P.ChaosMateria, P.BahamutMateria, P.TitanMateria, P.DefenseMateria, P.HpMateria, P.MpMateria})
+            foreach (var definition in new[] {MateriaCatalog.ThunderMateria, MateriaCatalog.FireMateria, MateriaCatalog.IceMateria, MateriaCatalog.CureMateria, MateriaCatalog.CleanseMateria,
+                MateriaCatalog.ReviveMateria, MateriaCatalog.SummonMateria, MateriaCatalog.AllMateria, MateriaCatalog.InfuseMateria, MateriaCatalog.HeavyMateria, MateriaCatalog.CleaveMateria, MateriaCatalog.GuardianMateria, MateriaCatalog.EarthMateria, MateriaCatalog.ChaosMateria, MateriaCatalog.BahamutMateria, MateriaCatalog.TitanMateria, MateriaCatalog.DefenseMateria, MateriaCatalog.HpMateria, MateriaCatalog.MpMateria})
                 materia.Add(definition.Id, definition);
-            foreach (var definition in new[] {P.Potion, P.Ether, P.Antidote, P.PhoenixFeather}) items.Add(definition.Id, definition);
+            foreach (var definition in new[] {ItemCatalog.Potion, ItemCatalog.Ether, ItemCatalog.Antidote, ItemCatalog.PhoenixFeather}) items.Add(definition.Id, definition);
         }
         public static string GearId(EquipmentDefinition definition)
         {

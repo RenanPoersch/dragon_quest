@@ -1,3 +1,4 @@
+using DragonQuest.Content;
 using System.Collections.Generic;
 using DragonQuest.Equipment;
 using DragonQuest.Inventory;
@@ -10,16 +11,16 @@ namespace DragonQuest.Prototype
     {
         private static readonly Dictionary<EquipmentDefinition, string> equipment = new Dictionary<EquipmentDefinition, string>
         {
-            { PrototypePartyFactory.InitialWeapon, "initial-weapon" },
-            { PrototypePartyFactory.IronSword, "iron-sword" },
-            { PrototypePartyFactory.RunicStaff, "runic-staff" },
-            { PrototypePartyFactory.InitialArmor, "initial-armor" },
-            { PrototypePartyFactory.IronArmor, "iron-armor" },
-            { PrototypePartyFactory.ArcaneRobe, "arcane-robe" },
-            { PrototypePartyFactory.PowerRing, "power-ring" },
-            { PrototypePartyFactory.GuardianBracelet, "guardian-bracelet" },
-            { PrototypePartyFactory.ArcanePendant, "arcane-pendant" },
-            { DragonProgress.Armor, "dragon-armor" }
+            { EquipmentCatalog.InitialWeapon, "initial-weapon" },
+            { EquipmentCatalog.IronSword, "iron-sword" },
+            { EquipmentCatalog.RunicStaff, "runic-staff" },
+            { EquipmentCatalog.InitialArmor, "initial-armor" },
+            { EquipmentCatalog.IronArmor, "iron-armor" },
+            { EquipmentCatalog.ArcaneRobe, "arcane-robe" },
+            { EquipmentCatalog.PowerRing, "power-ring" },
+            { EquipmentCatalog.GuardianBracelet, "guardian-bracelet" },
+            { EquipmentCatalog.ArcanePendant, "arcane-pendant" },
+            { EquipmentCatalog.DragonArmor, "dragon-armor" }
         };
 
         public static string Key(EquipmentDefinition definition) => definition != null

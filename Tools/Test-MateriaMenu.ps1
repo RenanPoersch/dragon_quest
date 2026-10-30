@@ -14,7 +14,7 @@ New-Item -ItemType Directory -Path $WorkDirectory -Force | Out-Null
 $materiaOutput = Join-Path $WorkDirectory 'MateriaMenuChecks.dll'
 $materiaArguments = @('-nologo', '-target:exe', '-nostdlib+', "-out:$materiaOutput")
 $materiaArguments += Get-ChildItem -LiteralPath $materiaRefDir.FullName -Filter '*.dll' | ForEach-Object { "-reference:$($_.FullName)" }
-foreach ($materiaFolder in @('Combat', 'Equipment', 'Inventory', 'Shops', 'Progression')) {
+foreach ($materiaFolder in @('Combat','Content', 'Equipment', 'Inventory', 'Shops', 'Progression')) {
     $materiaArguments += Get-ChildItem -LiteralPath (Join-Path $materiaRoot "Assets/Scripts/$materiaFolder") -Filter '*.cs' | ForEach-Object { $_.FullName }
 }
 foreach ($materiaSource in @('Assets/Scripts/Exploration/ExplorationProgress.cs', 'Assets/Scripts/Prototype/PrototypeBattleFactory.cs',

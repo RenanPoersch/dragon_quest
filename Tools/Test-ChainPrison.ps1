@@ -14,7 +14,7 @@ New-Item -ItemType Directory -Path $WorkDirectory -Force | Out-Null
 $castleOutput = Join-Path $WorkDirectory 'ChainPrisonChecks.dll'
 $castleArgs = @('-nologo','-target:exe','-nostdlib+',('-out:"'+$castleOutput+'"'))
 $castleArgs += Get-ChildItem $castleRefs.FullName -Filter '*.dll' | ForEach-Object { '-reference:"'+$_.FullName+'"' }
-foreach ($folder in @('Combat','Equipment','Inventory','Shops','Progression')) {
+foreach ($folder in @('Combat','Content','Equipment','Inventory','Shops','Progression')) {
     $castleArgs += Get-ChildItem (Join-Path $castleRoot "Assets/Scripts/$folder") -Filter '*.cs' | ForEach-Object { '"'+$_.FullName+'"' }
 }
 foreach ($relative in @('Assets/Scripts/Exploration/ExplorationProgress.cs',

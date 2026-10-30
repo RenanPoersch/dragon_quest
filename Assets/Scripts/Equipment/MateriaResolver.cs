@@ -1,3 +1,4 @@
+using DragonQuest.Content;
 using System;
 using System.Collections.Generic;
 using DragonQuest.Combat;
@@ -6,8 +7,8 @@ namespace DragonQuest.Equipment
 {
     public static class MateriaResolver
     {
-        public static readonly AbilityDefinition Attack = new AbilityDefinition("attack", "Ataque", "Ataque basico, sem materia.", 0, 0, AbilityEffect.PhysicalDamage, TargetRule.Enemy);
-        public static readonly AbilityDefinition Defend = new AbilityDefinition("defend", "Defender", "Reduz o dano recebido ate o proximo turno.", 0, 0, AbilityEffect.Defend, TargetRule.Self);
+        public static readonly AbilityDefinition Attack = AbilityCatalog.Attack;
+        public static readonly AbilityDefinition Defend = AbilityCatalog.Defend;
         public static readonly AbilityDefinition LimitBreak = HeroUltimates.Omnislash;
 
         // A weapon has one basic-attack element; the first valid linked pair wins.

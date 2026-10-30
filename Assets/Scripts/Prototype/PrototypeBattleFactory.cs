@@ -1,40 +1,27 @@
+using DragonQuest.Content;
 using DragonQuest.Combat;
 using DragonQuest.Equipment;
 using DragonQuest.Progression;
 
 namespace DragonQuest.Prototype
 {
-    // Dados iniciais em código; poderão vir de ScriptableObjects nas próximas etapas.
+    // Monta encontros a partir das definicoes compartilhadas de conteudo.
     public static class PrototypeBattleFactory
     {
-        public static readonly AbilityDefinition Attack = new AbilityDefinition("attack", "Ataque",
-            "Ataque fisico contra um inimigo. Nao consome MP.", 0, 0, AbilityEffect.PhysicalDamage, TargetRule.Enemy);
-        public static readonly AbilityDefinition Defend = new AbilityDefinition("defend", "Defender",
-            "Reduz o dano recebido pela metade ate o inicio do proximo turno.", 0, 0, AbilityEffect.Defend, TargetRule.Self);
-        public static readonly AbilityDefinition HeavyStrike = new AbilityDefinition("heavy-strike", "Golpe forte",
-            "Ataque fisico mais poderoso. Custa 4 MP.", 4, 14, AbilityEffect.PhysicalDamage, TargetRule.Enemy);
-        public static readonly AbilityDefinition Heal = new AbilityDefinition("heal", "Curar",
-            "Recupera HP de um aliado vivo e ferido. Custa 6 MP.", 6, 18, AbilityEffect.Heal, TargetRule.Ally);
-        public static readonly AbilityDefinition Cleave = new AbilityDefinition("cleave", "Corte amplo",
-            "Atinge todos os inimigos vivos. Custa 7 MP uma unica vez.", 7, 5, AbilityEffect.PhysicalDamage, TargetRule.AllEnemies);
-        public static readonly AbilityDefinition Cleanse = new AbilityDefinition("cleanse", "Purificar",
-            "Remove o veneno de um aliado vivo. Custa 4 MP.", 4, 0, AbilityEffect.Cleanse, TargetRule.Ally);
-        public static readonly AbilityDefinition Revive = new AbilityDefinition("revive", "Reviver",
-            "Revive um aliado derrotado com 30% do HP maximo. Custa 12 MP.", 12, 30, AbilityEffect.Revive, TargetRule.Ally);
-        public static readonly AbilityDefinition Taunt = new AbilityDefinition("taunt", "Provocar",
-            "Atrai os golpes individuais de um inimigo por 2 turnos dele. Ataques em area atingem a equipe.", 3, 2, AbilityEffect.Taunt, TargetRule.Enemy);
-        public static readonly AbilityDefinition Protect = new AbilityDefinition("protect", "Proteger",
-            "Recebe o proximo golpe fisico individual dirigido ao aliado. Expira no proximo turno do usuario; area, magia e veneno ja aplicado nao sao interceptados.", 4, 0, AbilityEffect.Protect, TargetRule.Ally);
-        public static readonly AbilityDefinition PoisonStrike = new AbilityDefinition("poison-strike", "Golpe venenoso",
-            "Ataque individual que envenena ate ser curado ou o alvo chegar a 0 HP. Veneno: 5% do HP maximo por turno e a cada 3s no mapa.", 4, 0, AbilityEffect.PhysicalDamage, TargetRule.Enemy, 3);
-        public static readonly AbilityDefinition EnemySweep = new AbilityDefinition("enemy-sweep", "Varredura",
-            "Ataque contra todos os aliados vivos.", 5, 0, AbilityEffect.PhysicalDamage, TargetRule.AllEnemies);
-        public static readonly AbilityDefinition DragonClaw = new AbilityDefinition("dragon-claw", "Garra draconica",
-            "Golpe fisico individual.",0,5,AbilityEffect.PhysicalDamage,TargetRule.Enemy);
-        public static readonly AbilityDefinition ChargeBreath = new AbilityDefinition("charge-breath", "Preparar sopro",
-            "concentra chamas! No proximo turno dele, o sopro atingira toda a equipe. Defenda-se!",0,0,AbilityEffect.Prepare,TargetRule.Self);
-        public static readonly AbilityDefinition DragonBreath = new AbilityDefinition("dragon-breath", "Sopro de fogo",
-            "Fogo em toda a equipe depois de um turno de preparacao.",0,36,AbilityEffect.MagicDamage,TargetRule.AllEnemies,element:DamageElement.Fire);
+        public static readonly AbilityDefinition Attack = AbilityCatalog.Attack;
+        public static readonly AbilityDefinition Defend = AbilityCatalog.Defend;
+        public static readonly AbilityDefinition HeavyStrike = AbilityCatalog.HeavyStrike;
+        public static readonly AbilityDefinition Heal = AbilityCatalog.Heal;
+        public static readonly AbilityDefinition Cleave = AbilityCatalog.Cleave;
+        public static readonly AbilityDefinition Cleanse = AbilityCatalog.Cleanse;
+        public static readonly AbilityDefinition Revive = AbilityCatalog.Revive;
+        public static readonly AbilityDefinition Taunt = AbilityCatalog.Taunt;
+        public static readonly AbilityDefinition Protect = AbilityCatalog.Protect;
+        public static readonly AbilityDefinition PoisonStrike = AbilityCatalog.PoisonStrike;
+        public static readonly AbilityDefinition EnemySweep = AbilityCatalog.EnemySweep;
+        public static readonly AbilityDefinition DragonClaw = AbilityCatalog.DragonClaw;
+        public static readonly AbilityDefinition ChargeBreath = AbilityCatalog.ChargeBreath;
+        public static readonly AbilityDefinition DragonBreath = AbilityCatalog.DragonBreath;
 
         public static BattleSession CreateDragonEncounter(PartyProgress party)
         {

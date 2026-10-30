@@ -1,3 +1,4 @@
+using DragonQuest.Content;
 using System.Collections.Generic;
 using DragonQuest.Combat;
 using DragonQuest.Equipment;
@@ -5,65 +6,55 @@ using DragonQuest.Inventory;
 
 namespace DragonQuest.Prototype
 {
+    // Compatibility fields share catalog instances; the factory only assembles a party.
     public static class PrototypePartyFactory
     {
-        public static readonly EquipmentDefinition InitialWeapon = new EquipmentDefinition("Arma inicial", 5, 0, 2);
-        public static readonly EquipmentDefinition InitialArmor = new EquipmentDefinition("Armadura inicial", 0, 6, 4, EquipmentSlot.Armor);
-        public static readonly EquipmentDefinition IronSword = new EquipmentDefinition("Espada de ferro", 9, 0, 2);
-        public static readonly EquipmentDefinition RunicStaff = new EquipmentDefinition("Cajado runico", 3, 0, 4, magicBonus: 6);
-        public static readonly EquipmentDefinition IronArmor = new EquipmentDefinition("Armadura de ferro", 0, 10, 2, EquipmentSlot.Armor);
-        public static readonly EquipmentDefinition ArcaneRobe = new EquipmentDefinition("Manto arcano", 0, 3, 6, EquipmentSlot.Armor, 4);
-        public static readonly EquipmentDefinition PowerRing = new EquipmentDefinition("Anel da Forca", 4, 0, 0, EquipmentSlot.Accessory);
-        public static readonly EquipmentDefinition GuardianBracelet = new EquipmentDefinition("Bracelete Guardiao", 0, 4, 0, EquipmentSlot.Accessory);
-        public static readonly EquipmentDefinition ArcanePendant = new EquipmentDefinition("Pingente Arcano", 0, 0, 0, EquipmentSlot.Accessory, 4);
-        public static readonly ConsumableDefinition Potion = new ConsumableDefinition("potion", "Pocao", "Recupera 40 HP de um aliado vivo e ferido. Usa uma unidade e um turno.", ItemEffect.RestoreHp, 40);
-        public static readonly ConsumableDefinition Ether = new ConsumableDefinition("ether", "Eter", "Recupera 15 MP de um aliado vivo. Usa uma unidade e um turno.", ItemEffect.RestoreMp, 15);
-        public static readonly ConsumableDefinition Antidote = new ConsumableDefinition("antidote", "Antidoto", "Remove veneno de um aliado vivo. Usa uma unidade e um turno.", ItemEffect.CleansePoison, 0);
-        public static readonly ConsumableDefinition PhoenixFeather = new ConsumableDefinition("phoenix-feather", "Pluma da Fenix", "Revive um aliado derrotado com 30% do HP maximo. Usa uma unidade e um turno.", ItemEffect.Revive, 30);
-        public static readonly AbilityDefinition Thunder = new AbilityDefinition("thunder", "Thunder",
-            "Magia de Raio contra um inimigo, poder 22. Custa 6 MP.", 6, 22, AbilityEffect.MagicDamage, TargetRule.Enemy,
-            element: DamageElement.Lightning);
-        public static readonly AbilityDefinition Fire = new AbilityDefinition("fire", "Fogo",
-            "Magia de Fogo contra um inimigo, poder 22. Custa 6 MP.", 6, 22, AbilityEffect.MagicDamage, TargetRule.Enemy,
-            element: DamageElement.Fire);
-        public static readonly AbilityDefinition Ice = new AbilityDefinition("ice", "Gelo",
-            "Magia de Gelo contra um inimigo, poder 22. Custa 6 MP.", 6, 22, AbilityEffect.MagicDamage, TargetRule.Enemy,
-            element: DamageElement.Ice);
-        public static readonly AbilityDefinition Summon = new AbilityDefinition("summon", "Invocar Fenix",
-            "Revive e recupera 80% do HP maximo de cada aliado; dano baixo de Fogo em todos os inimigos. Custa 12 MP.", 12, 10, AbilityEffect.MagicDamage, TargetRule.AllEnemies,
-            element: DamageElement.Fire, partyEffect: PartyEffect.RestoreAndRevive, recoveryPercent: 80);
-        public static readonly MateriaDefinition ThunderMateria = new MateriaDefinition("thunder", "Raio", "Verde: concede Thunder.", MateriaType.Magic, abilities: new[] { Thunder });
-        public static readonly MateriaDefinition FireMateria = new MateriaDefinition("fire", "Fogo", "Verde: magia de Fogo, poder 22, 6 MP. Fraqueza x1,5; resistencia x0,5.", MateriaType.Magic, abilities: new[] { Fire });
-        public static readonly MateriaDefinition IceMateria = new MateriaDefinition("ice", "Gelo", "Verde: magia de Gelo, poder 22, 6 MP. Fraqueza x1,5; resistencia x0,5.", MateriaType.Magic, abilities: new[] { Ice });
-        public static readonly MateriaDefinition CureMateria = new MateriaDefinition("cure", "Cura", "Verde: concede Curar.", MateriaType.Magic, abilities: new[] { PrototypeBattleFactory.Heal });
-        public static readonly MateriaDefinition CleanseMateria = new MateriaDefinition("cleanse", "Purificacao", "Verde: remove veneno.", MateriaType.Magic, abilities: new[] { PrototypeBattleFactory.Cleanse });
-        public static readonly MateriaDefinition ReviveMateria = new MateriaDefinition("revive", "Vida", "Verde: concede Reviver.", MateriaType.Magic, abilities: new[] { PrototypeBattleFactory.Revive });
-        public static readonly MateriaDefinition SummonMateria = new MateriaDefinition("phoenix", "Fenix", "Vermelha: revive e cura 80% do HP maximo de toda a equipe; dano baixo de Fogo em todos os inimigos. 12 MP.", MateriaType.Summon, abilities: new[] { Summon });
-        public static readonly MateriaDefinition AllMateria = new MateriaDefinition("all", "All", "Azul: ligada a verde/vermelha, aplica o comando a todos os alvos validos; MP x1,5. Sozinha nao concede comando.", MateriaType.Support, MateriaModifier.All);
-        public static readonly MateriaDefinition InfuseMateria = new MateriaDefinition("infuse", "Infusao", "Roxa: ligada a magia elemental, infunde o ataque basico na arma (0 MP) ou concede resistencia de 50% na armadura. Primeiro par valido define o elemento da arma.", MateriaType.PhysicalEnhance, MateriaModifier.Infuse);
-        public static readonly MateriaDefinition HeavyMateria = new MateriaDefinition("heavy", "Forca", "Roxa: aumenta ataque em 20%. Nao concede comando.", MateriaType.PhysicalEnhance, MateriaModifier.AttackUp);
-        public static readonly MateriaDefinition CleaveMateria = new MateriaDefinition("cleave", "Corte", "Roxa: concede Corte amplo a qualquer personagem.", MateriaType.PhysicalEnhance, abilities: new[] { PrototypeBattleFactory.Cleave });
-        public static readonly MateriaDefinition GuardianMateria = new MateriaDefinition("guardian", "Guardiao", "Roxa: concede Provocar e Proteger a qualquer personagem.", MateriaType.PhysicalEnhance, abilities: new[] { PrototypeBattleFactory.Taunt, PrototypeBattleFactory.Protect });
+        public static readonly EquipmentDefinition InitialWeapon = EquipmentCatalog.InitialWeapon;
+        public static readonly EquipmentDefinition InitialArmor = EquipmentCatalog.InitialArmor;
+        public static readonly EquipmentDefinition IronSword = EquipmentCatalog.IronSword;
+        public static readonly EquipmentDefinition RunicStaff = EquipmentCatalog.RunicStaff;
+        public static readonly EquipmentDefinition IronArmor = EquipmentCatalog.IronArmor;
+        public static readonly EquipmentDefinition ArcaneRobe = EquipmentCatalog.ArcaneRobe;
+        public static readonly EquipmentDefinition PowerRing = EquipmentCatalog.PowerRing;
+        public static readonly EquipmentDefinition GuardianBracelet = EquipmentCatalog.GuardianBracelet;
+        public static readonly EquipmentDefinition ArcanePendant = EquipmentCatalog.ArcanePendant;
+        public static readonly ConsumableDefinition Potion = ItemCatalog.Potion;
+        public static readonly ConsumableDefinition Ether = ItemCatalog.Ether;
+        public static readonly ConsumableDefinition Antidote = ItemCatalog.Antidote;
+        public static readonly ConsumableDefinition PhoenixFeather = ItemCatalog.PhoenixFeather;
+        public static readonly AbilityDefinition Thunder = AbilityCatalog.Thunder;
+        public static readonly AbilityDefinition Fire = AbilityCatalog.Fire;
+        public static readonly AbilityDefinition Ice = AbilityCatalog.Ice;
+        public static readonly AbilityDefinition Summon = AbilityCatalog.Summon;
+        public static readonly MateriaDefinition ThunderMateria = MateriaCatalog.ThunderMateria;
+        public static readonly MateriaDefinition FireMateria = MateriaCatalog.FireMateria;
+        public static readonly MateriaDefinition IceMateria = MateriaCatalog.IceMateria;
+        public static readonly MateriaDefinition CureMateria = MateriaCatalog.CureMateria;
+        public static readonly MateriaDefinition CleanseMateria = MateriaCatalog.CleanseMateria;
+        public static readonly MateriaDefinition ReviveMateria = MateriaCatalog.ReviveMateria;
+        public static readonly MateriaDefinition SummonMateria = MateriaCatalog.SummonMateria;
+        public static readonly MateriaDefinition AllMateria = MateriaCatalog.AllMateria;
+        public static readonly MateriaDefinition InfuseMateria = MateriaCatalog.InfuseMateria;
+        public static readonly MateriaDefinition HeavyMateria = MateriaCatalog.HeavyMateria;
+        public static readonly MateriaDefinition CleaveMateria = MateriaCatalog.CleaveMateria;
+        public static readonly MateriaDefinition GuardianMateria = MateriaCatalog.GuardianMateria;
 
-        public static readonly AbilityDefinition Earth = new AbilityDefinition("earth", "Terra", "Magia de Terra, poder 22, 6 MP.", 6, 22, AbilityEffect.MagicDamage, TargetRule.Enemy, element: DamageElement.Earth);
-        public static readonly AbilityDefinition Chaos = new AbilityDefinition("chaos", "Caos", "Magia de Caos, poder 28, 8 MP.", 8, 28, AbilityEffect.MagicDamage, TargetRule.Enemy, element: DamageElement.Chaos);
-        public static readonly AbilityDefinition Bahamut = new AbilityDefinition("bahamut", "Invocar Bahamut", "Dano alto de Caos em todos os inimigos, poder 70, 20 MP.", 20, 70, AbilityEffect.MagicDamage, TargetRule.AllEnemies, element: DamageElement.Chaos);
-        public static readonly AbilityDefinition Titan = new AbilityDefinition("titan", "Invocar Titan", "Dano baixo de Terra e Shield: reduz todo dano recebido pela equipe em 50% por 3 turnos de cada aliado. 16 MP.", 16, 10, AbilityEffect.MagicDamage, TargetRule.AllEnemies, element: DamageElement.Earth, partyEffect: PartyEffect.DamageShield, shieldDuration: 3);
-        public static readonly MateriaDefinition EarthMateria = new MateriaDefinition("earth", "Terra", "Verde: concede Terra.", MateriaType.Magic, abilities: new[] { Earth });
-        public static readonly MateriaDefinition ChaosMateria = new MateriaDefinition("chaos", "Caos", "Verde: concede Caos.", MateriaType.Magic, abilities: new[] { Chaos });
-        public static readonly MateriaDefinition BahamutMateria = new MateriaDefinition("bahamut", "Bahamut", "Vermelha: dano alto de Caos em todos os inimigos. 20 MP.", MateriaType.Summon, abilities: new[] { Bahamut });
-        public static readonly MateriaDefinition TitanMateria = new MateriaDefinition("titan", "Titan", "Vermelha: dano baixo de Terra; Shield de 50% por 3 turnos de cada aliado. 16 MP.", MateriaType.Summon, abilities: new[] { Titan });
-        public static readonly MateriaDefinition DefenseMateria = new MateriaDefinition("defense", "Defesa", "Roxa: aumenta defesa em 20%.", MateriaType.PhysicalEnhance, MateriaModifier.DefenseUp);
-        public static readonly MateriaDefinition HpMateria = new MateriaDefinition("hp", "HP", "Roxa: aumenta HP maximo em 20%.", MateriaType.PhysicalEnhance, MateriaModifier.HpUp);
-        public static readonly MateriaDefinition MpMateria = new MateriaDefinition("mp", "MP", "Roxa: aumenta MP maximo em 20%.", MateriaType.PhysicalEnhance, MateriaModifier.MpUp);
+        public static readonly AbilityDefinition Earth = AbilityCatalog.Earth;
+        public static readonly AbilityDefinition Chaos = AbilityCatalog.Chaos;
+        public static readonly AbilityDefinition Bahamut = AbilityCatalog.Bahamut;
+        public static readonly AbilityDefinition Titan = AbilityCatalog.Titan;
+        public static readonly MateriaDefinition EarthMateria = MateriaCatalog.EarthMateria;
+        public static readonly MateriaDefinition ChaosMateria = MateriaCatalog.ChaosMateria;
+        public static readonly MateriaDefinition BahamutMateria = MateriaCatalog.BahamutMateria;
+        public static readonly MateriaDefinition TitanMateria = MateriaCatalog.TitanMateria;
+        public static readonly MateriaDefinition DefenseMateria = MateriaCatalog.DefenseMateria;
+        public static readonly MateriaDefinition HpMateria = MateriaCatalog.HpMateria;
+        public static readonly MateriaDefinition MpMateria = MateriaCatalog.MpMateria;
         public static PartyProgress Create()
         {
-            var aren = new PartyMember("aren", "Aren", CharacterClass.Attacker,
-                new CombatantDefinition("Aren", "Atacante", 100, 28, 22, 7, 4, 14, ElementalAffinities.Neutral, 0, 0, .05, MateriaResolver.Attack, MateriaResolver.Defend), InitialWeapon, InitialArmor);
-            var lia = new PartyMember("lia", "Lia", CharacterClass.Healer,
-                new CombatantDefinition("Lia", "Healer", 80, 60, 9, 5, 20, 12, ElementalAffinities.Neutral, 0, 0, .05, MateriaResolver.Attack, MateriaResolver.Defend), InitialWeapon, InitialArmor);
-            var bram = new PartyMember("bram", "Bram", CharacterClass.Tank,
-                new CombatantDefinition("Bram", "Tank", 150, 30, 14, 13, 3, 8, ElementalAffinities.Neutral, 0, 0, .05, MateriaResolver.Attack, MateriaResolver.Defend), InitialWeapon, InitialArmor);
+            var aren = CharacterCatalog.CreateAren();
+            var lia = CharacterCatalog.CreateLia();
+            var bram = CharacterCatalog.CreateBram();
             var materias = new[] { new MateriaInstance("start-heavy", HeavyMateria), new MateriaInstance("start-thunder", ThunderMateria),
                 new MateriaInstance("start-cure", CureMateria), new MateriaInstance("start-cleanse", CleanseMateria), new MateriaInstance("start-guardian", GuardianMateria) };
             var party = new PartyProgress(new[] { aren, lia, bram }, materias, consumables:
@@ -79,14 +70,9 @@ namespace DragonQuest.Prototype
         // Fixture das entregas 5/6A para manter os testes de combos e troca independentes da economia inicial.
         public static PartyProgress CreateTestParty()
         {
-            var weapon = InitialWeapon;
-            var armor = InitialArmor;
-            var aren = new PartyMember("aren", "Aren", CharacterClass.Attacker,
-                new CombatantDefinition("Aren", "Atacante", 100, 28, 22, 7, 4, 14, ElementalAffinities.Neutral, 0, 0, .05, MateriaResolver.Attack, MateriaResolver.Defend), weapon, armor);
-            var lia = new PartyMember("lia", "Lia", CharacterClass.Healer,
-                new CombatantDefinition("Lia", "Healer", 80, 60, 9, 5, 20, 12, ElementalAffinities.Neutral, 0, 0, .05, MateriaResolver.Attack, MateriaResolver.Defend), weapon, armor);
-            var bram = new PartyMember("bram", "Bram", CharacterClass.Tank,
-                new CombatantDefinition("Bram", "Tank", 150, 30, 14, 13, 3, 8, ElementalAffinities.Neutral, 0, 0, .05, MateriaResolver.Attack, MateriaResolver.Defend), weapon, armor);
+            var aren = CharacterCatalog.CreateAren();
+            var lia = CharacterCatalog.CreateLia();
+            var bram = CharacterCatalog.CreateBram();
             var inventory = new List<MateriaInstance>();
             foreach (MateriaDefinition definition in new[] { HeavyMateria, CleaveMateria, ThunderMateria, AllMateria,
                 CureMateria, CleanseMateria, ReviveMateria, SummonMateria, GuardianMateria, InfuseMateria, AllMateria, ThunderMateria,

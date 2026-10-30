@@ -19,6 +19,5 @@ namespace DragonQuest.Prototype
             new CityBlock("Monolito - Lua",-2,0,0.9f,0.8f,"8A8A7B",true,2),
             new CityBlock("Monolito - Estrela",2,3.5f,0.9f,0.8f,"8A8A7B",true,2)
         });
-        public static MonolithSymbol SymbolAt(int index) => (MonolithSymbol)index;
     }
 }

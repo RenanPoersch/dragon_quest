@@ -14,7 +14,7 @@ New-Item -ItemType Directory -Path $WorkDirectory -Force | Out-Null
 $magicOutput = Join-Path $WorkDirectory 'MagicMenuChecks.dll'
 $magicArguments = @('-nologo', '-target:exe', '-nostdlib+', "-out:$magicOutput")
 $magicArguments += Get-ChildItem -LiteralPath $magicRefDir.FullName -Filter '*.dll' | ForEach-Object { "-reference:$($_.FullName)" }
-foreach ($magicFolder in @('Combat', 'Equipment', 'Inventory', 'Shops', 'Progression')) {
+foreach ($magicFolder in @('Combat','Content', 'Equipment', 'Inventory', 'Shops', 'Progression')) {
     $magicArguments += Get-ChildItem -LiteralPath (Join-Path $magicRoot "Assets/Scripts/$magicFolder") -Filter '*.cs' | ForEach-Object { $_.FullName }
 }
 foreach ($magicSource in @('Assets/Scripts/Exploration/ExplorationProgress.cs', 'Assets/Scripts/Prototype/PrototypeBattleFactory.cs',

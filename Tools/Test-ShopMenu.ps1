@@ -14,7 +14,7 @@ New-Item -ItemType Directory -Path $WorkDirectory -Force | Out-Null
 $shopOutput = Join-Path $WorkDirectory 'ShopMenuChecks.dll'
 $shopArguments = @('-nologo', '-target:exe', '-nostdlib+', "-out:$shopOutput")
 $shopArguments += Get-ChildItem -LiteralPath $shopRefDir.FullName -Filter '*.dll' | ForEach-Object { "-reference:$($_.FullName)" }
-foreach ($shopFolder in @('Combat', 'Equipment', 'Inventory', 'Shops', 'Progression')) {
+foreach ($shopFolder in @('Combat','Content', 'Equipment', 'Inventory', 'Shops', 'Progression')) {
     $shopArguments += Get-ChildItem -LiteralPath (Join-Path $shopRoot "Assets/Scripts/$shopFolder") -Filter '*.cs' | ForEach-Object { $_.FullName }
 }
 foreach ($shopSource in @('Assets/Scripts/Exploration/ExplorationProgress.cs', 'Assets/Scripts/Prototype/PrototypeBattleFactory.cs',

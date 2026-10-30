@@ -15,7 +15,7 @@ New-Item -ItemType Directory -Path $WorkDirectory -Force | Out-Null
 $targetOutput = Join-Path $WorkDirectory 'EnemyTargetingChecks.dll'
 $targetArgs = @('-nologo', '-target:exe', '-nostdlib+', "-out:$targetOutput")
 $targetArgs += Get-ChildItem $targetRefs.FullName -Filter '*.dll' | ForEach-Object { "-reference:$($_.FullName)" }
-foreach ($folder in @('Combat', 'Equipment', 'Inventory', 'Shops', 'Progression')) {
+foreach ($folder in @('Combat','Content', 'Equipment', 'Inventory', 'Shops', 'Progression')) {
     $targetArgs += Get-ChildItem (Join-Path $targetProjectRoot "Assets/Scripts/$folder") -Filter '*.cs' | ForEach-Object { $_.FullName }
 }
 $targetArgs += Join-Path $targetProjectRoot 'Assets/Scripts/Exploration/ExplorationProgress.cs'
