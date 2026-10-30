@@ -447,7 +447,7 @@ namespace DragonQuest.Equipment
                 {
                     if (equipment == null) continue;
                     for (int i = 0; i < equipment.Sockets.Count; i++)
-                        if (equipment.Sockets[i] == materia) return member.Name + " / " + equipment.Definition.Name + " / " + (i + 1);
+                        if (equipment.Sockets[i] == materia) return member.Name;
                 }
             return "Inventario";
         }
