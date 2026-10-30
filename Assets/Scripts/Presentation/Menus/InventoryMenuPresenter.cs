@@ -27,9 +27,10 @@ namespace DragonQuest.Presentation.Menus
         private readonly MateriaMenuPresentation materiaScreen = new MateriaMenuPresentation();
         private readonly EquipmentMenuSession equipmentMenu = new EquipmentMenuSession();
         private readonly EquipmentMenuPresentation equipmentScreen = new EquipmentMenuPresentation();
-        private GUIStyle title, small, button;
+        private GUIStyle title, button;
         private int memberIndex;
-        private int page = -1, selectedMenu, openedFrame;
+        private InventoryPage page = InventoryPage.Overview;
+        private int selectedMenu, openedFrame;
         private bool wasOpen, acceptsInput;
         private Vector2 lastPointer;
 
@@ -48,16 +49,16 @@ namespace DragonQuest.Presentation.Menus
 
         private bool ReturnFromInventoryMenu()
         {
-            if (page >= 0) MenuSounds.Play(MenuSound.Cancel);
-            if (page == 0)
+            if (page != InventoryPage.Overview) MenuSounds.Play(MenuSound.Cancel);
+            if (page == InventoryPage.Materia)
             {
-                if (materiaMenu.ChoosingSocket) materiaMenu.ShowEquip(); else page = -1;
+                if (materiaMenu.ChoosingSocket) materiaMenu.ShowEquip(); else page = InventoryPage.Overview;
                 return true;
             }
-            if (page == 5) { if (!magicMenu.Cancel()) page = -1; return true; }
-            if (page == 1 || page == 3 || page == 4) { page = -1; return true; }
-            if (page != 2) return false;
-            if (itemMenu.ChoosingTarget) itemMenu.CancelTarget(); else page = -1;
+            if (page == InventoryPage.Magic) { if (!magicMenu.Cancel()) page = InventoryPage.Overview; return true; }
+            if (page == InventoryPage.Equipment || page == InventoryPage.Status || page == InventoryPage.Config) { page = InventoryPage.Overview; return true; }
+            if (page != InventoryPage.Items) return false;
+            if (itemMenu.ChoosingTarget) itemMenu.CancelTarget(); else page = InventoryPage.Overview;
             return true;
         }
 
@@ -67,12 +68,12 @@ namespace DragonQuest.Presentation.Menus
             { if (wasOpen) MenuSounds.Play(MenuSound.Cancel); wasOpen = false; return; }
             CheckOpened();
             if (IsInputBlocked || !GameInput.IsFocused || openedFrame == Time.frameCount) return;
-            if (page == 0) { UpdateMateriaInput(); return; }
-            if (page == 1) { UpdateEquipmentInput(); return; }
-            if (page == 2) { UpdateItemInput(); return; }
-            if (page == 3) { UpdateStatusInput(); return; }
-            if (page == 5) { UpdateMagicInput(); return; }
-            if (page >= 0) return;
+            if (page == InventoryPage.Materia) { UpdateMateriaInput(); return; }
+            if (page == InventoryPage.Equipment) { UpdateEquipmentInput(); return; }
+            if (page == InventoryPage.Items) { UpdateItemInput(); return; }
+            if (page == InventoryPage.Status) { UpdateStatusInput(); return; }
+            if (page == InventoryPage.Magic) { UpdateMagicInput(); return; }
+            if (page != InventoryPage.Overview) return;
             MenuDirection direction = GameInput.Navigation;
             Keyboard keys = Keyboard.current;
             int step = direction == MenuDirection.Up || direction == MenuDirection.Left ? -1
@@ -96,7 +97,7 @@ namespace DragonQuest.Presentation.Menus
         {
             if (wasOpen) return;
             MenuSounds.Play(MenuSound.Confirm);
-            wasOpen = true; page = -1; selectedMenu = 0; openedFrame = Time.frameCount;
+            wasOpen = true; page = InventoryPage.Overview; selectedMenu = 0; openedFrame = Time.frameCount;
             memberIndex = 0;
             lastPointer = new Vector2(-1, -1);
         }
@@ -105,27 +106,35 @@ namespace DragonQuest.Presentation.Menus
         {
             if (!CommandEnabled(index)) return;
             MenuSounds.Play(MenuSound.Confirm);
-            if (index == 6)
+            var option = InventoryMenuPresentation.CommandAt(index);
+            if (option.Command == InventoryCommand.Save)
             {
                 getSaves().OpenManualSaveMenu();
                 return;
             }
-            if (index == 7)
+            if (option.Command == InventoryCommand.Exit)
             {
                 getSaves().ReturnToTitle();
                 return;
             }
-            page = index == 0 ? 2 : index == 1 ? 0 : index == 2 ? 1 : index == 4 ? 5 : index == 5 ? 4 : index;
-            if (page == 0) { materiaMenu.Reset(controller.Party); materiaScreen.Reset(); }
-            if (page == 1) { equipmentMenu.Reset(controller.Party, memberIndex); equipmentScreen.Reset(); }
-            if (page == 2) { itemMenu.Reset(controller.Party); itemScreen.Reset(); }
-            if (page == 3) statusScreen.Reset();
-            if (page == 5) { magicMenu.Reset(controller.Party); magicScreen.Reset(); }
+            page = option.Page;
+            if (page == InventoryPage.Materia) { materiaMenu.Reset(controller.Party); materiaScreen.Reset(); }
+            if (page == InventoryPage.Equipment) { equipmentMenu.Reset(controller.Party, memberIndex); equipmentScreen.Reset(); }
+            if (page == InventoryPage.Items) { itemMenu.Reset(controller.Party); itemScreen.Reset(); }
+            if (page == InventoryPage.Status) statusScreen.Reset();
+            if (page == InventoryPage.Magic) { magicMenu.Reset(controller.Party); magicScreen.Reset(); }
         }
 
-        private bool CommandEnabled(int index) => index >= 0 && index < InventoryMenuPresentation.Commands.Length
-            && (index != 6 || getSaves()?.CanSaveManually == true)
-            && (index != 7 || getSaves()?.CanReturnToTitle == true);
+        private bool CommandEnabled(int index)
+        {
+            if (index < 0 || index >= InventoryMenuPresentation.Commands.Length) return false;
+            switch (InventoryMenuPresentation.CommandAt(index).Command)
+            {
+                case InventoryCommand.Save: return getSaves()?.CanSaveManually == true;
+                case InventoryCommand.Exit: return getSaves()?.CanReturnToTitle == true;
+                default: return true;
+            }
+        }
 
         private void UpdateMagicInput()
         {
@@ -302,33 +311,33 @@ namespace DragonQuest.Presentation.Menus
             GUI.matrix = Matrix4x4.TRS(new Vector3((Screen.width - 1280 * scale) / 2,
                 (Screen.height - 720 * scale) / 2, 0), Quaternion.identity, new Vector3(scale, scale, 1));
             PartyProgress party = controller.Party;
-            if (page < 0)
+            if (page == InventoryPage.Overview)
             {
                 DrawOverview(party);
                 GUI.matrix = previous; GUI.enabled = previousEnabled;
                 return;
             }
-            if (page == 0)
+            if (page == InventoryPage.Materia)
             {
                 materiaScreen.Draw(presentation, materiaMenu, party, acceptsInput, BackToOverview);
                 GUI.matrix = previous; GUI.enabled = previousEnabled; return;
             }
-            if (page == 1)
+            if (page == InventoryPage.Equipment)
             {
                 equipmentScreen.Draw(presentation, equipmentMenu, party, acceptsInput, BackToOverview);
                 GUI.matrix = previous; GUI.enabled = previousEnabled; return;
             }
-            if (page == 2)
+            if (page == InventoryPage.Items)
             {
                 itemScreen.Draw(presentation, itemMenu, party, secrets != null && secrets.HasScale, acceptsInput, BackToOverview);
                 GUI.matrix = previous; GUI.enabled = previousEnabled; return;
             }
-            if (page == 3)
+            if (page == InventoryPage.Status)
             {
                 statusScreen.Draw(presentation, party.Members[memberIndex], acceptsInput, BackToOverview);
                 GUI.matrix = previous; GUI.enabled = previousEnabled; return;
             }
-            if (page == 5)
+            if (page == InventoryPage.Magic)
             {
                 magicScreen.Draw(presentation, magicMenu, party, acceptsInput, BackToOverview);
                 GUI.matrix = previous; GUI.enabled = previousEnabled; return;
@@ -369,7 +378,7 @@ namespace DragonQuest.Presentation.Menus
         }
 
         private void BackToOverview()
-        { page = -1; MenuSounds.Play(MenuSound.Cancel); }
+        { page = InventoryPage.Overview; MenuSounds.Play(MenuSound.Cancel); }
 
         private void DrawConfig()
         {
@@ -402,12 +411,10 @@ namespace DragonQuest.Presentation.Menus
             pixel = new Texture2D(1, 1); pixel.SetPixel(0, 0, Color.white); pixel.Apply();
             presentation = new InventoryMenuPresentation(); presentation.EnsureStyles();
             title = PrototypeTypography.Style(GUI.skin.label, 28, true);
-            small = PrototypeTypography.Style(GUI.skin.label, 20); small.wordWrap = true;
             button = PrototypeTypography.Style(GUI.skin.button, 22); button.wordWrap = true;
             button.normal.background = button.hover.background = button.active.background = button.focused.background = null;
             button.normal.textColor = button.hover.textColor = button.active.textColor = button.focused.textColor = Color.white;
             title.normal.textColor = Color.white;
-            small.normal.textColor = new Color(0.85f, 0.9f, 0.95f);
         }
 
         public void Dispose()

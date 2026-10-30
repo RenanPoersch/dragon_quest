@@ -1,22 +1,44 @@
 using System;
+using System.Collections.Generic;
 using DragonQuest.Persistence;
 
 namespace DragonQuest.Gameplay.Saving
 {
+    public sealed class SaveSlotState
+    {
+        public int Number { get; }
+        public bool Occupied { get; }
+        public RestoredJourney Preview { get; }
+        public string Message { get; }
+        public SaveSlotState(int number, bool occupied, RestoredJourney preview, string message)
+        { Number = number; Occupied = occupied; Preview = preview; Message = message; }
+    }
+
     public sealed class SaveSlotSession
     {
         private readonly SaveStore store;
-        public RestoredJourney[] Previews { get; } = new RestoredJourney[SaveStore.SlotCount];
-        public string[] Messages { get; } = new string[SaveStore.SlotCount];
-        public bool[] Occupied { get; } = new bool[SaveStore.SlotCount];
-        public SaveSlotSession(SaveStore store) { this.store = store; }
+        public IReadOnlyList<SaveSlotState> Slots { get; private set; }
+        public bool HasLoadableSlot
+        {
+            get { foreach (var slot in Slots) if (slot.Preview != null) return true; return false; }
+        }
+        public SaveSlotSession(SaveStore store)
+        {
+            this.store = store ?? throw new ArgumentNullException(nameof(store));
+            var slots = new SaveSlotState[SaveStore.SlotCount];
+            for (int i = 0; i < slots.Length; i++) slots[i] = new SaveSlotState(i + 1, false, null, null);
+            Slots = Array.AsReadOnly(slots);
+        }
         public void Refresh()
         {
+            var slots = new SaveSlotState[SaveStore.SlotCount];
             for (int slot = 1; slot <= SaveStore.SlotCount; slot++)
             {
-                Occupied[slot - 1] = store.Exists(slot);
-                store.TryRead(slot, out Previews[slot - 1], out Messages[slot - 1]);
+                bool occupied = store.Exists(slot);
+                store.TryRead(slot, out var preview, out string message);
+                slots[slot - 1] = new SaveSlotState(slot, occupied, preview, message);
             }
+            Slots = Array.AsReadOnly(slots);
         }
         public int FirstEmptySlot()
         {

@@ -6,10 +6,33 @@ using UnityEngine;
 
 namespace DragonQuest.Prototype
 {
+    public enum InventoryCommand { Item, Materia, Equipment, Status, Magic, Config, Save, Exit }
+    public enum InventoryPage { Overview = -1, Materia, Equipment, Items, Status, Config, Magic }
+    public readonly struct InventoryMenuOption
+    {
+        public InventoryCommand Command { get; }
+        public string Label { get; }
+        public InventoryPage Page { get; }
+        public InventoryMenuOption(InventoryCommand command, string label, InventoryPage page = InventoryPage.Overview)
+        { Command = command; Label = label; Page = page; }
+    }
+
     // Coordinates use the same 1280 x 720 canvas as the other game menus.
     public sealed class InventoryMenuPresentation : IDisposable
     {
-        public static readonly string[] Commands = { "Item", "Materia", "Equip", "Status", "Magic", "Config", "Save", "Sair" };
+        private static readonly InventoryMenuOption[] commandOptions =
+        {
+            new InventoryMenuOption(InventoryCommand.Item, "Item", InventoryPage.Items),
+            new InventoryMenuOption(InventoryCommand.Materia, "Materia", InventoryPage.Materia),
+            new InventoryMenuOption(InventoryCommand.Equipment, "Equip", InventoryPage.Equipment),
+            new InventoryMenuOption(InventoryCommand.Status, "Status", InventoryPage.Status),
+            new InventoryMenuOption(InventoryCommand.Magic, "Magic", InventoryPage.Magic),
+            new InventoryMenuOption(InventoryCommand.Config, "Config", InventoryPage.Config),
+            new InventoryMenuOption(InventoryCommand.Save, "Save"),
+            new InventoryMenuOption(InventoryCommand.Exit, "Sair")
+        };
+        public static readonly string[] Commands = Array.ConvertAll(commandOptions, option => option.Label);
+        public static InventoryMenuOption CommandAt(int index) => commandOptions[index];
         public static readonly Rect PartyRect = new Rect(32, 72, 1050, 574);
         public static Rect CommandRect(int index) => new Rect(1070, 62 + index * 48, 164, 46);
         private readonly Texture2D gradient, hand;

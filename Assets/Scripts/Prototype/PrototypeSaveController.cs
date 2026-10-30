@@ -29,9 +29,7 @@ namespace DragonQuest.Prototype
         private DragonProgress dragon;
         private Action<RestoredJourney> install;
         private SaveSlotSession slotSession;
-        private SaveSlotSession Slots => slotSession ?? (slotSession = new SaveSlotSession(store));
-        private RestoredJourney[] previews => Slots.Previews;
-        private bool[] occupied => Slots.Occupied;
+        private SaveSlotSession SlotSession => slotSession ?? (slotSession = new SaveSlotSession(store));
         private SaveMenuPresenter saveMenu;
         public SaveMenuPresenter Presenter => saveMenu;
         private readonly SaveMenuContext view = new SaveMenuContext();
@@ -74,7 +72,7 @@ namespace DragonQuest.Prototype
         }
         private void RefreshSlots()
         {
-            Slots.Refresh();
+            SlotSession.Refresh();
             if (!OptionEnabled(selectedOption)) MoveSelection(1);
         }
         private JourneyData Capture()
@@ -87,7 +85,7 @@ namespace DragonQuest.Prototype
         }
         private bool Write(string success)
         {
-            bool saved = Slots.TryWrite(ActiveSlot, Capture, out string error);
+            bool saved = SlotSession.TryWrite(ActiveSlot, Capture, out string error);
             ShowMessage(saved ? success + " / slot " + ActiveSlot : error); return saved;
         }
         private void NewGame() => frontEnd.NewGame();
@@ -95,7 +93,7 @@ namespace DragonQuest.Prototype
         private void StartNewGameVoyage()
         {
             frontEnd.BeginVoyage();
-            ActiveSlot = Slots.FirstEmptySlot();
+            ActiveSlot = SlotSession.FirstEmptySlot();
             awaitingFirstSave = true;
             playSeconds = 0;
             overwriteSlot = 0;
@@ -104,7 +102,7 @@ namespace DragonQuest.Prototype
         }
         private void Continue(int slot)
         {
-            if (!Slots.TryRead(slot, out var journey, out string warning)) { ShowMessage(warning); RefreshSlots(); return; }
+            if (!SlotSession.TryRead(slot, out var journey, out string warning)) { ShowMessage(warning); RefreshSlots(); return; }
             install(journey); progress = journey.Progress; ActiveSlot = slot; IsMenuVisible = false;
             awaitingFirstSave = false;
             playSeconds = journey.Data.PlaySeconds ?? 0;
@@ -153,7 +151,7 @@ namespace DragonQuest.Prototype
         {
             if (!CanSaveManually)
             { ShowMessage("O salvamento manual fica disponivel no mapa global ou na hospedaria, fora de combate."); return; }
-            if (ActiveSlot == 0 || awaitingFirstSave && Slots.Exists(ActiveSlot))
+            if (ActiveSlot == 0 || awaitingFirstSave && SlotSession.Exists(ActiveSlot))
             {
                 IsMenuVisible = true;
                 player.SetMovementEnabled(false);
@@ -238,9 +236,9 @@ namespace DragonQuest.Prototype
             MenuSounds.Play(MenuSound.Confirm);
             if (page == JourneyMenuPage.Continue)
             {
-                if (previews[slot - 1] != null) Continue(slot);
+                if (SlotSession.Slots[slot - 1].Preview != null) Continue(slot);
             }
-            else if (occupied[slot - 1]) { overwriteSlot = slot; selectedOption = 0; }
+            else if (SlotSession.Slots[slot - 1].Occupied) { overwriteSlot = slot; selectedOption = 0; }
             else SaveToSlot(slot);
         }
         private void UpdateMenuInput(KeyCode key)
@@ -271,10 +269,10 @@ namespace DragonQuest.Prototype
             else SelectSlot(selectedOption + 1);
         }
         private bool OptionEnabled(int option) => page == JourneyMenuPage.Title
-            ? option == 0 || option == 1 && Array.Exists(previews, preview => preview != null)
+            ? option == 0 || option == 1 && SlotSession.HasLoadableSlot
             : overwriteSlot != 0 ? option >= 0 && option < 2
             : option >= 0 && (page == JourneyMenuPage.Save ? option < SaveStore.SlotCount
-                : option == SaveStore.SlotCount || option < SaveStore.SlotCount && previews[option] != null);
+                : option == SaveStore.SlotCount || option < SaveStore.SlotCount && SlotSession.Slots[option].Preview != null);
         private void CancelOverwrite()
         { overwriteSlot = 0; MenuSounds.Play(MenuSound.Cancel); }
         private MenuSoundContext NavigationSoundContext => page == JourneyMenuPage.Title
@@ -297,7 +295,7 @@ namespace DragonQuest.Prototype
         private void OnGUI()
         {
             if (store == null || !IsMenuVisible) return;
-            view.Slots = Slots;
+            view.Slots = SlotSession.Slots;
             saveMenu.Draw(view);
         }
         private void OnDestroy() { frontEnd.Dispose(); saveMenu?.Dispose(); }

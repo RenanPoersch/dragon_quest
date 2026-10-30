@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using DragonQuest.Gameplay.Saving;
 using DragonQuest.Audio;
 using DragonQuest.Persistence;
@@ -16,7 +17,7 @@ namespace DragonQuest.Presentation.Menus
         public Func<int> ReadSelection, ReadOverwriteSlot;
         public Func<string> ReadMessage;
         public Func<float> ReadMessageUntil;
-        public SaveSlotSession Slots;
+        public IReadOnlyList<SaveSlotState> Slots;
         public Func<int, bool> OptionEnabled;
         public Action<int> SelectOption, SelectSlot, SaveToSlot;
         public Action NewGame, OpenContinue, Back, CancelOverwrite;
@@ -46,9 +47,6 @@ namespace DragonQuest.Presentation.Menus
         private int overwriteSlot => context.ReadOverwriteSlot();
         private string message => context.ReadMessage();
         private float messageUntil => context.ReadMessageUntil();
-        private RestoredJourney[] previews => context.Slots.Previews;
-        private string[] slotMessages => context.Slots.Messages;
-        private bool[] occupied => context.Slots.Occupied;
         private bool OptionEnabled(int option) => context.OptionEnabled(option);
         private void NewGame() => context.NewGame();
         private void SelectSlot(int slot) => context.SelectSlot(slot);
@@ -100,10 +98,11 @@ namespace DragonQuest.Presentation.Menus
                 bool previousEnabled = GUI.enabled;
                 for (int i = 0; i < SaveStore.SlotCount; i++)
                 {
-                    var preview = previews[i];
-                    saveScreen.DrawSlot(i, preview, occupied[i], slotMessages[i], preview == null ? null : LocationTitle(preview));
+                    var slot = context.Slots[i];
+                    var preview = slot.Preview;
+                    saveScreen.DrawSlot(i, preview, slot.Occupied, slot.Message, preview == null ? null : LocationTitle(preview));
                     GUI.enabled = previousEnabled && overwriteSlot == 0 && (!loading || preview != null);
-                    if (MenuButton(SaveSelectionPresentation.SlotRect(i), "", i, GUIStyle.none)) SelectSlot(i + 1);
+                    if (MenuButton(SaveSelectionPresentation.SlotRect(i), "", i, GUIStyle.none)) SelectSlot(slot.Number);
                     GUI.enabled = previousEnabled;
                 }
                 GUI.enabled = previousEnabled && overwriteSlot == 0;
