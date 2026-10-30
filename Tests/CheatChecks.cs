@@ -113,6 +113,37 @@ internal static class CheatChecks
         fresh.SetMaxLevel();
         Check(fresh.Members.All(m => m.Level == 99), "Level cheat also works outside combat.");
         Check(!fresh.HasInfiniteLimit && !new ExplorationProgress().HasInfiniteGold, "Other cheats stay independent.");
+        for (int level = 99; level >= 1; level--)
+        {
+            fresh.SetLevel(level);
+            Check(fresh.Members.All(m => m.Level == level && m.Experience == CharacterProgression.ExperienceForLevel(level)),
+                "Slider can select every level, including lowering it: " + level);
+        }
+        fresh.Members[0].Progression.AddExperience(75);
+        fresh.SetLevel(42);
+        Check(fresh.Members.All(m => m.Level == 42 && m.Progression.ExperienceInLevel == 0),
+            "Selecting a level sets its XP threshold for the whole party.");
+        foreach (int invalid in new[] { 0, 100 })
+        {
+            bool rejected = false;
+            try { fresh.SetLevel(invalid); } catch (ArgumentOutOfRangeException) { rejected = true; }
+            Check(rejected && fresh.Members.All(m => m.Level == 42), "Invalid levels cannot partially change the party.");
+        }
+        actors[1].RecoverHp(actors[1].Definition.MaxHp);
+        actors[1].RecoverMp(actors[1].Definition.MaxMp);
+        party.SetLevel(1, battle);
+        Check(party.Members.All(m => m.Level == 1 && m.Experience == 0), "The active battle can return to level 1.");
+        Check(actors[0].Hp == 80 && actors[0].Mp == 25 && actors[0].IsPoisoned && !actors[2].IsAlive,
+            "Lowering levels preserves damage, MP, poison and defeated allies.");
+        Check(actors[1].Hp == party.Members[1].MaxHp && actors[1].Mp == party.Members[1].MaxMp
+            && actors[1].BoundActions == 2 && actors[1].IsDefending && actors[1].ShieldTurns == 3,
+            "Lowering levels clamps vitals to the new maxima and preserves temporary conditions.");
+        Check(actors.All(a => a.Definition.MaxHp == party.Members.First(m => m.Id == a.Id).MaxHp)
+            && ReferenceEquals(battle.CurrentActor, current) && battle.Round == 1
+            && enemy.Hp == enemyHp && enemy.Definition.Attack == enemyAttack,
+            "Level reductions refresh party stats without changing turns or enemies.");
+        party.Members[0].Progression.AddExperience(100);
+        Check(party.Members[0].Level == 2, "Normal XP progression resumes after lowering a level.");
     }
 
     public static int Main()

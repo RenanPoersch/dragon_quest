@@ -140,8 +140,11 @@ namespace DragonQuest.Equipment
             Changed?.Invoke();
         }
 
-        public void SetMaxLevel(BattleSession activeBattle = null)
+        public void SetMaxLevel(BattleSession activeBattle = null) => SetLevel(CharacterProgression.MaxLevel, activeBattle);
+
+        public void SetLevel(int level, BattleSession activeBattle = null)
         {
+            int experience = CharacterProgression.ExperienceForLevel(level);
             foreach (var member in members)
             {
                 CombatantState participant = null;
@@ -150,7 +153,7 @@ namespace DragonQuest.Equipment
                         if (state.Team == CombatTeam.Party && state.Id == member.Id) { participant = state; break; }
                 if (participant != null) member.CaptureVitals(participant);
                 int hp = member.Hp, mp = member.Mp;
-                member.Progression.AddExperience(CharacterProgression.MaxExperience);
+                member.Progression.Restore(experience);
                 member.RestoreVitals(hp, mp, member.IsPoisoned, member.BoundActions);
                 participant?.RefreshDefinition(member.CreateCombatant().Definition);
             }

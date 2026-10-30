@@ -173,6 +173,31 @@ public static class MenuInputUnityChecks
         Check((int)Field(cheats, "selected").GetValue(cheats) == 1, "Keyboard arrows navigate cheats in Update.");
         State(new GamepadState { leftStick = Vector2.down }); Call(cheats, "Update");
         Check((int)Field(cheats, "selected").GetValue(cheats) == 2, "The stick navigates cheats.");
+        Check((int)Field(cheats, "selectedLevel").GetValue(cheats) == battle.Party.Members[0].Level,
+            "Opening cheats initializes the slider from the current party level.");
+        State(new GamepadState(), Key.RightArrow); Call(cheats, "Update");
+        Check((int)Field(cheats, "selected").GetValue(cheats) == 2
+            && System.Linq.Enumerable.All(battle.Party.Members, m => m.Level == 2),
+            "Right arrow increases the slider without leaving its row.");
+        State(new GamepadState().WithButton(GamepadButton.DpadRight)); Call(cheats, "Update");
+        Check(System.Linq.Enumerable.All(battle.Party.Members, m => m.Level == 3), "The D-pad increases the slider.");
+        State(new GamepadState { leftStick = Vector2.left }); Call(cheats, "Update");
+        Check(System.Linq.Enumerable.All(battle.Party.Members, m => m.Level == 2), "The stick decreases the slider.");
+        State(new GamepadState(), Key.LeftArrow); Call(cheats, "Update");
+        State(new GamepadState(), Key.LeftArrow); Call(cheats, "Update");
+        State(new GamepadState(), Key.Enter); Call(cheats, "Update");
+        Check(System.Linq.Enumerable.All(battle.Party.Members, m => m.Level == 1),
+            "The slider stops at level 1 and confirmation uses the selected level.");
+        State(new GamepadState().WithButton(GamepadButton.Select)); Call(cheats, "Update");
+        battle.Party.SetLevel(99);
+        State(new GamepadState().WithButton(GamepadButton.Select)); Call(cheats, "Update");
+        Check((int)Field(cheats, "selectedLevel").GetValue(cheats) == 99, "Reopening resynchronizes the slider with party progression.");
+        State(new GamepadState().WithButton(GamepadButton.DpadRight)); Call(cheats, "Update");
+        Check(System.Linq.Enumerable.All(battle.Party.Members, m => m.Level == 99), "The slider stops at level 99.");
+        State(new GamepadState().WithButton(GamepadButton.DpadLeft)); Call(cheats, "Update");
+        Check(System.Linq.Enumerable.All(battle.Party.Members, m => m.Level == 98), "The slider can lower level 99.");
+        State(new GamepadState(), Key.DownArrow); Call(cheats, "Update");
+        Check((int)Field(cheats, "selected").GetValue(cheats) == 3, "Down leaves the slider for the next cheat.");
         State(new GamepadState().WithButton(GamepadButton.Select)); Call(cheats, "Update");
         Check(!cheats.IsOpen && !GameInput.SavePressed, "Select closes cheats without opening a save menu.");
         State(new GamepadState().WithButton(GamepadButton.Select)); Call(cheats, "Update");

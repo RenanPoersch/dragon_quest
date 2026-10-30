@@ -2,6 +2,7 @@ using UnityEngine;
 using DragonQuest.Audio;
 using DragonQuest.Input;
 using DragonQuest.Exploration;
+using DragonQuest.Progression;
 
 namespace DragonQuest.Prototype
 {
@@ -16,8 +17,8 @@ namespace DragonQuest.Prototype
         private PrototypeSaveController saves;
         private ExplorationProgress progress;
         private GUIStyle title, text, small, button, window;
-        private int selected, closedFrame = -1;
-        private string message = "Escolha uma opcao.";
+        private int selected, selectedLevel = 1, closedFrame = -1;
+        private string message = "";
         public bool IsOpen { get; private set; }
         public bool BlocksInput => IsOpen || closedFrame == Time.frameCount;
 
@@ -35,14 +36,20 @@ namespace DragonQuest.Prototype
             if (GameInput.CheatsPressed)
             {
                 if (IsOpen) Close();
-                else { IsOpen = true; player.SetMovementEnabled(false); MenuSounds.Play(MenuSound.Confirm); }
+                else
+                {
+                    selectedLevel = battle.Party.Members.Count > 0 ? battle.Party.Members[0].Level : 1;
+                    IsOpen = true; player.SetMovementEnabled(false); MenuSounds.Play(MenuSound.Confirm);
+                }
             }
             else if (IsOpen && GameInput.CancelPressed) Close();
             else if (IsOpen)
             {
                 int previous = selected;
                 MenuDirection direction = GameInput.Navigation;
-                if (direction == MenuDirection.Up || direction == MenuDirection.Left) selected = (selected + OptionCount - 1) % OptionCount;
+                if (selected == 2 && (direction == MenuDirection.Left || direction == MenuDirection.Right))
+                    SetSelectedLevel(selectedLevel + (direction == MenuDirection.Right ? 1 : -1));
+                else if (direction == MenuDirection.Up || direction == MenuDirection.Left) selected = (selected + OptionCount - 1) % OptionCount;
                 else if (direction == MenuDirection.Down || direction == MenuDirection.Right) selected = (selected + 1) % OptionCount;
                 MenuSounds.Navigate(previous, selected);
                 if (GameInput.ConfirmPressed) Activate(selected);
@@ -65,25 +72,39 @@ namespace DragonQuest.Prototype
             if (option == 0)
             {
                 battle.Party.SetInfiniteLimit(!battle.Party.HasInfiniteLimit);
-                message = battle.Party.HasInfiniteLimit ? "LIMIT sempre pronto para toda a equipe." : "LIMIT voltou ao normal.";
+                message = battle.Party.HasInfiniteLimit ? "LIMIT sempre." : "LIMIT normal.";
             }
             else if (option == 1)
             {
                 progress.SetInfiniteGold(!progress.HasInfiniteGold);
-                message = progress.HasInfiniteGold ? "Compras e hospedagem sem gastar gold." : "Gold voltou ao saldo original.";
+                message = progress.HasInfiniteGold ? "Gold infinito." : "Gold original.";
             }
             else if (option == 2)
             {
-                battle.Party.SetMaxLevel(battle.IsActive ? battle.Session : null);
-                message = "Toda a equipe esta no nivel 99. Salve a jornada para manter os niveis.";
+                ApplyLevel();
             }
             else if (option == 3)
             {
                 battle.SetRandomEncountersEnabled(!battle.AreRandomEncountersEnabled);
-                message = battle.AreRandomEncountersEnabled ? "Encontros aleatorios reativados."
-                    : "Sem encontros aleatorios. Batalhas por interacao continuam disponiveis.";
+                message = battle.AreRandomEncountersEnabled ? "Encontros aleatorios ON."
+                    : "Encontros aleatorios OFF.";
             }
             else Close();
+        }
+
+        private void SetSelectedLevel(int level)
+        {
+            level = Mathf.Clamp(level, 1, CharacterProgression.MaxLevel);
+            if (selectedLevel == level) return;
+            selectedLevel = level;
+            MenuSounds.Play(MenuSound.Navigate);
+            ApplyLevel();
+        }
+
+        private void ApplyLevel()
+        {
+            battle.Party.SetLevel(selectedLevel, battle.IsActive ? battle.Session : null);
+            message = "Nivel " + selectedLevel + ".";
         }
 
         private void OnGUI()
@@ -117,11 +138,10 @@ namespace DragonQuest.Prototype
             GUI.DrawTexture(new Rect(0, 0, 660, 576), Texture2D.whiteTexture);
             GUI.color = Color.white;
             GUI.Label(new Rect(30, 20, 600, 42), "CHEAT ENGINE", title);
-            GUI.Label(new Rect(30, 65, 600, 28), "` abre/fecha  |  Esc fecha  |  Setas + Enter ou clique", small);
             string[] labels = {
                 "LIMIT infinito: " + (battle.Party.HasInfiniteLimit ? "LIGADO" : "DESLIGADO"),
                 "Gold infinito: " + (progress.HasInfiniteGold ? "LIGADO" : "DESLIGADO"),
-                "Nivel 99 / toda a equipe",
+                "Nivel: " + selectedLevel,
                 "Encontros aleatorios: " + (battle.AreRandomEncountersEnabled ? "ATIVADOS" : "DESATIVADOS"), "Fechar" };
             for (int i = 0; i < labels.Length; i++)
             {
@@ -129,12 +149,20 @@ namespace DragonQuest.Prototype
                 if ((current.type == EventType.MouseMove || current.type == EventType.MouseDown)
                     && rect.Contains(current.mousePosition)) MenuSounds.Select(ref selected, i);
                 GUI.color = selected == i ? new Color(1, .85f, .52f) : Color.white;
-                if (GUI.Button(rect, (selected == i ? "> " : "") + labels[i], button)) Activate(i);
+                if (i == 2)
+                {
+                    GUI.Box(rect, GUIContent.none, button);
+                    GUI.Label(new Rect(rect.x + 12, rect.y + 8, 174, 36),
+                        (selected == i ? "> " : "") + labels[i], text);
+                    GUI.Label(new Rect(rect.x + 192, rect.y + 13, 28, 28), "1", small);
+                    GUI.Label(new Rect(rect.x + 566, rect.y + 13, 34, 28), CharacterProgression.MaxLevel.ToString(), small);
+                    SetSelectedLevel(Mathf.RoundToInt(GUI.HorizontalSlider(new Rect(rect.x + 220, rect.y + 18, 336, 24),
+                        selectedLevel, 1, CharacterProgression.MaxLevel)));
+                }
+                else if (GUI.Button(rect, (selected == i ? "> " : "") + labels[i], button)) Activate(i);
             }
             GUI.color = Color.white;
             GUI.Label(new Rect(30, 441, 600, 58), message, text);
-            GUI.Label(new Rect(30, 514, 600, 48),
-                "LIMIT, gold e encontros valem nesta sessao. Nivel 99 permanece ao salvar.", small);
         }
 
         private void EnsureStyles()
