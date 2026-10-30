@@ -60,13 +60,13 @@ namespace DragonQuest.Presentation.World
             explorer.Initialize("Exploradora", "Cavar, cavar... Explorar, explorar...");
             interactables.Add(explorer);
             interactables.Add(CreateChest(interactions));
-            CreatePassage("Entrada da loja de itens", PrototypeTravel.City, city, "item-shop");
-            CreatePassage("Entrada da loja de materias", PrototypeTravel.City, city, "materia-shop");
-            CreatePassage("Entrada da loja de equipamentos", PrototypeTravel.City, city, "equipment-shop");
+            CreatePassage("Loja de itens", PrototypeTravel.City, city, "item-shop");
+            CreatePassage("Loja de materias", PrototypeTravel.City, city, "materia-shop");
+            CreatePassage("Loja de equipamentos", PrototypeTravel.City, city, "equipment-shop");
             CreatePassage("Portao para a ilha", PrototypeTravel.City, city, PrototypeTravel.World);
             CreatePassage("Entrada do castelo", PrototypeTravel.City, city, PrototypeTravel.Castle);
-            CreatePassage("Entrada da hospedaria",PrototypeTravel.City,city,PrototypeTravel.Inn);
-            GameObject guard = Entity("Guarda do Rei Rubro", PrototypeCityLayout.Guard, city);
+            CreatePassage("Hospedaria",PrototypeTravel.City,city,PrototypeTravel.Inn);
+            GameObject guard = Entity("Guarda Real", PrototypeCityLayout.Guard, city);
             GameObject sentry = Entity("Sentinela da ponte", new Vector2(-1.2f, 0), guard.transform);
             BoxCollider2D guardCollider = sentry.AddComponent<BoxCollider2D>();
             guardCollider.size = new Vector2(0.65f, 0.7f);
@@ -96,7 +96,7 @@ namespace DragonQuest.Presentation.World
                 { PrototypeTravel.Inn,CreateInn(interactables).gameObject }
             };
             string[] shopIds = { "item-shop", "equipment-shop", "materia-shop" };
-            string[] shopNames = { "Loja de itens", "Loja de equipamentos", "Loja de materias" };
+            string[] shopNames = { "Loja de itens", "Loja de equipamentos", "Loja de matérias" };
             string[] shopColors = { "87B5A3", "91A6B3", "85CD90" };
             for (int i = 0; i < shopIds.Length; i++)
             {

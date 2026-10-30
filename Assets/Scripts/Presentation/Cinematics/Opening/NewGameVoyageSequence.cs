@@ -19,34 +19,33 @@ namespace DragonQuest.Prototype
         public const float BlackHold = 1, RevealDuration = 1.2f;
         private static readonly string[] lines =
         {
-            "Além do mar, uma ilha",
-            "vive sob o domínio de",
-            "um rei que espalha medo.",
+            "Além do mar, a aventura",
+            "de nossos heróis",
+            "está quase terminada...",
+            "",
+            "Depois de muitos anos buscando,",
+            "a fonte de todo mal foi revelada",
+            "em uma pequena ilha ao norte...",
             "",
             "As estradas se calaram.",
             "Nas vilas, a esperança",
-            "se tornou um sussurro.",
+            "se tornou apenas um sussurro...",
             "",
-            "Entre ruínas esquecidas,",
+            "Entre as ruínas esquecidas,",
             "uma antiga lenda ainda",
             "guarda a promessa de",
-            "romper essa escuridão.",
+            "romper a escuridão...",
             "",
             "Aren, Lia e Bram cruzam",
             "o oceano em busca de",
             "respostas — e de um",
             "futuro para esse povo.",
             "",
-            "Diante deles, uma costa",
-            "desconhecida. Além dela,",
-            "segredos, perigos e uma",
-            "força que aguarda",
-            "para ser despertada.",
+            "Diante deles, o desconhecido...",
             "",
-            "Quando a terra surgir",
-            "no horizonte, cada passo",
-            "decidirá o destino",
-            "da ilha."
+            "Ao horizonte, cada escolha",
+            "decidirá o seu",
+            "próprio destino..."
         };
 
         public static int LineCount => lines.Length;
