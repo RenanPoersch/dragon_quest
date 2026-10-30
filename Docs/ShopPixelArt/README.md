@@ -15,7 +15,7 @@ Importacao Point/Clamp, RGBA legivel, sem mipmaps, compressao ou redimensionamen
 Integrado no projeto indicado pelo PROJECT.md:
 - Assets/Resources/PixelArt/ShopPropsAtlas.png e .meta
 - Assets/Scripts/Prototype/ShopPixelArt.cs
-- Assets/Scripts/Prototype/ObliqueScenery.cs
+- Assets/Scripts/Presentation/World/Rendering/ObliqueScenery.cs
 
 PrototypeCity.cs nao foi substituido nesta revisao: suas chamadas para as tres lojas e seus colisores/interacoes ja existentes continuam utilizados. Builders geometricos antigos permanecem para compatibilidade de testes, mas nao desenham mais mobilia ou mercadoria nas lojas em execucao.
 

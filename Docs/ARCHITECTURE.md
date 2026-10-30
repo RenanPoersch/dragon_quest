@@ -28,6 +28,22 @@ Persistência, lojas, ícones de inventário e a recompensa do viajante já cons
 
 Os mesmos objetos de segredos e progresso do dragão permanecem ligados aos cenários; seus dados são restaurados ao carregar a jornada. Equipe, ouro e serviço de lojas passam a apontar para o estado carregado. Os callbacks de baú, patrulha e chefes consultam esse estado atual.
 
+## Mundo e exploração
+
+`Exploration/Layouts` reúne as plantas dos mapas, áreas caminháveis, limites, pontos de chegada e posições das interações. `Exploration/PrototypeTravel` mantém as rotas e a restauração de posições, incluindo os limites aceitos de saves antigos. Movimento e progresso da exploração continuam em `Exploration`.
+
+`Presentation/World` reúne a apresentação do mundo:
+
+- `Scenery`: cenários pintados, superfícies e composição da ilha, periferia, lojas e interiores.
+- `Rendering`: criação de malhas, materiais, superfícies de pixel art e projeção oblíqua.
+- `Characters`: sprites e apresentação dos personagens, incluindo profundidade no salão do rei.
+- `Animations`: animações das runas da pedreira, chama das ruínas e dragão no covil.
+- `CameraFollow` e `PrototypeLocations`: enquadramento e aplicação visual de cada mapa durante viagens e carregamentos.
+
+As sequências de descanso na hospedaria e audiência com o rei ficam em `Presentation/Cinematics/Exploration`. O cristal de salvamento fica em `Interactions/InnSavePoint`, pois controla a entrada do jogador na área que abre o menu de save.
+
+Esta organização preserva os nomes de classes, namespaces, código e GUIDs dos scripts movidos. Os caminhos de Resources, IDs de mapas, regras de colisão e dados persistidos permanecem os mesmos.
+
 ## Título, abertura e salvamento
 
 `Presentation/Menus/FrontEndPresentation` controla a abertura, os fades do menu, a notificação de conquistas e a viagem inicial. O novo jogo espera o preto ser efetivamente desenhado antes de criar a apresentação da viagem. Essa classe não acessa arquivos de save.

@@ -221,11 +221,11 @@ O cenário usa formas coloridas geradas pelo código, sem imagens externas. Spri
 ### Onde está o código
 
 - `Assets/Scripts/Exploration/PlayerMovement.cs`: teclado, velocidade e movimento físico.
-- `Assets/Scripts/Exploration/CameraFollow.cs`: acompanha a posição interpolada do herói ou mantém o enquadramento fixo do ambiente.
+- `Assets/Scripts/Presentation/World/CameraFollow.cs`: acompanha a posição interpolada do herói ou mantém o enquadramento fixo do ambiente.
 - `Assets/Scripts/Prototype/PrototypeCity.cs`: mapa provisório, obstáculos e herói.
-- `Assets/Scripts/Prototype/PrototypeCityLayout.cs`: dimensões, bairros, construções, ruas, rio e pontes do mapa ampliado.
-- `Assets/Scripts/Prototype/PrototypeWorldLayout.cs`: ilha, costa, ícones globais, florestas e interior do castelo.
-- `Assets/Scripts/Prototype/PrototypeTravel.cs`: mapas, conexões permitidas e posições de chegada/retorno.
+- `Assets/Scripts/Exploration/Layouts/PrototypeCityLayout.cs`: dimensões, bairros, construções, ruas, rio e pontes do mapa ampliado.
+- `Assets/Scripts/Exploration/Layouts/PrototypeWorldLayout.cs`: ilha, costa, ícones globais, florestas e interior do castelo.
+- `Assets/Scripts/Exploration/PrototypeTravel.cs`: mapas, conexões permitidas e posições de chegada/retorno.
 - `Assets/Scripts/Prototype/PrototypeHud.cs`: apresenta somente conversas abertas, usando o painel azul com retrato, nome, fala e escolhas de `DialoguePresentation`.
 
 Veja `Docs/PARTE_1.md` para o roteiro de verificação.

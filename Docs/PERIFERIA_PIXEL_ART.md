@@ -37,10 +37,10 @@ A periferia foi redesenhada a partir da referência enviada pelo usuário: bairr
 | Assets/Resources/PixelArt/CastleMaterialsAtlas.png | Alvenaria cinza, granito, pavimento, pedras de remate, porta de carvalho e estandartes |
 | Assets/Resources/PixelArt/CityGroundMap.png | Pintura contínua de toda a planta: terra, trilhas orgânicas, musgo, grama, luz refletida dos estabelecimentos, leito do fosso e pavimento da ponte |
 | Assets/Resources/PixelArt/ChestStates.png | Dois sprites transparentes do baú: fechado e aberto/vazio |
-| Assets/Scripts/Prototype/CityGroundArt.cs | Superfícies do chão e UVs normalizados da planta, usando a imagem inteira uma vez |
+| Assets/Scripts/Presentation/World/Scenery/CityGroundArt.cs | Superfícies do chão e UVs normalizados da planta, usando a imagem inteira uma vez |
 | Assets/Resources/CityGround.shader | Material opaco do piso, sem divisão em células nem repetição |
-| Assets/Scripts/Prototype/CityPeripheryArt.cs | Geometria das casas, caldeira da loja de itens, fachadas, ponte, paredes do fosso, tubulações e vapor |
-| Assets/Scripts/Prototype/CastleFortressArt.cs | Fortaleza de pedra, ameias, arco do portão, seteiras, estandartes e ícone miniatura |
+| Assets/Scripts/Presentation/World/Scenery/CityPeripheryArt.cs | Geometria das casas, caldeira da loja de itens, fachadas, ponte, paredes do fosso, tubulações e vapor |
+| Assets/Scripts/Presentation/World/Scenery/CastleFortressArt.cs | Fortaleza de pedra, ameias, arco do portão, seteiras, estandartes e ícone miniatura |
 | Assets/Resources/PixelGlow.shader | Vapor das chaminés com transparência/aditivo e teste de profundidade |
 
 Os dois atlas da periferia têm 1448 × 1086; o atlas do castelo tem 1447 × 1087. Foram gerados pela ferramenta integrada image_gen e mantidos sem alteração. Importadores usam Point, nenhuma compressão, mipmap ou redimensionamento NPOT. Prompts completos em `PERIFERIA_ART_PROMPTS.md`; origem em `ASSETS.md`.
