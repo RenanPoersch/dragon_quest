@@ -90,8 +90,7 @@ namespace DragonQuest.Prototype
                 InventoryPixelArt.Draw(new Rect(72, row.y + 8, 48, 48), InventoryPixelArt.Texture(item?.Definition));
                 FitLabel(new Rect(132, row.y, 474, 36), item?.Definition.Name
                     ?? "Remover " + singular[(int)session.Category], text, equipped ? equippedText : Color.white);
-                if (equipped) FitLabel(new Rect(132, row.y + 34, 474, 24), party.LocationOf(item)
-                    + (item == session.CurrentItem ? " / Equipado" : ""), small, equippedText);
+                if (equipped) FitLabel(new Rect(132, row.y + 34, 474, 24), party.LocationOf(item), small, equippedText);
             }
             if (session.HasSelection) theme.DrawHand(new Rect(70, session.ItemIndex * rowHeight, 44, rowHeight - 2));
             else Label(new Rect(34, 28, 570, 40), "--", text);
