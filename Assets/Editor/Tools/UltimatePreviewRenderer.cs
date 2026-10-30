@@ -33,25 +33,32 @@ namespace DragonQuest.Prototype
             }
             if(observed==ability) return;
             observed=ability; allies.Clear(); revived.Clear(); initialChanges.Clear();
-            var members=PrototypePartyFactory.Create().Members;
+            var previewParty=PrototypePartyFactory.Create();
+            previewParty.SetInfiniteLimit(true);
+            var members=previewParty.Members;
             party=new CombatantState[members.Count];
             for(int i=0;i<party.Length;i++) { party[i]=members[i].CreateCombatant(); if(HeroUltimates.ForHero(party[i].Id)==ability) actor=party[i]; }
             enemies=new[] {new CombatantState("golem",new CombatantDefinition("Golem","Preview",5000,0,1,5,0,1,DragonQuest.Equipment.MateriaResolver.Defend),CombatTeam.Enemy),
                 new CombatantState("wolf",new CombatantDefinition("Lobo","Preview",5000,0,1,5,0,1,DragonQuest.Equipment.MateriaResolver.Defend),CombatTeam.Enemy)};
             if(ability==HeroUltimates.Salvation)
             {
-                party[0].TakeDamage(1000); party[1].TakeDamage(60); party[1].PoisonTurns=1;
-                party[2].TakeDamage(100); party[2].BoundActions=1;
+                SetPreviewVitals(party[0],0);
+                SetPreviewVitals(party[1],party[1].Hp-60,poisoned:true);
+                SetPreviewVitals(party[2],party[2].Hp-100,boundActions:1);
             }
             var participants=new List<CombatantState>(party); participants.AddRange(enemies);
             var battle=new BattleSession(()=>1,null,new DragonQuest.Inventory.ItemInventory(),participants.ToArray());
             while(battle.CurrentActor!=actor) battle.TryAct(battle.CurrentActor,DragonQuest.Equipment.MateriaResolver.Defend,battle.CurrentActor,out _);
             for(int i=0;i<party.Length;i++) { allies.Add(Homes[i]); revived.Add(!party[i].IsAlive); }
             foreach(var participant in participants) initialChanges[participant]=participant.VitalChanges.Count;
-            actor.Limit.Restore(100);
             if(!battle.TryAct(actor,ability,ability==HeroUltimates.Salvation?party[1]:enemies[0],out string error))
                 throw new System.InvalidOperationException(error);
         }
+        // Authoring-only fixture state; runtime setters remain internal to the combat model.
+        private static void SetPreviewVitals(CombatantState member,int hp,bool poisoned=false,int boundActions=0)
+            => typeof(CombatantState).GetMethod("RestoreVitals",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)
+                .Invoke(member,new object[] {hp,member.Mp,poisoned,boundActions});
+
         private static void Box(Rect rect, Color color)
         { Color old=GUI.color; GUI.color=color; GUI.DrawTexture(rect,Texture2D.whiteTexture); GUI.color=old; }
         public void Draw(AbilityDefinition ability, float elapsed)
@@ -113,19 +120,6 @@ namespace DragonQuest.Prototype
                 number.normal.textColor=change.Amount>0?new Color(.4f,1,.7f,alpha):new Color(1,1,1,alpha); GUI.Label(label,value,number);
                 lane++;
             }
-        }
-    }
-    public sealed class UltimatePreviewPlayer : MonoBehaviour
-    {
-        public AbilityDefinition Ability = HeroUltimates.Omnislash;
-        public float Elapsed;
-        private readonly UltimatePreviewRenderer renderer = new UltimatePreviewRenderer();
-        private void OnGUI()
-        {
-            float scale=Mathf.Min(Screen.width/1280f,Screen.height/720f);
-            Matrix4x4 previous=GUI.matrix;
-            GUI.matrix=Matrix4x4.TRS(new Vector3((Screen.width-1280*scale)*.5f,(Screen.height-720*scale)*.5f,0),Quaternion.identity,new Vector3(scale,scale,1));
-            renderer.Draw(Ability,Elapsed); GUI.matrix=previous;
         }
     }
 }

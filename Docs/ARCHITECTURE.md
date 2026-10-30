@@ -60,6 +60,12 @@ Os IDs gravados nos saves permanecem estáveis. Exemplos: `aren`, `potion`, `dra
 
 ## Apresentação e ferramentas
 
+Os arquivos de batalha estão agrupados em `Presentation/Battle`: `Animations` contém animações e leitura de quadros; `Sprites` contém os renderizadores e folhas dos lutadores. Cores, ícones de status, brilho de LIMIT e apresentação do meteoro ficam junto aos presenters e recursos compartilhados da batalha.
+
+As classes existentes conservam seus nomes, namespaces e arquivos `.meta` originais nesta etapa. A mudança física de pasta não altera os GUIDs das referências Unity nem os caminhos dos assets carregados de Resources.
+
+O preview de ultimates fica em `Assets/Editor/Tools/UltimatePreviewRenderer.cs`, usado pela janela de autoria `UltimatePreviewWindow`. Não participa do código de runtime. O antigo componente `UltimatePreviewPlayer`, sem referências no projeto, foi retirado. A preparação de estados artificiais fica restrita à ferramenta de Editor, sem abrir os setters internos do modelo de combate.
+
 Os cenários são montados por `Presentation/World/WorldBuilder`. `ObliqueScenery` conserva a geometria e as utilidades usadas pelo jogo e pelas ferramentas de autoria. Os geradores sem chamadas de chama do altar, símbolos antigos, marcas de garras, oco, essência do dragão e ícones antigos foram retirados.
 
 O trecho comentado de enquadramento esticado da entrada do rei permanece disponível para a decisão de acabamento. As alterações anteriores de música, finais, menus e combate não fazem parte destas etapas de reorganização.

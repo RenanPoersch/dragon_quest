@@ -20,7 +20,7 @@ foreach ($folder in @('Combat','Content','Equipment','Inventory','Shops','Progre
 foreach ($relative in @('Assets/Scripts/Exploration/ExplorationProgress.cs',
     'Assets/Scripts/Prototype/PrototypeBattleFactory.cs','Assets/Scripts/Prototype/PrototypeCastleBattleFactory.cs',
     'Assets/Scripts/Prototype/PrototypePartyFactory.cs','Assets/Scripts/Prototype/PrototypeShopFactory.cs',
-    'Assets/Scripts/Prototype/BattleAnimationCatalog.cs','Assets/Scripts/Prototype/CastleMeteorPresentation.cs',
+    'Assets/Scripts/Presentation/Battle/Animations/BattleAnimationCatalog.cs','Assets/Scripts/Presentation/Battle/CastleMeteorPresentation.cs',
     'Tests/CastleChecks.cs','Tests/CastlePresentationChecks.cs')) { $castleArgs += '"'+(Join-Path $castleRoot $relative)+'"' }
 $castleRsp = Join-Path $WorkDirectory 'CastleChecks.rsp'
 $castleArgs | Set-Content -LiteralPath $castleRsp -Encoding utf8
