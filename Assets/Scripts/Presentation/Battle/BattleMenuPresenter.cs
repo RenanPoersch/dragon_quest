@@ -10,7 +10,7 @@ using UnityEngine.InputSystem;
 namespace DragonQuest.Presentation.Battle
 {
     public delegate bool BattleCommandButton(Rect rect, string label, bool focused, bool enabled,
-        Texture2D icon = null, bool limitReady = false);
+        Texture2D icon = null, bool limitReady = false, object focusKey = null);
 
     // Owns command/target selection and input; the arena reads state and forwards target clicks.
     public sealed class BattleMenuPresenter
@@ -231,7 +231,9 @@ namespace DragonQuest.Presentation.Battle
                 if (drawButton(new Rect(0, i * 36, 253, 34), CommandLabel(i), !targeting && i == commandIndex,
                     CommandEnabled(i) && !targeting, itemMode && i < observedBattle.Inventory.Items.Count
                         ? InventoryPixelArt.Texture(observedBattle.Inventory.Items[i].Definition) : null,
-                    limitReady: !itemMode && CommandAbility(i)?.UsesLimit == true && observedActor.Limit.IsReady)) { ChooseCommand(i); break; }
+                    limitReady: !itemMode && CommandAbility(i)?.UsesLimit == true && observedActor.Limit.IsReady,
+                    focusKey: itemMode ? (object)observedBattle.Inventory.Items[i].Definition
+                        : InSubmenu ? groupAbilities[i] : (object)rootCommands[i])) { ChooseCommand(i); break; }
             }
             GUI.EndScrollView();
             if (!targeting) return;
@@ -242,7 +244,7 @@ namespace DragonQuest.Presentation.Battle
             for (int i = 0; i < (group ? Mathf.Min(1, targets.Count) : targets.Count); i++)
                 if (drawButton(new Rect(0, i * 36, 253, 34), group ? "Todos os alvos (" + targets.Count + ")" : (selected != null && (selected.Targets == TargetRule.Enemy || selected.Targets == TargetRule.AllEnemies)
                         && targets[i].Team == observedActor.Team && targets[i].IsBound ? "Correntes - " : "") + targets[i].Definition.Name,
-                    group || targetIndex == i, true)) { targetIndex = i; ExecuteTarget(targets[i]); break; }
+                    group || targetIndex == i, true, focusKey: targets[i])) { targetIndex = i; ExecuteTarget(targets[i]); break; }
             GUI.EndScrollView();
             if (targets.Count == 0) GUI.Label(new Rect(337, 546, 270, 78), "Nenhum alvo valido para esta acao.", small);
         }

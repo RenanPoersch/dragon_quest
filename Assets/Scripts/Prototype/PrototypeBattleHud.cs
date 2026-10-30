@@ -121,8 +121,8 @@ namespace DragonQuest.Prototype
             }
         }
 
-        private bool CommandButton(Rect rect, string label, bool focused, bool enabled, Texture2D icon = null, bool limitReady = false)
-            => graphics.CommandButton(rect, label, focused, enabled, commands.CanAcceptMenuInput, icon, limitReady);
+        private bool CommandButton(Rect rect, string label, bool focused, bool enabled, Texture2D icon = null, bool limitReady = false, object focusKey = null)
+            => graphics.CommandButton(rect, label, focused, enabled, commands.CanAcceptMenuInput, icon, limitReady, focusKey);
 
         private void OnDestroy() => graphics.Dispose();
     }

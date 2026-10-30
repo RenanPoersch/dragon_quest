@@ -10,6 +10,15 @@ namespace DragonQuest.Prototype
         {
             if (!ready) return GUI.Button(rect, text, style);
 
+            bool clicked = GUI.Button(rect, GUIContent.none, style);
+            Label(rect, text, true, style);
+            return clicked;
+        }
+
+        public static void Label(Rect rect, string text, bool ready, GUIStyle style)
+        {
+            if (!ready) { GUI.Label(rect, text, style); return; }
+
             float time = Time.unscaledTime;
             float pulse = .5f + .5f * Mathf.Sin(time * 3f);
             var rainbow = new StringBuilder(text.Length * 26);
@@ -27,11 +36,9 @@ namespace DragonQuest.Prototype
             style.richText = true;
             try
             {
-                bool clicked = GUI.Button(rect, GUIContent.none, style);
                 GUI.backgroundColor = Color.clear;
                 GUI.color = previousColor;
                 GUI.Label(rect, label, style);
-                return clicked;
             }
             finally
             {

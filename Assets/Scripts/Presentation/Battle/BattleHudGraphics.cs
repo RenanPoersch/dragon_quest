@@ -11,6 +11,12 @@ namespace DragonQuest.Presentation.Battle
     {
         private Texture2D pixel, hand;
         private GUIStyle title, text, small, centered, button, itemButton, number, castNumber;
+        private GUIStyle commandLabel;
+        private object focusedTextKey;
+        private string focusedText;
+        private Rect focusedTextRect;
+        private double focusedTextSince;
+        private int focusedTextFrame = -2;
         private GUISkin battleSkin;
         private Rect handUv = new Rect(0, 0, 1, 1);
         private float handAspect = 1;
@@ -30,12 +36,31 @@ namespace DragonQuest.Presentation.Battle
             GUI.Label(rect, value + "/" + maximum, centered);
         }
 
-        public bool CommandButton(Rect rect, string label, bool focused, bool enabled, bool canAcceptMenuInput, Texture2D icon = null, bool limitReady = false)
+        public bool CommandButton(Rect rect, string label, bool focused, bool enabled, bool canAcceptMenuInput, Texture2D icon = null, bool limitReady = false,
+            object focusKey = null)
         {
             bool previous = GUI.enabled; GUI.enabled = previous && enabled && canAcceptMenuInput;
-            bool clicked = LimitCommandGlow.Button(rect, label,
-                limitReady,
-                icon == null ? button : itemButton);
+            GUIStyle style = icon == null ? button : itemButton;
+            bool clicked = GUI.Button(rect, GUIContent.none, style);
+            var textRect = new Rect(rect.x + style.padding.left, rect.y + style.padding.top,
+                Mathf.Max(0, rect.width - style.padding.horizontal), Mathf.Max(0, rect.height - style.padding.vertical));
+            float textWidth = commandLabel.CalcSize(new GUIContent(label)).x;
+            float offset = 0;
+            if (focused)
+            {
+                object key = focusKey ?? label;
+                if (!Equals(focusedTextKey, key) || focusedText != label || focusedTextRect != textRect
+                    || Time.frameCount > focusedTextFrame + 1)
+                {
+                    focusedTextKey = key; focusedText = label; focusedTextRect = textRect;
+                    focusedTextSince = Time.unscaledTimeAsDouble;
+                }
+                focusedTextFrame = Time.frameCount;
+                offset = BattleCommandTextScroll.Offset(Time.unscaledTimeAsDouble - focusedTextSince, textWidth, textRect.width);
+            }
+            GUI.BeginGroup(textRect);
+            LimitCommandGlow.Label(new Rect(-offset, 0, Mathf.Max(textWidth, textRect.width), textRect.height), label, limitReady, commandLabel);
+            GUI.EndGroup();
             InventoryPixelArt.Draw(new Rect(rect.x + 50, rect.center.y - 14, 28, 28), icon);
             GUI.enabled = previous;
             if (focused) DrawHand(new Rect(rect.x + 2, rect.center.y - 15, 44, 30));
@@ -84,10 +109,13 @@ namespace DragonQuest.Presentation.Battle
             number = PrototypeTypography.Style(centered, 40, true);
             castNumber = PrototypeTypography.Style(number, number.fontSize + CastleMeteorPresentation.TurnNumberFontIncrease, true);
             button = PrototypeTypography.Style(GUI.skin.label, 24);
+            button.wordWrap = false; button.clipping = TextClipping.Clip;
             button.alignment = TextAnchor.MiddleLeft; button.padding = new RectOffset(50, 4, 2, 2);
             itemButton = InventoryPixelArt.ButtonStyle(button, 86);
+            commandLabel = new GUIStyle(button) { padding = new RectOffset(), wordWrap = false, clipping = TextClipping.Clip };
             foreach (GUIStyle style in new[] { title, text, small, centered, button, itemButton })
             { style.normal.textColor = Color.white; style.hover.textColor = Color.white; style.active.textColor = Color.white; }
+            commandLabel.normal.textColor = Color.white;
             LoadHandSprite();
         }
 
