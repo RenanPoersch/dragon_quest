@@ -12,10 +12,10 @@ namespace DragonQuest.Presentation.Cinematics.Endings
         public const float TextColumnWidth = 350;
         private readonly string[] speechLines = EndingNarrative.KingFreedSpeech.Split('\n');
         private readonly string[] epilogueLines = EndingNarrative.KingFreedEpilogue.Split('\n');
-        private readonly Texture2D speech, prosperity, shade;
+        private readonly Texture2D speech, prosperity;
+        private readonly NarrativePanel narrative;
         private readonly EndingArtworkRenderer speechMotion = new EndingArtworkRenderer();
         private readonly EndingArtworkRenderer prosperityMotion = new EndingArtworkRenderer();
-        private GUIStyle story, caption;
         private bool hasDrawn;
         public KingFreedSequence Sequence { get; }
 
@@ -23,12 +23,20 @@ namespace DragonQuest.Presentation.Cinematics.Endings
         {
             Sequence = new KingFreedSequence(speechLines.Length, epilogueLines.Length);
             speech = Load(SpeechResource); prosperity = Load(ProsperityResource);
-            shade = new Texture2D(128, 1, TextureFormat.RGBA32, false)
-            { name = "King freed / narrative shade", wrapMode = TextureWrapMode.Clamp };
-            var colors = new Color[shade.width];
-            for (int x = 0; x < colors.Length; x++)
-                colors[x] = new Color(0, 0, 0, .82f * (1 - Mathf.SmoothStep(0, 1, x / 127f)));
-            shade.SetPixels(colors); shade.Apply(false, true);
+            narrative = new NarrativePanel(new NarrativePanel.Layout
+            {
+                ShadeName = "King freed / narrative shade", ShadeColor = new Color(0, 0, 0, .82f),
+                ShadeBounds = new Rect(0, 40, 520, 540),
+                Title = new NarrativePanel.Heading
+                {
+                    Bounds = new Rect(60, 60, TextColumnWidth, 30), FontSize = 20, Emphasized = true,
+                    Color = new Color(.96f, .8f, .5f, 1), ShadowOffset = new Vector2(2, 2)
+                },
+                TextWindow = new Rect(60, 104, TextColumnWidth, KingFreedSequence.TextWindowHeight),
+                TextSize = 28, TextColor = new Color(1, .96f, .86f, 1),
+                LineHeight = KingFreedSequence.LineHeight, TextShadowOffset = new Vector2(2, 2),
+                CullAbove = 34, BottomFadeInset = 20
+            });
         }
         public void Update(float unscaledDeltaTime)
         { if (hasDrawn) Sequence.Advance(unscaledDeltaTime); }
@@ -37,7 +45,7 @@ namespace DragonQuest.Presentation.Cinematics.Endings
         {
             if (Event.current.isKey || Event.current.isMouse) Event.current.Use();
             if (Event.current.type != EventType.Repaint) return;
-            hasDrawn = true; EnsureStyles();
+            hasDrawn = true; narrative.EnsureStyles();
             Matrix4x4 previousMatrix = GUI.matrix;
             Color previousColor = GUI.color;
             int previousDepth = GUI.depth;
@@ -58,8 +66,8 @@ namespace DragonQuest.Presentation.Cinematics.Endings
                     prosperityMotion.Draw(prosperity, ArtBounds(Sequence.ProsperityProgress, prosperity.width / (float)prosperity.height, true),
                         new Rect(0, 0, 1280, 660));
                 }
-                DrawNarrative(speechLines, "A VOZ DO REI", Sequence.SpeechTextOffset, Sequence.SpeechTextOpacity);
-                DrawNarrative(epilogueLines, "UM REINO EM PAZ", Sequence.EpilogueTextOffset, Sequence.EpilogueTextOpacity);
+                narrative.Draw(speechLines, "A VOZ DO REI", Sequence.SpeechTextOffset, Sequence.SpeechTextOpacity);
+                narrative.Draw(epilogueLines, "UM REINO EM PAZ", Sequence.EpilogueTextOffset, Sequence.EpilogueTextOpacity);
                 GUI.EndGroup();
                 GUI.matrix = Matrix4x4.identity;
                 Fill(viewport, new Color(0, 0, 0, Sequence.BlackOpacity));
@@ -73,36 +81,6 @@ namespace DragonQuest.Presentation.Cinematics.Endings
             // Anchor the speech at the top so the crown stays visible throughout the slow push.
             return new Rect(-20 - 16 * t, isProsperity ? (660 - height) / 2 : 0, width, height);
         }
-        private void DrawNarrative(string[] lines, string heading, float offset, float opacity)
-        {
-            if (opacity <= 0) return;
-            GUI.color = new Color(1, 1, 1, opacity);
-            GUI.DrawTexture(new Rect(0, 40, 520, 540), shade);
-            GUI.color = new Color(0, 0, 0, opacity);
-            GUI.Label(new Rect(62, 62, TextColumnWidth, 30), heading, caption);
-            GUI.color = new Color(.96f, .8f, .5f, opacity);
-            GUI.Label(new Rect(60, 60, TextColumnWidth, 30), heading, caption);
-            GUI.BeginGroup(new Rect(60, 104, TextColumnWidth, KingFreedSequence.TextWindowHeight));
-            for (int i = 0; i < lines.Length; i++)
-            {
-                float y = offset + i * KingFreedSequence.LineHeight;
-                if (y < -34 || y > KingFreedSequence.TextWindowHeight) continue;
-                float edge = Mathf.Clamp01(y / 24) * Mathf.Clamp01((KingFreedSequence.TextWindowHeight - y - 20) / 24);
-                GUI.color = new Color(0, 0, 0, opacity * edge);
-                GUI.Label(new Rect(2, y + 2, TextColumnWidth, 34), lines[i], story);
-                GUI.color = new Color(1, .96f, .86f, opacity * edge);
-                GUI.Label(new Rect(0, y, TextColumnWidth, 34), lines[i], story);
-            }
-            GUI.EndGroup();
-        }
-        private void EnsureStyles()
-        {
-            if (story != null) return;
-            story = GameTypography.Style(GUI.skin.label, 28);
-            caption = GameTypography.Style(GUI.skin.label, 20, true);
-            foreach (GUIStyle style in new[] { story, caption })
-            { style.normal.textColor = Color.white; style.padding = new RectOffset(); style.wordWrap = false; }
-        }
         private static Texture2D Load(string resource)
         {
             var texture = Resources.Load<Texture2D>(resource);
@@ -114,8 +92,7 @@ namespace DragonQuest.Presentation.Cinematics.Endings
         public void Dispose()
         {
             speechMotion.Dispose(); prosperityMotion.Dispose();
-            if (Application.isPlaying) UnityEngine.Object.Destroy(shade);
-            else UnityEngine.Object.DestroyImmediate(shade);
+            narrative.Dispose();
         }
     }
 }

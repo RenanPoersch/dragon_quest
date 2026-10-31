@@ -10,10 +10,10 @@ namespace DragonQuest.Presentation.Cinematics.Endings
         public const string BackgroundResource = "PixelArt/Endings/CastleAftermath";
         public const string ForegroundResource = "PixelArt/Endings/SeatedElderHill";
         private readonly string[] lines = EndingNarrative.CastleDestroyedEpilogue.Split('\n');
-        private readonly Texture2D background, foreground, shade;
+        private readonly Texture2D background, foreground;
+        private readonly NarrativePanel narrative;
         private readonly EndingArtworkRenderer backgroundMotion = new EndingArtworkRenderer();
         private readonly EndingArtworkRenderer foregroundMotion = new EndingArtworkRenderer();
-        private GUIStyle story, caption;
         private bool hasDrawn;
         private readonly bool enterFromWhite;
         public CastleDestroyedSequence Sequence { get; }
@@ -24,12 +24,20 @@ namespace DragonQuest.Presentation.Cinematics.Endings
             Sequence = new CastleDestroyedSequence(lines.Length);
             background = Load(BackgroundResource);
             foreground = Load(ForegroundResource);
-            shade = new Texture2D(128, 1, TextureFormat.RGBA32, false)
-            { name = "Castle destroyed / narrative shade", wrapMode = TextureWrapMode.Clamp };
-            var colors = new Color[shade.width];
-            for (int x = 0; x < colors.Length; x++)
-                colors[x] = new Color(0, 0, 0, .82f * (1 - Mathf.SmoothStep(0, 1, x / 127f)));
-            shade.SetPixels(colors); shade.Apply(false, true);
+            narrative = new NarrativePanel(new NarrativePanel.Layout
+            {
+                ShadeName = "Castle destroyed / narrative shade", ShadeColor = new Color(0, 0, 0, .82f),
+                ShadeBounds = new Rect(0, 40, 650, 540),
+                Title = new NarrativePanel.Heading
+                {
+                    Bounds = new Rect(70, 60, 450, 30), FontSize = 20, Emphasized = true,
+                    Color = new Color(.96f, .76f, .47f, 1), ShadowOffset = new Vector2(2, 2)
+                },
+                TextWindow = new Rect(70, 104, 470, CastleDestroyedSequence.TextWindowHeight),
+                TextSize = 28, TextColor = new Color(1, .94f, .83f, 1),
+                LineHeight = CastleDestroyedSequence.LineHeight, TextShadowOffset = new Vector2(2, 2),
+                CullAbove = 34, BottomFadeInset = 20
+            });
         }
 
         public void Update(float unscaledDeltaTime)
@@ -44,7 +52,7 @@ namespace DragonQuest.Presentation.Cinematics.Endings
             if (Event.current.isKey || Event.current.isMouse) Event.current.Use();
             if (Event.current.type != EventType.Repaint) return;
             hasDrawn = true;
-            EnsureStyles();
+            narrative.EnsureStyles();
             Matrix4x4 previousMatrix = GUI.matrix;
             Color previousColor = GUI.color;
             int previousDepth = GUI.depth;
@@ -108,34 +116,7 @@ namespace DragonQuest.Presentation.Cinematics.Endings
         {
             float opacity = Mathf.Clamp01((Sequence.Elapsed - CastleDestroyedSequence.TextStart) / 1.4f)
                 * (1 - Mathf.Clamp01((Sequence.Elapsed - Sequence.TextEndAt) / 1.2f));
-            if (opacity <= 0) return;
-            GUI.color = new Color(1, 1, 1, opacity);
-            GUI.DrawTexture(new Rect(0, 40, 650, 540), shade);
-            GUI.color = new Color(0, 0, 0, opacity);
-            GUI.Label(new Rect(72, 62, 450, 30), "CINZAS DO CASTELO", caption);
-            GUI.color = new Color(.96f, .76f, .47f, opacity);
-            GUI.Label(new Rect(70, 60, 450, 30), "CINZAS DO CASTELO", caption);
-            GUI.BeginGroup(new Rect(70, 104, 470, CastleDestroyedSequence.TextWindowHeight));
-            for (int i = 0; i < lines.Length; i++)
-            {
-                float y = Sequence.TextOffset + i * CastleDestroyedSequence.LineHeight;
-                if (y < -34 || y > CastleDestroyedSequence.TextWindowHeight) continue;
-                float edge = Mathf.Clamp01(y / 24) * Mathf.Clamp01((CastleDestroyedSequence.TextWindowHeight - y - 20) / 24);
-                GUI.color = new Color(0, 0, 0, opacity * edge);
-                GUI.Label(new Rect(2, y + 2, 470, 34), lines[i], story);
-                GUI.color = new Color(1, .94f, .83f, opacity * edge);
-                GUI.Label(new Rect(0, y, 470, 34), lines[i], story);
-            }
-            GUI.EndGroup();
-        }
-
-        private void EnsureStyles()
-        {
-            if (story != null) return;
-            story = GameTypography.Style(GUI.skin.label, 28);
-            caption = GameTypography.Style(GUI.skin.label, 20, true);
-            foreach (GUIStyle style in new[] { story, caption })
-            { style.normal.textColor = Color.white; style.padding = new RectOffset(); style.wordWrap = false; }
+            narrative.Draw(lines, "CINZAS DO CASTELO", Sequence.TextOffset, opacity);
         }
 
         private static Texture2D Load(string resource)
@@ -149,8 +130,7 @@ namespace DragonQuest.Presentation.Cinematics.Endings
         public void Dispose()
         {
             backgroundMotion.Dispose(); foregroundMotion.Dispose();
-            if (Application.isPlaying) UnityEngine.Object.Destroy(shade);
-            else UnityEngine.Object.DestroyImmediate(shade);
+            narrative.Dispose();
         }
     }
 }

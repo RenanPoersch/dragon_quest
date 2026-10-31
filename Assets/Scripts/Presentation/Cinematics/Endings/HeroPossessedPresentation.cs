@@ -19,12 +19,12 @@ namespace DragonQuest.Presentation.Cinematics.Endings
         public const float RainOpacity = .72f;
         public static readonly Vector4 SpiritRect = new Vector4(.22f, .49f, .56f, .56f);
         private readonly string[] lines = EndingNarrative.HeroPossessedEpilogue.Split('\n');
-        private readonly Texture2D throne, shade;
+        private readonly Texture2D throne;
+        private readonly NarrativePanel narrative;
         private readonly Texture2D[] lightning;
         private readonly Material composite;
         private readonly RenderTexture illuminatedThrone;
         private readonly EndingArtworkRenderer cameraMotion = new EndingArtworkRenderer();
-        private GUIStyle story, caption;
         private bool hasDrawn;
         private float previousLightning = -1;
         private float previousRainTime = -1;
@@ -49,12 +49,20 @@ namespace DragonQuest.Presentation.Cinematics.Endings
             composite.SetFloat("_RainOpacity", RainOpacity);
             illuminatedThrone = new RenderTexture(throne.width, Mathf.RoundToInt(throne.height * (1 + SkyPadding)), 0, RenderTextureFormat.ARGB32)
             { name = "Possession / illuminated throne", filterMode = FilterMode.Point, wrapMode = TextureWrapMode.Clamp };
-            shade = new Texture2D(128, 1, TextureFormat.RGBA32, false)
-            { name = "Possession / narrative shade", wrapMode = TextureWrapMode.Clamp };
-            var colors = new Color[128];
-            for (int x = 0; x < colors.Length; x++)
-                colors[x] = new Color(.035f, .025f, .03f, .82f * (1 - Mathf.SmoothStep(0, 1, x / 127f)));
-            shade.SetPixels(colors); shade.Apply(false, true);
+            narrative = new NarrativePanel(new NarrativePanel.Layout
+            {
+                ShadeName = "Possession / narrative shade", ShadeColor = new Color(.035f, .025f, .03f, .82f),
+                ShadeBounds = new Rect(0, 40, 470, 540),
+                Title = new NarrativePanel.Heading
+                {
+                    Bounds = new Rect(60, 60, 350, 30), FontSize = 20, Emphasized = true,
+                    Color = new Color(.96f, .76f, .47f, 1)
+                },
+                TextWindow = new Rect(60, 104, 350, HeroPossessedSequence.TextWindowHeight),
+                TextSize = 28, TextColor = new Color(1, .94f, .83f, 1),
+                LineHeight = HeroPossessedSequence.LineHeight, TextShadowOffset = new Vector2(2, 2),
+                CullAbove = 34, BottomFadeInset = 20
+            });
         }
 
         public void Update(float unscaledDeltaTime)
@@ -65,7 +73,7 @@ namespace DragonQuest.Presentation.Cinematics.Endings
             if (Event.current.isKey || Event.current.isMouse) Event.current.Use();
             if (Event.current.type != EventType.Repaint) return;
             hasDrawn = true;
-            EnsureStyles();
+            narrative.EnsureStyles();
             RefreshComposite();
             Matrix4x4 previousMatrix = GUI.matrix;
             Color previousColor = GUI.color;
@@ -129,31 +137,7 @@ namespace DragonQuest.Presentation.Cinematics.Endings
         {
             float opacity = Mathf.Clamp01((Sequence.Elapsed - HeroPossessedSequence.TextStart) / 1.4f)
                 * (1 - Mathf.Clamp01((Sequence.Elapsed - Sequence.TextEndAt) / 1.2f));
-            if (opacity <= 0) return;
-            GUI.color = new Color(1, 1, 1, opacity);
-            GUI.DrawTexture(new Rect(0, 40, 470, 540), shade);
-            GUI.color = new Color(.96f, .76f, .47f, opacity);
-            GUI.Label(new Rect(60, 60, 350, 30), "O NOVO HOSPEDEIRO", caption);
-            GUI.BeginGroup(new Rect(60, 104, 350, HeroPossessedSequence.TextWindowHeight));
-            for (int i = 0; i < lines.Length; i++)
-            {
-                float y = Sequence.TextOffset + i * HeroPossessedSequence.LineHeight;
-                if (y < -34 || y > HeroPossessedSequence.TextWindowHeight) continue;
-                float edge = Mathf.Clamp01(y / 24) * Mathf.Clamp01((HeroPossessedSequence.TextWindowHeight - y - 20) / 24);
-                GUI.color = new Color(0, 0, 0, opacity * edge);
-                GUI.Label(new Rect(2, y + 2, 350, 34), lines[i], story);
-                GUI.color = new Color(1, .94f, .83f, opacity * edge);
-                GUI.Label(new Rect(0, y, 350, 34), lines[i], story);
-            }
-            GUI.EndGroup();
-        }
-        private void EnsureStyles()
-        {
-            if (story != null) return;
-            story = GameTypography.Style(GUI.skin.label, 28);
-            caption = GameTypography.Style(GUI.skin.label, 20, true);
-            foreach (GUIStyle style in new[] { story, caption })
-            { style.normal.textColor = Color.white; style.padding = new RectOffset(); style.wordWrap = false; }
+            narrative.Draw(lines, "O NOVO HOSPEDEIRO", Sequence.TextOffset, opacity);
         }
         private static Texture2D Load(string resource)
         {
@@ -167,7 +151,7 @@ namespace DragonQuest.Presentation.Cinematics.Endings
         {
             cameraMotion.Dispose();
             illuminatedThrone.Release(); DestroyOwned(illuminatedThrone);
-            DestroyOwned(composite); DestroyOwned(shade);
+            DestroyOwned(composite); narrative.Dispose();
         }
         private static void DestroyOwned(UnityEngine.Object asset)
         {

@@ -8,11 +8,12 @@ namespace DragonQuest.Presentation.Cinematics.Opening
     public sealed class NewGameVoyagePresentation : IDisposable
     {
         public readonly NewGameVoyageSequence Sequence = new NewGameVoyageSequence();
-        private readonly Texture2D panorama, shade;
+        private readonly Texture2D panorama;
+        private readonly NarrativePanel narrative;
+        private readonly string[] lines = new string[NewGameVoyageSequence.LineCount];
         private readonly VoyageShipLayers ship;
         private readonly PixelSpriteAtlas[] heroes = new PixelSpriteAtlas[3];
         private readonly float[] heroScales = new float[3];
-        private GUIStyle heading, chapter, story;
         private bool hasDrawn;
         public bool IsPlaying => Sequence.IsPlaying;
 
@@ -32,13 +33,27 @@ namespace DragonQuest.Presentation.Cinematics.Opening
                     tallest = Mathf.Max(tallest, heroes[hero].Sprites[row * 4 + (int)PixelDirection.Left].rect.height);
                 heroScales[hero] = NewGameVoyageSequence.HeroSize / tallest;
             }
-            shade = new Texture2D(128, 1, TextureFormat.RGBA32, false)
-                { name = "Voyage / narrative shade", wrapMode = TextureWrapMode.Clamp };
-            var colors = new Color[shade.width];
-            for (int x = 0; x < colors.Length; x++)
-                // Same color, strength and smooth horizontal falloff as the ending.
-                colors[x] = new Color(.035f, .025f, .03f, .82f * (1 - Mathf.SmoothStep(0, 1, x / 127f)));
-            shade.SetPixels(colors); shade.Apply(false, true);
+            for (int i = 0; i < lines.Length; i++) lines[i] = NewGameVoyageSequence.Line(i);
+            narrative = new NarrativePanel(new NarrativePanel.Layout
+            {
+                ShadeName = "Voyage / narrative shade", ShadeColor = new Color(.035f, .025f, .03f, .82f),
+                ShadeBounds = new Rect(0, 64, 600, 540),
+                Chapter = new NarrativePanel.Heading
+                {
+                    Text = "PRÓLOGO", Bounds = new Rect(72, 81, 400, 26), FontSize = 18,
+                    Color = new Color(.88f, .74f, .45f, 1)
+                },
+                Title = new NarrativePanel.Heading
+                {
+                    Bounds = new Rect(72, 113, 420, 48), FontSize = 38, Emphasized = true,
+                    Color = new Color(1, .94f, .78f, 1)
+                },
+                DividerBounds = new Rect(72, 172, 56, 2), DividerColor = new Color(.86f, .71f, .43f, .8f),
+                TextWindow = new Rect(72, 198, 404, NewGameVoyageSequence.TextWindowHeight),
+                TextSize = 26, TextColor = new Color(.98f, .94f, .83f, 1),
+                LineHeight = NewGameVoyageSequence.LineHeight, TextShadowOffset = new Vector2(1, 2),
+                CullAbove = 32, BottomFadeInset = 16
+            });
         }
 
         public void Update(float unscaledDeltaTime)
@@ -55,7 +70,7 @@ namespace DragonQuest.Presentation.Cinematics.Opening
             if (Event.current.isKey || Event.current.isMouse) Event.current.Use();
             if (Event.current.type != EventType.Repaint) return;
             hasDrawn = true;
-            EnsureStyles();
+            narrative.EnsureStyles();
             Matrix4x4 previousMatrix = GUI.matrix;
             Color previousColor = GUI.color;
             int previousDepth = GUI.depth;
@@ -158,37 +173,7 @@ namespace DragonQuest.Presentation.Cinematics.Opening
 
         private void DrawNarrative()
         {
-            float opacity = Sequence.NarrativeOpacity;
-            if (opacity <= 0) return;
-            GUI.color = new Color(1, 1, 1, opacity);
-            GUI.DrawTexture(new Rect(0, 64, 600, 540), shade);
-            GUI.color = new Color(.88f, .74f, .45f, opacity);
-            GUI.Label(new Rect(72, 81, 400, 26), "PRÓLOGO", chapter);
-            GUI.color = new Color(1, .94f, .78f, opacity);
-            GUI.Label(new Rect(72, 113, 420, 48), "A TRAVESSIA", heading);
-            Fill(new Rect(72, 172, 56, 2), new Color(.86f, .71f, .43f, .8f * opacity));
-            GUI.BeginGroup(new Rect(72, 198, 404, NewGameVoyageSequence.TextWindowHeight));
-            for (int i = 0; i < NewGameVoyageSequence.LineCount; i++)
-            {
-                float y = Sequence.TextOffset + i * NewGameVoyageSequence.LineHeight;
-                float edgeAlpha = Mathf.Clamp01(y / 24) * Mathf.Clamp01((NewGameVoyageSequence.TextWindowHeight - y - 16) / 24);
-                if (y < -32 || y > NewGameVoyageSequence.TextWindowHeight) continue;
-                GUI.color = new Color(0, 0, 0, edgeAlpha * opacity);
-                GUI.Label(new Rect(1, y + 2, 404, 34), NewGameVoyageSequence.Line(i), story);
-                GUI.color = new Color(.98f, .94f, .83f, edgeAlpha * opacity);
-                GUI.Label(new Rect(0, y, 404, 34), NewGameVoyageSequence.Line(i), story);
-            }
-            GUI.EndGroup();
-        }
-
-        private void EnsureStyles()
-        {
-            if (story != null) return;
-            story = GameTypography.Style(GUI.skin.label, 26);
-            heading = GameTypography.Style(GUI.skin.label, 38, true);
-            chapter = GameTypography.Style(GUI.skin.label, 18);
-            foreach (GUIStyle style in new[] { story, heading, chapter })
-            { style.normal.textColor = Color.white; style.padding = new RectOffset(); style.wordWrap = false; }
+            narrative.Draw(lines, "A TRAVESSIA", Sequence.TextOffset, Sequence.NarrativeOpacity);
         }
 
         private static void Fill(Rect area, Color color)
@@ -225,7 +210,7 @@ namespace DragonQuest.Presentation.Cinematics.Opening
         {
             foreach (var hero in heroes)
                 if (hero != null) foreach (var frame in hero.Sprites) DestroyOwned(frame);
-            DestroyOwned(panorama); ship.Dispose(); DestroyOwned(shade);
+            DestroyOwned(panorama); ship.Dispose(); narrative.Dispose();
         }
 
         private static void DestroyOwned(UnityEngine.Object asset)
