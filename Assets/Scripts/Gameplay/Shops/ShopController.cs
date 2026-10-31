@@ -6,7 +6,6 @@ using DragonQuest.Audio;
 using UnityEngine.InputSystem;
 using DragonQuest.Input;
 using DragonQuest.Exploration;
-using DragonQuest.Interactions;
 using DragonQuest.Shops;
 
 namespace DragonQuest.Gameplay.Shops
@@ -14,25 +13,23 @@ namespace DragonQuest.Gameplay.Shops
     public sealed class ShopController : MonoBehaviour
     {
         private PlayerMovement movement;
-        private DialogueController dialogue;
         private BattleController battle;
         public ShopService Service { get; private set; }
         public ShopInventory ActiveShop { get; private set; }
         public ShopMenuSession Menu { get; } = new ShopMenuSession();
         public int ActionIndex { get; private set; }
         public bool IsOpen => ActiveShop != null;
-        public bool IsInputBlocked => battle == null || battle.IsCheatMenuBlocking
-            || battle.Flow != null && battle.Flow.Owner != GameInputOwner.Shop;
+        public bool IsInputBlocked => battle?.Flow?.CanReceiveInput(GameInputOwner.Shop) != true;
         public string Message => Menu.Message;
-        public void Initialize(PlayerMovement hero, DialogueController dialogueController, BattleController battleController,
+        public void Initialize(PlayerMovement hero, BattleController battleController,
             ExplorationProgress progress, ShopService restoredService = null)
         {
-            movement = hero; dialogue = dialogueController; battle = battleController;
+            movement = hero; battle = battleController;
             Service = restoredService ?? ShopCatalog.Create(battle.Party, progress);
         }
         public void Open(string id)
         {
-            if (battle.IsBusy || dialogue.IsOpen) return;
+            if (battle.Flow?.CanOpenShop != true) return;
             ShopInventory shop = Service.FindShop(id);
             if (shop == null) return;
             MenuSounds.Play(MenuSound.Confirm);
@@ -42,7 +39,7 @@ namespace DragonQuest.Gameplay.Shops
         public void Close()
         {
             ActiveShop = null;
-            movement.SetMovementEnabled(!battle.IsBusy && !dialogue.IsOpen);
+            movement.SetMovementEnabled(battle.Flow?.CanInteract == true);
         }
         public void Back()
         {

@@ -44,7 +44,7 @@ namespace DragonQuest.Presentation.World
         private void Update()
         {
             if (navigation == null || player == null) return;
-            if (navigation.TryEnter(player.transform.position, !Application.isFocused || travelBlocked(), out Vector2 arrival))
+            if (navigation.TryEnter(player.transform.position, travelBlocked(), out Vector2 arrival))
                 ApplyMap(arrival);
         }
 

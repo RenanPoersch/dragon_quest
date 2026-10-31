@@ -73,14 +73,14 @@ namespace DragonQuest.Bootstrap
             battle.SetFlow(flow);
             world.Player.SetMovementGate(() => !flow.BlocksMovement);
             journey = new JourneyInstaller(world, saves, dialogue, battle, shops, locations,
-                cheats, innRest, secrets, dragon, endings, flow);
+                cheats, secrets, dragon, endings, flow);
             journey.StartNewJourney();
 
             audience = new GameObject("Party diante do Rei Rubro").AddComponent<TyrantAudience>();
             audience.transform.SetParent(host.transform, false);
             audience.Initialize(world.Player, () => battle.Party, scenery);
             locations.Initialize(world.Maps, world.Player, cameraFollow, navigation,
-                () => flow.BlocksTravel);
+                () => !flow.CanTravel);
             host.AddComponent<ShopHud>().Initialize(shops);
             battle.SetLocationProvider(() => locations.LocationId);
             world.BridgeGuards.Initialize(world.Player, dialogue, battle, () => journey.Progress);
@@ -89,11 +89,11 @@ namespace DragonQuest.Bootstrap
             var interaction = world.Player.gameObject.AddComponent<PlayerInteraction>();
             var hud = host.AddComponent<DialogueHud>();
             journey.BindExploration(interaction, hud);
-            saves.Initialize(world.Player, battle, shops, locations, dialogue, journey.Progress,
+            saves.Initialize(world.Player, battle, shops, locations, journey.Progress,
                 secrets, dragon, journey.Restore);
             innRest.Initialize(world.Player, () => battle.Party, scenery,
-                () => locations.LocationId == WorldNavigation.Inn, () => flow.BlocksTravel);
-            world.SavePoint.Initialize(world.Player, () => flow.BlocksTravel, saves.OpenInnSaveMenu);
+                () => locations.LocationId == WorldNavigation.Inn, () => !flow.CanInteract);
+            world.SavePoint.Initialize(world.Player, () => !flow.CanOpenSaveMenu, saves.OpenInnSaveMenu);
             host.AddComponent<MusicController>().Initialize(saves, locations, battle);
             host.AddComponent<BattleSoundController>().Initialize(battle);
         }

@@ -104,7 +104,7 @@ namespace DragonQuest.Interactions
                 hasPlayerSample=true;teleportRevision=player.TeleportRevision;wasOnPoint=Contains(ground);
                 return;
             }
-            CheckPlayerStep(ground,!Application.isFocused||(isBlocked?.Invoke()??false));
+            CheckPlayerStep(ground,isBlocked?.Invoke()??true);
         }
         public void CheckPlayerStep(Vector2 ground,bool blocked)
         {

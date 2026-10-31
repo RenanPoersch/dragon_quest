@@ -19,7 +19,24 @@ namespace DragonQuest.Gameplay
         public bool IsBusy => ended() || battle() || inventory() || ExternalMenuOpen;
         public bool BlocksTravel => IsBusy || dialogue();
         public bool BlocksMovement => BlocksTravel || !focused();
-        public bool CanToggleInventory => !ended() && !battle() && !ExternalMenuOpen && !dialogue() && focused();
+        public bool CanReceiveInput(GameInputOwner owner) => owner != GameInputOwner.None && Owner == owner;
+        public bool CanInteract => CanReceiveInput(GameInputOwner.Exploration);
+        public bool CanTravel => CanInteract;
+        public bool CanOpenShop => CanInteract;
+        public bool CanStartBattle => CanInteract;
+        public bool CanOpenSaveMenu => CanInteract;
+        public bool CanToggleCheats => focused() && !ended() && !save() && !cinematic();
+        public bool CanReturnToTitle => CanReceiveInput(GameInputOwner.Inventory);
+        public bool CanToggleInventory => AllowsWorldMenu;
+        public bool CanSave => AllowsWorldMenu;
+        private bool AllowsWorldMenu
+        {
+            get
+            {
+                GameInputOwner owner = Owner;
+                return owner == GameInputOwner.Exploration || owner == GameInputOwner.Inventory;
+            }
+        }
         public GameInputOwner Owner
         {
             get

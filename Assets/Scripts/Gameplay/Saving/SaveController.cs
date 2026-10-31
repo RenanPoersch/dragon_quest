@@ -10,7 +10,6 @@ using UnityEngine.SceneManagement;
 using DragonQuest.Audio;
 using DragonQuest.Input;
 using DragonQuest.Exploration;
-using DragonQuest.Interactions;
 using DragonQuest.Persistence;
 using DragonQuest.Progression;
 
@@ -26,7 +25,6 @@ namespace DragonQuest.Gameplay.Saving
         private ShopController shops;
         private WorldLocationController locations;
         private PlayerMovement player;
-        private DialogueController dialogue;
         private ExplorationProgress progress;
         private AncientSecrets secrets;
         private DragonProgress dragon;
@@ -53,10 +51,10 @@ namespace DragonQuest.Gameplay.Saving
         public long PlaySeconds => (long)playSeconds;
 
         public void Initialize(PlayerMovement hero, BattleController combat, ShopController vendors,
-            WorldLocationController maps, DialogueController conversations, ExplorationProgress exploration,
+            WorldLocationController maps, ExplorationProgress exploration,
             AncientSecrets ancient, DragonProgress dragonProgress, Action<RestoredJourney> installJourney)
         {
-            player = hero; battle = combat; shops = vendors; locations = maps; dialogue = conversations;
+            player = hero; battle = combat; shops = vendors; locations = maps;
             progress = exploration; secrets = ancient; dragon = dragonProgress; install = installJourney;
             store = new SaveStore(System.IO.Path.Combine(Application.persistentDataPath, "Saves"));
             page = loadGameOnStart ? JourneyMenuPage.Continue : JourneyMenuPage.Title;
@@ -113,9 +111,7 @@ namespace DragonQuest.Gameplay.Saving
             ShowMessage(warning ?? "Jornada carregada / slot " + slot);
             battle.RestoreEnding((GameEnding)journey.Data.Ending);
         }
-        public bool CanReturnToTitle => store != null && !IsMenuVisible && battle != null && battle.IsMenuOpen
-            && !battle.IsActive && !battle.HasEnded && !battle.IsCheatMenuBlocking
-            && (battle.Flow == null || battle.Flow.Owner == GameInputOwner.Inventory);
+        public bool CanReturnToTitle => store != null && battle?.Flow?.CanReturnToTitle == true;
 
         public void ReturnToTitle()
         {
@@ -134,10 +130,7 @@ namespace DragonQuest.Gameplay.Saving
             SceneManager.LoadScene(SceneManager.GetActiveScene().path);
         }
 
-        public bool CanSaveManually => store != null && !IsMenuVisible && battle != null
-            && !battle.IsActive && !battle.HasEnded && !battle.IsCheatMenuBlocking
-            && dialogue != null && !dialogue.IsOpen && (shops == null || !shops.IsOpen)
-            && (battle.Flow == null || battle.Flow.Owner == GameInputOwner.Exploration || battle.Flow.Owner == GameInputOwner.Inventory)
+        public bool CanSaveManually => store != null && battle?.Flow?.CanSave == true
             && locations != null && (locations.LocationId == WorldNavigation.Inn || locations.LocationId == WorldNavigation.World);
 
         public bool OpenManualSaveMenu()
@@ -165,7 +158,7 @@ namespace DragonQuest.Gameplay.Saving
         }
         public void OpenInnSaveMenu()
         {
-            if (IsMenuVisible || dialogue.IsOpen || battle.IsBusy || locations.LocationId != WorldNavigation.Inn) return;
+            if (battle.Flow?.CanOpenSaveMenu != true || locations.LocationId != WorldNavigation.Inn) return;
             IsMenuVisible = true;
             player.SetMovementEnabled(false);
             OpenPage(JourneyMenuPage.Save);
@@ -186,7 +179,7 @@ namespace DragonQuest.Gameplay.Saving
         {
             overwriteSlot = 0;
             IsMenuVisible = false;
-            player.SetMovementEnabled(!dialogue.IsOpen && !battle.IsBusy);
+            player.SetMovementEnabled(battle.Flow?.CanInteract == true);
         }
         private void Back()
         {
@@ -203,14 +196,14 @@ namespace DragonQuest.Gameplay.Saving
                     StartNewGameVoyage(); return;
                 case FrontEndStep.FinishVoyage:
                     IsMenuVisible = false;
-                    player.SetMovementEnabled(!dialogue.IsOpen && !battle.IsBusy);
+                    player.SetMovementEnabled(battle.Flow?.CanInteract == true);
                     return;
                 case FrontEndStep.Busy: return;
             }
             if (IsMenuVisible)
             {
                 MenuInput input = GameInput.ReadMenu();
-                if (frontEnd.AcceptsMenuInput && input.Available)
+                if (frontEnd.AcceptsMenuInput && input.Available && battle.Flow?.CanReceiveInput(GameInputOwner.Save) == true)
                 {
                     if (input.Cancel)
                     {
@@ -227,7 +220,7 @@ namespace DragonQuest.Gameplay.Saving
                 }
                 return;
             }
-            if (!IsMenuVisible && !dialogue.IsOpen && !battle.IsBusy && GameInput.IsFocused
+            if (battle.Flow?.CanOpenSaveMenu == true
                 && GameInput.SavePressed) { SaveManual(); GameInput.ConsumeFrame(); }
             if (GameInput.IsFocused && !battle.HasEnded) playSeconds += Time.unscaledDeltaTime;
         }

@@ -39,12 +39,12 @@ namespace DragonQuest.Interactions
             if (challenged)
             {
                 // Closing the warning with Cancel also commits the encounter.
-                if (dialogue.IsOpen || battle.IsBusy) return;
+                if (battle.Flow?.CanStartBattle != true) return;
                 battle.StartBattle();
                 if (battle.IsActive) { encounter = battle.Session; challenged = false; }
                 return;
             }
-            if (battle.IsBusy || dialogue.IsOpen || !GameInput.IsFocused) return;
+            if (battle.Flow?.CanInteract != true) return;
             Vector2 position = player.transform.position;
             if (Mathf.Abs(position.x - CityLayout.Bridge.x) <= 2.35f
                 && position.y >= CityLayout.Bridge.y - 1f
@@ -55,7 +55,7 @@ namespace DragonQuest.Interactions
         public override void Interact(InteractionContext context)
         {
             if (battle == null) { context.StartBattle?.Invoke(); return; }
-            if (!challenged && !getProgress().CastleGuardsDefeated && !battle.IsBusy && !dialogue.IsOpen)
+            if (!challenged && !getProgress().CastleGuardsDefeated && battle.Flow?.CanInteract == true)
                 Challenge();
         }
 

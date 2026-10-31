@@ -1,5 +1,4 @@
 using DragonQuest.Presentation.Common;
-using DragonQuest.Presentation.Cinematics.Exploration;
 using DragonQuest.Gameplay.Saving;
 using DragonQuest.Gameplay.Battle;
 using UnityEngine;
@@ -35,8 +34,7 @@ namespace DragonQuest.Presentation.Menus
 
         private void Update()
         {
-            if (battle == null || saves.IsMenuVisible || battle.HasEnded || battle.IsEnteringBattle || !GameInput.IsFocused
-                || GetComponent<InnRestController>()?.IsPlaying == true) return;
+            if (battle?.Flow?.CanToggleCheats != true || battle.IsEnteringBattle) return;
             if (GameInput.CheatsPressed)
             {
                 if (IsOpen) Close();

@@ -37,8 +37,7 @@ namespace DragonQuest.Presentation.Menus
         private Vector2 lastPointer;
 
         private readonly System.Func<SaveController> getSaves;
-        private bool IsInputBlocked => controller.IsCheatMenuBlocking
-            || controller.Flow != null && controller.Flow.Owner != GameInputOwner.Inventory;
+        private bool IsInputBlocked => controller.Flow?.CanReceiveInput(GameInputOwner.Inventory) != true;
         private readonly System.Func<int> getGold;
         private readonly System.Func<string> getLocationName;
         public InventoryMenuPresenter(BattleController battleController, AncientSecrets ancientSecrets,

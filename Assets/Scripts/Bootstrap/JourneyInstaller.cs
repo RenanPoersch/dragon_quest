@@ -1,6 +1,5 @@
 using DragonQuest.Presentation.Menus;
 using DragonQuest.Presentation.Dialogue;
-using DragonQuest.Presentation.Cinematics.Exploration;
 using DragonQuest.Presentation.Cinematics.Endings;
 using DragonQuest.Gameplay.Shops;
 using DragonQuest.Gameplay.Saving;
@@ -27,7 +26,6 @@ namespace DragonQuest.Bootstrap
         private readonly ShopController shops;
         private readonly WorldLocationController locations;
         private readonly CheatMenu cheats;
-        private readonly InnRestController innRest;
         private readonly AncientSecrets secrets;
         private readonly DragonProgress dragon;
         private readonly EndingController endings;
@@ -39,12 +37,13 @@ namespace DragonQuest.Bootstrap
 
         public JourneyInstaller(WorldScene world, SaveController saves, DialogueController dialogue,
             BattleController battle, ShopController shops, WorldLocationController locations,
-            CheatMenu cheats, InnRestController innRest, AncientSecrets secrets, DragonProgress dragon,
-            EndingController endings, GameFlowState flow = null)
+            CheatMenu cheats, AncientSecrets secrets, DragonProgress dragon,
+            EndingController endings, GameFlowState flow)
         {
             this.world = world; this.saves = saves; this.dialogue = dialogue; this.battle = battle;
-            this.shops = shops; this.locations = locations; this.cheats = cheats; this.innRest = innRest;
-            this.secrets = secrets; this.dragon = dragon; this.endings = endings; this.flow = flow;
+            this.shops = shops; this.locations = locations; this.cheats = cheats;
+            this.secrets = secrets; this.dragon = dragon; this.endings = endings;
+            this.flow = flow ?? throw new System.ArgumentNullException(nameof(flow));
         }
 
         public void StartNewJourney()
@@ -72,20 +71,18 @@ namespace DragonQuest.Bootstrap
             locations.Restore(journey.Data.Map, new Vector2(journey.Data.X, journey.Data.Y));
         }
 
-        private bool OtherMenuOpen() => flow?.ExternalMenuOpen ?? (shops.IsOpen || saves.IsMenuVisible || cheats.BlocksInput || innRest.IsPlaying);
-
         private void ConnectSystems(PartyProgress party, ShopService shopService)
         {
-            battle.Initialize(world.Player, dialogue, Progress, OtherMenuOpen,
+            battle.Initialize(world.Player, dialogue, Progress,
                 dragon, secrets, saves.ReturnToLoadGame, endings.Show, party);
-            shops.Initialize(world.Player, dialogue, battle, Progress, shopService);
+            shops.Initialize(world.Player, battle, Progress, shopService);
             cheats.Initialize(world.Player, battle, saves, Progress);
         }
 
         private void ConnectExploration()
         {
             interaction.Initialize(new InteractionContext(dialogue, Progress, locations.TravelTo,
-                battle.StartBattle, () => flow?.IsBusy ?? battle.IsBusy, shops.Open, secrets), world.Interactables);
+                battle.StartBattle, () => flow.IsBusy, shops.Open, secrets), world.Interactables);
             hud.Initialize(dialogue, battle);
         }
     }
