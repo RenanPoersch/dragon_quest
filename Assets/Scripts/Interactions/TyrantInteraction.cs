@@ -1,7 +1,6 @@
 using DragonQuest.Content;
 using System;
 using UnityEngine;
-using DragonQuest.Equipment;
 using DragonQuest.Progression;
 
 namespace DragonQuest.Interactions

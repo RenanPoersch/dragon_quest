@@ -1,9 +1,10 @@
+using DragonQuest.Presentation.World.Scenery;
+using DragonQuest.Presentation.World;
+using DragonQuest.Exploration.Layouts;
 using System;
 using System.IO;
 using UnityEngine;
 using UnityEditor.SceneManagement;
-using DragonQuest.Prototype;
-using DragonQuest.Exploration;
 public static class ForestFrameValidation
 {
     public static void Run()
@@ -24,7 +25,7 @@ public static class ForestFrameValidation
         {
             var target=new RenderTexture(resolution.x,resolution.y,24);
             camera.targetTexture=target;
-            follow.Initialize(root.transform,PrototypeWorldLayout.ForestBounds,8,true);
+            follow.Initialize(root.transform,WorldLayout.ForestBounds,8,true);
             float aspect=(float)resolution.x/resolution.y;
             float halfWidth=camera.orthographicSize*aspect;
             if(camera.orthographicSize>8.001f || halfWidth>8f*16f/9f+.001f)

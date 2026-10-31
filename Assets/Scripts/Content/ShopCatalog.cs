@@ -1,5 +1,5 @@
+using DragonQuest.Progression;
 using DragonQuest.Content;
-using DragonQuest.Equipment;
 using DragonQuest.Exploration;
 using DragonQuest.Shops;
 

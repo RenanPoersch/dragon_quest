@@ -1,10 +1,9 @@
+using DragonQuest.Presentation.Common;
 using System;
-using DragonQuest.Equipment;
-using DragonQuest.Exploration;
 using DragonQuest.Progression;
 using UnityEngine;
 
-namespace DragonQuest.Prototype
+namespace DragonQuest.Presentation.Menus
 {
     public enum InventoryCommand { Item, Materia, Equipment, Status, Magic, Config, Save, Exit }
     public enum InventoryPage { Overview = -1, Materia, Equipment, Items, Status, Config, Magic }
@@ -81,7 +80,7 @@ namespace DragonQuest.Prototype
 
         private static GUIStyle Style(int size, bool bold = false)
         {
-            var style = PrototypeTypography.Style(GUI.skin.label, size, bold);
+            var style = GameTypography.Style(GUI.skin.label, size, bold);
             style.padding = new RectOffset(0, 0, 0, 0);
             style.normal.textColor = style.hover.textColor = style.active.textColor = style.focused.textColor = Color.white;
             style.normal.background = style.hover.background = style.active.background = style.focused.background = null;

@@ -1,15 +1,21 @@
+using DragonQuest.Presentation.Common;
+using DragonQuest.Presentation.Battle.Sprites;
+using DragonQuest.Presentation.Battle.Animations;
+using DragonQuest.Inventory;
+using DragonQuest.Equipment;
+using DragonQuest.Content;
 using System.Collections.Generic;
 using DragonQuest.Combat;
 using UnityEngine;
 
-namespace DragonQuest.Prototype
+namespace DragonQuest.Authoring
 {
     // Shared by the editor's scrub/replay window and automated captures of the real effects.
     public sealed class UltimatePreviewRenderer
     {
         private readonly UltimateAnimation animation = new UltimateAnimation();
         private readonly HeroCastAnimation cast = new HeroCastAnimation();
-        private PrototypeBattleSprites sprites;
+        private BattleSprites sprites;
         private Texture2D background;
         private GUIStyle text, number, centered;
         private AbilityDefinition observed;
@@ -23,17 +29,17 @@ namespace DragonQuest.Prototype
 
         private void Prepare(AbilityDefinition ability)
         {
-            if(sprites==null) { sprites=new PrototypeBattleSprites(); animation.Prepare(); }
+            if(sprites==null) { sprites=new BattleSprites(); animation.Prepare(); }
             if(background==null) background=Resources.Load<Texture2D>("BattleBackgrounds/city");
             if(text==null)
             {
-                text=PrototypeTypography.Style(GUI.skin.label,22,true);
+                text=GameTypography.Style(GUI.skin.label,22,true);
                 centered=new GUIStyle(text) { alignment=TextAnchor.MiddleCenter };
-                number=PrototypeTypography.Style(GUI.skin.label,28,true); number.alignment=TextAnchor.MiddleCenter;
+                number=GameTypography.Style(GUI.skin.label,28,true); number.alignment=TextAnchor.MiddleCenter;
             }
             if(observed==ability) return;
             observed=ability; allies.Clear(); revived.Clear(); initialChanges.Clear();
-            var previewParty=PrototypePartyFactory.Create();
+            var previewParty=PartySetup.Create();
             previewParty.SetInfiniteLimit(true);
             var members=previewParty.Members;
             party=new CombatantState[members.Count];

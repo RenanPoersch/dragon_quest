@@ -1,10 +1,14 @@
+using DragonQuest.Presentation.World.Scenery;
+using DragonQuest.Presentation.World.Rendering;
+using DragonQuest.Presentation.World.Characters;
+using DragonQuest.Presentation.World;
+using DragonQuest.Exploration.Layouts;
+using DragonQuest.Content;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using DragonQuest.Exploration;
-using DragonQuest.Interactions;
-using DragonQuest.Prototype;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -39,7 +43,7 @@ public static class CompactShopValidation
             Assert(painting.filterMode == FilterMode.Point && painting.mipmapCount == 1,"sharp pixels: "+layout.MapId);
             float relativeArea = CompactShopLayout.CameraSize*CompactShopLayout.CameraSize*CompactShopLayout.ArtAspect
                 /(WeaponShopLayout.CameraSize*WeaponShopLayout.CameraSize*WeaponShopLayout.ArtAspect);
-            Assert(Math.Abs(relativeArea-1f)<.0001f && PrototypeInnLayout.CameraSize == CompactShopLayout.CameraSize && PrototypeInnLayout.ArtAspect == CompactShopLayout.ArtAspect,"all shops and inn share compact dimensions");
+            Assert(Math.Abs(relativeArea-1f)<.0001f && InnLayout.CameraSize == CompactShopLayout.CameraSize && InnLayout.ArtAspect == CompactShopLayout.ArtAspect,"all shops and inn share compact dimensions");
             Assert(root.GetComponentsInChildren<SpriteRenderer>().Length == 0 && root.GetComponentsInChildren<MeshRenderer>().Length == 2,"room is one full painting with counter depth");
             Assert(root.GetComponentsInChildren<PolygonCollider2D>().Length == 1,"painted counter has a physical footprint");
             foreach (Vector2[] outline in layout.Foregrounds)
@@ -126,21 +130,21 @@ public static class CompactShopValidation
     }
     private static void CheckTravel(CompactShopLayout layout)
     {
-        var travel = new PrototypeTravel(); Vector2 arrival = default;
-        Assert(travel.TryTravel(PrototypeTravel.City,out _) && travel.TryTravel(layout.MapId,out arrival) && arrival == layout.Spawn,"city door leads to compact shop entrance");
+        var travel = new WorldNavigation(); Vector2 arrival = default;
+        Assert(travel.TryTravel(WorldNavigation.City,out _) && travel.TryTravel(layout.MapId,out arrival) && arrival == layout.Spawn,"city door leads to compact shop entrance");
         Assert(!travel.TryEnter(arrival,false,out _),"arrival does not immediately exit");
         Assert(travel.TryRestore(layout.MapId,new Vector2(0,-1.89f)),"legacy shop save still loads");
-        Assert(travel.TryEnter(layout.Exit,false,out _) && travel.Current.Id == PrototypeTravel.City,"painted threshold returns to city");
+        Assert(travel.TryEnter(layout.Exit,false,out _) && travel.Current.Id == WorldNavigation.City,"painted threshold returns to city");
     }
     private static void CheckTrade(CompactShopLayout layout)
     {
-        var service = PrototypeShopFactory.Create(PrototypePartyFactory.Create(),new ExplorationProgress(1000));
+        var service = ShopCatalog.Create(PartySetup.Create(),new ExplorationProgress(1000));
         var shop = service.FindShop(layout.MapId); bool items = layout == CompactShopLayout.Items;
         var product = shop.Products.First(p=>p.Id==(items ? "potion" : "fire")); int price=items ? 10 : 50;
         int stock = product.Stock;
         Assert(service.TryBuy(shop,product,1,out _) && service.Progress.Gold == 1000-price && product.Stock == stock-1,"purchase charges gold and grants product");
-        var sale = service.SaleEntries(shop).First(e=>e.CanSell && (items ? e.Item == PrototypePartyFactory.Potion
-            : e.Materia != null && e.Materia.Definition == PrototypePartyFactory.FireMateria));
+        var sale = service.SaleEntries(shop).First(e=>e.CanSell && (items ? e.Item == ItemCatalog.Potion
+            : e.Materia != null && e.Materia.Definition == MateriaCatalog.FireMateria));
         Assert(service.TrySell(shop,sale,1,out _) && service.Progress.Gold == 1000-price/2,"sale returns half of price");
     }
     private static Transform Person(Transform root,PixelSpriteLibrary people,string name,Vector2 ground,string atlas,int frame)

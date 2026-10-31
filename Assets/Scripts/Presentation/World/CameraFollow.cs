@@ -1,6 +1,7 @@
+using DragonQuest.Presentation.World.Rendering;
 using UnityEngine;
 
-namespace DragonQuest.Exploration
+namespace DragonQuest.Presentation.World
 {
     [DefaultExecutionOrder(100)]
     [RequireComponent(typeof(Camera))]

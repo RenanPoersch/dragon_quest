@@ -20,18 +20,15 @@ foreach ($saveFolder in @('Combat','Content', 'Equipment', 'Inventory', 'Shops',
     $saveArguments += Get-ChildItem -LiteralPath (Join-Path $saveProjectRoot "Assets/Scripts/$saveFolder") -Filter '*.cs' | ForEach-Object { $_.FullName }
 }
 $saveArguments += Join-Path $saveProjectRoot 'Assets/Scripts/Exploration/ExplorationProgress.cs'
-foreach ($saveName in @('PrototypePartyFactory', 'PrototypeShopFactory', 'PrototypeBattleFactory', 'PrototypeCastleBattleFactory')) {
-    $saveArguments += Join-Path $saveProjectRoot "Assets/Scripts/Prototype/$saveName.cs"
-}
-$saveArguments += Join-Path $saveProjectRoot 'Assets/Scripts/Exploration/PrototypeTravel.cs'
-foreach ($saveName in @('PrototypeWorldLayout', 'PrototypeCityLayout', 'PrototypeSecretLayout', 'PrototypeRuinsLayout', 'PrototypeVolcanoLayout', 'PrototypeInnLayout',
+$saveArguments += Join-Path $saveProjectRoot 'Assets/Scripts/Exploration/WorldNavigation.cs'
+foreach ($saveName in @('WorldLayout', 'CityLayout', 'SecretLayout', 'RuinsLayout', 'VolcanoLayout', 'InnLayout',
     'QuarryLayout', 'EastForestLayout', 'CompactShopLayout', 'WeaponShopLayout', 'ThroneRoomLayout')) {
     $saveArguments += Join-Path $saveProjectRoot "Assets/Scripts/Exploration/Layouts/$saveName.cs"
 }
 $saveArguments += Join-Path $saveProjectRoot 'Assets/Scripts/Presentation/World/Rendering/ObliqueProjection.cs'
 $saveArguments += Join-Path $saveProjectRoot 'Tests/AccessoryChecks.cs'
 $saveResponse = Join-Path $WorkDirectory 'AccessoryChecks.rsp'
-$saveArguments | ForEach-Object { '"' + $_ + '"' } | Set-Content -LiteralPath $saveResponse -Encoding utf8
+$saveArguments | Select-Object -Unique | ForEach-Object { '"' + $_ + '"' } | Set-Content -LiteralPath $saveResponse -Encoding utf8
 & $saveDotnet $saveCsc.FullName "@$saveResponse"
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 Copy-Item -LiteralPath $saveCoreAssembly -Destination $WorkDirectory -Force

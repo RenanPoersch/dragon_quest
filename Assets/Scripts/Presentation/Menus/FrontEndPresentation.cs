@@ -1,7 +1,7 @@
+using DragonQuest.Presentation.Cinematics.Opening;
+using DragonQuest.Gameplay.Achievements;
 using System;
-using DragonQuest.Input;
 using DragonQuest.Audio;
-using DragonQuest.Prototype;
 using UnityEngine;
 
 namespace DragonQuest.Presentation.Menus
@@ -12,7 +12,7 @@ namespace DragonQuest.Presentation.Menus
     public sealed class FrontEndPresentation : IDisposable
     {
         private readonly EndingAchievementPresentation achievementScreen = new EndingAchievementPresentation();
-        private PrototypeIntroPresentation intro;
+        private IntroPresentation intro;
         private NewGameVoyagePresentation voyage;
         private const float MenuFadeInDuration = 1.2f, NewGameFadeOutDuration = 1.2f;
         private bool startingNewGame, newGameBlackHasDrawn, menuHasDrawn;
@@ -28,7 +28,7 @@ namespace DragonQuest.Presentation.Menus
         public float VoyageMusicGain => IsVoyagePlaying ? voyage.Sequence.MusicGain : 0;
 
         public void Initialize(bool showIntro)
-            => intro = showIntro ? new PrototypeIntroPresentation() : null;
+            => intro = showIntro ? new IntroPresentation() : null;
 
         public void NewGame()
         {
@@ -54,8 +54,8 @@ namespace DragonQuest.Presentation.Menus
             {
                 if (!achievementScreen.IsVisible)
                 {
-                    var notification = PrototypeAchievements.TakeNotification();
-                    if (notification != null) achievementScreen.Show(notification, PrototypeAchievements.Progress.Counter);
+                    var notification = AchievementService.TakeNotification();
+                    if (notification != null) achievementScreen.Show(notification, AchievementService.Progress.Counter);
                 }
                 achievementScreen.Update(delta);
             }

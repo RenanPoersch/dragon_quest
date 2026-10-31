@@ -1,7 +1,7 @@
 using System.Text;
 using UnityEngine;
 
-namespace DragonQuest.Prototype
+namespace DragonQuest.Presentation.Battle
 {
     // A single rainbow text pass keeps the ready LIMIT command's strokes thin.
     public static class LimitCommandGlow

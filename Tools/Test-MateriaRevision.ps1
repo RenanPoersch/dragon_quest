@@ -24,10 +24,10 @@ $testArguments += Get-ChildItem -LiteralPath (Join-Path $testProjectRoot 'Assets
 $testArguments += Get-ChildItem -LiteralPath (Join-Path $testProjectRoot 'Assets/Scripts/Shops') -Filter '*.cs' | ForEach-Object { $_.FullName }
 $testArguments += Get-ChildItem -LiteralPath (Join-Path $testProjectRoot 'Assets/Scripts/Progression') -Filter '*.cs' | ForEach-Object { $_.FullName }
 $testArguments += Join-Path $testProjectRoot 'Assets/Scripts/Exploration/ExplorationProgress.cs'
-$testArguments += Join-Path $testProjectRoot 'Assets/Scripts/Prototype/PrototypeBattleFactory.cs'
-$testArguments += Join-Path $testProjectRoot 'Assets/Scripts/Prototype/PrototypeCastleBattleFactory.cs'
-$testArguments += Join-Path $testProjectRoot 'Assets/Scripts/Prototype/PrototypePartyFactory.cs'
-$testArguments += Join-Path $testProjectRoot 'Assets/Scripts/Prototype/PrototypeShopFactory.cs'
+$testArguments += Join-Path $testProjectRoot 'Assets/Editor/Tools/Fixtures/PartyFixture.cs'
+$testArguments += Join-Path $testProjectRoot 'Assets/Scripts/Presentation/Battle/HeroKnockoutPresentation.cs'
+$testArguments += Join-Path $testProjectRoot 'Assets/Scripts/Presentation/Battle/DefeatedEnemyPresentation.cs'
+$testArguments += Join-Path $testProjectRoot 'Assets/Scripts/Presentation/Battle/UltimateSpriteTimeline.cs'
 $testArguments += Join-Path $testProjectRoot 'Tests/MateriaRevisionChecks.cs'
 $testArguments += Join-Path $testProjectRoot 'Assets/Scripts/Persistence/SaveCatalog.cs'
 & $testDotnet $testCsc.FullName @testArguments

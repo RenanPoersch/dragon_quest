@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using DragonQuest.Combat;
 using DragonQuest.Exploration;
-using DragonQuest.Equipment;
 
 namespace DragonQuest.Progression
 {

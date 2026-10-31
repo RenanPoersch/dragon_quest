@@ -1,8 +1,8 @@
+using DragonQuest.Presentation.World.Rendering;
 using System;
-using DragonQuest.Exploration;
 using UnityEngine;
 
-namespace DragonQuest.Prototype
+namespace DragonQuest.Exploration.Layouts
 {
     public static class EastForestLayout
     {
@@ -66,8 +66,8 @@ namespace DragonQuest.Prototype
             foreach (Vector2 offset in new[] {new Vector2(-.006f,-.006f),new Vector2(.006f,-.006f),
                 new Vector2(.006f,.006f),new Vector2(-.006f,.006f)})
                 if (!Inside(image+offset)) return false;
-            return !Overlaps(ground,PrototypeSecretLayout.ClawStone,new Vector2(1.4f,1))
-                && !Overlaps(ground,PrototypeSecretLayout.HollowTree,new Vector2(1.6f,1))
+            return !Overlaps(ground,SecretLayout.ClawStone,new Vector2(1.4f,1))
+                && !Overlaps(ground,SecretLayout.HollowTree,new Vector2(1.6f,1))
                 && !Overlaps(ground,Gardener,new Vector2(.55f,.6f));
         }
 

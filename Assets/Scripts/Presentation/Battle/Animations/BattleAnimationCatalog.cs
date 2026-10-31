@@ -1,7 +1,8 @@
+using DragonQuest.Presentation.Battle;
 using System;
 using DragonQuest.Combat;
 
-namespace DragonQuest.Prototype
+namespace DragonQuest.Presentation.Battle.Animations
 {
     public static class BattleAnimationCatalog
     {

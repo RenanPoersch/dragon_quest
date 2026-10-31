@@ -1,6 +1,6 @@
 using System;
 
-namespace DragonQuest.Prototype
+namespace DragonQuest.Presentation.Cinematics.Opening
 {
     // Advances with unscaled time so opening a paused game cannot freeze the intro.
     public sealed class IntroSequence

@@ -1,6 +1,6 @@
+using DragonQuest.Progression;
 using System;
 using System.Collections.Generic;
-using DragonQuest.Equipment;
 
 namespace DragonQuest.Inventory
 {

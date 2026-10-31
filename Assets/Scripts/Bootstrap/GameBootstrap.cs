@@ -1,3 +1,12 @@
+using DragonQuest.Presentation.World.Rendering;
+using DragonQuest.Presentation.Menus;
+using DragonQuest.Presentation.Dialogue;
+using DragonQuest.Presentation.Cinematics.Exploration;
+using DragonQuest.Presentation.Cinematics.Endings;
+using DragonQuest.Presentation.Battle;
+using DragonQuest.Gameplay.Shops;
+using DragonQuest.Gameplay.Saving;
+using DragonQuest.Gameplay.Battle;
 using DragonQuest.Gameplay;
 using DragonQuest.Input;
 using System;
@@ -6,7 +15,6 @@ using DragonQuest.Exploration;
 using DragonQuest.Interactions;
 using DragonQuest.Presentation.World;
 using DragonQuest.Progression;
-using DragonQuest.Prototype;
 using UnityEngine;
 
 namespace DragonQuest.Bootstrap
@@ -16,11 +24,11 @@ namespace DragonQuest.Bootstrap
         private readonly GameObject host;
         private readonly AncientSecrets secrets = new AncientSecrets();
         private readonly DragonProgress dragon = new DragonProgress();
-        private PrototypeFramePacing framePacing;
+        private FramePacing framePacing;
         private ObliqueScenery scenery;
         private PhysicsMaterial2D frictionless;
-        private PrototypeBattleController battle;
-        private PrototypeSaveController saves;
+        private BattleController battle;
+        private SaveController saves;
         private InnRestController innRest;
         private TyrantAudience audience;
         private JourneyInstaller journey;
@@ -31,11 +39,11 @@ namespace DragonQuest.Bootstrap
         public void Initialize()
         {
             new GameObject("Menu sounds").AddComponent<MenuSoundController>();
-            framePacing = new PrototypeFramePacing();
-            saves = host.AddComponent<PrototypeSaveController>();
-            var navigation = new PrototypeTravel(secrets);
+            framePacing = new FramePacing();
+            saves = host.AddComponent<SaveController>();
+            var navigation = new WorldNavigation(secrets);
             scenery = new ObliqueScenery();
-            frictionless = new PhysicsMaterial2D("PrototypeFrictionless") { friction = 0f, bounciness = 0f };
+            frictionless = new PhysicsMaterial2D("WorldFrictionless") { friction = 0f, bounciness = 0f };
 
             var actions = new WorldActions(() => battle?.Party, () => journey?.Progress,
                 () => battle.StartCastleBattle(), () => battle.StartDragonBattle(),
@@ -45,19 +53,19 @@ namespace DragonQuest.Bootstrap
             Camera camera = Camera.main;
             if (camera == null)
             {
-                Debug.LogError("CidadePrototipo precisa de uma camera com a tag MainCamera.", host);
+                Debug.LogError("Game precisa de uma camera com a tag MainCamera.", host);
                 return;
             }
             camera.backgroundColor = new Color32(0x26, 0x3E, 0x35, 0xFF);
             var cameraFollow = camera.gameObject.AddComponent<CameraFollow>();
             var dialogue = host.AddComponent<DialogueController>();
-            var locations = host.AddComponent<PrototypeLocations>();
-            var shops = host.AddComponent<PrototypeShopController>();
-            var endings = host.AddComponent<PrototypeEndingController>();
+            var locations = host.AddComponent<WorldLocationController>();
+            var shops = host.AddComponent<ShopController>();
+            var endings = host.AddComponent<EndingController>();
             endings.Initialize(world.Maps, world.Player, cameraFollow);
             innRest = host.AddComponent<InnRestController>();
-            battle = host.AddComponent<PrototypeBattleController>();
-            var cheats = host.AddComponent<PrototypeCheatMenu>();
+            battle = host.AddComponent<BattleController>();
+            var cheats = host.AddComponent<CheatMenu>();
 
             var flow = new GameFlowState(() => battle.HasEnded, () => battle.IsActive, () => battle.IsMenuOpen,
                 () => dialogue.IsOpen, () => shops.IsOpen, () => saves.IsMenuVisible, () => cheats.BlocksInput,
@@ -73,20 +81,20 @@ namespace DragonQuest.Bootstrap
             audience.Initialize(world.Player, () => battle.Party, scenery);
             locations.Initialize(world.Maps, world.Player, cameraFollow, navigation,
                 () => flow.BlocksTravel);
-            host.AddComponent<PrototypeShopHud>().Initialize(shops);
+            host.AddComponent<ShopHud>().Initialize(shops);
             battle.SetLocationProvider(() => locations.LocationId);
             world.BridgeGuards.Initialize(world.Player, dialogue, battle, () => journey.Progress);
-            host.AddComponent<PrototypeBattleHud>().Initialize(battle, scenery.PixelSprites);
-            host.AddComponent<PrototypeMateriaHud>().Initialize(battle, secrets);
+            host.AddComponent<BattleHud>().Initialize(battle, scenery.PixelSprites);
+            host.AddComponent<InventoryHud>().Initialize(battle, secrets);
             var interaction = world.Player.gameObject.AddComponent<PlayerInteraction>();
-            var hud = host.AddComponent<PrototypeHud>();
+            var hud = host.AddComponent<DialogueHud>();
             journey.BindExploration(interaction, hud);
             saves.Initialize(world.Player, battle, shops, locations, dialogue, journey.Progress,
                 secrets, dragon, journey.Restore);
             innRest.Initialize(world.Player, () => battle.Party, scenery,
-                () => locations.LocationId == PrototypeTravel.Inn, () => flow.BlocksTravel);
+                () => locations.LocationId == WorldNavigation.Inn, () => flow.BlocksTravel);
             world.SavePoint.Initialize(world.Player, () => flow.BlocksTravel, saves.OpenInnSaveMenu);
-            host.AddComponent<PrototypeMusicController>().Initialize(saves, locations, battle);
+            host.AddComponent<MusicController>().Initialize(saves, locations, battle);
             host.AddComponent<BattleSoundController>().Initialize(battle);
         }
 

@@ -1,9 +1,13 @@
+using DragonQuest.Presentation.World.Characters;
+using DragonQuest.Presentation.Battle.Sprites;
+using DragonQuest.Presentation.Battle.Animations;
+using DragonQuest.Gameplay.Battle;
+using DragonQuest.Content;
 using System.Collections.Generic;
 using DragonQuest.Combat;
 using DragonQuest.Exploration;
 using DragonQuest.Input;
 using DragonQuest.Progression;
-using DragonQuest.Prototype;
 using UnityEngine;
 
 namespace DragonQuest.Presentation.Battle
@@ -12,10 +16,10 @@ namespace DragonQuest.Presentation.Battle
     {
         private readonly BattleHudGraphics graphics;
         private readonly BattleMenuPresenter commands;
-        private PrototypeBattleController controller;
+        private BattleController controller;
         private PixelSpriteLibrary pixelSprites;
         private readonly DragonBattleSprites dragonSprites = new DragonBattleSprites();
-        private PrototypeBattleSprites battleSprites;
+        private BattleSprites battleSprites;
         private readonly SpellAnimation spellAnimation = new SpellAnimation();
         private readonly HeroCastAnimation heroCastAnimation = new HeroCastAnimation();
         private readonly HeroKnockoutSprites knockoutSprites = new HeroKnockoutSprites();
@@ -54,13 +58,13 @@ namespace DragonQuest.Presentation.Battle
         public BattleArenaPresentation(BattleHudGraphics graphics, BattleMenuPresenter commands)
         { this.graphics = graphics; this.commands = commands; }
 
-        public void Initialize(PrototypeBattleController battleController, PixelSpriteLibrary sprites)
+        public void Initialize(BattleController battleController, PixelSpriteLibrary sprites)
         { controller = battleController; pixelSprites = sprites; }
 
         public void Prepare()
         {
             if (battleSprites != null) return;
-            battleSprites = new PrototypeBattleSprites();
+            battleSprites = new BattleSprites();
             dragonPortrait = Resources.Load<Texture2D>("DragonPortrait");
             spiritPortrait = Resources.Load<Texture2D>("PixelArt/SpiritBattle"); kingPortrait = Resources.Load<Texture2D>("KingPortrait");
         }
@@ -151,11 +155,11 @@ namespace DragonQuest.Presentation.Battle
             Color sky = new Color(.10f, .17f, .20f), ground = new Color(.18f, .23f, .18f);
             switch (controller.BattleLocationId)
             {
-                case PrototypeTravel.Volcano: sky = new Color(.20f, .08f, .06f); ground = new Color(.28f, .12f, .08f); break;
-                case PrototypeTravel.Castle: sky = new Color(.10f, .09f, .17f); ground = new Color(.20f, .19f, .25f); break;
-                case PrototypeTravel.EastForest: sky = new Color(.06f, .15f, .12f); ground = new Color(.13f, .23f, .14f); break;
-                case PrototypeTravel.WestForest: sky = new Color(.25f, .24f, .21f); ground = new Color(.34f, .32f, .27f); break;
-                case PrototypeTravel.Ruins: sky = new Color(.17f, .16f, .13f); ground = new Color(.25f, .23f, .18f); break;
+                case WorldNavigation.Volcano: sky = new Color(.20f, .08f, .06f); ground = new Color(.28f, .12f, .08f); break;
+                case WorldNavigation.Castle: sky = new Color(.10f, .09f, .17f); ground = new Color(.20f, .19f, .25f); break;
+                case WorldNavigation.EastForest: sky = new Color(.06f, .15f, .12f); ground = new Color(.13f, .23f, .14f); break;
+                case WorldNavigation.WestForest: sky = new Color(.25f, .24f, .21f); ground = new Color(.34f, .32f, .27f); break;
+                case WorldNavigation.Ruins: sky = new Color(.17f, .16f, .13f); ground = new Color(.25f, .23f, .18f); break;
             }
             graphics.RectBox(arena, sky); graphics.RectBox(new Rect(20, 240, 1240, 176), ground);
             if (background != null) GUI.DrawTexture(arena, background, ScaleMode.ScaleAndCrop);
@@ -226,10 +230,10 @@ namespace DragonQuest.Presentation.Battle
                         spellAnimation.Draw(FigureRect(target), impact,
                             elapsed - impactDelay + SpellAnimation.ImpactDelayFor(impact));
                 if (controller.PresentingAbility.PartyEffect == PartyEffect.RestoreAndRevive
-                    && elapsed >= impactDelay - SpellAnimation.ImpactDelayFor(PrototypeBattleFactory.Heal))
+                    && elapsed >= impactDelay - SpellAnimation.ImpactDelayFor(AbilityCatalog.Heal))
                     foreach (CombatantState ally in controller.PresentingPartyTargets)
-                        spellAnimation.Draw(FigureRect(ally), PrototypeBattleFactory.Heal,
-                            elapsed - impactDelay + SpellAnimation.ImpactDelayFor(PrototypeBattleFactory.Heal));
+                        spellAnimation.Draw(FigureRect(ally), AbilityCatalog.Heal,
+                            elapsed - impactDelay + SpellAnimation.ImpactDelayFor(AbilityCatalog.Heal));
             }
             if (controller.IsPresentingAction && controller.IsPresentingSpell)
                 foreach (CombatantState target in controller.PresentingTargets)
@@ -396,7 +400,7 @@ namespace DragonQuest.Presentation.Battle
             }
             // Every action has readable movement, even when it has no dedicated pose sheet.
             if (acting && !HeroCastAnimation.IsCasting(controller.PresentingAbility)
-                && !PrototypeBattleSprites.HasAnimation(participant.Id, controller.PresentingAbility)
+                && !BattleSprites.HasAnimation(participant.Id, controller.PresentingAbility)
                 && !controller.IsPresentingDragonAttack)
             {
                 float progress = Mathf.Clamp01((Time.unscaledTime - controller.ActionStartedAt) / controller.ActionDuration);

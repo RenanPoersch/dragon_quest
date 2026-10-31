@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace DragonQuest.Exploration
+namespace DragonQuest.Presentation.World.Rendering
 {
     // XY continua sendo o chao fisico; -Z representa altura apenas na apresentacao.
     public static class ObliqueProjection

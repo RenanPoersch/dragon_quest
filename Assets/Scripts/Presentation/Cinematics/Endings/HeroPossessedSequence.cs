@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace DragonQuest.Prototype
+namespace DragonQuest.Presentation.Cinematics.Endings
 {
     // One unscaled clock drives the upward camera, narration, lightning and fades.
     public sealed class HeroPossessedSequence

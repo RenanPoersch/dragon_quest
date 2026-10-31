@@ -1,3 +1,6 @@
+using DragonQuest.Presentation.Battle;
+using DragonQuest.Gameplay.Battle;
+using DragonQuest.Content;
 using System;
 using System.Linq;
 using System.Reflection;
@@ -7,7 +10,6 @@ using DragonQuest.Exploration;
 using DragonQuest.Input;
 using DragonQuest.Interactions;
 using DragonQuest.Progression;
-using DragonQuest.Prototype;
 using UnityEditor;
 using UnityEngine;
 
@@ -20,9 +22,9 @@ public static class AutomaticEndingUnityChecks
     { checks++; if (!value) throw new InvalidOperationException(message); }
     private static void Call(object target, string method)
     { target.GetType().GetMethod(method, Hidden).Invoke(target, null); }
-    private static void Age(PrototypeBattleController controller, float elapsed)
+    private static void Age(BattleController controller, float elapsed)
     { controller.ActionPresentation.GetType().GetField("<ActionStartedAt>k__BackingField", Hidden).SetValue(controller.ActionPresentation, Time.unscaledTime - elapsed); }
-    private static void FinishEntry(PrototypeBattleController controller)
+    private static void FinishEntry(BattleController controller)
     {
         controller.EntryTransition.enabled = false;
         Call(controller.EntryTransition, "OnDisable");
@@ -37,20 +39,20 @@ public static class AutomaticEndingUnityChecks
     private sealed class Fixture : IDisposable
     {
         private readonly GameObject root = new GameObject("Automatic ending checks");
-        public readonly PrototypeBattleController Controller;
+        public readonly BattleController Controller;
         public readonly PlayerMovement Movement;
         public int Endings, Completions;
         public GameEnding Ending;
         public Fixture(bool armor = false)
         {
             Movement = root.AddComponent<PlayerMovement>(); Call(Movement, "Awake");
-            var party = PrototypePartyFactory.Create();
+            var party = PartySetup.Create();
             if (armor)
             {
                 var equipment = new EquipmentLoadout(DragonProgress.Armor);
                 Check(party.TryAddEquipments(equipment) && party.TryEquipEquipment(party.Members[2], equipment, out _), "Equip the draconic armor.");
             }
-            Controller = root.AddComponent<PrototypeBattleController>();
+            Controller = root.AddComponent<BattleController>();
             Controller.Initialize(Movement, root.AddComponent<DialogueController>(), new ExplorationProgress(),
                 restoredParty: party, endingPresentation: ending => { Ending = ending; Endings++; });
             Controller.EncounterCompleted += outcome => Completions++;
@@ -97,7 +99,7 @@ public static class AutomaticEndingUnityChecks
             var controller = fixture.Controller;
             if (both)
             {
-                var cleave = new MateriaInstance("automatic-ending-cleave", PrototypePartyFactory.CleaveMateria);
+                var cleave = new MateriaInstance("automatic-ending-cleave", MateriaCatalog.CleaveMateria);
                 Check(controller.Party.TryAddMaterias(cleave) && controller.Party.TryEquip(controller.Party.Members[0],
                     controller.Party.Members[0].Armor, 2, cleave, out _), "Equip an area attack to test simultaneous boss deaths.");
             }
@@ -161,7 +163,7 @@ public static class AutomaticEndingUnityChecks
             for (int turn = 0; turn < CastleBattleRules.MeteorCastTurns; turn++)
             { BeforeKing(battle); Check(EnemyAI.TryTakeTurn(battle, out _), "Complete a countdown turn."); }
             BeforeKing(battle); Call(controller, "Update");
-            typeof(PrototypeBattleController).GetField("enemyActionTime", Hidden).SetValue(controller, Time.unscaledTime - 1);
+            typeof(BattleController).GetField("enemyActionTime", Hidden).SetValue(controller, Time.unscaledTime - 1);
             Call(controller, "Update");
             Check(controller.IsDestructiveMeteor && fixture.Endings == 0, "The meteor animation starts before the cinematic.");
             if (!longFrame)

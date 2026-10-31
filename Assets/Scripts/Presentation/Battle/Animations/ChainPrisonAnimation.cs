@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace DragonQuest.Prototype
+namespace DragonQuest.Presentation.Battle.Animations
 {
     // The prison is a persistent status overlay, independent of the boss's casting animation.
     public sealed class ChainPrisonAnimation

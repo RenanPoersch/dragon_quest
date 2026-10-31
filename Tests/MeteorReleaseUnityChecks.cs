@@ -1,3 +1,5 @@
+using DragonQuest.Presentation.Battle;
+using DragonQuest.Gameplay.Battle;
 using System;
 using System.Linq;
 using System.Reflection;
@@ -6,7 +8,6 @@ using DragonQuest.Exploration;
 using DragonQuest.Input;
 using DragonQuest.Interactions;
 using DragonQuest.Progression;
-using DragonQuest.Prototype;
 using UnityEditor;
 using UnityEngine;
 
@@ -18,7 +19,7 @@ public static class MeteorReleaseUnityChecks
     { checks++; if (!value) throw new InvalidOperationException(message); }
     private static void Call(object target, string method)
     { target.GetType().GetMethod(method, BindingFlags.Instance | BindingFlags.NonPublic).Invoke(target, null); }
-    private static void Age(PrototypeBattleController controller, float elapsed)
+    private static void Age(BattleController controller, float elapsed)
     {
         controller.ActionPresentation.GetType().GetField("<ActionStartedAt>k__BackingField", BindingFlags.Instance | BindingFlags.NonPublic)
             .SetValue(controller.ActionPresentation, Time.unscaledTime - elapsed);
@@ -41,7 +42,7 @@ public static class MeteorReleaseUnityChecks
         {
             var movement = fixture.AddComponent<PlayerMovement>(); Call(movement, "Awake");
             var dialogue = fixture.AddComponent<DialogueController>();
-            var controller = fixture.AddComponent<PrototypeBattleController>();
+            var controller = fixture.AddComponent<BattleController>();
             int endings = 0, completions = 0;
             controller.Initialize(movement, dialogue, new ExplorationProgress(), endingPresentation: ending => {
                 Check(ending == GameEnding.CastleDestroyed, "Automatic cut selects the meteor cinematic."); endings++;
@@ -66,13 +67,13 @@ public static class MeteorReleaseUnityChecks
                 "The displayed one leaves the battle open.");
             BeforeKing(battle);
             int[] hp = battle.Combatants.Select(c => c.Hp).ToArray();
-            var hud = fixture.AddComponent<PrototypeBattleHud>(); hud.Initialize(controller);
+            var hud = fixture.AddComponent<BattleHud>(); hud.Initialize(controller);
             // Only observe combat events here; the isolated project omits unrelated Ultimate atlases.
             hud.Arena.GetType().GetField("observedBattle", BindingFlags.Instance | BindingFlags.NonPublic)
                 .SetValue(hud.Arena, battle);
             Call(hud, "ObserveBattle");
             Call(controller, "Update");
-            typeof(PrototypeBattleController).GetField("enemyActionTime", BindingFlags.Instance | BindingFlags.NonPublic)
+            typeof(BattleController).GetField("enemyActionTime", BindingFlags.Instance | BindingFlags.NonPublic)
                 .SetValue(controller, Time.unscaledTime - 1);
             Call(controller, "Update");
             Check(controller.IsPresentingAction && controller.IsDestructiveMeteor, "The sixth turn starts the charge animation.");

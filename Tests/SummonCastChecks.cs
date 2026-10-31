@@ -1,14 +1,15 @@
+using DragonQuest.Presentation.Battle.Animations;
+using DragonQuest.Content;
 using System;
 using DragonQuest.Combat;
 using DragonQuest.Equipment;
-using DragonQuest.Prototype;
 
 public static class SummonCastChecks
 {
     static void Check(bool value, string message) { if (!value) throw new Exception(message); }
     public static void Main()
     {
-        var originals = new[] { PrototypePartyFactory.Summon, PrototypePartyFactory.Bahamut, PrototypePartyFactory.Titan };
+        var originals = new[] { AbilityCatalog.Summon, AbilityCatalog.Bahamut, AbilityCatalog.Titan };
         var resources = new[] { "PhoenixSummon", "BahamutSummon", "TitanSummon" };
         for (int i = 0; i < originals.Length; i++)
         {
@@ -21,8 +22,8 @@ public static class SummonCastChecks
             Check(HeroCastAnimation.IsCasting(command), "Summons trigger cast.");
             Check(SpellAnimation.Resource(SummonAnimation.ImpactEffect(command)) != null, "Summon target impact has art.");
         }
-        foreach (var spell in new[] { PrototypePartyFactory.Fire, PrototypeBattleFactory.Heal,
-            PrototypeBattleFactory.Cleanse, PrototypeBattleFactory.Revive })
+        foreach (var spell in new[] { AbilityCatalog.Fire, AbilityCatalog.Heal,
+            AbilityCatalog.Cleanse, AbilityCatalog.Revive })
             Check(HeroCastAnimation.IsCasting(spell), "Offensive and restorative spells trigger cast.");
         foreach (string hero in new[] { "aren", "lia", "bram" })
             Check(HeroCastAnimation.Resource(hero) != null, "Every hero has a cast sheet.");
@@ -31,7 +32,7 @@ public static class SummonCastChecks
         var infused = new AbilityDefinition("attack", "Ataque", "", 0, 0, AbilityEffect.PhysicalDamage,
             TargetRule.Enemy, element: DamageElement.Fire);
         Check(!HeroCastAnimation.IsCasting(infused) && SummonAnimation.Resource(infused) == null, "Infusion remains a weapon attack.");
-        Check(SummonAnimation.Resource(PrototypePartyFactory.Fire) == null, "Magic is not a summon.");
+        Check(SummonAnimation.Resource(AbilityCatalog.Fire) == null, "Magic is not a summon.");
         Check(HeroCastAnimation.Pose(0, SummonAnimation.Duration) == 0 && HeroCastAnimation.Pose(.25f, SummonAnimation.Duration) == 1,
             "Idle and step poses.");
         Check(HeroCastAnimation.Pose(SummonAnimation.ImpactDelay, SummonAnimation.Duration) == 2,
@@ -43,10 +44,10 @@ public static class SummonCastChecks
             "Summon emerges after cast and impact matches attack frame.");
         Check(SummonAnimation.Frame(SummonAnimation.Duration) == 7 && SummonAnimation.Duration > SummonAnimation.ImpactDelay,
             "Summon completes attack and recovery.");
-        Check(PrototypePartyFactory.Bahamut.Element == DamageElement.Chaos, "Bahamut causes Chaos damage.");
-        Check(SummonAnimation.AttackFrameResource(PrototypePartyFactory.Bahamut) == "BahamutAttack"
-            && SummonAnimation.AttackFrameResource(PrototypePartyFactory.Summon) == "PhoenixAttack", "Complete attack images replace the clipped impact frames.");
-        Check(SummonAnimation.AttackFrameResource(PrototypePartyFactory.Titan) == null, "Titan retains its original attack sheet.");
+        Check(AbilityCatalog.Bahamut.Element == DamageElement.Chaos, "Bahamut causes Chaos damage.");
+        Check(SummonAnimation.AttackFrameResource(AbilityCatalog.Bahamut) == "BahamutAttack"
+            && SummonAnimation.AttackFrameResource(AbilityCatalog.Summon) == "PhoenixAttack", "Complete attack images replace the clipped impact frames.");
+        Check(SummonAnimation.AttackFrameResource(AbilityCatalog.Titan) == null, "Titan retains its original attack sheet.");
         Console.WriteLine("Summon, All, hero cast, Infusion and timing checks passed.");
     }
 }

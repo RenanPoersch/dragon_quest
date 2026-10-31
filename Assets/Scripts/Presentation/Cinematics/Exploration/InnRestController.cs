@@ -1,11 +1,14 @@
+using DragonQuest.Progression;
+using DragonQuest.Presentation.World.Rendering;
+using DragonQuest.Presentation.World.Characters;
+using DragonQuest.Exploration.Layouts;
 using System;
 using System.Collections.Generic;
-using DragonQuest.Equipment;
 using DragonQuest.Exploration;
 using DragonQuest.Input;
 using UnityEngine;
 
-namespace DragonQuest.Prototype
+namespace DragonQuest.Presentation.Cinematics.Exploration
 {
     // A caminhada usa o corredor livre diante das camas da pintura.
     public sealed class InnRestController : MonoBehaviour
@@ -22,8 +25,8 @@ namespace DragonQuest.Prototype
 
         public const float WalkSpeed = 2.6f, FadeDuration = 1.2f, NightDuration = .8f;
         private static readonly Vector2[] BedFronts = {
-            PrototypeInnLayout.Ground(.275f,.55f), PrototypeInnLayout.Ground(.465f,.55f),
-            PrototypeInnLayout.Ground(.37f,.55f)
+            InnLayout.Ground(.275f,.55f), InnLayout.Ground(.465f,.55f),
+            InnLayout.Ground(.37f,.55f)
         };
         private readonly List<Guest> guests = new List<Guest>();
         private readonly Dictionary<Renderer,bool> heroRenderers = new Dictionary<Renderer,bool>();
@@ -55,19 +58,19 @@ namespace DragonQuest.Prototype
             teleportRevision=player.TeleportRevision;
             player.SetMovementEnabled(false);
             Vector2 origin=player.transform.position;
-            Vector2 image=PrototypeInnLayout.ImagePoint(origin);
+            Vector2 image=InnLayout.ImagePoint(origin);
             for (int i=0;i<restingParty.Members.Count;i++)
             {
                 PartyMember member=restingParty.Members[i];
                 Vector2 destination=BedFronts[i%BedFronts.Length];
-                Vector2 bedImage=PrototypeInnLayout.ImagePoint(destination);
+                Vector2 bedImage=InnLayout.ImagePoint(destination);
                 var root=new GameObject(member.Name+" / descanso na pousada");
                 root.transform.SetParent(transform,false); root.transform.position=origin;
                 string atlas=member.Id=="lia"?"LiaWalk":member.Id=="bram"?"BramWalk":"ArenWalk";
                 var visual=scenery.PixelPerson(root.transform,atlas);
                 var guest=new Guest { Root=root, Character=visual.GetComponent<PixelCharacter>(),
-                    Route=new[] { PrototypeInnLayout.Ground(image.x,.61f),
-                        PrototypeInnLayout.Ground(bedImage.x,.61f), destination }, Delay=i*.22f };
+                    Route=new[] { InnLayout.Ground(image.x,.61f),
+                        InnLayout.Ground(bedImage.x,.61f), destination }, Delay=i*.22f };
                 guest.Character.Present(guest.Route[0]-origin,0,false);
                 root.SetActive(i==0); guests.Add(guest);
             }

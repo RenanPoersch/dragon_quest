@@ -1,4 +1,4 @@
-namespace DragonQuest.Exploration
+namespace DragonQuest.Presentation.World.Characters
 {
     // Stable frame indices in NpcRoster; display names never choose an NPC's appearance.
     public enum NpcAppearance

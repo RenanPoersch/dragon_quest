@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace DragonQuest.Prototype
+namespace DragonQuest.Presentation.Menus
 {
     // Shared by party menus, shops and save slots; portraits are Resources-owned textures.
     public static class HeroPortraitCatalog

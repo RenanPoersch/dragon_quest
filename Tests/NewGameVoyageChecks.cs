@@ -1,5 +1,6 @@
+using DragonQuest.Presentation.Cinematics.Opening;
+using DragonQuest.Presentation.Cinematics.Endings;
 using System;
-using DragonQuest.Prototype;
 
 public static class NewGameVoyageChecks
 {

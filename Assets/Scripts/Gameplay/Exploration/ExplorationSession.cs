@@ -1,6 +1,5 @@
 using System;
 using DragonQuest.Combat;
-using DragonQuest.Equipment;
 using DragonQuest.Progression;
 using UnityEngine;
 

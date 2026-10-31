@@ -1,10 +1,10 @@
+using DragonQuest.Content;
 using System;
 using System.Linq;
 using DragonQuest.Combat;
 using DragonQuest.Equipment;
 using DragonQuest.Exploration;
 using DragonQuest.Progression;
-using DragonQuest.Prototype;
 
 internal static class CheatChecks
 {
@@ -18,7 +18,7 @@ internal static class CheatChecks
 
     private static void Limits()
     {
-        var party = PrototypePartyFactory.Create();
+        var party = PartySetup.Create();
         var actors = party.Members.Select(m => m.CreateCombatant()).ToArray();
         var enemy = Enemy();
         var battle = new BattleSession(() => 1, null, party.Consumables, actors.Concat(new[] { enemy }).ToArray());
@@ -48,11 +48,11 @@ internal static class CheatChecks
 
     private static void Gold()
     {
-        var party = PrototypePartyFactory.Create();
+        var party = PartySetup.Create();
         var progress = new ExplorationProgress(50);
-        var shops = PrototypeShopFactory.Create(party, progress);
+        var shops = ShopCatalog.Create(party, progress);
         var shop = shops.FindShop("item-shop");
-        var product = shop.Products.First(p => p.Item == PrototypePartyFactory.Potion);
+        var product = shop.Products.First(p => p.Item == ItemCatalog.Potion);
         progress.SetInfiniteGold(true);
         Check(progress.Gold == int.MaxValue && progress.CanReceiveGold(int.MaxValue), "Unlimited wallet accepts income even while full.");
         Check(progress.TrySpendGold(int.MaxValue) && progress.TrySpendGold(int.MaxValue), "Spending never exhausts unlimited gold.");
@@ -83,7 +83,7 @@ internal static class CheatChecks
 
     private static void Levels()
     {
-        var party = PrototypePartyFactory.Create();
+        var party = PartySetup.Create();
         var actors = party.Members.Select(m => m.CreateCombatant()).ToArray();
         var enemy = Enemy();
         actors[0].TakeDamage(20); actors[0].SpendMp(3); actors[0].PoisonTurns = 1;
@@ -109,7 +109,7 @@ internal static class CheatChecks
             "Repeated activation does not stack stats or replace equipment.");
         Check(actors.All(a => a.Definition.MaxHp == party.Members.First(m => m.Id == a.Id).CreateCombatant().Definition.MaxHp),
             "Existing and future encounters agree on the new attributes.");
-        var fresh = PrototypePartyFactory.Create();
+        var fresh = PartySetup.Create();
         fresh.SetMaxLevel();
         Check(fresh.Members.All(m => m.Level == 99), "Level cheat also works outside combat.");
         Check(!fresh.HasInfiniteLimit && !new ExplorationProgress().HasInfiniteGold, "Other cheats stay independent.");

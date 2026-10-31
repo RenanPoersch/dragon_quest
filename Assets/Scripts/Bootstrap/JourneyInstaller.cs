@@ -1,12 +1,17 @@
+using DragonQuest.Presentation.Menus;
+using DragonQuest.Presentation.Dialogue;
+using DragonQuest.Presentation.Cinematics.Exploration;
+using DragonQuest.Presentation.Cinematics.Endings;
+using DragonQuest.Gameplay.Shops;
+using DragonQuest.Gameplay.Saving;
+using DragonQuest.Gameplay.Battle;
 using DragonQuest.Gameplay;
 using DragonQuest.Content;
-using DragonQuest.Equipment;
 using DragonQuest.Exploration;
 using DragonQuest.Interactions;
 using DragonQuest.Persistence;
 using DragonQuest.Presentation.World;
 using DragonQuest.Progression;
-using DragonQuest.Prototype;
 using DragonQuest.Shops;
 using UnityEngine;
 
@@ -16,26 +21,26 @@ namespace DragonQuest.Bootstrap
     public sealed class JourneyInstaller
     {
         private readonly WorldScene world;
-        private readonly PrototypeSaveController saves;
+        private readonly SaveController saves;
         private readonly DialogueController dialogue;
-        private readonly PrototypeBattleController battle;
-        private readonly PrototypeShopController shops;
-        private readonly PrototypeLocations locations;
-        private readonly PrototypeCheatMenu cheats;
+        private readonly BattleController battle;
+        private readonly ShopController shops;
+        private readonly WorldLocationController locations;
+        private readonly CheatMenu cheats;
         private readonly InnRestController innRest;
         private readonly AncientSecrets secrets;
         private readonly DragonProgress dragon;
-        private readonly PrototypeEndingController endings;
+        private readonly EndingController endings;
         private PlayerInteraction interaction;
-        private PrototypeHud hud;
+        private DialogueHud hud;
         private readonly GameFlowState flow;
 
         public ExplorationProgress Progress { get; private set; }
 
-        public JourneyInstaller(WorldScene world, PrototypeSaveController saves, DialogueController dialogue,
-            PrototypeBattleController battle, PrototypeShopController shops, PrototypeLocations locations,
-            PrototypeCheatMenu cheats, InnRestController innRest, AncientSecrets secrets, DragonProgress dragon,
-            PrototypeEndingController endings, GameFlowState flow = null)
+        public JourneyInstaller(WorldScene world, SaveController saves, DialogueController dialogue,
+            BattleController battle, ShopController shops, WorldLocationController locations,
+            CheatMenu cheats, InnRestController innRest, AncientSecrets secrets, DragonProgress dragon,
+            EndingController endings, GameFlowState flow = null)
         {
             this.world = world; this.saves = saves; this.dialogue = dialogue; this.battle = battle;
             this.shops = shops; this.locations = locations; this.cheats = cheats; this.innRest = innRest;
@@ -48,7 +53,7 @@ namespace DragonQuest.Bootstrap
             ConnectSystems(null, null);
         }
 
-        public void BindExploration(PlayerInteraction playerInteraction, PrototypeHud dialogueHud)
+        public void BindExploration(PlayerInteraction playerInteraction, DialogueHud dialogueHud)
         {
             interaction = playerInteraction; hud = dialogueHud;
             ConnectExploration();

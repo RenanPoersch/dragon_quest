@@ -1,10 +1,11 @@
+using DragonQuest.Progression;
+using DragonQuest.Presentation.Common;
 using System;
-using DragonQuest.Equipment;
 using DragonQuest.Inventory;
 using UnityEngine;
 using DragonQuest.Audio;
 
-namespace DragonQuest.Prototype
+namespace DragonQuest.Presentation.Menus
 {
     public sealed class ItemMenuPresentation
     {
@@ -21,7 +22,7 @@ namespace DragonQuest.Prototype
         private void EnsureStyles()
         {
             if (text != null) return;
-            text = PrototypeTypography.Style(GUI.skin.label, 34);
+            text = GameTypography.Style(GUI.skin.label, 34);
             text.padding = new RectOffset(0, 0, 0, 0); text.alignment = TextAnchor.MiddleLeft;
             text.normal.textColor = Color.white;
             heading = new GUIStyle(text) { fontSize = 38 };

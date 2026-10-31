@@ -3,7 +3,7 @@ using DragonQuest.Input;
 using UnityEngine;
 using DragonQuest.Audio;
 
-namespace DragonQuest.Prototype
+namespace DragonQuest.Presentation.Common
 {
     // IMGUI has no gamepad focus. Keep its existing buttons, mouse input and scroll views.
     public sealed class ControllerMenu

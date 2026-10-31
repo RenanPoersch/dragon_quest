@@ -1,8 +1,9 @@
-using DragonQuest.Exploration;
+using DragonQuest.Presentation.World.Rendering;
+using DragonQuest.Exploration.Layouts;
 using DragonQuest.Progression;
 using UnityEngine;
 
-namespace DragonQuest.Prototype
+namespace DragonQuest.Presentation.World.Scenery
 {
     // One continuous painting, registered to the existing fixed oblique camera and XY interaction map.
     [DefaultExecutionOrder(130)]
@@ -51,7 +52,7 @@ namespace DragonQuest.Prototype
             scaleMaterial.mainTexture = texture;
             scale = new GameObject("Escama ancestral / discreta no oco do tronco");
             scale.transform.SetParent(painting, false);
-            Vector2 hollow = ObliqueProjection.ScreenPlane(PrototypeSecretLayout.HollowTree);
+            Vector2 hollow = ObliqueProjection.ScreenPlane(SecretLayout.HollowTree);
             scale.transform.localPosition = new Vector3(hollow.x + .18f, hollow.y + .10f, -.05f);
             scale.transform.localRotation = Quaternion.Euler(0, 0, -15);
             // About 14 x 20 visible pixels at 720p: nestled in the dark hollow, without a glow.

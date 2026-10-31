@@ -1,7 +1,9 @@
+using DragonQuest.Presentation.World.Rendering;
+using DragonQuest.Exploration.Layouts;
 using System;
 using UnityEngine;
 
-namespace DragonQuest.Prototype
+namespace DragonQuest.Presentation.World.Scenery
 {
     public sealed class PeripheryBuildingArt
     {

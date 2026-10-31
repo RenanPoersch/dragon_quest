@@ -1,10 +1,9 @@
+using DragonQuest.Content;
 using System;
 using System.Linq;
 using DragonQuest.Combat;
-using DragonQuest.Equipment;
 using DragonQuest.Exploration;
 using DragonQuest.Progression;
-using DragonQuest.Prototype;
 
 internal static class PostBattleChecks
 {
@@ -15,7 +14,7 @@ internal static class PostBattleChecks
     {
         var actors = party.Members.Take(participantCount).Select(m => m.CreateCombatant()).ToList();
         actors.Add(new CombatantState("reward-enemy", new CombatantDefinition("Enemy", "", 1, 0, 1, 0, 0, 0,
-            ElementalAffinities.Neutral, 7, experience, 0, PrototypeBattleFactory.Attack), CombatTeam.Enemy));
+            ElementalAffinities.Neutral, 7, experience, 0, AbilityCatalog.Attack), CombatTeam.Enemy));
         return new BattleSession(() => 1, null, party.Consumables, actors.ToArray());
     }
     private static void Win(BattleSession battle)
@@ -62,7 +61,7 @@ internal static class PostBattleChecks
         for (int fallen = 0; fallen < count; fallen++)
         foreach (int total in new[] { 0, 1, 2, 20, 85, 90, 101 })
         {
-            var party = PrototypePartyFactory.Create();
+            var party = PartySetup.Create();
             var battle = Encounter(party, total, count);
             var result = new PostBattleResults(party, battle);
             for (int i = 0; i < fallen; i++) battle.Combatants[i].TakeDamage(battle.Combatants[i].Hp);
@@ -89,7 +88,7 @@ internal static class PostBattleChecks
         try
         {
             SharedExperience();
-            var party = PrototypePartyFactory.Create();
+            var party = PartySetup.Create();
             Victory(party, 80, false);
             Victory(party, 400, true);
             var solo = Encounter(party, 20, 1);
@@ -102,13 +101,13 @@ internal static class PostBattleChecks
             foreach (var member in party.Members) member.Progression.AddExperience(long.MaxValue);
             Victory(party, 100, false);
             Check(new PostBattleExperience(CharacterProgression.MaxExperience).ToNextLevel == 0, "Max-level results do not request more XP.");
-            var losingParty = PrototypePartyFactory.Create();
+            var losingParty = PartySetup.Create();
             var hero = losingParty.Members[0].CreateCombatant();
             var enemy = new CombatantState("winner", new CombatantDefinition("Enemy", "", 1000, 0, 1000, 0, 0, 1000,
-                ElementalAffinities.Neutral, PrototypeBattleFactory.Attack), CombatTeam.Enemy);
+                ElementalAffinities.Neutral, AbilityCatalog.Attack), CombatTeam.Enemy);
             var defeat = new BattleSession(() => 1, null, losingParty.Consumables, hero, enemy);
             var defeatResult = new PostBattleResults(losingParty, defeat);
-            Check(defeat.TryAct(enemy, PrototypeBattleFactory.Attack, hero, out _) && defeat.Outcome == BattleOutcome.Defeat,
+            Check(defeat.TryAct(enemy, AbilityCatalog.Attack, hero, out _) && defeat.Outcome == BattleOutcome.Defeat,
                 "The losing fixture must finish with defeat.");
             Check(!PostBattleResults.IsVictory(defeat) && !defeatResult.Complete(losingParty, false), "Defeats cannot grant a victory screen.");
             Console.WriteLine(checks + " post-battle reward, XP animation, level-up and duplicate-claim checks passed.");

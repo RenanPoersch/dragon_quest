@@ -1,8 +1,10 @@
+using DragonQuest.Presentation.World.Rendering;
+using DragonQuest.Exploration.Layouts;
 using System;
 using System.Linq;
 using UnityEngine;
 
-namespace DragonQuest.Prototype
+namespace DragonQuest.Presentation.World.Scenery
 {
     public static class WorldIslandArt
     {
@@ -10,7 +12,7 @@ namespace DragonQuest.Prototype
         {
             var mesh = new ObliqueMeshData();
             mesh.Plane(0, 0, 80, 65, 0, Color.white);
-            Rect bounds = PrototypeWorldLayout.GroundPaintingBounds;
+            Rect bounds = WorldLayout.GroundPaintingBounds;
             for (int i = 0; i < mesh.Vertices.Count; i++)
             {
                 mesh.Colors[i] = Color.white;
@@ -24,7 +26,7 @@ namespace DragonQuest.Prototype
         {
             var mesh = new ObliqueMeshData();
             const int segments = 48;
-            float radius = PrototypeWorldLayout.WardRadius;
+            float radius = WorldLayout.WardRadius;
             for (int i = 0; i < segments; i++)
             {
                 double a = i * Math.PI * 2 / segments, b = (i + 1) * Math.PI * 2 / segments;

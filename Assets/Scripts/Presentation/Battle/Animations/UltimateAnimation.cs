@@ -1,8 +1,11 @@
+using DragonQuest.Presentation.Common;
+using DragonQuest.Presentation.Battle.Sprites;
+using DragonQuest.Presentation.Battle;
 using System.Collections.Generic;
 using DragonQuest.Combat;
 using UnityEngine;
 
-namespace DragonQuest.Prototype
+namespace DragonQuest.Presentation.Battle.Animations
 {
     public sealed class UltimateAnimation
     {
@@ -27,7 +30,7 @@ namespace DragonQuest.Prototype
         private void Styles()
         {
             if(caption!=null) return;
-            caption=PrototypeTypography.Style(GUI.skin.label,17,true); caption.alignment=TextAnchor.MiddleCenter;
+            caption=GameTypography.Style(GUI.skin.label,17,true); caption.alignment=TextAnchor.MiddleCenter;
         }
         private void Label(Rect rect,string value,GUIStyle style,Color color)
         {
@@ -87,7 +90,7 @@ namespace DragonQuest.Prototype
                 }
         }
         public bool DrawActor(Rect home,Rect focus,string hero,AbilityDefinition ability,float elapsed,
-            Color tint,PrototypeBattleSprites sprites,HeroCastAnimation cast)
+            Color tint,BattleSprites sprites,HeroCastAnimation cast)
         {
             if(!UltimateTimeline.IsUltimate(ability)) return false;
             Rect rect=home; bool mirror=false;

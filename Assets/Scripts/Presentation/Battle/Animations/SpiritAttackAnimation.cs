@@ -1,9 +1,10 @@
+using DragonQuest.Presentation.Battle.Sprites;
 using System;
 using System.Collections.Generic;
 using DragonQuest.Combat;
 using UnityEngine;
 
-namespace DragonQuest.Prototype
+namespace DragonQuest.Presentation.Battle.Animations
 {
     public sealed class SpiritAttackAnimation
     {

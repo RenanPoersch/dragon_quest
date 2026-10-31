@@ -1,12 +1,12 @@
+using DragonQuest.Presentation.Menus;
+using DragonQuest.Content;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using DragonQuest.Equipment;
 using DragonQuest.Progression;
-using DragonQuest.Prototype;
 using UnityEditor;
 using UnityEngine;
-using P = DragonQuest.Prototype.PrototypePartyFactory;
 
 public static class InventorySpriteValidation
 {
@@ -14,15 +14,15 @@ public static class InventorySpriteValidation
     public static void Run()
     {
         var keys = new HashSet<string>();
-        foreach (var gear in new[] { P.InitialWeapon, P.InitialArmor, P.IronSword, P.RunicStaff, P.IronArmor, P.ArcaneRobe, DragonProgress.Armor })
+        foreach (var gear in new[] { EquipmentCatalog.InitialWeapon, EquipmentCatalog.InitialArmor, EquipmentCatalog.IronSword, EquipmentCatalog.RunicStaff, EquipmentCatalog.IronArmor, EquipmentCatalog.ArcaneRobe, DragonProgress.Armor })
         {
             Assert(InventoryPixelArt.Texture(gear) != null, "Missing equipment sprite: " + gear.Name);
             Assert(keys.Add(InventoryIconCatalog.Key(gear)), "Equipment must have distinct sprites.");
         }
         var materiaKeys = new HashSet<string>();
-        var materias = new[] { P.ThunderMateria, P.FireMateria, P.IceMateria, P.CureMateria, P.CleanseMateria, P.ReviveMateria,
-            P.SummonMateria, P.AllMateria, P.InfuseMateria, P.HeavyMateria, P.CleaveMateria, P.GuardianMateria,
-            P.EarthMateria, P.ChaosMateria, P.BahamutMateria, P.TitanMateria, P.DefenseMateria, P.HpMateria, P.MpMateria };
+        var materias = new[] { MateriaCatalog.ThunderMateria, MateriaCatalog.FireMateria, MateriaCatalog.IceMateria, MateriaCatalog.CureMateria, MateriaCatalog.CleanseMateria, MateriaCatalog.ReviveMateria,
+            MateriaCatalog.SummonMateria, MateriaCatalog.AllMateria, MateriaCatalog.InfuseMateria, MateriaCatalog.HeavyMateria, MateriaCatalog.CleaveMateria, MateriaCatalog.GuardianMateria,
+            MateriaCatalog.EarthMateria, MateriaCatalog.ChaosMateria, MateriaCatalog.BahamutMateria, MateriaCatalog.TitanMateria, MateriaCatalog.DefenseMateria, MateriaCatalog.HpMateria, MateriaCatalog.MpMateria };
         var typeTextures = new Dictionary<MateriaType, Texture2D>();
         foreach (var materia in materias)
         {
@@ -35,7 +35,7 @@ public static class InventorySpriteValidation
         }
         Assert(materiaKeys.SetEquals(new[] { "materia-green", "materia-blue", "materia-red", "materia-purple" }), "Exactly four materia colors.");
         keys.UnionWith(materiaKeys);
-        foreach (var item in new[] { P.Potion, P.Ether, P.Antidote, P.PhoenixFeather })
+        foreach (var item in new[] { ItemCatalog.Potion, ItemCatalog.Ether, ItemCatalog.Antidote, ItemCatalog.PhoenixFeather })
         {
             Assert(InventoryPixelArt.Texture(item) != null, "Missing item sprite: " + item.Name);
             Assert(keys.Add(InventoryIconCatalog.Key(item)), "Items must have distinct sprites.");

@@ -1,7 +1,9 @@
+using DragonQuest.Progression;
+using DragonQuest.Content;
+using DragonQuest.Authoring;
 using System;
 using System.Text;
 using DragonQuest.Equipment;
-using DragonQuest.Prototype;
 
 internal static class EquipmentMenuChecks
 {
@@ -25,7 +27,7 @@ internal static class EquipmentMenuChecks
     { for (int i = 0; i < EquipmentMenuStats.Count; i++) Check(expected[i] == actual[i], context + " stat " + i); }
     private static void AccurateSwapPreview()
     {
-        var party = PrototypePartyFactory.CreateTestParty(); var menu = new EquipmentMenuSession();
+        var party = PartyFixture.Create(); var menu = new EquipmentMenuSession();
         var lia = party.Members[1]; var bram = party.Members[2]; var staff = Find(party, "runic-staff"); var old = lia.Weapon;
         party.TryEquip(lia, old, 0, party.Materias[19], out _); party.TryEquip(lia, old, 1, party.Materias[20], out _);
         party.TryEquipEquipment(bram, staff, out _); party.TryEquip(bram, staff, 0, party.Materias[0], out _);
@@ -51,7 +53,7 @@ internal static class EquipmentMenuChecks
     }
     private static void RemovalAndRounding()
     {
-        var party = PrototypePartyFactory.CreateTestParty(); var menu = new EquipmentMenuSession(); var aren = party.Members[0];
+        var party = PartyFixture.Create(); var menu = new EquipmentMenuSession(); var aren = party.Members[0];
         party.TryEquip(aren, aren.Armor, 0, party.Materias[19], out _);
         party.TryEquip(aren, aren.Armor, 1, party.Materias[20], out _);
         menu.Reset(party); Select(menu, Find(party, "iron-sword"));
@@ -64,7 +66,7 @@ internal static class EquipmentMenuChecks
             "Removing armor keeps the weapon and changes only on confirmation.");
         SameStats(preview, menu.CurrentStats, "Removal matches preview");
         Check(!menu.CanApply && !menu.Apply(party), "Removing an empty slot is disabled.");
-        party = PrototypePartyFactory.CreateTestParty(); aren = party.Members[0];
+        party = PartyFixture.Create(); aren = party.Members[0];
         aren.Progression.AddExperience(100); party.TryEquip(aren, aren.Weapon, 0, party.Materias[19], out _);
         menu.Reset(party); Select(menu, Find(party, "iron-sword"));
         Check(menu.PreviewStats.MaxHp == aren.MaxHpWith(null, aren.Armor), "Level growth uses exact base stats rather than dividing rounded maxima.");
@@ -72,7 +74,7 @@ internal static class EquipmentMenuChecks
     }
     private static void CategoriesAndRefresh()
     {
-        var party = PrototypePartyFactory.Create(); var menu = new EquipmentMenuSession(); menu.Reset(party);
+        var party = PartySetup.Create(); var menu = new EquipmentMenuSession(); menu.Reset(party);
         foreach (var item in menu.Items) Check(item == null || item.Definition.Slot == EquipmentSlot.Weapon, "Weapon category contains only weapons.");
         string before = Snapshot(party); menu.ChangeMember(-1, party);
         Check(menu.Member == party.Members[2], "Character navigation wraps backwards.");
@@ -85,7 +87,7 @@ internal static class EquipmentMenuChecks
         SameStats(menu.CurrentStats, menu.PreviewStats, "Empty accessory category");
         menu.Move(1); menu.ChangeCategory(1, party); Check(menu.Category == EquipmentMenuCategory.Weapons, "Category navigation wraps.");
         menu.SelectItem(-1); menu.SelectItem(999); Check(Snapshot(party) == before, "Invalid selection and category browsing preserve state.");
-        var extra = new EquipmentLoadout(PrototypePartyFactory.IronSword, "temporary-candidate"); party.TryAddEquipments(extra);
+        var extra = new EquipmentLoadout(EquipmentCatalog.IronSword, "temporary-candidate"); party.TryAddEquipments(extra);
         menu.Refresh(party); Select(menu, extra); Check(party.TryRemoveOwnedEquipment(extra), "Pending item can leave inventory externally.");
         menu.Refresh(party); Check(!menu.CanApply && !menu.Apply(party), "Missing pending item falls back to current gear and cannot equip another item.");
         menu.Reset(party); menu.SelectItem(0); menu.Move(-1); Check(menu.ItemIndex == menu.Items.Count - 1, "List navigation wraps safely.");

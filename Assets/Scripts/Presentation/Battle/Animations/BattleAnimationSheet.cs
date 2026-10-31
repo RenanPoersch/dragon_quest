@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace DragonQuest.Prototype
+namespace DragonQuest.Presentation.Battle.Animations
 {
     // Reads generated atlases without changing their colors or alpha.
     public sealed class BattleAnimationSheet

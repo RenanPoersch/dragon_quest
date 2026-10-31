@@ -1,10 +1,11 @@
+using DragonQuest.Presentation.Common;
 using System;
 using DragonQuest.Equipment;
 using DragonQuest.Shops;
 using UnityEngine;
 using DragonQuest.Audio;
 
-namespace DragonQuest.Prototype
+namespace DragonQuest.Presentation.Menus
 {
     public sealed class ShopMenuPresentation
     {
@@ -22,12 +23,12 @@ namespace DragonQuest.Prototype
         private void Styles()
         {
             if (text != null) return;
-            text = PrototypeTypography.Style(GUI.skin.label, 36);
+            text = GameTypography.Style(GUI.skin.label, 36);
             text.padding = new RectOffset(0, 0, 0, 0); text.alignment = TextAnchor.MiddleLeft;
             text.normal.textColor = Color.white;
             heading = new GUIStyle(text) { fontSize = 40 };
             small = new GUIStyle(text) { fontSize = 27 };
-            number = PrototypeTypography.Style(text, 36, true); number.alignment = TextAnchor.MiddleRight;
+            number = GameTypography.Style(text, 36, true); number.alignment = TextAnchor.MiddleRight;
             description = new GUIStyle(text) { fontSize = 30, wordWrap = true };
             buttonText = new GUIStyle(text) { alignment = TextAnchor.MiddleCenter };
             slider = new GUIStyle(GUI.skin.horizontalSlider);

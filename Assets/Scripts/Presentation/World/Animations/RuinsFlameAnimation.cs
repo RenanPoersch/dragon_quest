@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace DragonQuest.Prototype
+namespace DragonQuest.Presentation.World.Animations
 {
     [RequireComponent(typeof(SpriteRenderer))]
     public sealed class RuinsFlameAnimation : MonoBehaviour

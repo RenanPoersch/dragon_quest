@@ -1,11 +1,10 @@
+using DragonQuest.Content;
 using System;
 using System.Linq;
 using DragonQuest.Combat;
 using DragonQuest.Equipment;
 using DragonQuest.Exploration;
 using DragonQuest.Progression;
-using DragonQuest.Prototype;
-using DragonQuest.Shops;
 
 internal static class DragonChecks
 {
@@ -20,14 +19,14 @@ internal static class DragonChecks
 
     private static void CheckTelegraph()
     {
-        var battle=PrototypeBattleFactory.CreateDragonEncounter(PrototypePartyFactory.Create());
+        var battle=EncounterCatalog.CreateDragonEncounter(PartySetup.Create());
         var dragon=Dragon(battle);
         Assert(dragon.Definition.Affinities.DamagePercent(DamageElement.Ice)==150
             &&dragon.Definition.Affinities.DamagePercent(DamageElement.Fire)==50,"Dragao exige fraqueza a Gelo e resistencia a Fogo.");
         for(int round=0;round<2;round++)
         {
             while(battle.CurrentActor.Team==CombatTeam.Party) Defend(battle);
-            Assert(EnemyAI.ChooseAbility(battle)==(round==0?PrototypeBattleFactory.DragonClaw:PrototypeBattleFactory.ChargeBreath),"Dragao deve seguir garra, preparacao, sopro.");
+            Assert(EnemyAI.ChooseAbility(battle)==(round==0?AbilityCatalog.DragonClaw:AbilityCatalog.ChargeBreath),"Dragao deve seguir garra, preparacao, sopro.");
             Assert(EnemyAI.TryTakeTurn(battle,out _),"IA do dragao deve avancar.");
         }
         Assert(dragon.IsCharging&&battle.LastMessage.Contains("proximo turno"),"Aviso deve permanecer durante os turnos aliados.");
@@ -35,30 +34,30 @@ internal static class DragonChecks
         var hp=party.Select(c=>c.Hp).ToArray();int responses=0;
         while(battle.CurrentActor.Team==CombatTeam.Party) { Defend(battle);responses++; }
         Assert(responses==3,"Cada aliado vivo precisa de um turno de resposta antes do sopro.");
-        Assert(EnemyAI.ChooseAbility(battle)==PrototypeBattleFactory.DragonBreath&&EnemyAI.TryTakeTurn(battle,out _),"Sopro deve acontecer no turno seguinte a preparacao.");
+        Assert(EnemyAI.ChooseAbility(battle)==AbilityCatalog.DragonBreath&&EnemyAI.TryTakeTurn(battle,out _),"Sopro deve acontecer no turno seguinte a preparacao.");
         var damage=new[]{107,109,98};
         for(int i=0;i<party.Length;i++) Assert(hp[i]-party[i].Hp==Math.Min(hp[i],damage[i]),"Defender deve reduzir o sopro para todo aliado que escolheu a acao.");
         Assert(!dragon.IsCharging,"Aviso deve terminar depois do sopro.");
         while(battle.CurrentActor.Team==CombatTeam.Party) Defend(battle);
-        Assert(EnemyAI.ChooseAbility(battle)==PrototypeBattleFactory.DragonClaw,"Ciclo deve reiniciar sem sopro surpresa.");
+        Assert(EnemyAI.ChooseAbility(battle)==AbilityCatalog.DragonClaw,"Ciclo deve reiniciar sem sopro surpresa.");
     }
 
     private static BattleSession Win(PartyProgress party)
     {
         foreach(var member in party.Members) member.Progression.AddExperience(CharacterProgression.ExperienceForLevel(5));
         party.RecoverAtInn();
-        var ice=new MateriaInstance("dragon-test-ice",PrototypePartyFactory.IceMateria);
+        var ice=new MateriaInstance("dragon-test-ice",MateriaCatalog.IceMateria);
         Assert(party.TryAddMaterias(ice)&&party.TryEquip(party.Members[1],party.Members[1].Armor,2,ice,out _),"Gelo comprado deve poder ser equipado por Lia.");
-        party.Consumables.TryAdd(PrototypePartyFactory.Ether,8,out _);
-        var battle=PrototypeBattleFactory.CreateDragonEncounter(party);
+        party.Consumables.TryAdd(ItemCatalog.Ether,8,out _);
+        var battle=EncounterCatalog.CreateDragonEncounter(party);
         int turns=0;
         while(battle.Outcome==BattleOutcome.None && turns++<250)
         {
             var actor=battle.CurrentActor;
             if(actor.Team==CombatTeam.Enemy) { Assert(EnemyAI.TryTakeTurn(battle,out _),"IA deve concluir uma batalha completa.");continue; }
             if(Dragon(battle).IsCharging) { Defend(battle);continue; }
-            if(actor.Id=="lia"&&actor.Mp<6&&battle.Inventory.QuantityOf(PrototypePartyFactory.Ether)>0)
-            { Assert(battle.TryUseItem(actor,PrototypePartyFactory.Ether,actor,out _),"Eter sustenta cura e Gelo no confronto prolongado.");continue; }
+            if(actor.Id=="lia"&&actor.Mp<6&&battle.Inventory.QuantityOf(ItemCatalog.Ether)>0)
+            { Assert(battle.TryUseItem(actor,ItemCatalog.Ether,actor,out _),"Eter sustenta cura e Gelo no confronto prolongado.");continue; }
             AbilityDefinition action=actor.Definition.Abilities.Single(a=>a.Id=="attack");
             var heal=actor.Definition.Abilities.FirstOrDefault(a=>a.Effect==AbilityEffect.Heal&&!a.UsesLimit);
             if(heal!=null&&actor.Mp>=heal.MpCost && battle.Combatants.Any(c=>c.Team==CombatTeam.Party&&c.IsAlive&&c.Hp*2<c.Definition.MaxHp)) action=heal;
@@ -77,9 +76,9 @@ internal static class DragonChecks
 
     private static void CheckRewardsAndArmor()
     {
-        var party=PrototypePartyFactory.Create();var progress=new DragonProgress();
-        Assert(!progress.TryComplete(null,party)&&!progress.TryComplete(PrototypeBattleFactory.CreateDragonEncounter(party),party),"Armadura exige vitoria concluida.");
-        var other=new CombatantState("other-enemy",new CombatantDefinition("Outro","Inimigo",1,0,1,0,0,1,PrototypeBattleFactory.Attack),CombatTeam.Enemy);
+        var party=PartySetup.Create();var progress=new DragonProgress();
+        Assert(!progress.TryComplete(null,party)&&!progress.TryComplete(EncounterCatalog.CreateDragonEncounter(party),party),"Armadura exige vitoria concluida.");
+        var other=new CombatantState("other-enemy",new CombatantDefinition("Outro","Inimigo",1,0,1,0,0,1,AbilityCatalog.Attack),CombatTeam.Enemy);
         var wrongBattle=new BattleSession(party.Members[0].CreateCombatant(),other);
         wrongBattle.TryAct(wrongBattle.CurrentActor,wrongBattle.CurrentActor.Definition.Abilities.Single(a=>a.Id=="attack"),other,out _);
         Assert(!progress.TryComplete(wrongBattle,party),"Vencer outro inimigo nao entrega a recompensa do dragao.");
@@ -103,7 +102,7 @@ internal static class DragonChecks
             Assert(party.TryRemoveEquipment(member,EquipmentSlot.Armor,out _)&&!progress.HasEquippedArmor(party),"Remover a armadura retira sua condicao narrativa.");
             Assert(member.CreateCombatant().Definition.Affinities.DamagePercent(DamageElement.Fire)==100,"Resistencia nao pode ficar no personagem depois de desequipar.");
         }
-        var service=PrototypeShopFactory.Create(party,gold);var shop=service.FindShop("equipment-shop");
+        var service=ShopCatalog.Create(party,gold);var shop=service.FindShop("equipment-shop");
         var entry=service.SaleEntries(shop).Single(e=>e.Equipment==armor);
         Assert(!entry.CanSell&&entry.BlockReason.Contains("historia")&&!service.TrySell(shop,entry,1,out _),"Armadura de historia deve ficar protegida na loja.");
         Assert(!party.TryRemoveOwnedEquipment(armor),"Protecao deve existir tambem na regra de inventario.");
@@ -114,20 +113,20 @@ internal static class DragonChecks
 
     private static void CheckDefeatAndRetry()
     {
-        var party=PrototypePartyFactory.Create();var battle=PrototypeBattleFactory.CreateDragonEncounter(party);
+        var party=PartySetup.Create();var battle=EncounterCatalog.CreateDragonEncounter(party);
         bool used=false;int actions=0;
         while(battle.Outcome==BattleOutcome.None&&actions++<250)
         {
             var actor=battle.CurrentActor;
             if(actor.Team==CombatTeam.Enemy) { Assert(EnemyAI.TryTakeTurn(battle,out _),"IA deve continuar ate a derrota.");continue; }
-            if(!used&&battle.GetValidItemTargets(PrototypePartyFactory.Potion).Count>0)
-            { Assert(battle.TryUseItem(actor,PrototypePartyFactory.Potion,battle.GetValidItemTargets(PrototypePartyFactory.Potion)[0],out _),"Uso de pocao deve consumir uma unidade.");used=true; }
+            if(!used&&battle.GetValidItemTargets(ItemCatalog.Potion).Count>0)
+            { Assert(battle.TryUseItem(actor,ItemCatalog.Potion,battle.GetValidItemTargets(ItemCatalog.Potion)[0],out _),"Uso de pocao deve consumir uma unidade.");used=true; }
             else Defend(battle);
         }
         Assert(battle.Outcome==BattleOutcome.Defeat&&!new DragonProgress().TryComplete(battle,party),"Derrota nao entrega armadura nem completa o boss.");
         var charges=party.Members.Select(m=>m.Limit.Charge).ToArray();
-        Assert(charges.Any(c=>c>0)&&used&&party.Consumables.QuantityOf(PrototypePartyFactory.Potion)==1,"Derrota conserva dano no Limit e consumiveis gastos.");
-        var retry=PrototypeBattleFactory.CreateDragonEncounter(party);
+        Assert(charges.Any(c=>c>0)&&used&&party.Consumables.QuantityOf(ItemCatalog.Potion)==1,"Derrota conserva dano no Limit e consumiveis gastos.");
+        var retry=EncounterCatalog.CreateDragonEncounter(party);
         foreach(var member in party.Members)
         {
             var state=retry.Combatants.Single(c=>c.Id==member.Id);

@@ -1,7 +1,7 @@
+using DragonQuest.Presentation.World.Animations;
 using System;
 using UnityEngine;
 using DragonQuest.Progression;
-using DragonQuest.Prototype;
 
 namespace DragonQuest.Interactions
 {

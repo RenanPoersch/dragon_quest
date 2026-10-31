@@ -1,3 +1,8 @@
+using DragonQuest.Presentation.World.Scenery;
+using DragonQuest.Presentation.World.Characters;
+using DragonQuest.Presentation.World;
+using DragonQuest.Exploration.Layouts;
+using DragonQuest.Content;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -6,7 +11,6 @@ using DragonQuest.Equipment;
 using DragonQuest.Exploration;
 using DragonQuest.Interactions;
 using DragonQuest.Progression;
-using DragonQuest.Prototype;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -25,10 +29,10 @@ public static class ThroneRoomValidation
         {
             var root=new GameObject("Sala do trono / validacao");
             UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(root,scene);
-            var travel=new PrototypeTravel(); var roots=new Dictionary<string,GameObject>();
+            var travel=new WorldNavigation(); var roots=new Dictionary<string,GameObject>();
             foreach(var map in travel.Maps)
             { var obj=new GameObject(map.Id);obj.transform.SetParent(root.transform,false);roots.Add(map.Id,obj); }
-            roots[PrototypeTravel.Castle].AddComponent<ThroneRoomPixelScenery>().Build();
+            roots[WorldNavigation.Castle].AddComponent<ThroneRoomPixelScenery>().Build();
             var painting=Resources.Load<Texture2D>("PixelArt/ThroneRoomInterior");
             Assert(painting!=null&&painting.width==1672&&painting.height==941&&painting.filterMode==FilterMode.Point&&painting.mipmapCount==1,"chosen painting is imported without resizing or smoothing");
             var cameraObject=new GameObject("Camera de perspectiva / validacao");cameraObject.transform.SetParent(root.transform,false);
@@ -39,14 +43,14 @@ public static class ThroneRoomValidation
             Transform hero=Person(root.transform,people,"Heroi",ThroneRoomLayout.Spawn,"ArenWalk",3);
             hero.gameObject.AddComponent<Rigidbody2D>();hero.gameObject.AddComponent<BoxCollider2D>().size=new Vector2(.55f,.6f);
             var player=hero.gameObject.AddComponent<PlayerMovement>();player.SendMessage("Awake");
-            Transform king=Person(roots[PrototypeTravel.Castle].transform,people,"Rei Rubro",ThroneRoomLayout.King,"TyrantSeated");
+            Transform king=Person(roots[WorldNavigation.Castle].transform,people,"Rei Rubro",ThroneRoomLayout.King,"TyrantSeated");
             king.gameObject.AddComponent<BoxCollider2D>().size=new Vector2(.55f,.6f);
             king.gameObject.AddComponent<ThroneRoomDepth>().Refresh();
-            Transform spirit=Person(roots[PrototypeTravel.Castle].transform,people,"Espirito",ThroneRoomLayout.Spirit,"SpiritBattle");
+            Transform spirit=Person(roots[WorldNavigation.Castle].transform,people,"Espirito",ThroneRoomLayout.Spirit,"SpiritBattle");
             spirit.gameObject.AddComponent<ThroneRoomDepth>().Refresh();spirit.gameObject.SetActive(false);
             CheckTyrant(root,king,spirit);
-            var locations=root.AddComponent<PrototypeLocations>();locations.Initialize(roots,player,follow,travel,()=>false);
-            locations.TravelTo(PrototypeTravel.City);locations.TravelTo(PrototypeTravel.Castle);
+            var locations=root.AddComponent<WorldLocationController>();locations.Initialize(roots,player,follow,travel,()=>false);
+            locations.TravelTo(WorldNavigation.City);locations.TravelTo(WorldNavigation.Castle);
             Assert(!camera.orthographic&&player.IsFrontalView&&!player.IsSideView,"entering castle activates perspective camera and frontal controls");
             Assert((Vector2)hero.position==ThroneRoomLayout.Spawn&&!travel.TryEnter(hero.position,false,out _),"arrival is safe and does not trigger return door");
             Assert(Vector2.Distance(ThroneRoomLayout.Audience,ThroneRoomLayout.King)<1.6f,"king interaction is reachable from top stair");
@@ -84,10 +88,10 @@ public static class ThroneRoomValidation
                 }
                 finally {camera.targetTexture=null;target.Release();UnityEngine.Object.DestroyImmediate(target);}
             }
-            locations.TravelTo(PrototypeTravel.City);
+            locations.TravelTo(WorldNavigation.City);
             hero.GetComponent<ThroneRoomDepth>().SendMessage("OnDisable");
             Assert(camera.orthographic&&!player.IsFrontalView&&Math.Abs(hero.GetChild(0).localPosition.z+.075f)<.001f,"leaving restores orthographic camera, controls and original sprite elevation");
-            locations.Restore(PrototypeTravel.Castle,new Vector2(8,6));
+            locations.Restore(WorldNavigation.Castle,new Vector2(8,6));
             Assert((Vector2)hero.position==ThroneRoomLayout.Spawn&&!camera.orthographic,"old save inside blocked castle geometry recovers at entrance");
             File.WriteAllLines(Path.Combine(output,"perspective-scale.csv"),report);
             File.WriteAllText(Path.Combine(output,"result.txt"),"THRONE_ROOM_VALIDATION_OK: selected painting, true perspective, monotonic size reduction, stairs, physical footprint, navigation, king dialogue, battle callback, revealed spirit, travel, saves and three display aspects.");
@@ -122,7 +126,7 @@ public static class ThroneRoomValidation
     }
     private static void CheckTyrant(GameObject root,Transform king,Transform spirit)
     {
-        var party=PrototypePartyFactory.Create();int started=0;
+        var party=PartySetup.Create();int started=0;
         var tyrant=king.gameObject.AddComponent<TyrantInteraction>();tyrant.Initialize(()=>party,()=>started++,spirit.gameObject);
         tyrant.SendMessage("Update");Assert(!spirit.gameObject.activeSelf,"spirit stays hidden without draconic armor");
         var armor=new EquipmentLoadout(DragonProgress.Armor);

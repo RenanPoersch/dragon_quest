@@ -1,3 +1,5 @@
+using DragonQuest.Gameplay.Battle;
+using DragonQuest.Exploration.Layouts;
 using System;
 using System.Linq;
 using System.Reflection;
@@ -5,7 +7,6 @@ using DragonQuest.Combat;
 using DragonQuest.Exploration;
 using DragonQuest.Input;
 using DragonQuest.Interactions;
-using DragonQuest.Prototype;
 using UnityEditor;
 using UnityEngine;
 
@@ -16,7 +17,7 @@ public static class BridgeGuardUnityChecks
         .GetMethod(method, BindingFlags.Instance | BindingFlags.NonPublic).Invoke(target, args);
     private static void Check(bool condition, string message)
     { checks++; if (!condition) throw new Exception(message); }
-    private static void ResetBattle(PrototypeBattleController battle, DialogueController dialogue)
+    private static void ResetBattle(BattleController battle, DialogueController dialogue)
     {
         battle.GetType().GetField("<IsActive>k__BackingField", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(battle, false);
         battle.Party.RecoverAtInn(); dialogue.Close();
@@ -35,18 +36,18 @@ public static class BridgeGuardUnityChecks
             var player = fixture.AddComponent<PlayerMovement>(); Call(player, "Awake");
             var dialogue = fixture.AddComponent<DialogueController>();
             var progress = new ExplorationProgress(50);
-            var battle = fixture.AddComponent<PrototypeBattleController>();
+            var battle = fixture.AddComponent<BattleController>();
             battle.Initialize(player, dialogue, progress);
-            battle.SetLocationProvider(() => PrototypeTravel.City);
+            battle.SetLocationProvider(() => WorldNavigation.City);
             var patrol = new GameObject("Bridge patrol"); patrol.transform.SetParent(fixture.transform);
-            patrol.transform.position = PrototypeCityLayout.Guard;
+            patrol.transform.position = CityLayout.Guard;
             var barrier = new GameObject("Bridge blockade"); barrier.transform.SetParent(patrol.transform);
-            barrier.transform.position = PrototypeCityLayout.Bridge;
+            barrier.transform.position = CityLayout.Bridge;
             var blocker = barrier.AddComponent<BoxCollider2D>(); blocker.size = new Vector2(3.7f, .7f);
             var guards = patrol.AddComponent<BattleInteraction>();
             guards.Initialize(player, dialogue, battle, () => progress);
 
-            player.Teleport(PrototypeCityLayout.Spawn); Call(guards, "LateUpdate");
+            player.Teleport(CityLayout.Spawn); Call(guards, "LateUpdate");
             Check(!dialogue.IsOpen && !battle.IsActive, "The patrol leaves the city entrance alone.");
             foreach (float y in new[] {5.4f, 7f, 7.6f, 8.4f, 9f, 10.3f, 11.4f})
             {
@@ -88,7 +89,7 @@ public static class BridgeGuardUnityChecks
             Call(guards, "CompleteEncounter", BattleOutcome.Victory);
             Check(!progress.CastleGuardsDefeated && patrol.activeSelf, "Unrelated victories do not remove the patrol.");
             ResetBattle(battle, dialogue);
-            player.Teleport(PrototypeCityLayout.Bridge); Call(guards, "LateUpdate");
+            player.Teleport(CityLayout.Bridge); Call(guards, "LateUpdate");
             Check(dialogue.IsOpen, "An old save already on the bridge still triggers the guards.");
             dialogue.Advance(); Call(guards, "LateUpdate");
 

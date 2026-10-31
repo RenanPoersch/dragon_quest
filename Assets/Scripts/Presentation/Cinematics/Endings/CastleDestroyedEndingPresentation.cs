@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace DragonQuest.Prototype
+namespace DragonQuest.Presentation.Cinematics.Endings
 {
     public sealed class CastleDestroyedEndingPresentation : IDisposable
     {

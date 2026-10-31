@@ -6,7 +6,6 @@ using DragonQuest.Equipment;
 using DragonQuest.Inventory;
 using DragonQuest.Exploration;
 using DragonQuest.Progression;
-using DragonQuest.Prototype;
 using DragonQuest.Shops;
 using UnityEngine;
 
@@ -69,9 +68,9 @@ namespace DragonQuest.Persistence
                 && (!s.PassageOpen || s.AltarSolved && s.MonolithStep == 3 && s.HasScale), "Progresso de segredos invalido.");
             Require(!data.DragonDefeated || s.PassageOpen, "Dragao derrotado antes de abrir a passagem.");
             var secrets = new AncientSecrets(); secrets.Restore(s.KnowsPoem, s.AltarSolved, s.MonolithStep, s.HasScale, s.PassageOpen);
-            var travel = new PrototypeTravel(secrets);
+            var travel = new WorldNavigation(secrets);
             Require(travel.TryRestore(data.Map, new Vector2(data.X, data.Y)), "Mapa ou posicao de save invalida.");
-            Require(data.Ending == 0 || data.Map == PrototypeTravel.Castle, "Final fora do castelo.");
+            Require(data.Ending == 0 || data.Map == WorldNavigation.Castle, "Final fora do castelo.");
             Require(data.Ending != (int)GameEnding.KingFreed || data.DragonDefeated, "Libertacao sem armadura draconica.");
             CheckArray(data.OpenedChests, 1); var chestIds = new HashSet<string>();
             foreach (string id in data.OpenedChests) Require(id == "praca-primeiro-bau" && chestIds.Add(id), "Bau desconhecido ou repetido.");

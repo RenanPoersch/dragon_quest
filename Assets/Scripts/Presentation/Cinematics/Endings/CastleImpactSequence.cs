@@ -1,6 +1,6 @@
 using System;
 
-namespace DragonQuest.Prototype
+namespace DragonQuest.Presentation.Cinematics.Endings
 {
     // A separate unscaled clock keeps the existing hillside epilogue at its original pace.
     public sealed class CastleImpactSequence

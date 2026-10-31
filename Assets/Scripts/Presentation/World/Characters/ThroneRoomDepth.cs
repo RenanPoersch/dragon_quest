@@ -1,6 +1,7 @@
+using DragonQuest.Exploration.Layouts;
 using UnityEngine;
 
-namespace DragonQuest.Prototype
+namespace DragonQuest.Presentation.World.Characters
 {
     // Eleva apenas a apresentacao (sprite e sombra); colisores e interacoes conservam coordenadas XY.
     // O tamanho aparente vem da perspectiva real da camera, sem mudar a escala fisica do personagem.

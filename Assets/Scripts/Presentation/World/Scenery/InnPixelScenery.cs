@@ -1,6 +1,7 @@
+using DragonQuest.Exploration.Layouts;
 using UnityEngine;
 
-namespace DragonQuest.Prototype
+namespace DragonQuest.Presentation.World.Scenery
 {
     public sealed class InnPixelScenery : PaintedInteriorScenery
     {
@@ -9,6 +10,6 @@ namespace DragonQuest.Prototype
         };
         private static readonly Vector2[] Anchors = new[] { new Vector2(0.735f,0.485f) };
         public void Build(PhysicsMaterial2D physics = null) => BuildPainting("Pousada","InnInterior",
-            PrototypeInnLayout.CameraSize,PrototypeInnLayout.ArtAspect,Foregrounds,Anchors,PrototypeInnLayout.Fixtures,physics);
+            InnLayout.CameraSize,InnLayout.ArtAspect,Foregrounds,Anchors,InnLayout.Fixtures,physics);
     }
 }

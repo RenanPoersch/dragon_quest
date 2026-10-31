@@ -1,12 +1,15 @@
+using DragonQuest.Progression;
+using DragonQuest.Presentation.World.Rendering;
+using DragonQuest.Presentation.World.Characters;
+using DragonQuest.Exploration.Layouts;
 using DragonQuest.Content;
 using System;
 using System.Collections.Generic;
-using DragonQuest.Equipment;
 using DragonQuest.Exploration;
 using DragonQuest.Interactions;
 using UnityEngine;
 
-namespace DragonQuest.Prototype
+namespace DragonQuest.Presentation.Cinematics.Exploration
 {
     // Os companheiros so se separam do heroi durante a audiencia; nao alteram a party salva.
     public sealed class TyrantAudience : MonoBehaviour

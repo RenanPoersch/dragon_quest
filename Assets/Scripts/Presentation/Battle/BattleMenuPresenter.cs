@@ -1,9 +1,10 @@
+using DragonQuest.Presentation.Menus;
+using DragonQuest.Gameplay.Battle;
 using System.Collections.Generic;
 using DragonQuest.Audio;
 using DragonQuest.Combat;
 using DragonQuest.Input;
 using DragonQuest.Inventory;
-using DragonQuest.Prototype;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -15,7 +16,7 @@ namespace DragonQuest.Presentation.Battle
     // Owns command/target selection and input; the arena reads state and forwards target clicks.
     public sealed class BattleMenuPresenter
     {
-        private PrototypeBattleController controller;
+        private BattleController controller;
         private BattleSession observedBattle;
         private CombatantState observedActor;
         private CombatantState preferredEnemyTarget;
@@ -36,7 +37,7 @@ namespace DragonQuest.Presentation.Battle
         public AbilityDefinition SelectedAbility => selected;
         public int TargetIndex => targetIndex;
 
-        public void Initialize(PrototypeBattleController battleController) => controller = battleController;
+        public void Initialize(BattleController battleController) => controller = battleController;
 
         public void ObserveBattle()
         {

@@ -1,7 +1,7 @@
+using DragonQuest.Presentation.Cinematics.Opening;
 using System;
 using UnityEditor;
 using UnityEngine;
-using DragonQuest.Prototype;
 
 public static class NewGameVoyageValidation
 {

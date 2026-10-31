@@ -1,7 +1,8 @@
+using DragonQuest.Presentation.World.Rendering;
 using System;
 using UnityEngine;
 
-namespace DragonQuest.Prototype
+namespace DragonQuest.Presentation.World.Scenery
 {
     // Fortaleza de alvenaria: material proprio, terracos de pedra, ameias e portal em arco.
     public static class CastleFortressArt

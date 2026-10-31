@@ -1,3 +1,5 @@
+using DragonQuest.Progression;
+using DragonQuest.Inventory;
 using System;
 using System.Collections.Generic;
 using DragonQuest.Equipment;

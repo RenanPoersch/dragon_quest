@@ -1,10 +1,15 @@
+using DragonQuest.Presentation.World.Scenery;
+using DragonQuest.Presentation.World.Rendering;
+using DragonQuest.Presentation.World.Characters;
+using DragonQuest.Presentation.Cinematics.Exploration;
+using DragonQuest.Exploration.Layouts;
+using DragonQuest.Content;
 using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using DragonQuest.Exploration;
 using DragonQuest.Interactions;
-using DragonQuest.Prototype;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -39,7 +44,7 @@ public static class TyrantAudienceValidation
             scenery.PixelPerson(hero.transform, "ArenWalk", animated: true); hero.AddComponent<ThroneRoomDepth>();
             var king = Child(root.transform, "Rei Rubro"); king.transform.position = ThroneRoomLayout.King;
             scenery.PixelPerson(king.transform, "TyrantSeated"); king.AddComponent<ThroneRoomDepth>().Refresh();
-            var party = PrototypePartyFactory.Create();
+            var party = PartySetup.Create();
             var audience = Child(root.transform, "Party diante do Rei Rubro").AddComponent<TyrantAudience>();
             audience.Initialize(movement, () => party, scenery);
             var dialogue = root.AddComponent<DialogueController>(); int battles = 0;

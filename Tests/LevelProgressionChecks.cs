@@ -1,3 +1,4 @@
+using DragonQuest.Content;
 using System;
 using System.Linq;
 using DragonQuest.Combat;
@@ -5,7 +6,6 @@ using DragonQuest.Equipment;
 using DragonQuest.Exploration;
 using DragonQuest.Inventory;
 using DragonQuest.Progression;
-using DragonQuest.Prototype;
 
 internal static class LevelProgressionChecks
 {
@@ -20,7 +20,7 @@ internal static class LevelProgressionChecks
         ElementalAffinities affinities = null, int speed = 20, params AbilityDefinition[] abilities)
         => new CombatantDefinition("Test", "Test", 1000, 100, attack, 4, attack, speed,
             affinities ?? ElementalAffinities.Neutral, gold, xp, chance,
-            abilities.Length == 0 ? new[] { PrototypeBattleFactory.Attack } : abilities);
+            abilities.Length == 0 ? new[] { AbilityCatalog.Attack } : abilities);
     private static void Levels()
     {
         var progress = new CharacterProgression();
@@ -41,7 +41,7 @@ internal static class LevelProgressionChecks
             progress.Restore(CharacterProgression.ExperienceForLevel(level));
             Check(progress.Level == level && progress.ExperienceInLevel == 0, "Each saved XP threshold must restore its level.");
         }
-        var party = PrototypePartyFactory.Create();
+        var party = PartySetup.Create();
         int[,] growth = { { 10, 2, 1, 1, 1 }, { 7, 5, 1, 1, 2 }, { 14, 2, 1, 1, 1 } };
         for (int i = 0; i < 3; i++)
         {
@@ -63,11 +63,11 @@ internal static class LevelProgressionChecks
         }
         var aren = party.Members[0];
         int beforeMateria = aren.Attack;
-        party.TryEquip(aren, aren.Weapon, 0, party.Materias.First(m => m.Definition == PrototypePartyFactory.HeavyMateria), out _);
+        party.TryEquip(aren, aren.Weapon, 0, party.Materias.First(m => m.Definition == MateriaCatalog.HeavyMateria), out _);
         Check(aren.Attack == beforeMateria * 120 / 100, "Materia bonuses apply after class growth and equipment affinity.");
         party.TryRemoveEquipment(aren, EquipmentSlot.Weapon, out _);
         Check(aren.Attack == aren.BaseStats.Attack + 2 && aren.Level == 3, "Removing equipment cannot remove levels or innate growth.");
-        Check(PrototypePartyFactory.Create().Members.All(m => m.Level == 1 && m.Experience == 0), "New journeys reset each hero independently.");
+        Check(PartySetup.Create().Members.All(m => m.Level == 1 && m.Experience == 0), "New journeys reset each hero independently.");
     }
     private static void Criticals()
     {
@@ -99,7 +99,7 @@ internal static class LevelProgressionChecks
                 "Affinity, critical, defending and shield combine in the documented order.");
         }
         int rolls = 0;
-        var area = PrototypeBattleFactory.Cleave;
+        var area = AbilityCatalog.Cleave;
         var attacker = new CombatantState("hero", Stats(20, .05, abilities: new[] { area }), CombatTeam.Party);
         var first = new CombatantState("first", Stats(1, speed: 1), CombatTeam.Enemy);
         var second = new CombatantState("second", Stats(1, speed: 1), CombatTeam.Enemy);
@@ -109,11 +109,11 @@ internal static class LevelProgressionChecks
         var giant = new CombatantState("hero", Stats(int.MaxValue, 1), CombatTeam.Party);
         var target = new CombatantState("enemy", Stats(1, speed: 1), CombatTeam.Enemy);
         Check(new BattleSession(() => 0, null, new ItemInventory(), giant, target)
-            .TryAct(giant, PrototypeBattleFactory.Attack, target, out _) && target.Hp == 0, "Critical damage saturates without overflow.");
+            .TryAct(giant, AbilityCatalog.Attack, target, out _) && target.Hp == 0, "Critical damage saturates without overflow.");
         var zero = new CombatantState("hero", Stats(20), CombatTeam.Party);
         target = new CombatantState("enemy", Stats(1, speed: 1), CombatTeam.Enemy);
         Check(new BattleSession(() => throw new Exception("Zero chance rolled"), null, new ItemInventory(), zero, target)
-            .TryAct(zero, PrototypeBattleFactory.Attack, target, out _) && !target.VitalChanges[0].IsCritical, "Zero chance never rolls.");
+            .TryAct(zero, AbilityCatalog.Attack, target, out _) && !target.VitalChanges[0].IsCritical, "Zero chance never rolls.");
         Reject(() => Stats(1, double.NaN)); Reject(() => Stats(1, double.PositiveInfinity));
         Reject(() => Stats(1, -.01)); Reject(() => Stats(1, 1.01)); Reject(() => Stats(1, xp: -1));
         Check(CombatantDefinition.CriticalDamageMultiplier == 1.25, "Critical multiplier is fixed at 1.25.");
@@ -123,7 +123,7 @@ internal static class LevelProgressionChecks
         var actors = party.Members.Select(m => m.CreateCombatant()).ToList();
         for (int i = 0; i < experience.Length; i++)
             actors.Add(new CombatantState("enemy-" + i, new CombatantDefinition("Enemy " + i, "", 1, 0, 1, 0, 0, 0,
-                ElementalAffinities.Neutral, 1, experience[i], 0, PrototypeBattleFactory.Attack), CombatTeam.Enemy));
+                ElementalAffinities.Neutral, 1, experience[i], 0, AbilityCatalog.Attack), CombatTeam.Enemy));
         return new BattleSession(() => 1, null, party.Consumables, actors.ToArray());
     }
     private static void Win(BattleSession battle)
@@ -138,7 +138,7 @@ internal static class LevelProgressionChecks
     }
     private static void Rewards()
     {
-        var party = PrototypePartyFactory.Create(); var gold = new ExplorationProgress();
+        var party = PartySetup.Create(); var gold = new ExplorationProgress();
         var rewards = new BattleRewards(gold, party); var battle = RewardBattle(party, 30, 60);
         Check(!rewards.TryClaim(battle, out _) && party.Members.All(m => m.Experience == 0), "Live battles never grant XP.");
         Win(battle);
@@ -157,35 +157,35 @@ internal static class LevelProgressionChecks
         Check(rewards.TryClaim(battle, out _) && party.Members.All(m => m.Experience == 150), "Pending gold succeeds later without more XP.");
         battle = RewardBattle(party, int.MaxValue, int.MaxValue); Win(battle);
         Check(rewards.TryClaimExperience(battle, out _) && party.Members.All(m => m.Level == 99), "Combined rewards use wide sums and cap XP.");
-        party = PrototypePartyFactory.Create(); rewards = new BattleRewards(new ExplorationProgress(), party);
+        party = PartySetup.Create(); rewards = new BattleRewards(new ExplorationProgress(), party);
         battle = new BattleSession(() => 1, null, party.Consumables, party.Members[0].CreateCombatant(),
             party.Members[1].CreateCombatant(), party.Members[2].CreateCombatant(),
             new CombatantState("doom", Stats(1000, xp: 100), CombatTeam.Enemy));
         battle.Combatants[0].TakeDamage(1000); battle.Combatants[1].TakeDamage(1000);
         battle.Combatants[2].TakeDamage(battle.Combatants[2].Hp - 1);
-        Check(battle.TryAct(battle.CurrentActor, PrototypeBattleFactory.Attack, battle.Combatants[2], out _)
+        Check(battle.TryAct(battle.CurrentActor, AbilityCatalog.Attack, battle.Combatants[2], out _)
             && battle.Outcome == BattleOutcome.Defeat && !rewards.TryClaimExperience(battle, out _)
             && party.Members.All(m => m.Experience == 0), "Defeat gives no XP.");
         var armor = new EquipmentLoadout(DragonProgress.Armor); party.TryAddEquipments(armor);
         party.TryEquipEquipment(party.Members[2], armor, out _);
-        battle = PrototypeCastleBattleFactory.Create(party);
+        battle = EncounterCatalog.CreateCastle(party);
         var spirit = battle.Combatants.First(c => c.Id == CastleBattleRules.SpiritId); spirit.TakeDamage(spirit.Hp - 1);
         Check(battle.TryAct(battle.CurrentActor, battle.CurrentActor.Definition.Abilities.First(a => a.Id == "attack"), spirit, out _)
             && battle.Outcome == BattleOutcome.Completed && rewards.TryClaimExperience(battle, out _)
             && party.Members.Select(m => m.Experience).SequenceEqual(new[] { 167, 167, 166 }), "Freeing the king awards only defeated spirit XP, preserving final-story gold rules.");
-        party = PrototypePartyFactory.Create(); battle = PrototypeCastleBattleFactory.Create(party);
+        party = PartySetup.Create(); battle = EncounterCatalog.CreateCastle(party);
         var tyrant = battle.Combatants.First(c => c.Id == CastleBattleRules.TyrantId); tyrant.TakeDamage(tyrant.Hp - 1);
         Check(battle.TryAct(battle.CurrentActor, battle.CurrentActor.Definition.Abilities.First(a => a.Id == "attack"), tyrant, out _)
             && !new BattleRewards(new ExplorationProgress(), party).TryClaimExperience(battle, out _)
             && party.Members.All(m => m.Experience == 0), "Hero possession is not a victory XP award.");
         foreach (var type in new[] { RandomEncounterType.Pirate, RandomEncounterType.Golem, RandomEncounterType.Wolf })
         {
-            var encounter = PrototypeBattleFactory.CreateRegionEncounter(party, type, 3);
+            var encounter = EncounterCatalog.CreateRegionEncounter(party, type, 3);
             Check(encounter.Combatants.Where(c => c.Team == CombatTeam.Enemy).All(c => c.Definition.ExperienceReward
                 == (type == RandomEncounterType.Pirate ? 30 : type == RandomEncounterType.Golem ? 50 : 20)), "Region enemy types have individual XP values.");
         }
-        Check(PrototypeBattleFactory.CreateDragonEncounter(party).Combatants.Last().Definition.ExperienceReward == 300, "Dragon has boss XP.");
-        var patrol = PrototypeBattleFactory.CreateEncounter(party);
+        Check(EncounterCatalog.CreateDragonEncounter(party).Combatants.Last().Definition.ExperienceReward == 300, "Dragon has boss XP.");
+        var patrol = EncounterCatalog.CreateEncounter(party);
         Check(patrol.Combatants.Single(c => c.Id == "guard").Definition.ExperienceReward == 60
             && patrol.Combatants.Single(c => c.Id == "soldier").Definition.ExperienceReward == 25, "Patrol XP comes from individual enemies.");
     }

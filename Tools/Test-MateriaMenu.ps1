@@ -17,13 +17,12 @@ $materiaArguments += Get-ChildItem -LiteralPath $materiaRefDir.FullName -Filter 
 foreach ($materiaFolder in @('Combat','Content', 'Equipment', 'Inventory', 'Shops', 'Progression')) {
     $materiaArguments += Get-ChildItem -LiteralPath (Join-Path $materiaRoot "Assets/Scripts/$materiaFolder") -Filter '*.cs' | ForEach-Object { $_.FullName }
 }
-foreach ($materiaSource in @('Assets/Scripts/Exploration/ExplorationProgress.cs', 'Assets/Scripts/Prototype/PrototypeBattleFactory.cs',
-    'Assets/Scripts/Prototype/PrototypeCastleBattleFactory.cs', 'Assets/Scripts/Prototype/PrototypePartyFactory.cs',
-    'Assets/Scripts/Prototype/PrototypeShopFactory.cs', 'Tests/MateriaMenuChecks.cs')) {
+foreach ($materiaSource in @('Assets/Scripts/Exploration/ExplorationProgress.cs', 'Assets/Editor/Tools/Fixtures/PartyFixture.cs','Assets/Scripts/Presentation/Battle/HeroKnockoutPresentation.cs','Assets/Scripts/Presentation/Battle/DefeatedEnemyPresentation.cs','Assets/Scripts/Presentation/Battle/UltimateSpriteTimeline.cs',
+    'Tests/MateriaMenuChecks.cs')) {
     $materiaArguments += Join-Path $materiaRoot $materiaSource
 }
 $materiaResponse = Join-Path $WorkDirectory 'MateriaMenuChecks.rsp'
-$materiaArguments | ForEach-Object { '"' + $_ + '"' } | Set-Content -LiteralPath $materiaResponse -Encoding utf8
+$materiaArguments | Select-Object -Unique | ForEach-Object { '"' + $_ + '"' } | Set-Content -LiteralPath $materiaResponse -Encoding utf8
 & $materiaDotnet $materiaCsc.FullName "@$materiaResponse"
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 @{runtimeOptions=@{tfm=$materiaRefDir.Name;framework=@{name='Microsoft.NETCore.App';version=$materiaRuntime.Name}}} |

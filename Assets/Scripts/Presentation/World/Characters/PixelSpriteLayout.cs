@@ -1,7 +1,8 @@
+using DragonQuest.Presentation.World.Rendering;
 using System;
 using UnityEngine;
 
-namespace DragonQuest.Exploration
+namespace DragonQuest.Presentation.World.Characters
 {
     // As primeiras quatro direcoes usam o atlas cardinal; as demais, o atlas diagonal.
     public enum PixelDirection { Down, Left, Right, Up, DownLeft, DownRight, UpLeft, UpRight }

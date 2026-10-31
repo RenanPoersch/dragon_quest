@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace DragonQuest.Prototype
+namespace DragonQuest.Presentation.Cinematics.Endings
 {
     // Move the crop in texture space. IMGUI only sees a stationary screen rectangle,
     // so even a pan slower than one screen pixel per frame keeps moving.

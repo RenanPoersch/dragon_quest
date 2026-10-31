@@ -1,9 +1,10 @@
+using DragonQuest.Content;
 using System;
 using System.Collections.Generic;
 using DragonQuest.Combat;
 using UnityEngine;
 
-namespace DragonQuest.Prototype
+namespace DragonQuest.Presentation.Battle.Animations
 {
     public sealed class SummonAnimation
     {
@@ -35,8 +36,8 @@ namespace DragonQuest.Prototype
             ? "BahamutAttack" : Resource(ability) == "PhoenixSummon" ? "PhoenixAttack" : null;
         // This selects visual impact art only; the battle's damage element is untouched.
         public static AbilityDefinition ImpactEffect(AbilityDefinition ability) => Resource(ability) == "PhoenixSummon"
-            ? PrototypePartyFactory.Fire : Resource(ability) == "TitanSummon" ? PrototypePartyFactory.Earth
-            : Resource(ability) == "BahamutSummon" ? PrototypePartyFactory.Chaos : null;
+            ? AbilityCatalog.Fire : Resource(ability) == "TitanSummon" ? AbilityCatalog.Earth
+            : Resource(ability) == "BahamutSummon" ? AbilityCatalog.Chaos : null;
         public bool Draw(AbilityDefinition ability, float elapsed)
         {
             string resource = Resource(ability);

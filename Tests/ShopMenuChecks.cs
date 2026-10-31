@@ -1,7 +1,7 @@
+using DragonQuest.Content;
 using System;
 using DragonQuest.Equipment;
 using DragonQuest.Exploration;
-using DragonQuest.Prototype;
 using DragonQuest.Shops;
 
 internal static class ShopMenuChecks
@@ -10,7 +10,7 @@ internal static class ShopMenuChecks
     private static void Check(bool value, string message) { checks++; if (!value) throw new Exception(message); }
     private static ShopMenuSession Open(string id, int gold = 1000)
     {
-        var service = PrototypeShopFactory.Create(PrototypePartyFactory.Create(), new ExplorationProgress(gold));
+        var service = ShopCatalog.Create(PartySetup.Create(), new ExplorationProgress(gold));
         var menu = new ShopMenuSession(); menu.Open(service, service.FindShop(id)); return menu;
     }
     private static void BuyAndSellItems()
@@ -31,7 +31,7 @@ internal static class ShopMenuChecks
         menu.Browse(true); Check(menu.Maximum == 5, "Sale maximum uses owned stack.");
         menu.BeginQuantity(); menu.SetMaximum();
         Check(menu.Total == 25 && menu.RemainingGold == 30 && menu.Confirm(), "Multiple-unit sale uses half the catalog price.");
-        Check(menu.Service.Party.Consumables.QuantityOf(PrototypePartyFactory.Potion) == 0 && menu.Selected.Name == "Antidoto", "Selling the last stack safely selects a remaining row.");
+        Check(menu.Service.Party.Consumables.QuantityOf(ItemCatalog.Potion) == 0 && menu.Selected.Name == "Antidoto", "Selling the last stack safely selects a remaining row.");
         Check(menu.Service.FindShop("item-shop").Products[0].Stock == 9, "Selling never replenishes stock.");
         Check(!menu.Back() && menu.Phase == ShopMenuPhase.Actions && menu.Back(), "Cancel returns through stages to closing.");
     }
@@ -61,11 +61,11 @@ internal static class ShopMenuChecks
         }
         menu.SelectFilter(ShopEquipmentFilter.Weapons); menu.Browse(true);
         int initial = -1;
-        for (int i = 0; i < menu.Entries.Count; i++) if (menu.Entries[i].Equipment == PrototypePartyFactory.InitialWeapon) { initial = i; break; }
+        for (int i = 0; i < menu.Entries.Count; i++) if (menu.Entries[i].Equipment == EquipmentCatalog.InitialWeapon) { initial = i; break; }
         menu.Select(initial);
         Check(menu.Owned == 3 && menu.Equipped == 3 && !menu.BeginQuantity(), "Equipped copies are counted and protected from selling.");
         for (int i = 0; i < menu.Entries.Count; i++)
-            if (menu.Entries[i].Equipment == PrototypePartyFactory.IronSword)
+            if (menu.Entries[i].Equipment == EquipmentCatalog.IronSword)
             { menu.Select(i); break; }
         Check(menu.BeginQuantity() && menu.Confirm(), "An unequipped weapon can be sold.");
         menu.SelectFilter(ShopEquipmentFilter.Accessories);
@@ -81,10 +81,10 @@ internal static class ShopMenuChecks
         Check(preview.Defense == aren.Defense && preview.Magic == aren.Magic
             && preview.MaxHp == aren.MaxHp && preview.MaxMp == aren.MaxMp, "Changing only weapon attack preserves the other stats.");
         Check(aren.Weapon == equipped && equipped.Sockets[0] == force, "Shop comparison never moves equipment or materia instances.");
-        var staff = new EquipmentLoadout(PrototypePartyFactory.RunicStaff, "comparison-staff");
-        var hp = new MateriaInstance("comparison-hp", PrototypePartyFactory.HpMateria);
-        var mp = new MateriaInstance("comparison-mp", PrototypePartyFactory.MpMateria);
-        var defense = new MateriaInstance("comparison-defense", PrototypePartyFactory.DefenseMateria);
+        var staff = new EquipmentLoadout(EquipmentCatalog.RunicStaff, "comparison-staff");
+        var hp = new MateriaInstance("comparison-hp", MateriaCatalog.HpMateria);
+        var mp = new MateriaInstance("comparison-mp", MateriaCatalog.MpMateria);
+        var defense = new MateriaInstance("comparison-defense", MateriaCatalog.DefenseMateria);
         Check(party.TryAddEquipments(staff) && party.TryEquipEquipment(aren, staff, out _)
             && party.TryAddMaterias(hp, mp, defense), "Prepare a four-socket weapon for a smaller-weapon comparison.");
         Check(party.TryEquip(aren, staff, 0, hp, out _) && party.TryEquip(aren, staff, 1, mp, out _)
@@ -104,7 +104,7 @@ internal static class ShopMenuChecks
         menu.Move(1); Check(menu.Index == 0, "Navigation wraps back to the first row.");
         Check(menu.BeginQuantity() && menu.Confirm() && menu.Owned == 1 && menu.Equipped == 0, "Materia purchase adds a free copy.");
         menu.Browse(true);
-        for (int i = 0; i < menu.Entries.Count; i++) if (menu.Entries[i].Materia == PrototypePartyFactory.FireMateria) { menu.Select(i); break; }
+        for (int i = 0; i < menu.Entries.Count; i++) if (menu.Entries[i].Materia == MateriaCatalog.FireMateria) { menu.Select(i); break; }
         Check(menu.BeginQuantity() && menu.Confirm(), "Materia can be sold from the matching shop.");
         menu = Open("item-shop"); menu.Browse(false); menu.BeginQuantity();
         var product = menu.Selected.Product;
@@ -120,10 +120,10 @@ internal static class ShopMenuChecks
         menu.Service.Progress.SetInfiniteGold(true);
         Check(menu.BeginQuantity() && menu.RemainingGold == int.MaxValue && menu.Confirm(), "Infinite gold remains compatible with sales and balance previews.");
         menu = Open("item-shop"); menu.Browse(false);
-        menu.Service.Party.Consumables.TryAdd(PrototypePartyFactory.Potion, int.MaxValue - 2, out _);
+        menu.Service.Party.Consumables.TryAdd(ItemCatalog.Potion, int.MaxValue - 2, out _);
         Check(menu.Maximum == 0 && !menu.BeginQuantity() && menu.Message == "Inventario no limite.", "Purchases respect stack capacity before confirmation.");
         var empty = new ShopInventory("empty", "Equipamentos", ShopCategory.Equipment);
-        var service = new ShopService(PrototypePartyFactory.Create(), new ExplorationProgress(), empty);
+        var service = new ShopService(PartySetup.Create(), new ExplorationProgress(), empty);
         menu = new ShopMenuSession(); menu.Open(service, empty); menu.Browse(false); menu.Move(1); menu.ChangeFilter(-1);
         Check(menu.Selected == null && !menu.BeginQuantity() && menu.Owned == 0 && menu.Equipped == 0, "Empty filters remain navigable and safe.");
     }

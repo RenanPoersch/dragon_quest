@@ -1,6 +1,7 @@
+using DragonQuest.Presentation.World.Rendering;
+using DragonQuest.Presentation.World.Characters;
 using System;
 using DragonQuest.Exploration;
-using DragonQuest.Prototype;
 using UnityEngine;
 
 internal static class PixelArtChecks

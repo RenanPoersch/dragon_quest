@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using DragonQuest.Progression;
 using UnityEngine;
 
-namespace DragonQuest.Prototype
+namespace DragonQuest.Presentation.World.Animations
 {
     public sealed class DragonLairAnimation : MonoBehaviour
     {

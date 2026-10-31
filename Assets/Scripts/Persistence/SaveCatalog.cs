@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using DragonQuest.Equipment;
 using DragonQuest.Inventory;
-using DragonQuest.Progression;
 
 namespace DragonQuest.Persistence
 {

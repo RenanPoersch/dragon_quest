@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using DragonQuest.Equipment;
 using UnityEngine;
 
-namespace DragonQuest.Prototype
+namespace DragonQuest.Presentation.Menus
 {
     public static class MateriaSocketArt
     {

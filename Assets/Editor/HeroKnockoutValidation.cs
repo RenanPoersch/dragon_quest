@@ -1,7 +1,7 @@
+using DragonQuest.Presentation.Battle.Sprites;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using DragonQuest.Prototype;
 using UnityEditor;
 using UnityEngine;
 

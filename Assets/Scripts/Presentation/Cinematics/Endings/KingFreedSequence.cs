@@ -1,6 +1,6 @@
 using System;
 
-namespace DragonQuest.Prototype
+namespace DragonQuest.Presentation.Cinematics.Endings
 {
     // Speech and prosperity share one unscaled clock; neither text is lost in the dissolve.
     public sealed class KingFreedSequence

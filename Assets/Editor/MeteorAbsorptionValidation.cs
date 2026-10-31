@@ -1,7 +1,8 @@
+using DragonQuest.Presentation.Battle.Animations;
+using DragonQuest.Presentation.Battle;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using DragonQuest.Prototype;
 using UnityEditor;
 using UnityEngine;
 

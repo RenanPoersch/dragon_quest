@@ -1,6 +1,8 @@
+using DragonQuest.Presentation.World.Rendering;
+using DragonQuest.Exploration;
 using UnityEngine;
 
-namespace DragonQuest.Exploration
+namespace DragonQuest.Presentation.World.Characters
 {
     public sealed class PixelCharacter : MonoBehaviour
     {

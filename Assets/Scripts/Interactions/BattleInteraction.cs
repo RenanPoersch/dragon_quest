@@ -1,10 +1,11 @@
+using DragonQuest.Gameplay.Battle;
+using DragonQuest.Exploration.Layouts;
 using DragonQuest.Content;
 using System;
 using UnityEngine;
 using DragonQuest.Combat;
 using DragonQuest.Exploration;
 using DragonQuest.Input;
-using DragonQuest.Prototype;
 
 namespace DragonQuest.Interactions
 {
@@ -12,13 +13,13 @@ namespace DragonQuest.Interactions
     {
         private PlayerMovement player;
         private DialogueController dialogue;
-        private PrototypeBattleController battle;
+        private BattleController battle;
         private Func<ExplorationProgress> getProgress;
         private BattleSession encounter;
         private bool challenged;
 
         public void Initialize(PlayerMovement hero, DialogueController conversation,
-            PrototypeBattleController controller, Func<ExplorationProgress> progress)
+            BattleController controller, Func<ExplorationProgress> progress)
         {
             if (battle != null) battle.EncounterCompleted -= CompleteEncounter;
             player = hero; dialogue = conversation; battle = controller; getProgress = progress;
@@ -45,9 +46,9 @@ namespace DragonQuest.Interactions
             }
             if (battle.IsBusy || dialogue.IsOpen || !GameInput.IsFocused) return;
             Vector2 position = player.transform.position;
-            if (Mathf.Abs(position.x - PrototypeCityLayout.Bridge.x) <= 2.35f
-                && position.y >= PrototypeCityLayout.Bridge.y - 1f
-                && position.y <= PrototypeCityLayout.CastleDoor.y + .5f)
+            if (Mathf.Abs(position.x - CityLayout.Bridge.x) <= 2.35f
+                && position.y >= CityLayout.Bridge.y - 1f
+                && position.y <= CityLayout.CastleDoor.y + .5f)
                 Challenge();
         }
 

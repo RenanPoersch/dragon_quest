@@ -1,3 +1,4 @@
+using DragonQuest.Presentation.Common;
 using System;
 using System.Collections.Generic;
 using DragonQuest.Interactions;
@@ -5,7 +6,7 @@ using UnityEngine.InputSystem;
 using DragonQuest.Input;
 using UnityEngine;
 
-namespace DragonQuest.Prototype
+namespace DragonQuest.Presentation.Dialogue
 {
     // Every conversation, including choices and narrated discoveries, uses this layout.
     public sealed class DialoguePresentation : IDisposable
@@ -238,10 +239,10 @@ namespace DragonQuest.Prototype
         private void EnsureStyles()
         {
             if (title != null) return;
-            title = PrototypeTypography.Style(GUI.skin.label, 28, true);
-            body = PrototypeTypography.Style(GUI.skin.label, 24);
-            choice = PrototypeTypography.Style(GUI.skin.label, 22);
-            notice = PrototypeTypography.Style(GUI.skin.label, 28);
+            title = GameTypography.Style(GUI.skin.label, 28, true);
+            body = GameTypography.Style(GUI.skin.label, 24);
+            choice = GameTypography.Style(GUI.skin.label, 22);
+            notice = GameTypography.Style(GUI.skin.label, 28);
             notice.alignment = TextAnchor.MiddleCenter;
             foreach (GUIStyle style in new[] { title, body, choice, notice })
             {

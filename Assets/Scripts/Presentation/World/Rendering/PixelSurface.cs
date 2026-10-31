@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace DragonQuest.Prototype
+namespace DragonQuest.Presentation.World.Rendering
 {
     public enum PixelSurface { None = -1, Grass, Dirt, Paving, Sand, Wood, Wall, Roof, Basalt, Leaves, Water, Lava, Fabric, Auto }
     public static class PixelSurfaces

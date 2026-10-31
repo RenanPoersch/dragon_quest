@@ -1,5 +1,5 @@
+using DragonQuest.Progression;
 using System;
-using DragonQuest.Equipment;
 using DragonQuest.Exploration;
 using DragonQuest.Interactions;
 using UnityEngine;

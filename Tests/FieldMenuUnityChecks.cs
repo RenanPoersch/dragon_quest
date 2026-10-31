@@ -1,16 +1,18 @@
+using DragonQuest.Presentation.World;
+using DragonQuest.Gameplay.Shops;
+using DragonQuest.Gameplay.Saving;
+using DragonQuest.Gameplay.Battle;
 using DragonQuest.Presentation.Menus;
 using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using DragonQuest.Equipment;
 using DragonQuest.Exploration;
 using DragonQuest.Input;
 using DragonQuest.Interactions;
 using DragonQuest.Inventory;
 using DragonQuest.Persistence;
 using DragonQuest.Progression;
-using DragonQuest.Prototype;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -53,16 +55,16 @@ public static class FieldMenuUnityChecks
             var player = fixture.AddComponent<PlayerMovement>(); Call(player, "Awake");
             var dialogue = fixture.AddComponent<DialogueController>(); var progress = new ExplorationProgress(50);
             var secrets = new AncientSecrets(); var dragon = new DragonProgress();
-            var battle = fixture.AddComponent<PrototypeBattleController>();
+            var battle = fixture.AddComponent<BattleController>();
             battle.Initialize(player, dialogue, progress, ancientSecrets: secrets);
-            var shop = fixture.AddComponent<PrototypeShopController>(); shop.Initialize(player, dialogue, battle, progress);
-            var locations = fixture.AddComponent<PrototypeLocations>(); var travel = new PrototypeTravel(); Put(locations, "navigation", travel);
-            var saves = fixture.AddComponent<PrototypeSaveController>();
+            var shop = fixture.AddComponent<ShopController>(); shop.Initialize(player, dialogue, battle, progress);
+            var locations = fixture.AddComponent<WorldLocationController>(); var travel = new WorldNavigation(); Put(locations, "navigation", travel);
+            var saves = fixture.AddComponent<SaveController>();
             var store = new SaveStore(Path.Combine(Path.GetTempPath(), "DragonQuestFieldMenuSlots-" + Guid.NewGuid().ToString("N")));
             Put(saves, "store", store); Put(saves, "battle", battle); Put(saves, "shops", shop); Put(saves, "locations", locations);
             Put(saves, "player", player); Put(saves, "dialogue", dialogue); Put(saves, "progress", progress);
             Put(saves, "secrets", secrets); Put(saves, "dragon", dragon); Property(saves, "IsMenuVisible", false);
-            var inventoryHost = fixture.AddComponent<PrototypeMateriaHud>(); inventoryHost.Initialize(battle, secrets); var inventory = inventoryHost.Presenter;
+            var inventoryHost = fixture.AddComponent<InventoryHud>(); inventoryHost.Initialize(battle, secrets); var inventory = inventoryHost.Presenter;
             Check(InventoryMenuPresentation.Commands.Count(c => c == "Materia") == 1
                 && InventoryMenuPresentation.Commands.Count(c => c == "Magic") == 1
                 && InventoryMenuPresentation.Commands.Count(c => c == "Save") == 1
@@ -103,7 +105,7 @@ public static class FieldMenuUnityChecks
             Call(saves, "SelectSlot", 1);
             Check((int)Field(saves, "overwriteSlot").GetValue(saves) == 1 && saves.IsMenuVisible, "An occupied slot requires existing overwrite confirmation.");
             Call(saves, "CancelOverwrite"); Call(saves, "Back");
-            travel.TryTravel(PrototypeTravel.City, out _);
+            travel.TryTravel(WorldNavigation.City, out _);
             Property(battle, "IsMenuOpen", true); Put(inventory, "page", -1);
             Check(!saves.CanSaveManually && !(bool)Call(inventory, "CommandEnabled", saveCommand), "City disables Save.");
             Call(inventory, "OpenCommand", saveCommand);
@@ -114,7 +116,7 @@ public static class FieldMenuUnityChecks
                 && saves.CanReturnToTitle, "Gamepad navigation skips disabled Save and reaches Sair even in the city.");
             State(new GamepadState().WithButton(GamepadButton.DpadDown)); Call(inventory, "Update");
             Check((int)Field(inventory, "selectedMenu").GetValue(inventory) == 0, "Navigation wraps after Sair.");
-            travel.TryTravel(PrototypeTravel.Inn, out _);
+            travel.TryTravel(WorldNavigation.Inn, out _);
             Check(saves.CanSaveManually, "The inn enables Save.");
             dialogue.Open("Check", "Busy"); Check(!saves.CanSaveManually && !saves.OpenManualSaveMenu(), "Dialogue blocks Save and its opening API."); dialogue.Close();
             Property(battle, "IsActive", true); Check(!saves.CanSaveManually && !saves.CanReturnToTitle, "Combat blocks journey menu actions."); Property(battle, "IsActive", false);

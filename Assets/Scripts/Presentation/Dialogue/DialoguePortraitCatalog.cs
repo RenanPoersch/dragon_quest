@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace DragonQuest.Prototype
+namespace DragonQuest.Presentation.Dialogue
 {
     public static class DialoguePortraitCatalog
     {

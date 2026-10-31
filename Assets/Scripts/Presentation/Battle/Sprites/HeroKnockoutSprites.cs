@@ -1,7 +1,8 @@
+using DragonQuest.Presentation.Battle.Animations;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace DragonQuest.Prototype
+namespace DragonQuest.Presentation.Battle.Sprites
 {
     public sealed class HeroKnockoutSprites
     {

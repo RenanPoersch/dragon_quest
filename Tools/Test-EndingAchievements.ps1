@@ -22,7 +22,7 @@ $achievementArguments += Join-Path $achievementRoot 'Assets/Scripts/Exploration/
 $achievementArguments += Join-Path $achievementRoot 'Assets/Scripts/Persistence/EndingAchievementStore.cs'
 $achievementArguments += Join-Path $achievementRoot 'Tests/EndingAchievementChecks.cs'
 $achievementResponse = Join-Path $WorkDirectory 'EndingAchievementChecks.rsp'
-$achievementArguments | ForEach-Object { '"' + $_ + '"' } | Set-Content -LiteralPath $achievementResponse -Encoding utf8
+$achievementArguments | Select-Object -Unique | ForEach-Object { '"' + $_ + '"' } | Set-Content -LiteralPath $achievementResponse -Encoding utf8
 & $achievementDotnet $achievementCsc.FullName "@$achievementResponse"
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 @{runtimeOptions=@{tfm=$achievementRefs.Name;framework=@{name='Microsoft.NETCore.App';version=$achievementRuntime.Name}}} |
@@ -33,7 +33,7 @@ if (-not $UnityIntegration) { exit 0 }
 
 # Validate imported artwork in isolation; the user's open Editor keeps running.
 $achievementProject = Join-Path $WorkDirectory 'Unity'
-foreach ($achievementFolder in @('Assets/Editor', 'Assets/Plugins', 'Assets/Resources/PixelArt', 'Assets/Scripts/Prototype', 'Packages', 'ProjectSettings')) {
+foreach ($achievementFolder in @('Assets/Editor', 'Assets/Plugins', 'Assets/Resources/PixelArt', 'Assets/Scripts', 'Packages', 'ProjectSettings')) {
     New-Item -ItemType Directory -Path (Join-Path $achievementProject $achievementFolder) -Force | Out-Null
 }
 $achievementRuntimeOutput = Join-Path $WorkDirectory 'Runtime'
@@ -42,14 +42,16 @@ if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 Copy-Item -LiteralPath (Join-Path $achievementRuntimeOutput 'DragonQuest.Scripts.dll') -Destination (Join-Path $achievementProject 'Assets/Plugins') -Force
 Copy-Item -LiteralPath (Join-Path $achievementRoot 'Assets/Editor/EndingAchievementValidation.cs') -Destination (Join-Path $achievementProject 'Assets/Editor') -Force
 Copy-Item -LiteralPath (Join-Path $achievementRoot 'ProjectSettings/ProjectVersion.txt') -Destination (Join-Path $achievementProject 'ProjectSettings') -Force
-foreach ($achievementName in @('PrototypeSaveController', 'PrototypeEndingController')) {
+foreach ($achievementSource in @('Assets/Scripts/Presentation/Cinematics/Endings/EndingController.cs',
+    'Assets/Scripts/Presentation/Menus/FrontEndPresentation.cs')) {
     # Read by the validator, but excluded from compilation because they are already in the DLL.
-    $achievementSourceTarget = Join-Path $achievementProject "Assets/Scripts/Prototype/$achievementName.cs"
-    Copy-Item -LiteralPath (Join-Path $achievementRoot "Assets/Scripts/Prototype/$achievementName.cs") -Destination $achievementSourceTarget -Force
+    $achievementSourceTarget = Join-Path $achievementProject $achievementSource
+    New-Item -ItemType Directory -Path (Split-Path -Parent $achievementSourceTarget) -Force | Out-Null
+    Copy-Item -LiteralPath (Join-Path $achievementRoot $achievementSource) -Destination $achievementSourceTarget -Force
 }
 # The source copies are textual evidence only, excluded by their own assembly definition.
 '{"name":"AchievementSourceEvidence","includePlatforms":["Editor"],"defineConstraints":["ACHIEVEMENT_EVIDENCE_ONLY"]}' |
-    Set-Content -LiteralPath (Join-Path $achievementProject 'Assets/Scripts/Prototype/Evidence.asmdef') -Encoding utf8
+    Set-Content -LiteralPath (Join-Path $achievementProject 'Assets/Scripts/Evidence.asmdef') -Encoding utf8
 Copy-Item -LiteralPath (Join-Path $achievementRoot 'Assets/Resources/Fonts') -Destination (Join-Path $achievementProject 'Assets/Resources') -Recurse -Force
 Copy-Item -LiteralPath (Join-Path $achievementRoot 'Assets/Resources/PixelArt/Achievements') -Destination (Join-Path $achievementProject 'Assets/Resources/PixelArt') -Recurse -Force
 foreach ($achievementFile in @('DragonScale.png', 'DragonScale.png.meta')) {

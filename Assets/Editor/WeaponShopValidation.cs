@@ -1,10 +1,14 @@
+using DragonQuest.Presentation.World.Scenery;
+using DragonQuest.Presentation.World.Rendering;
+using DragonQuest.Presentation.World.Characters;
+using DragonQuest.Presentation.World;
+using DragonQuest.Exploration.Layouts;
+using DragonQuest.Content;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using DragonQuest.Exploration;
-using DragonQuest.Interactions;
-using DragonQuest.Prototype;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -121,19 +125,19 @@ public static class WeaponShopValidation
     }
     private static void CheckTravel()
     {
-        var travel = new PrototypeTravel(); Vector2 arrival = default;
-        Assert(travel.TryTravel(PrototypeTravel.City,out _) && travel.TryTravel(WeaponShopLayout.MapId,out arrival) && arrival == WeaponShopLayout.Spawn,"city door leads to new weapon shop entrance");
+        var travel = new WorldNavigation(); Vector2 arrival = default;
+        Assert(travel.TryTravel(WorldNavigation.City,out _) && travel.TryTravel(WeaponShopLayout.MapId,out arrival) && arrival == WeaponShopLayout.Spawn,"city door leads to new weapon shop entrance");
         Assert(!travel.TryEnter(arrival,false,out _),"arrival does not immediately exit");
         Assert(travel.TryRestore(WeaponShopLayout.MapId,new Vector2(0,-1.89f)),"legacy shop saves still load");
         Assert(!WeaponShopLayout.Bounds.Contains(new Vector2(9,0)) && travel.TryRestore(WeaponShopLayout.MapId,new Vector2(9,0)) && WeaponShopLayout.SafeSavedPosition(new Vector2(9,0)) == WeaponShopLayout.Spawn,"saves from the former wide painting recover at compact entrance");
-        Assert(travel.TryEnter(WeaponShopLayout.Exit,false,out _) && travel.Current.Id == PrototypeTravel.City,"painted threshold returns to city");
+        Assert(travel.TryEnter(WeaponShopLayout.Exit,false,out _) && travel.Current.Id == WorldNavigation.City,"painted threshold returns to city");
     }
     private static void CheckTrade()
     {
-        var service = PrototypeShopFactory.Create(PrototypePartyFactory.Create(),new ExplorationProgress(1000));
+        var service = ShopCatalog.Create(PartySetup.Create(),new ExplorationProgress(1000));
         var shop = service.FindShop(WeaponShopLayout.MapId); var sword = shop.Products.First(p=>p.Id=="iron-sword");
         Assert(service.TryBuy(shop,sword,1,out _) && service.Progress.Gold == 940 && sword.Stock == 1,"existing purchase charges gold, updates stock and grants weapon");
-        var sale = service.SaleEntries(shop).First(e=>e.Equipment != null && e.Equipment.Definition == PrototypePartyFactory.IronSword);
+        var sale = service.SaleEntries(shop).First(e=>e.Equipment != null && e.Equipment.Definition == EquipmentCatalog.IronSword);
         Assert(service.TrySell(shop,sale,1,out _) && service.Progress.Gold == 970,"existing weapon sale remains functional");
     }
     private static Transform Person(Transform root,PixelSpriteLibrary people,string name,Vector2 ground,string atlas,int frame)

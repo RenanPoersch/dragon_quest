@@ -17,13 +17,12 @@ $shopArguments += Get-ChildItem -LiteralPath $shopRefDir.FullName -Filter '*.dll
 foreach ($shopFolder in @('Combat','Content', 'Equipment', 'Inventory', 'Shops', 'Progression')) {
     $shopArguments += Get-ChildItem -LiteralPath (Join-Path $shopRoot "Assets/Scripts/$shopFolder") -Filter '*.cs' | ForEach-Object { $_.FullName }
 }
-foreach ($shopSource in @('Assets/Scripts/Exploration/ExplorationProgress.cs', 'Assets/Scripts/Prototype/PrototypeBattleFactory.cs',
-    'Assets/Scripts/Prototype/PrototypeCastleBattleFactory.cs', 'Assets/Scripts/Prototype/PrototypePartyFactory.cs',
-    'Assets/Scripts/Prototype/PrototypeShopFactory.cs', 'Tests/ShopMenuChecks.cs', 'Tests/ShopChecks.cs')) {
+foreach ($shopSource in @('Assets/Scripts/Exploration/ExplorationProgress.cs', 'Assets/Editor/Tools/Fixtures/PartyFixture.cs','Assets/Scripts/Presentation/Battle/HeroKnockoutPresentation.cs','Assets/Scripts/Presentation/Battle/DefeatedEnemyPresentation.cs','Assets/Scripts/Presentation/Battle/UltimateSpriteTimeline.cs',
+    'Tests/ShopMenuChecks.cs', 'Tests/ShopChecks.cs')) {
     $shopArguments += Join-Path $shopRoot $shopSource
 }
 $shopResponse = Join-Path $WorkDirectory 'ShopMenuChecks.rsp'
-$shopArguments | ForEach-Object { '"' + $_ + '"' } | Set-Content -LiteralPath $shopResponse -Encoding utf8
+$shopArguments | Select-Object -Unique | ForEach-Object { '"' + $_ + '"' } | Set-Content -LiteralPath $shopResponse -Encoding utf8
 & $shopDotnet $shopCsc.FullName "@$shopResponse"
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 @{runtimeOptions=@{tfm=$shopRefDir.Name;framework=@{name='Microsoft.NETCore.App';version=$shopRuntime.Name}}} |

@@ -1,7 +1,9 @@
+using DragonQuest.Presentation.Battle.Animations;
+using DragonQuest.Presentation.Battle;
+using DragonQuest.Content;
 using System;
 using System.Collections.Generic;
 using DragonQuest.Combat;
-using DragonQuest.Prototype;
 using DragonQuest.Progression;
 using DragonQuest.Exploration;
 
@@ -74,8 +76,8 @@ internal static class RandomEncounterChecks
         foreach (RandomEncounterType type in new[] { RandomEncounterType.Pirate, RandomEncounterType.Golem, RandomEncounterType.Wolf })
             for (int count = 1; count <= 3; count++)
             {
-                var party = PrototypePartyFactory.Create();
-                BattleSession battle = PrototypeBattleFactory.CreateRegionEncounter(party, type, count);
+                var party = PartySetup.Create();
+                BattleSession battle = EncounterCatalog.CreateRegionEncounter(party, type, count);
                 int enemies = 0;
                 var ids = new HashSet<string>();
                 foreach (CombatantState fighter in battle.Combatants)
@@ -84,7 +86,7 @@ internal static class RandomEncounterChecks
                     if (fighter.Team != CombatTeam.Enemy) continue;
                     enemies++;
                     Check(BattleAnimationCatalog.Idle(fighter.Id) != null, "Missing enemy idle animation");
-                    Check(BattleAnimationCatalog.Resource(fighter.Id, PrototypeBattleFactory.Attack) != null, "Missing enemy attack");
+                    Check(BattleAnimationCatalog.Resource(fighter.Id, AbilityCatalog.Attack) != null, "Missing enemy attack");
                 }
                 Check(enemies == count, "Wrong group size");
                 Check(object.ReferenceEquals(battle.Inventory, party.Consumables), "Inventory not shared");
@@ -110,9 +112,9 @@ internal static class RandomEncounterChecks
                     Check(!rewards.TryClaim(battle, out _), "Duplicate reward");
                 }
             }
-        try { PrototypeBattleFactory.CreateRegionEncounter(PrototypePartyFactory.Create(), RandomEncounterType.None, 1); throw new Exception("Invalid type allowed"); }
+        try { EncounterCatalog.CreateRegionEncounter(PartySetup.Create(), RandomEncounterType.None, 1); throw new Exception("Invalid type allowed"); }
         catch (ArgumentOutOfRangeException) { checks++; }
-        try { PrototypeBattleFactory.CreateRegionEncounter(PrototypePartyFactory.Create(), RandomEncounterType.Wolf, 4); throw new Exception("Invalid group allowed"); }
+        try { EncounterCatalog.CreateRegionEncounter(PartySetup.Create(), RandomEncounterType.Wolf, 4); throw new Exception("Invalid group allowed"); }
         catch (ArgumentOutOfRangeException) { checks++; }
     }
     private static void Animations()
@@ -121,7 +123,7 @@ internal static class RandomEncounterChecks
         Check(BattleAnimationCatalog.Resource("tyrant", CastleBattleRules.RoyalHeavy) == "TyrantRoyalHeavy", "Heavy registration");
         Check(BattleAnimationCatalog.Resource("tyrant", CastleBattleRules.PrepareMeteor) == "TyrantMeteorCharge", "Charge registration");
         Check(BattleAnimationCatalog.Duration("tyrant", CastleBattleRules.Meteor) == CastleMeteorPresentation.Duration, "Meteor duration follows its presentation timing");
-        Check(BattleAnimationCatalog.Resource("evil-spirit", PrototypeCastleBattleFactory.DrainLife) == "SpiritBattle", "Spirit cast registration");
+        Check(BattleAnimationCatalog.Resource("evil-spirit", AbilityCatalog.DrainLife) == "SpiritBattle", "Spirit cast registration");
         foreach (string id in new[] { "aren", "lia", "bram", "guard", "soldier", "pirate-1", "golem-2", "wolf-3", "tyrant", "evil-spirit" })
             Check(BattleAnimationCatalog.Idle(id) != null, "Missing fighter " + id);
         Check(BattleAnimationCatalog.Resource("aren", CastleBattleRules.RoyalStrike) == null, "Enemy action incorrectly mapped to hero");

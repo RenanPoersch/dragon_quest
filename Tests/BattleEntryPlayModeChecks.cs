@@ -1,10 +1,12 @@
+using DragonQuest.Presentation.Battle;
+using DragonQuest.Gameplay.Battle;
+using DragonQuest.Content;
 using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using DragonQuest.Exploration;
 using DragonQuest.Interactions;
-using DragonQuest.Prototype;
 using UnityEditor;
 using UnityEngine;
 
@@ -13,7 +15,7 @@ public static class BattleEntryPlayModeChecks
 {
     private const string Pending = "DragonQuest.BattleEntryPlayModeChecks.Pending";
     private const BindingFlags Private = BindingFlags.Instance | BindingFlags.NonPublic;
-    private static PrototypeBattleController battle;
+    private static BattleController battle;
     private static BattleEntryTransition transition;
     private static Color32[] initial;
     private static float deadline, coveredAt = -1;
@@ -56,7 +58,7 @@ public static class BattleEntryPlayModeChecks
             warm.Release(); UnityEngine.Object.Destroy(warm);
             var hero = root.AddComponent<PlayerMovement>();
             var dialogue = root.AddComponent<DialogueController>();
-            battle = root.AddComponent<PrototypeBattleController>();
+            battle = root.AddComponent<BattleController>();
             battle.Initialize(hero, dialogue, new ExplorationProgress());
             battle.StartBattle();
             transition = battle.EntryTransition;
@@ -97,7 +99,7 @@ public static class BattleEntryPlayModeChecks
                 for (int i = 0; i < initial.Length; i++) delta += Math.Abs(initial[i].r - winding[i].r)
                     + Math.Abs(initial[i].g - winding[i].g) + Math.Abs(initial[i].b - winding[i].b);
                 Check(delta / (double)(initial.Length * 3) > 10, "Update visibly rotates the captured map while timeScale is zero");
-                Check(!battle.TryPlayerAction(PrototypeBattleFactory.Attack, battle.Session.Combatants.Last()), "commands stay blocked during the real animation");
+                Check(!battle.TryPlayerAction(AbilityCatalog.Attack, battle.Session.Combatants.Last()), "commands stay blocked during the real animation");
                 sampled = true;
             }
             if (transition.Sequence.ShowsBattle && !ready)

@@ -1,9 +1,9 @@
+using DragonQuest.Presentation.World.Rendering;
 using System;
 using System.Collections.Generic;
-using DragonQuest.Exploration;
 using UnityEngine;
 
-namespace DragonQuest.Prototype
+namespace DragonQuest.Exploration.Layouts
 {
     // Planta compacta 4:3 com a mesma metragem das lojas de itens e materias. UV tem origem no alto.
     public static class WeaponShopLayout

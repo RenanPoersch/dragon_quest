@@ -1,20 +1,21 @@
+using DragonQuest.Content;
+using DragonQuest.Authoring;
 using System;
 using System.Linq;
 using DragonQuest.Combat;
 using DragonQuest.Equipment;
 using DragonQuest.Exploration;
 using DragonQuest.Persistence;
-using DragonQuest.Prototype;
 
 public static class MateriaRevisionChecks
 {
     static void Check(bool value, string message) { if (!value) throw new Exception(message); }
     public static void Main()
     {
-        var party = PrototypePartyFactory.CreateTestParty();
+        var party = PartyFixture.Create();
         var hero = party.Members[0];
-        var magic = party.Materias.First(m => m.Definition == PrototypePartyFactory.FireMateria);
-        var infuse = party.Materias.First(m => m.Definition == PrototypePartyFactory.InfuseMateria);
+        var magic = party.Materias.First(m => m.Definition == MateriaCatalog.FireMateria);
+        var infuse = party.Materias.First(m => m.Definition == MateriaCatalog.InfuseMateria);
         foreach (var equipment in new[] { hero.Weapon, hero.Armor }) equipment.ClearMaterias();
         hero.Weapon.Set(0, magic); hero.Weapon.Set(1, infuse);
         var commands = MateriaResolver.Resolve(hero);
@@ -26,17 +27,17 @@ public static class MateriaRevisionChecks
         Check(MateriaResolver.Resolve(hero)[0].Element == DamageElement.None, "Armor does not infuse attack.");
         hero.Armor.ClearMaterias();
         int baseAttack = hero.Attack, baseDefense = hero.Defense;
-        hero.Weapon.Set(0, new MateriaInstance("str", PrototypePartyFactory.HeavyMateria));
-        hero.Weapon.Set(1, new MateriaInstance("def", PrototypePartyFactory.DefenseMateria));
-        hero.Armor.Set(0, new MateriaInstance("hp", PrototypePartyFactory.HpMateria));
-        hero.Armor.Set(1, new MateriaInstance("mp", PrototypePartyFactory.MpMateria));
+        hero.Weapon.Set(0, new MateriaInstance("str", MateriaCatalog.HeavyMateria));
+        hero.Weapon.Set(1, new MateriaInstance("def", MateriaCatalog.DefenseMateria));
+        hero.Armor.Set(0, new MateriaInstance("hp", MateriaCatalog.HpMateria));
+        hero.Armor.Set(1, new MateriaInstance("mp", MateriaCatalog.MpMateria));
         Check(hero.Attack == baseAttack * 120 / 100 && hero.Defense == baseDefense * 120 / 100, "Stat bonuses.");
         Check(hero.MaxHp == 120 && hero.MaxMp == 33 && hero.CreateCombatant().Definition.MaxHp == 120, "HP/MP bonuses reach combat.");
         Check(!MateriaResolver.Resolve(hero).Any(a => a.SourceAbilityId == "heavy-strike"), "Strength grants no command.");
-        var added = new[] { PrototypePartyFactory.EarthMateria, PrototypePartyFactory.ChaosMateria,
-            PrototypePartyFactory.BahamutMateria, PrototypePartyFactory.TitanMateria,
-            PrototypePartyFactory.DefenseMateria, PrototypePartyFactory.HpMateria, PrototypePartyFactory.MpMateria };
-        var shop = PrototypeShopFactory.Create(party, new ExplorationProgress()).FindShop("materia-shop");
+        var added = new[] { MateriaCatalog.EarthMateria, MateriaCatalog.ChaosMateria,
+            MateriaCatalog.BahamutMateria, MateriaCatalog.TitanMateria,
+            MateriaCatalog.DefenseMateria, MateriaCatalog.HpMateria, MateriaCatalog.MpMateria };
+        var shop = ShopCatalog.Create(party, new ExplorationProgress()).FindShop("materia-shop");
         foreach (var definition in added)
         {
             Check(SaveCatalog.Materia(definition.Id) == definition, "Save catalog: " + definition.Id);

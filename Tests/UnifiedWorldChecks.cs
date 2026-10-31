@@ -1,7 +1,8 @@
+using DragonQuest.Presentation.World.Scenery;
+using DragonQuest.Presentation.World.Rendering;
+using DragonQuest.Exploration.Layouts;
 using System;
 using System.Linq;
-using DragonQuest.Exploration;
-using DragonQuest.Prototype;
 using UnityEngine;
 
 internal static class UnifiedWorldChecks
@@ -14,16 +15,16 @@ internal static class UnifiedWorldChecks
         Check(ground.Vertices.Count==6 && ground.Triangles.Count==6,"Mapa inteiro sobre um unico plano de dois triangulos");
         Check(ground.Vertices.All(p=>p.z==0),"Sem volumes ou faixas costeiras 3D");
         Check(ground.Colors.All(c=>c==Color.white),"Imagem sem tintas independentes por bioma");
-        var bounds=PrototypeWorldLayout.GroundPaintingBounds;
+        var bounds=WorldLayout.GroundPaintingBounds;
         for(int i=0;i<ground.Vertices.Count;i++)
         {
             var p=ground.Vertices[i]; var uv=ground.UVs[i];
             Check(Math.Abs(uv.x-(p.x-bounds.xMin)/bounds.width)<.0001f,"UV horizontal de imagem unica");
             Check(Math.Abs(uv.y-(p.y-bounds.yMin)/bounds.height)<.0001f,"UV vertical de imagem unica");
         }
-        foreach(var p in new[]{PrototypeWorldLayout.Spawn,PrototypeWorldLayout.Castle,PrototypeWorldLayout.WestForest,PrototypeWorldLayout.EastForest,PrototypeWorldLayout.Ruins,PrototypeWorldLayout.Volcano,PrototypeWorldLayout.Trail})
+        foreach(var p in new[]{WorldLayout.Spawn,WorldLayout.Castle,WorldLayout.WestForest,WorldLayout.EastForest,WorldLayout.Ruins,WorldLayout.Volcano,WorldLayout.Trail})
         {
-            Check(PrototypeWorldLayout.IsLand(p),"POIs, trilha e nascimento permanecem em terra");
+            Check(WorldLayout.IsLand(p),"POIs, trilha e nascimento permanecem em terra");
             Check(bounds.Contains(p),"POIs dentro da imagem pintada");
         }
         var rear=ObliqueProjection.GroundDirection(new Vector2(.22f,.9f));

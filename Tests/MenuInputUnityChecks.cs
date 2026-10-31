@@ -1,9 +1,16 @@
+using DragonQuest.Progression;
+using DragonQuest.Presentation.Menus;
+using DragonQuest.Persistence;
+using DragonQuest.Inventory;
+using DragonQuest.Gameplay.Saving;
+using DragonQuest.Gameplay.Battle;
+using DragonQuest.Equipment;
+using DragonQuest.Content;
 using System;
 using System.Reflection;
 using DragonQuest.Input;
 using DragonQuest.Exploration;
 using DragonQuest.Interactions;
-using DragonQuest.Prototype;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Controls;
@@ -57,9 +64,9 @@ public static class MenuInputUnityChecks
         var fixture = new GameObject("Menu input regression checks");
         var movement = fixture.AddComponent<PlayerMovement>(); Call(movement, "Awake");
         var dialogue = fixture.AddComponent<DialogueController>();
-        var saves = fixture.AddComponent<PrototypeSaveController>();
-        var cheats = fixture.AddComponent<PrototypeCheatMenu>();
-        var battle = fixture.AddComponent<PrototypeBattleController>();
+        var saves = fixture.AddComponent<SaveController>();
+        var cheats = fixture.AddComponent<CheatMenu>();
+        var battle = fixture.AddComponent<BattleController>();
         var progress = new ExplorationProgress(50);
         battle.Initialize(movement, dialogue, progress);
         cheats.Initialize(movement, battle, saves, progress);
@@ -74,7 +81,7 @@ public static class MenuInputUnityChecks
         Field(frontEnd, "menuHasDrawn").SetValue(frontEnd, true);
         Field(frontEnd, "menuFadeInElapsed").SetValue(frontEnd, 2f);
         Call(saves, "RefreshSlots");
-        var optionEnabled = typeof(PrototypeSaveController).GetMethod("OptionEnabled", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+        var optionEnabled = typeof(SaveController).GetMethod("OptionEnabled", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
         Check(!(bool)optionEnabled.Invoke(saves, new object[] { 1 }), "Continue is disabled when all three slots are empty.");
         foreach (var key in new[] { Key.DownArrow, Key.UpArrow, Key.RightArrow, Key.LeftArrow, Key.S, Key.W })
         {
@@ -102,12 +109,12 @@ public static class MenuInputUnityChecks
         Check(!(bool)optionEnabled.Invoke(saves, new object[] { 1 })
             && (int)Field(saves, "selectedOption").GetValue(saves) == 0,
             "An unreadable save cannot enable Continue, and refreshing restores the New game selection.");
-        var party = PrototypePartyFactory.Create();
+        var party = PartySetup.Create();
         var savedProgress = new ExplorationProgress(50);
-        var savedShops = PrototypeShopFactory.Create(party, savedProgress);
+        var savedShops = ShopCatalog.Create(party, savedProgress);
         var snapshot = DragonQuest.Persistence.JourneySnapshot.Capture(party, savedProgress,
             new DragonQuest.Progression.AncientSecrets(), new DragonQuest.Progression.DragonProgress(),
-            savedShops, PrototypeTravel.World, 0, -7);
+            savedShops, WorldNavigation.World, 0, -7);
         Check(saveStore.TryWrite(2, snapshot, out _) && saveStore.TryWrite(2, snapshot, out _), "Create a valid save with a recovery backup in slot 2.");
         System.IO.File.WriteAllText(saveStore.SlotPath(2), "corrupt primary");
         Call(saves, "RefreshSlots");
@@ -140,7 +147,7 @@ public static class MenuInputUnityChecks
         Call(saves, "RefreshSlots");
         Check(!(bool)optionEnabled.Invoke(saves, new object[] { 1 }), "Removing the last loadable save disables Continue again.");
         Field(saves, "<IsMenuVisible>k__BackingField").SetValue(saves, false);
-        var inventoryHost = fixture.AddComponent<PrototypeMateriaHud>();
+        var inventoryHost = fixture.AddComponent<InventoryHud>();
         inventoryHost.Initialize(battle, new DragonQuest.Progression.AncientSecrets());
         var inventory = inventoryHost.Presenter;
         State(new GamepadState().WithButton(GamepadButton.North)); Call(battle, "Update");

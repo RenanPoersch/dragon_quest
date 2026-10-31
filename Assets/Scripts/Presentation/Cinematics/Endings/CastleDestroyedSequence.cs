@@ -1,6 +1,6 @@
 using System;
 
-namespace DragonQuest.Prototype
+namespace DragonQuest.Presentation.Cinematics.Endings
 {
     // The seated figure shares the hill's movement; only the scenery, scroll and fade advance.
     public sealed class CastleDestroyedSequence

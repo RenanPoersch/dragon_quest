@@ -1,6 +1,7 @@
+using DragonQuest.Presentation.Dialogue;
+using DragonQuest.Interactions;
 using System;
 using System.IO;
-using DragonQuest.Prototype;
 using UnityEditor;
 using UnityEngine;
 

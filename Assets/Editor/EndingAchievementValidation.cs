@@ -1,9 +1,12 @@
+using DragonQuest.Presentation.Menus;
+using DragonQuest.Presentation.Common;
+using DragonQuest.Presentation.Cinematics.Opening;
+using DragonQuest.Gameplay.Achievements;
 using System;
 using System.IO;
 using System.Reflection;
 using DragonQuest.Persistence;
 using DragonQuest.Progression;
-using DragonQuest.Prototype;
 using UnityEditor;
 using UnityEngine;
 
@@ -56,8 +59,8 @@ public static class EndingAchievementValidation
             Assert(width + 8 < label.width, "Achievement name fits its column.");
         }
         // All return paths use the same completion hook, including the fallback narrative.
-        string endingSource = File.ReadAllText("Assets/Scripts/Prototype/PrototypeEndingController.cs");
-        Assert(endingSource.Contains("PrototypeAchievements.Complete(ending);"), "Endings save the profile before returning.");
+        string endingSource = File.ReadAllText("Assets/Scripts/Presentation/Cinematics/Endings/EndingController.cs");
+        Assert(endingSource.Contains("AchievementService.Complete(ending);"), "Endings save the profile before returning.");
         Assert(endingSource.Split(new[] { "SceneManager.LoadScene(" }, StringSplitOptions.None).Length == 2,
             "There is one shared scene reload path.");
         string titleSource = File.ReadAllText("Assets/Scripts/Presentation/Menus/FrontEndPresentation.cs");
@@ -69,9 +72,9 @@ public static class EndingAchievementValidation
     private static void ValidateNotifications()
     {
         const BindingFlags hidden = BindingFlags.Static | BindingFlags.NonPublic;
-        var storeField = typeof(PrototypeAchievements).GetField("store", hidden);
-        var pendingField = typeof(PrototypeAchievements).GetField("pendingNotification", hidden);
-        var reset = typeof(PrototypeAchievements).GetMethod("ResetSession", hidden);
+        var storeField = typeof(AchievementService).GetField("store", hidden);
+        var pendingField = typeof(AchievementService).GetField("pendingNotification", hidden);
+        var reset = typeof(AchievementService).GetMethod("ResetSession", hidden);
         object originalStore = storeField.GetValue(null), originalPending = pendingField.GetValue(null);
         const string legacyMarker = "DragonQuest.EndingAchievements.NotifiedMask.v1";
         bool hadLegacyMarker = PlayerPrefs.HasKey(legacyMarker);
@@ -91,59 +94,59 @@ public static class EndingAchievementValidation
             {
                 profileDirectory = Path.Combine(directory, string.Join("", order));
                 restart();
-                Assert(PrototypeAchievements.Progress.Counter == "0/3", "Each order starts with an empty profile.");
+                Assert(AchievementService.Progress.Counter == "0/3", "Each order starts with an empty profile.");
                 for (int i = 0; i < order.Length; i++)
                 {
                     var achievement = EndingAchievements.All[order[i]];
-                    PrototypeAchievements.Complete(achievement.Ending);
-                    var notification = PrototypeAchievements.TakeNotification();
+                    AchievementService.Complete(achievement.Ending);
+                    var notification = AchievementService.TakeNotification();
                     Assert(notification == achievement, "The completed ending keeps its own name and icon in every order.");
                     string expectedCounter = (i + 1) + "/3";
                     var presentation = new EndingAchievementPresentation();
-                    presentation.Show(notification, PrototypeAchievements.Progress.Counter);
+                    presentation.Show(notification, AchievementService.Progress.Counter);
                     Assert((string)counterField.GetValue(presentation) == expectedCounter,
                         "The notification shows 1/3, 2/3 and 3/3 in completion order.");
-                    Assert(PrototypeAchievements.TakeNotification() == null, "Each completion announces once.");
+                    Assert(AchievementService.TakeNotification() == null, "Each completion announces once.");
                     restart();
-                    Assert(PrototypeAchievements.Progress.Counter == expectedCounter
-                        && PrototypeAchievements.TakeNotification() == null, "Restart preserves the count without replaying notices.");
+                    Assert(AchievementService.Progress.Counter == expectedCounter
+                        && AchievementService.TakeNotification() == null, "Restart preserves the count without replaying notices.");
                     for (int completed = 0; completed <= i; completed++)
                     {
                         var previous = EndingAchievements.All[order[completed]];
-                        PrototypeAchievements.Complete(previous.Ending);
-                        Assert(PrototypeAchievements.TakeNotification() == previous
-                            && PrototypeAchievements.Progress.Counter == expectedCounter, "Repeating any ending keeps the unique count.");
+                        AchievementService.Complete(previous.Ending);
+                        Assert(AchievementService.TakeNotification() == previous
+                            && AchievementService.Progress.Counter == expectedCounter, "Repeating any ending keeps the unique count.");
                     }
                 }
             }
             profileDirectory = directory;
             PlayerPrefs.DeleteKey(legacyMarker);
             restart();
-            Assert(PrototypeAchievements.TakeNotification() == null, "A fresh startup has no announcement.");
-            PrototypeAchievements.Complete(GameEnding.KingFreed);
-            Assert(PrototypeAchievements.TakeNotification() == EndingAchievements.All[0], "A newly unlocked endgame announces its achievement.");
-            Assert(PrototypeAchievements.TakeNotification() == null, "A new achievement cannot announce twice.");
+            Assert(AchievementService.TakeNotification() == null, "A fresh startup has no announcement.");
+            AchievementService.Complete(GameEnding.KingFreed);
+            Assert(AchievementService.TakeNotification() == EndingAchievements.All[0], "A newly unlocked endgame announces its achievement.");
+            Assert(AchievementService.TakeNotification() == null, "A new achievement cannot announce twice.");
             var saved = new EndingAchievementStore(directory);
             foreach (var achievement in EndingAchievements.All)
                 Assert(saved.TryUnlock(achievement.Ending, out _), "Prepare previously completed endings.");
             restart();
-            Assert(PrototypeAchievements.Progress.Count == EndingAchievements.Total, "Saved achievements remain unlocked.");
-            Assert(PrototypeAchievements.TakeNotification() == null, "Saved endings never announce themselves on startup.");
+            Assert(AchievementService.Progress.Count == EndingAchievements.Total, "Saved achievements remain unlocked.");
+            Assert(AchievementService.TakeNotification() == null, "Saved endings never announce themselves on startup.");
             foreach (var achievement in EndingAchievements.All)
             {
-                PrototypeAchievements.Complete(achievement.Ending);
-                Assert(PrototypeAchievements.TakeNotification() == achievement, "A completed endgame announces its matching achievement.");
-                Assert(PrototypeAchievements.TakeNotification() == null, "The announcement is consumed once, even when interrupted.");
+                AchievementService.Complete(achievement.Ending);
+                Assert(AchievementService.TakeNotification() == achievement, "A completed endgame announces its matching achievement.");
+                Assert(AchievementService.TakeNotification() == null, "The announcement is consumed once, even when interrupted.");
                 restart();
-                Assert(PrototypeAchievements.TakeNotification() == null, "Restarting or returning to the title cannot replay old announcements.");
+                Assert(AchievementService.TakeNotification() == null, "Restarting or returning to the title cannot replay old announcements.");
             }
-            PrototypeAchievements.Complete(GameEnding.None);
-            PrototypeAchievements.Complete((GameEnding)99);
-            Assert(PrototypeAchievements.TakeNotification() == null, "No announcement for defeat or an unknown ending.");
-            PrototypeAchievements.Complete(GameEnding.KingFreed);
+            AchievementService.Complete(GameEnding.None);
+            AchievementService.Complete((GameEnding)99);
+            Assert(AchievementService.TakeNotification() == null, "No announcement for defeat or an unknown ending.");
+            AchievementService.Complete(GameEnding.KingFreed);
             restart();
-            Assert(PrototypeAchievements.TakeNotification() == null, "Announcements do not survive a new play session.");
-            Assert(PrototypeAchievements.Progress.Count == EndingAchievements.Total, "Notification consumption preserves saved progress.");
+            Assert(AchievementService.TakeNotification() == null, "Announcements do not survive a new play session.");
+            Assert(AchievementService.Progress.Count == EndingAchievements.Total, "Notification consumption preserves saved progress.");
             Debug.Log("ENDING_ACHIEVEMENT_NOTIFICATIONS_OK: six completion orders, displayed counters, repeat endings, startup, saved endings, one-shot consumption, restart and invalid endings.");
         }
         finally
@@ -188,7 +191,7 @@ public sealed class EndingAchievementPreview : EditorWindow
         GUI.DrawTexture(new Rect(0, 0, 1280, 720), Texture2D.whiteTexture); GUI.color = Color.white;
         var sunset = Resources.Load<Texture2D>("PixelArt/Intro/Sunset");
         if (sunset != null) GUI.DrawTexture(new Rect(0, 0, 1280, 720), sunset, ScaleMode.ScaleToFit, true);
-        var style = PrototypeTypography.Style(GUI.skin.label, 56, true); style.alignment = TextAnchor.MiddleCenter;
+        var style = GameTypography.Style(GUI.skin.label, 56, true); style.alignment = TextAnchor.MiddleCenter;
         style.normal.textColor = Color.white;
         GUI.Label(new Rect(0, 100, 1280, 96), IntroSequence.Title, style);
         if (count > 0) presentation.Show(EndingAchievements.All[count - 1], progress.Counter);

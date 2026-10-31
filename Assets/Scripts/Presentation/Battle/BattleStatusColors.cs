@@ -1,7 +1,7 @@
 using DragonQuest.Combat;
 using UnityEngine;
 
-namespace DragonQuest.Prototype
+namespace DragonQuest.Presentation.Battle
 {
     public static class BattleStatusColors
     {

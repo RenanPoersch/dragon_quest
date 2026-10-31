@@ -1,10 +1,14 @@
+using DragonQuest.Presentation.World.Scenery;
+using DragonQuest.Presentation.World.Rendering;
+using DragonQuest.Presentation.World.Characters;
+using DragonQuest.Presentation.World.Animations;
+using DragonQuest.Presentation.World;
+using DragonQuest.Exploration.Layouts;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using DragonQuest.Exploration;
 using DragonQuest.Interactions;
 using DragonQuest.Progression;
-using DragonQuest.Prototype;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -73,7 +77,7 @@ public static class QuarryValidation
                     try
                     {
                         camera.targetTexture = target;
-                        follow.Initialize(root.transform,PrototypeWorldLayout.ForestBounds,8,true);
+                        follow.Initialize(root.transform,WorldLayout.ForestBounds,8,true);
                         Assert(Mathf.Abs(camera.aspect-(float)resolution.x/resolution.y)<.001f, "artwork keeps display aspect");
                         camera.Render(); camera.Render();
                         Save(target,Path.Combine(output,"quarry-"+resolution.x+"x"+resolution.y+"-"+state+".png"));

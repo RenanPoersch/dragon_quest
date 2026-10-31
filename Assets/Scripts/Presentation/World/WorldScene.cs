@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using DragonQuest.Exploration;
 using DragonQuest.Interactions;
-using DragonQuest.Prototype;
 using UnityEngine;
 
 namespace DragonQuest.Presentation.World

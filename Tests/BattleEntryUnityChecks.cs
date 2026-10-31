@@ -1,3 +1,9 @@
+using DragonQuest.Presentation.World.Scenery;
+using DragonQuest.Presentation.World;
+using DragonQuest.Presentation.Battle;
+using DragonQuest.Gameplay.Battle;
+using DragonQuest.Exploration.Layouts;
+using DragonQuest.Content;
 using System;
 using System.IO;
 using System.Linq;
@@ -5,7 +11,6 @@ using System.Reflection;
 using DragonQuest.Combat;
 using DragonQuest.Exploration;
 using DragonQuest.Interactions;
-using DragonQuest.Prototype;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine.Rendering;
@@ -71,7 +76,7 @@ public static class BattleEntryUnityChecks
             var hero = root.AddComponent<PlayerMovement>();
             typeof(PlayerMovement).GetMethod("Awake", Private).Invoke(hero, null);
             var dialogue = root.AddComponent<DialogueController>();
-            var controller = root.AddComponent<PrototypeBattleController>();
+            var controller = root.AddComponent<BattleController>();
             controller.Initialize(hero, dialogue, new ExplorationProgress());
             controller.StartBattle();
             Check(controller.IsActive && controller.EntryTransition != null, "every encounter owns a transition");
@@ -83,15 +88,15 @@ public static class BattleEntryUnityChecks
             Check(!(bool)typeof(PlayerMovement).GetField("movementEnabled", Private).GetValue(hero), "movement stays disabled");
             controller.StartBattle(); controller.StartCastleBattle();
             Check(controller.Session == session && !controller.StartRandomBattle(), "repeated triggers cannot replace an entering encounter");
-            Check(!controller.TryPlayerAction(PrototypeBattleFactory.Attack, session.Combatants.Last()), "attacks are rejected during the swirl");
+            Check(!controller.TryPlayerAction(AbilityCatalog.Attack, session.Combatants.Last()), "attacks are rejected during the swirl");
             Check(!controller.TryPlayerItem(null, session.Combatants.First()), "items are rejected before accessing or consuming them");
-            for (int i = 0; i < 10; i++) typeof(PrototypeBattleController).GetMethod("Update", Private).Invoke(controller, null);
+            for (int i = 0; i < 10; i++) typeof(BattleController).GetMethod("Update", Private).Invoke(controller, null);
             Check(session.Combatants.Sum(member => member.TurnsTaken) == turns && session.Combatants.Sum(member => member.Hp) == hp,
                 "neither party nor enemy turns advance behind the overlay");
             controller.EntryTransition.Sequence.Advance(10);
             controller.EntryTransition.Sequence.MarkBattleReady();
             controller.EntryTransition.Sequence.Advance(BattleEntrySequence.CoveredDuration + BattleEntrySequence.RevealDuration / 2);
-            Check(controller.IsEnteringBattle && !controller.TryPlayerAction(PrototypeBattleFactory.Attack, session.Combatants.Last()),
+            Check(controller.IsEnteringBattle && !controller.TryPlayerAction(AbilityCatalog.Attack, session.Combatants.Last()),
                 "input remains blocked through the reveal");
             controller.EntryTransition.enabled = false;
             typeof(BattleEntryTransition).GetMethod("OnDisable", Private).Invoke(controller.EntryTransition, null);
@@ -195,7 +200,7 @@ public static class BattleEntryUnityChecks
         camera.clearFlags = CameraClearFlags.SolidColor; camera.backgroundColor = Color.black;
         var heroObject = new GameObject("Party"); heroObject.transform.SetParent(root.transform, false);
         var hero = heroObject.AddComponent<PlayerMovement>(); typeof(PlayerMovement).GetMethod("Awake", Private).Invoke(hero, null);
-        var battle = root.AddComponent<PrototypeBattleController>();
+        var battle = root.AddComponent<BattleController>();
         battle.Initialize(hero, root.AddComponent<DialogueController>(), new ExplorationProgress());
         var transition = battle.EntryTransition;
         var begin = typeof(BattleEntryTransition).GetMethod("BeginFromCamera", Private);

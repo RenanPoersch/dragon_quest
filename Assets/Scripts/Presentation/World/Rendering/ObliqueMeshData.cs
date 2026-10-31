@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace DragonQuest.Prototype
+namespace DragonQuest.Presentation.World.Rendering
 {
     // Dados de malha independentes do renderer, tambem usados na verificacao e na previa.
     public sealed class ObliqueMeshData

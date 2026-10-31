@@ -2,7 +2,7 @@ using System;
 using DragonQuest.Combat;
 using DragonQuest.Progression;
 
-namespace DragonQuest.Prototype
+namespace DragonQuest.Presentation.Battle
 {
     public static class CastleMeteorPresentation
     {

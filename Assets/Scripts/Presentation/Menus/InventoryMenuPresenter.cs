@@ -1,8 +1,9 @@
+using DragonQuest.Presentation.Common;
+using DragonQuest.Gameplay.Saving;
+using DragonQuest.Gameplay.Battle;
 using DragonQuest.Gameplay;
-using DragonQuest.Prototype;
 using UnityEngine;
 using DragonQuest.Audio;
-using DragonQuest.Combat;
 using DragonQuest.Equipment;
 using DragonQuest.Inventory;
 using DragonQuest.Progression;
@@ -13,7 +14,7 @@ namespace DragonQuest.Presentation.Menus
 {
     public sealed class InventoryMenuPresenter : System.IDisposable
     {
-        private PrototypeBattleController controller;
+        private BattleController controller;
         private AncientSecrets secrets;
         private readonly ControllerMenu navigation = new ControllerMenu();
         private Texture2D pixel;
@@ -34,13 +35,13 @@ namespace DragonQuest.Presentation.Menus
         private bool wasOpen, acceptsInput;
         private Vector2 lastPointer;
 
-        private readonly System.Func<PrototypeSaveController> getSaves;
+        private readonly System.Func<SaveController> getSaves;
         private bool IsInputBlocked => controller.IsCheatMenuBlocking
             || controller.Flow != null && controller.Flow.Owner != GameInputOwner.Inventory;
         private readonly System.Func<int> getGold;
         private readonly System.Func<string> getLocationName;
-        public InventoryMenuPresenter(PrototypeBattleController battleController, AncientSecrets ancientSecrets,
-            System.Func<PrototypeSaveController> getSaves, System.Func<int> getGold, System.Func<string> getLocationName)
+        public InventoryMenuPresenter(BattleController battleController, AncientSecrets ancientSecrets,
+            System.Func<SaveController> getSaves, System.Func<int> getGold, System.Func<string> getLocationName)
         {
             controller = battleController; secrets = ancientSecrets; this.getSaves = getSaves;
             this.getGold = getGold; this.getLocationName = getLocationName;
@@ -410,8 +411,8 @@ namespace DragonQuest.Presentation.Menus
             if (pixel != null) return;
             pixel = new Texture2D(1, 1); pixel.SetPixel(0, 0, Color.white); pixel.Apply();
             presentation = new InventoryMenuPresentation(); presentation.EnsureStyles();
-            title = PrototypeTypography.Style(GUI.skin.label, 28, true);
-            button = PrototypeTypography.Style(GUI.skin.button, 22); button.wordWrap = true;
+            title = GameTypography.Style(GUI.skin.label, 28, true);
+            button = GameTypography.Style(GUI.skin.button, 22); button.wordWrap = true;
             button.normal.background = button.hover.background = button.active.background = button.focused.background = null;
             button.normal.textColor = button.hover.textColor = button.active.textColor = button.focused.textColor = Color.white;
             title.normal.textColor = Color.white;

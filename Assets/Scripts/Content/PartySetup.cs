@@ -1,3 +1,4 @@
+using DragonQuest.Progression;
 using DragonQuest.Equipment;
 using DragonQuest.Inventory;
 

@@ -1,9 +1,9 @@
+using DragonQuest.Presentation.World.Rendering;
 using System;
 using System.Collections.Generic;
-using DragonQuest.Exploration;
 using UnityEngine;
 
-namespace DragonQuest.Prototype
+namespace DragonQuest.Presentation.World.Scenery
 {
     // Pintura integral com contornos de profundidade e bases fisicas registrados em UV.
     public abstract class PaintedInteriorScenery : MonoBehaviour

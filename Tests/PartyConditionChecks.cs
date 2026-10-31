@@ -1,8 +1,10 @@
+using DragonQuest.Presentation.Battle;
+using DragonQuest.Content;
+using DragonQuest.Authoring;
 using System;
 using System.Linq;
 using DragonQuest.Combat;
 using DragonQuest.Equipment;
-using DragonQuest.Prototype;
 
 internal static class PartyConditionChecks
 {
@@ -13,17 +15,17 @@ internal static class PartyConditionChecks
 
     private static void CheckBattlePersistence()
     {
-        var party = PrototypePartyFactory.CreateTestParty();
-        var battle = PrototypeBattleFactory.CreateEncounter(party);
+        var party = PartyFixture.Create();
+        var battle = EncounterCatalog.CreateEncounter(party);
         var aren = Find(battle, "aren"); var lia = Find(battle, "lia"); var bram = Find(battle, "bram");
         aren.TakeDamage(23); aren.SpendMp(9); aren.PoisonTurns = 3;
         aren.IsDefending = true; aren.GrantDamageShield(3, false);
         lia.BoundActions = 1; bram.TakeDamage(bram.Hp);
         party.CaptureBattleState(battle);
         int hp = aren.Hp, mp = aren.Mp;
-        foreach (var next in new[] { PrototypeBattleFactory.CreateEncounter(party),
-            PrototypeBattleFactory.CreateRegionEncounter(party, RandomEncounterType.Wolf, 3),
-            PrototypeBattleFactory.CreateDragonEncounter(party), PrototypeCastleBattleFactory.Create(party) })
+        foreach (var next in new[] { EncounterCatalog.CreateEncounter(party),
+            EncounterCatalog.CreateRegionEncounter(party, RandomEncounterType.Wolf, 3),
+            EncounterCatalog.CreateDragonEncounter(party), EncounterCatalog.CreateCastle(party) })
         {
             var hero = Find(next, "aren"); var healer = Find(next, "lia"); var tank = Find(next, "bram");
             Check(hero.Hp == hp && hero.Mp == mp && hero.IsPoisoned, "HP, MP e veneno persistem em todos os tipos de encontro.");
@@ -32,13 +34,13 @@ internal static class PartyConditionChecks
             Check(!hero.IsDefending && hero.ShieldTurns == 0 && hero.TurnsTaken == 0 && hero.VitalChanges.Count == 0,
                 "Defesa, buffs e historico visual iniciam sem efeitos antigos.");
         }
-        var nextBattle = PrototypeBattleFactory.CreateEncounter(party);
-        Check(nextBattle.GetValidItemTargets(PrototypePartyFactory.PhoenixFeather).Contains(Find(nextBattle, "bram")), "Aliado que entrou derrotado pode ser revivido na batalha.");
+        var nextBattle = EncounterCatalog.CreateEncounter(party);
+        Check(nextBattle.GetValidItemTargets(ItemCatalog.PhoenixFeather).Contains(Find(nextBattle, "bram")), "Aliado que entrou derrotado pode ser revivido na batalha.");
         Check(nextBattle.TryAct(nextBattle.CurrentActor, MateriaResolver.Defend, nextBattle.CurrentActor, out _), "Aliado vivo age com companheiro derrotado.");
         Check(Find(nextBattle, "lia").IsBound && Find(nextBattle, "lia").TurnsTaken == 1, "Correntes herdadas continuam impedindo acoes ate um acerto.");
         Check(party.Members[0].Hp == hp && aren.Hp == hp, "Instancias de encontros e estado do mapa permanecem independentes.");
-        var revival = PrototypeBattleFactory.CreateEncounter(party);
-        Check(revival.TryUseItem(revival.CurrentActor, PrototypePartyFactory.PhoenixFeather, Find(revival, "bram"), out _)
+        var revival = EncounterCatalog.CreateEncounter(party);
+        Check(revival.TryUseItem(revival.CurrentActor, ItemCatalog.PhoenixFeather, Find(revival, "bram"), out _)
             && Find(revival, "bram").Hp == 45, "Reviver funciona em personagem derrotado desde o encontro anterior.");
         party.CaptureBattleState(revival);
         Check(party.Members[2].Hp == 45, "HP recuperado em batalha permanece na equipe.");
@@ -47,15 +49,15 @@ internal static class PartyConditionChecks
         Check(party.Members.All(m => m.Hp == m.MaxHp && m.Mp == m.MaxMp && !m.IsPoisoned && m.BoundActions == 0), "Recuperacao da hospedaria restaura a equipe.");
         foreach (var member in party.Members) member.RestoreVitals(0, 0, false, 0);
         bool rejected = false;
-        try { PrototypeBattleFactory.CreateEncounter(party); } catch (ArgumentException) { rejected = true; }
+        try { EncounterCatalog.CreateEncounter(party); } catch (ArgumentException) { rejected = true; }
         Check(rejected && !party.HasLivingMembers, "Equipe toda derrotada nao inicia batalha.");
     }
 
     private static void CheckVictoryTransfer()
     {
-        var party = PrototypePartyFactory.Create(); var member = party.Members[0];
+        var party = PartySetup.Create(); var member = party.Members[0];
         member.RestoreVitals(61, 7, true, 0);
-        var battle = PrototypeBattleFactory.CreateRegionEncounter(party, RandomEncounterType.Wolf, 1);
+        var battle = EncounterCatalog.CreateRegionEncounter(party, RandomEncounterType.Wolf, 1);
         var enemy = battle.Combatants.First(c => c.Team == CombatTeam.Enemy);
         enemy.TakeDamage(enemy.Hp - 1);
         Check(battle.TryAct(battle.CurrentActor, MateriaResolver.Attack, enemy, out _) && battle.Outcome == BattleOutcome.Victory,
@@ -64,7 +66,7 @@ internal static class PartyConditionChecks
         Check(member.Hp == 61 && member.Mp == 7 && member.IsPoisoned, "Vitoria preserva vitais e nao cura veneno.");
         party.AdvancePoison(3);
         Check(member.Hp == 56 && member.IsPoisoned, "Veneno continua no mapa depois da vitoria.");
-        var next = PrototypeBattleFactory.CreateDragonEncounter(party);
+        var next = EncounterCatalog.CreateDragonEncounter(party);
         Check(Find(next, "aren").Hp == 56 && Find(next, "aren").Mp == 7 && Find(next, "aren").IsPoisoned,
             "Proxima batalha recebe exatamente o estado deixado no mapa.");
         foreach (var hero in party.Members) hero.RestoreVitals(1, 0, true, 0);
@@ -76,7 +78,7 @@ internal static class PartyConditionChecks
 
     private static void CheckMapPoison()
     {
-        var party = PrototypePartyFactory.Create(); var member = party.Members[0];
+        var party = PartySetup.Create(); var member = party.Members[0];
         member.RestoreVitals(81, 7, true, 1);
         int pulses = 0, damage = 0;
         party.PoisonDamage += (target, amount) => { Check(target == member && amount > 0, "Pulso informa personagem e dano real."); pulses++; damage += amount; };
@@ -102,7 +104,7 @@ internal static class PartyConditionChecks
         Check(!state.VitalChanges.Last().IsDamageOverTime, "Dano direto permanece distinguivel de DOT.");
         Check(CombatStatuses.Active(state).First(s => s.Status == CombatStatus.Poison).Turns == 0, "Veneno persistente nao exibe contagem de expiracao.");
         party.AdvancePoison(2);
-        Check(party.TryUseItem(PrototypePartyFactory.Antidote, member, out _), "Antidoto pode ser usado durante exploracao.");
+        Check(party.TryUseItem(ItemCatalog.Antidote, member, out _), "Antidoto pode ser usado durante exploracao.");
         party.AdvancePoison(100);
         int before = member.Hp;
         member.RestoreVitals(before, 0, true, 0); party.AdvancePoison(1);
@@ -111,17 +113,17 @@ internal static class PartyConditionChecks
 
     private static void CheckMapItems()
     {
-        var party = PrototypePartyFactory.CreateTestParty(); var member = party.Members[0];
+        var party = PartyFixture.Create(); var member = party.Members[0];
         member.RestoreVitals(11, 0, true, 0);
-        Check(party.TryUseItem(PrototypePartyFactory.Potion, member, out _) && member.Hp == 51 && member.IsPoisoned, "Pocao recupera HP sem remover veneno.");
-        Check(party.TryUseItem(PrototypePartyFactory.Ether, member, out _) && member.Mp == 15, "Eter recupera MP no mapa.");
-        int antidotes = party.Consumables.QuantityOf(PrototypePartyFactory.Antidote);
-        Check(party.TryUseItem(PrototypePartyFactory.Antidote, member, out _) && !member.IsPoisoned, "Antidoto remove veneno.");
-        Check(party.Consumables.QuantityOf(PrototypePartyFactory.Antidote) == antidotes - 1, "Item usado gasta uma unidade.");
-        Check(!party.TryUseItem(PrototypePartyFactory.Antidote, member, out _) && party.Consumables.QuantityOf(PrototypePartyFactory.Antidote) == antidotes - 1, "Uso sem efeito nao gasta item.");
+        Check(party.TryUseItem(ItemCatalog.Potion, member, out _) && member.Hp == 51 && member.IsPoisoned, "Pocao recupera HP sem remover veneno.");
+        Check(party.TryUseItem(ItemCatalog.Ether, member, out _) && member.Mp == 15, "Eter recupera MP no mapa.");
+        int antidotes = party.Consumables.QuantityOf(ItemCatalog.Antidote);
+        Check(party.TryUseItem(ItemCatalog.Antidote, member, out _) && !member.IsPoisoned, "Antidoto remove veneno.");
+        Check(party.Consumables.QuantityOf(ItemCatalog.Antidote) == antidotes - 1, "Item usado gasta uma unidade.");
+        Check(!party.TryUseItem(ItemCatalog.Antidote, member, out _) && party.Consumables.QuantityOf(ItemCatalog.Antidote) == antidotes - 1, "Uso sem efeito nao gasta item.");
         member.RestoreVitals(0, 3, false, 0);
-        Check(!party.TryUseItem(PrototypePartyFactory.Potion, member, out _), "Pocao nao revive derrotado.");
-        Check(party.TryUseItem(PrototypePartyFactory.PhoenixFeather, member, out _) && member.Hp == 30 && member.Mp == 3, "Reviver no mapa recupera 30% de HP e preserva MP.");
+        Check(!party.TryUseItem(ItemCatalog.Potion, member, out _), "Pocao nao revive derrotado.");
+        Check(party.TryUseItem(ItemCatalog.PhoenixFeather, member, out _) && member.Hp == 30 && member.Mp == 3, "Reviver no mapa recupera 30% de HP e preserva MP.");
     }
 
     private static void CheckStatusColors()
@@ -130,7 +132,7 @@ internal static class PartyConditionChecks
         Check(poison.g > poison.r && poison.g > poison.b, "Sprite envenenado recebe verde.");
         var bound = BattleStatusColors.Tint(false, 1);
         Check(bound.b > bound.r && bound.b > bound.g, "Correntes aplicam azul/lilas.");
-        var taunted = PrototypeBattleFactory.CreateEncounter(PrototypePartyFactory.CreateTestParty()).Combatants.First(c => c.Team == CombatTeam.Enemy);
+        var taunted = EncounterCatalog.CreateEncounter(PartyFixture.Create()).Combatants.First(c => c.Team == CombatTeam.Enemy);
         taunted.TauntTurns = 2;
         Check(BattleStatusColors.Tint(taunted).Equals(UnityEngine.Color.white), "Provocar conserva a cor do inimigo; vermelho fica reservado para morte.");
         taunted.BoundActions = 1;

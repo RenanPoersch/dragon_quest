@@ -17,13 +17,12 @@ $magicArguments += Get-ChildItem -LiteralPath $magicRefDir.FullName -Filter '*.d
 foreach ($magicFolder in @('Combat','Content', 'Equipment', 'Inventory', 'Shops', 'Progression')) {
     $magicArguments += Get-ChildItem -LiteralPath (Join-Path $magicRoot "Assets/Scripts/$magicFolder") -Filter '*.cs' | ForEach-Object { $_.FullName }
 }
-foreach ($magicSource in @('Assets/Scripts/Exploration/ExplorationProgress.cs', 'Assets/Scripts/Prototype/PrototypeBattleFactory.cs',
-    'Assets/Scripts/Prototype/PrototypeCastleBattleFactory.cs', 'Assets/Scripts/Prototype/PrototypePartyFactory.cs',
-    'Assets/Scripts/Prototype/PrototypeShopFactory.cs', 'Tests/MagicMenuChecks.cs')) {
+foreach ($magicSource in @('Assets/Scripts/Exploration/ExplorationProgress.cs', 'Assets/Editor/Tools/Fixtures/PartyFixture.cs','Assets/Scripts/Presentation/Battle/HeroKnockoutPresentation.cs','Assets/Scripts/Presentation/Battle/DefeatedEnemyPresentation.cs','Assets/Scripts/Presentation/Battle/UltimateSpriteTimeline.cs',
+    'Tests/MagicMenuChecks.cs')) {
     $magicArguments += Join-Path $magicRoot $magicSource
 }
 $magicResponse = Join-Path $WorkDirectory 'MagicMenuChecks.rsp'
-$magicArguments | ForEach-Object { '"' + $_ + '"' } | Set-Content -LiteralPath $magicResponse -Encoding utf8
+$magicArguments | Select-Object -Unique | ForEach-Object { '"' + $_ + '"' } | Set-Content -LiteralPath $magicResponse -Encoding utf8
 & $magicDotnet $magicCsc.FullName "@$magicResponse"
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 @{runtimeOptions=@{tfm=$magicRefDir.Name;framework=@{name='Microsoft.NETCore.App';version=$magicRuntime.Name}}} |

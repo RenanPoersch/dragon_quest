@@ -1,6 +1,9 @@
+using DragonQuest.Presentation.World.Scenery;
+using DragonQuest.Presentation.World.Rendering;
+using DragonQuest.Presentation.World.Animations;
+using DragonQuest.Exploration.Layouts;
 using System;
 using System.Linq;
-using DragonQuest.Prototype;
 using UnityEngine;
 
 internal static class CastleExteriorChecks
@@ -22,7 +25,7 @@ internal static class CastleExteriorChecks
     }
     private static void CheckCastleMasonry()
     {
-        foreach (var building in PrototypeCityLayout.Buildings.Where(b => CityPeripheryArt.IsRoyalCastle(b.Name)))
+        foreach (var building in CityLayout.Buildings.Where(b => CityPeripheryArt.IsRoyalCastle(b.Name)))
         {
             var mesh = CastleFortressArt.Building(building.Name, building.Size).Body;
             Assert(mesh.Vertices.Count == mesh.UVs.Count && mesh.Vertices.Count == mesh.Surfaces.Count, "Buffers completos: " + building.Name);

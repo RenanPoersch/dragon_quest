@@ -1,3 +1,8 @@
+using DragonQuest.Presentation.World.Scenery;
+using DragonQuest.Presentation.World.Characters;
+using DragonQuest.Presentation.World;
+using DragonQuest.Exploration.Layouts;
+using DragonQuest.Content;
 using System;
 using System.IO;
 using System.Linq;
@@ -5,7 +10,6 @@ using DragonQuest.Combat;
 using DragonQuest.Exploration;
 using DragonQuest.Interactions;
 using DragonQuest.Progression;
-using DragonQuest.Prototype;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -26,7 +30,7 @@ public static class DragonLairValidation
             UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(root, scene);
             var lair = root.AddComponent<DragonLairScenery>(); lair.Build();
             var anchor = new GameObject("Dragon interaction / snout"); anchor.transform.SetParent(root.transform, false);
-            anchor.transform.localPosition = PrototypeVolcanoLayout.Dragon;
+            anchor.transform.localPosition = VolcanoLayout.Dragon;
             var animation = lair.CreateDragon(anchor.transform);
             var essence = lair.CreateEssence(anchor.transform);
             var progress = new DragonProgress();
@@ -45,7 +49,7 @@ public static class DragonLairValidation
             camera.overrideSceneCullingMask = EditorSceneManager.GetSceneCullingMask(scene);
             camera.clearFlags = CameraClearFlags.SolidColor; camera.backgroundColor = new Color(.05f, .03f, .07f);
             var follow = cameraObject.AddComponent<CameraFollow>();
-            follow.SetSideView(true, PrototypeVolcanoLayout.CameraHeight);
+            follow.SetSideView(true, VolcanoLayout.CameraHeight);
             var hero = new GameObject("Hero / lateral pose"); hero.transform.SetParent(root.transform, false);
             people = new PixelSpriteLibrary();
             var visual = people.Create(hero.transform, "ArenWalk", 2);
@@ -54,7 +58,7 @@ public static class DragonLairValidation
 
             foreach (float x in new[] { -17.5f, -5f, 5.8f, 12.7f })
             {
-                hero.transform.localPosition = new Vector2(x, PrototypeVolcanoLayout.FloorAt(x));
+                hero.transform.localPosition = new Vector2(x, VolcanoLayout.FloorAt(x));
                 Capture(camera, follow, hero.transform, 1280, 720, Path.Combine(output, "lair-walk-" + x.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture) + ".png"));
             }
             Assert(Vector2.Distance(hero.transform.position, anchor.transform.position) < 1.6f, "snout is reachable at end of lateral path");
@@ -80,10 +84,10 @@ public static class DragonLairValidation
             interaction.Interact(context); dialogue.Advance(); dialogue.Advance();
             Assert(battles == 3 && animation.CurrentFrame == 2, "fast dialogue still ends on awake pose");
 
-            var party = PrototypePartyFactory.Create();
+            var party = PartySetup.Create();
             var fighter = party.Members[0].CreateCombatant();
             var enemy = new CombatantState(DragonProgress.EnemyId,
-                new CombatantDefinition("Dragao", "Boss", 1, 0, 0, 0, 0, 1, PrototypeBattleFactory.Attack), CombatTeam.Enemy);
+                new CombatantDefinition("Dragao", "Boss", 1, 0, 0, 0, 0, 1, AbilityCatalog.Attack), CombatTeam.Enemy);
             var victory = new BattleSession(fighter, enemy);
             Assert(victory.TryAct(fighter, fighter.Definition.Abilities.Single(a => a.Id == "attack"), enemy, out _), "victory fixture finishes combat");
             Assert(progress.TryComplete(victory, party), "dragon victory grants armor");
@@ -122,7 +126,7 @@ public static class DragonLairValidation
         try
         {
             camera.targetTexture = target; camera.aspect = (float)width / height;
-            follow.Initialize(hero, PrototypeVolcanoLayout.Bounds, PrototypeVolcanoLayout.CameraSize);
+            follow.Initialize(hero, VolcanoLayout.Bounds, VolcanoLayout.CameraSize);
             Assert(Quaternion.Angle(camera.transform.rotation, Quaternion.identity) < .001f, "camera has ruins-style horizontal orientation");
             camera.Render(); camera.Render();
             RenderTexture.active = target;

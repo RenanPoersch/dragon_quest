@@ -1,7 +1,7 @@
-using DragonQuest.Exploration;
+using DragonQuest.Presentation.World.Characters;
 using UnityEngine;
 
-namespace DragonQuest.Prototype
+namespace DragonQuest.Presentation.Battle.Animations
 {
     // Moves only the sprite; its parent keeps the floor depth, interaction anchor and ground shadow.
     public sealed class SpiritFloatAnimation : MonoBehaviour

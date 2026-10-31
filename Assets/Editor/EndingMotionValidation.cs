@@ -1,7 +1,7 @@
+using DragonQuest.Presentation.Cinematics.Endings;
 using System;
 using System.IO;
 using DragonQuest.Progression;
-using DragonQuest.Prototype;
 using UnityEditor;
 using UnityEngine;
 

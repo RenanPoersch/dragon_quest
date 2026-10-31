@@ -1,9 +1,11 @@
+using DragonQuest.Presentation.World.Scenery;
+using DragonQuest.Presentation.World.Rendering;
+using DragonQuest.Presentation.World.Animations;
+using DragonQuest.Exploration.Layouts;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using DragonQuest.Exploration;
-using DragonQuest.Prototype;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -40,12 +42,12 @@ public static class CastleExteriorValidation
                 mesh.SetUVs(0, data.UVs); mesh.SetUVs(1, data.Surfaces); mesh.RecalculateBounds();
                 go.AddComponent<MeshFilter>().sharedMesh = mesh;
                 go.AddComponent<MeshRenderer>().sharedMaterial = material;
-                if (name == "Castelo do Rei Rubro") ObliqueScenery.CastleTorches(PrototypeCityLayout.Buildings.First(b => b.Name == name).Size, go.transform, fire);
+                if (name == "Castelo do Rei Rubro") ObliqueScenery.CastleTorches(CityLayout.Buildings.First(b => b.Name == name).Size, go.transform, fire);
             }
             Model("Ground", CityGroundArt.Build(), Vector2.zero, ground);
-            foreach (var block in PrototypeCityLayout.Blocks.Where(b => b.Name.StartsWith("Ponte de pedra") || b.Name == "Patio da entrada do castelo"))
+            foreach (var block in CityLayout.Blocks.Where(b => b.Name.StartsWith("Ponte de pedra") || b.Name == "Patio da entrada do castelo"))
                 Model(block.Name, CityPeripheryArt.Block(block), block.Position, stone);
-            foreach (var building in PrototypeCityLayout.Buildings.Where(b => CityPeripheryArt.IsRoyalCastle(b.Name)))
+            foreach (var building in CityLayout.Buildings.Where(b => CityPeripheryArt.IsRoyalCastle(b.Name)))
                 Model(building.Name, CastleFortressArt.Building(building.Name, building.Size).Body, building.Position, stone);
             var flames = root.GetComponentsInChildren<RuinsFlameAnimation>();
             Check(flames.Length == 2, "Exactly two castle torches");

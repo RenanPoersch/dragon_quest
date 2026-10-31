@@ -1,7 +1,9 @@
+using DragonQuest.Progression;
+using DragonQuest.Content;
+using DragonQuest.Authoring;
 using System;
 using DragonQuest.Equipment;
 using DragonQuest.Inventory;
-using DragonQuest.Prototype;
 
 internal static class ItemMenuChecks
 {
@@ -16,7 +18,7 @@ internal static class ItemMenuChecks
     }
     private static PartyProgress Party()
     {
-        var party = PrototypePartyFactory.CreateTestParty();
+        var party = PartyFixture.Create();
         party.Members[0].RestoreVitals(20, 1, true, 0);
         party.Members[1].RestoreVitals(30, 2, false, 0);
         party.Members[2].RestoreVitals(0, 0, false, 0);
@@ -24,7 +26,7 @@ internal static class ItemMenuChecks
     }
     private static void CheckSelectionAndCancellation()
     {
-        var party = Party(); var menu = Menu(party, PrototypePartyFactory.Potion);
+        var party = Party(); var menu = Menu(party, ItemCatalog.Potion);
         int stock = party.Consumables.QuantityOf(menu.SelectedItem), hp = party.Members[0].Hp;
         Check(menu.BeginUse(party) && menu.ChoosingTarget, "Selecting an item moves the cursor to the portraits.");
         Check(party.Consumables.QuantityOf(menu.SelectedItem) == stock && party.Members[0].Hp == hp,
@@ -43,7 +45,7 @@ internal static class ItemMenuChecks
     }
     private static void CheckInvalidTargetsAndStock()
     {
-        var party = Party(); var menu = Menu(party, PrototypePartyFactory.Potion);
+        var party = Party(); var menu = Menu(party, ItemCatalog.Potion);
         menu.BeginUse(party); menu.SelectTarget(2, party);
         int stock = party.Consumables.QuantityOf(menu.SelectedItem);
         Check(!menu.ConfirmTarget(party) && menu.ChoosingTarget && menu.Message.Length > 0
@@ -60,12 +62,12 @@ internal static class ItemMenuChecks
     }
     private static void CheckAllEffects()
     {
-        var party = Party(); var menu = Menu(party, PrototypePartyFactory.Ether);
+        var party = Party(); var menu = Menu(party, ItemCatalog.Ether);
         menu.BeginUse(party); menu.SelectTarget(1, party);
         Check(menu.ConfirmTarget(party) && party.Members[1].Mp == 17, "Ether restores MP on the selected portrait.");
-        menu = Menu(party, PrototypePartyFactory.Antidote); menu.BeginUse(party);
+        menu = Menu(party, ItemCatalog.Antidote); menu.BeginUse(party);
         Check(menu.ConfirmTarget(party) && !party.Members[0].IsPoisoned, "Antidote cleanses the selected ally.");
-        menu = Menu(party, PrototypePartyFactory.PhoenixFeather); menu.BeginUse(party);
+        menu = Menu(party, ItemCatalog.PhoenixFeather); menu.BeginUse(party);
         int stock = party.Consumables.QuantityOf(menu.SelectedItem);
         Check(!menu.ConfirmTarget(party) && party.Consumables.QuantityOf(menu.SelectedItem) == stock,
             "A revival item cannot be spent on a living ally.");
@@ -74,7 +76,7 @@ internal static class ItemMenuChecks
     }
     private static void CheckCategoriesAndArrangement()
     {
-        var party = Party(); var menu = Menu(party, PrototypePartyFactory.Potion);
+        var party = Party(); var menu = Menu(party, ItemCatalog.Potion);
         var selected = menu.SelectedItem;
         int stock = party.Consumables.QuantityOf(selected);
         menu.BeginUse(party); menu.ShowKeyItems(true);
@@ -96,7 +98,7 @@ internal static class ItemMenuChecks
     }
     private static void CheckSubmenus()
     {
-        var party = Party(); var menu = Menu(party, PrototypePartyFactory.Potion);
+        var party = Party(); var menu = Menu(party, ItemCatalog.Potion);
         var selected = menu.SelectedItem; int stock = party.Consumables.QuantityOf(selected);
         menu.MoveSubmenu(1, party);
         Check(menu.SubmenuIndex == 1 && menu.BrowsingSubmenus && menu.SelectedItem == selected,

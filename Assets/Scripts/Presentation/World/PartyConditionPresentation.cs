@@ -1,8 +1,9 @@
+using DragonQuest.Progression;
+using DragonQuest.Presentation.World.Characters;
+using DragonQuest.Presentation.Common;
 using System;
-using DragonQuest.Equipment;
 using DragonQuest.Exploration;
 using DragonQuest.Presentation.Battle;
-using DragonQuest.Prototype;
 using UnityEngine;
 
 namespace DragonQuest.Presentation.World
@@ -46,7 +47,7 @@ namespace DragonQuest.Presentation.World
             if (blocked || Camera.main == null) return;
             if (poisonNumber == null)
             {
-                poisonNumber = PrototypeTypography.Style(GUI.skin.label, 24, true);
+                poisonNumber = GameTypography.Style(GUI.skin.label, 24, true);
                 poisonNumber.alignment = TextAnchor.MiddleCenter;
             }
             foreach (var number in mapPoisonNumbers)

@@ -1,15 +1,18 @@
+using DragonQuest.Progression;
+using DragonQuest.Exploration;
+using DragonQuest.Content;
+using DragonQuest.Authoring;
 using System;
 using DragonQuest.Combat;
 using DragonQuest.Equipment;
-using DragonQuest.Prototype;
 
 internal static class BattleChecks
 {
     private static int checks;
-    private static AbilityDefinition Attack => PrototypeBattleFactory.Attack;
-    private static AbilityDefinition Defend => PrototypeBattleFactory.Defend;
-    private static AbilityDefinition Heal => PrototypeBattleFactory.Heal;
-    private static AbilityDefinition Heavy => PrototypeBattleFactory.HeavyStrike;
+    private static AbilityDefinition Attack => AbilityCatalog.Attack;
+    private static AbilityDefinition Defend => AbilityCatalog.Defend;
+    private static AbilityDefinition Heal => AbilityCatalog.Heal;
+    private static AbilityDefinition Heavy => AbilityCatalog.HeavyStrike;
 
     // Encontro original mantido como fixture de regressao das regras da parte 3.
     private static BattleSession CreateBasicEncounter()
@@ -96,8 +99,8 @@ internal static class BattleChecks
         Assert(battle.TryTakeEscapeTurn(out _) && battle.Outcome == BattleOutcome.Escaped && nextActor.TurnsTaken == 0,
             "Solicitar durante a animacao da acao anterior foge no proximo turno ja agendado, sem consumir mais uma acao.");
 
-        var party = PrototypePartyFactory.Create();
-        foreach (var boss in new[] { PrototypeBattleFactory.CreateDragonEncounter(party), PrototypeCastleBattleFactory.Create(party) })
+        var party = PartySetup.Create();
+        foreach (var boss in new[] { EncounterCatalog.CreateDragonEncounter(party), EncounterCatalog.CreateCastle(party) })
         {
             var actor = boss.CurrentActor;
             Assert(!boss.CanEscape && !boss.SetEscapeHeld(true) && !boss.TryTakeEscapeTurn(out _)
@@ -281,7 +284,7 @@ internal static class BattleChecks
         bare.Limit.Spend();
         Assert(BattleCommandMenu.Root(bare)[0].Ability == MateriaResolver.Attack, "Gastar Limit deve devolver Ataque ao menu.");
 
-        var party = PrototypePartyFactory.CreateTestParty();
+        var party = PartyFixture.Create();
         var lia = party.Members[1].CreateCombatant();
         root = BattleCommandMenu.Root(lia);
         int magic = 0, summon = 0;
@@ -301,7 +304,7 @@ internal static class BattleChecks
         Assert(BattleCommandMenu.Root(lia).Count == root.Count, "Falta de MP nao deve esconder categorias de habilidades existentes.");
 
         MateriaInstance infuse = null;
-        foreach (var materia in party.Materias) if (materia.Definition == PrototypePartyFactory.InfuseMateria) infuse = materia;
+        foreach (var materia in party.Materias) if (materia.Definition == MateriaCatalog.InfuseMateria) infuse = materia;
         var aren = party.Members[0];
         Assert(party.TryEquip(aren, aren.Armor, 3, infuse, out _), "Fixture deve equipar Infusao ligada a Thunder.");
         var spells = BattleCommandMenu.Group(aren.CreateCombatant(), AbilityMenuGroup.Magic);

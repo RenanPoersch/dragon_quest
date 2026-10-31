@@ -1,3 +1,4 @@
+using DragonQuest.Gameplay.Battle;
 using DragonQuest.Presentation.Menus;
 using System;
 using System.Linq;
@@ -8,7 +9,6 @@ using DragonQuest.Input;
 using DragonQuest.Interactions;
 using DragonQuest.Inventory;
 using DragonQuest.Progression;
-using DragonQuest.Prototype;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -48,9 +48,9 @@ public static class InventorySubmenuUnityChecks
             fixture = new GameObject("Inventory submenu checks");
             var player = fixture.AddComponent<PlayerMovement>(); Call(player, "Awake");
             var dialogue = fixture.AddComponent<DialogueController>();
-            var battle = fixture.AddComponent<PrototypeBattleController>();
+            var battle = fixture.AddComponent<BattleController>();
             battle.Initialize(player, dialogue, new ExplorationProgress(50));
-            var hudHost = fixture.AddComponent<PrototypeMateriaHud>(); hudHost.Initialize(battle, new AncientSecrets()); var hud = hudHost.Presenter;
+            var hudHost = fixture.AddComponent<InventoryHud>(); hudHost.Initialize(battle, new AncientSecrets()); var hud = hudHost.Presenter;
             Field(battle, "<IsMenuOpen>k__BackingField").SetValue(battle, true);
             Call(hud, "CheckOpened"); Field(hud, "openedFrame").SetValue(hud, -1);
             Call(hud, "OpenCommand", 0);

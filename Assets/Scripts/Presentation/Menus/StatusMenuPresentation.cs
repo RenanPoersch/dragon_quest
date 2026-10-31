@@ -1,10 +1,12 @@
+using DragonQuest.Progression;
+using DragonQuest.Presentation.Common;
 using System;
 using DragonQuest.Combat;
 using DragonQuest.Equipment;
 using UnityEngine;
 using DragonQuest.Audio;
 
-namespace DragonQuest.Prototype
+namespace DragonQuest.Presentation.Menus
 {
     // A read-only character sheet, using the same values and commands as combat.
     public sealed class StatusMenuPresentation
@@ -18,13 +20,13 @@ namespace DragonQuest.Prototype
         private void EnsureStyles()
         {
             if (text != null) return;
-            text = PrototypeTypography.Style(GUI.skin.label, 34);
+            text = GameTypography.Style(GUI.skin.label, 34);
             text.padding = new RectOffset(0, 0, 0, 0);
             text.normal.textColor = Color.white;
             cyan = new GUIStyle(text); cyan.normal.textColor = new Color(.05f, 1, .91f);
-            number = PrototypeTypography.Style(text, 34, true);
+            number = GameTypography.Style(text, 34, true);
             right = new GUIStyle(number) { alignment = TextAnchor.UpperRight };
-            condition = PrototypeTypography.Style(text, 28); condition.normal.textColor = new Color(1, .4f, .72f);
+            condition = GameTypography.Style(text, 28); condition.normal.textColor = new Color(1, .4f, .72f);
         }
 
         public void Draw(InventoryMenuPresentation theme, PartyMember member, bool canInteract, Action back)

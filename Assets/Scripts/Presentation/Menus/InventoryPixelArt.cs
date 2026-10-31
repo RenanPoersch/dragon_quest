@@ -3,7 +3,7 @@ using DragonQuest.Equipment;
 using DragonQuest.Inventory;
 using UnityEngine;
 
-namespace DragonQuest.Prototype
+namespace DragonQuest.Presentation.Menus
 {
     public static class InventoryPixelArt
     {

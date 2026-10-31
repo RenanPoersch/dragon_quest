@@ -1,3 +1,4 @@
+using DragonQuest.Content;
 using System;
 using System.Linq;
 using System.Text;
@@ -5,7 +6,6 @@ using DragonQuest.Equipment;
 using DragonQuest.Exploration;
 using DragonQuest.Persistence;
 using DragonQuest.Progression;
-using DragonQuest.Prototype;
 using DragonQuest.Shops;
 
 internal static class AccessoryChecks
@@ -15,13 +15,13 @@ internal static class AccessoryChecks
     private static void Reject(Action action, string message)
     { bool rejected = false; try { action(); } catch (ArgumentException) { rejected = true; } Check(rejected, message); }
     private static JourneyData Capture(ShopService shop) => JourneySnapshot.Capture(shop.Party, shop.Progress, new AncientSecrets(), new DragonProgress(), shop,
-        PrototypeTravel.World, 0, -7);
+        WorldNavigation.World, 0, -7);
     private static JourneyData Clone(JourneyData data) => SaveStore.Decode(SaveStore.Encode(data));
     private static void Corrupt(JourneyData data, Action<JourneyData> change, string message)
     { var copy = Clone(data); change(copy); Reject(() => JourneySnapshot.Restore(copy), message); }
     private static void ShopStatsAndTransfer()
     {
-        var party = PrototypePartyFactory.Create(); var shops = PrototypeShopFactory.Create(party, new ExplorationProgress(1000));
+        var party = PartySetup.Create(); var shops = ShopCatalog.Create(party, new ExplorationProgress(1000));
         var shop = shops.FindShop("equipment-shop");
         foreach (string key in new[] { "power-ring", "guardian-bracelet", "arcane-pendant" })
         {
@@ -31,9 +31,9 @@ internal static class AccessoryChecks
             Check(shops.TryBuy(shop, product, 1, out _) && product.Stock == 1, "Buying creates an owned accessory and decrements stock.");
         }
         Check(shops.Progress.Gold == 730 && party.Equipments.Count == 9, "Accessory purchases debit the wallet without changing the starting kit.");
-        var ring = party.Equipments.First(g => g.Definition == PrototypePartyFactory.PowerRing);
-        var bracelet = party.Equipments.First(g => g.Definition == PrototypePartyFactory.GuardianBracelet);
-        var pendant = party.Equipments.First(g => g.Definition == PrototypePartyFactory.ArcanePendant);
+        var ring = party.Equipments.First(g => g.Definition == EquipmentCatalog.PowerRing);
+        var bracelet = party.Equipments.First(g => g.Definition == EquipmentCatalog.GuardianBracelet);
+        var pendant = party.Equipments.First(g => g.Definition == EquipmentCatalog.ArcanePendant);
         var aren = party.Members[0]; var lia = party.Members[1]; var bram = party.Members[2]; var materia = aren.Weapon.Sockets[0];
         Check(party.TryEquipEquipment(aren, ring, out _) && aren.Attack == 38 && aren.Weapon.Sockets[0] == materia,
             "The ring adds four base attack before existing materia modifiers and preserves weapon materias.");
@@ -84,7 +84,7 @@ internal static class AccessoryChecks
     }
     private static void LegacySaves()
     {
-        var party = PrototypePartyFactory.Create(); var shops = PrototypeShopFactory.Create(party, new ExplorationProgress(50));
+        var party = PartySetup.Create(); var shops = ShopCatalog.Create(party, new ExplorationProgress(50));
         var legacy = Capture(shops); legacy.EquipmentCatalogVersion = 0;
         legacy.Stocks = legacy.Stocks.Where(s => s.Product != "power-ring" && s.Product != "guardian-bracelet" && s.Product != "arcane-pendant").ToArray();
         string json = Encoding.UTF8.GetString(SaveStore.Encode(legacy));

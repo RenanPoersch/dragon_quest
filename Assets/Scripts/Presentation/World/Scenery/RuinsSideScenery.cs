@@ -1,7 +1,9 @@
+using DragonQuest.Presentation.World.Animations;
+using DragonQuest.Exploration.Layouts;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace DragonQuest.Prototype
+namespace DragonQuest.Presentation.World.Scenery
 {
     // Pixel art layers have their own depth so foreground pillars really occlude the hero.
     [DefaultExecutionOrder(120)]
@@ -67,7 +69,7 @@ namespace DragonQuest.Prototype
 
             var altar = new GameObject("Altar antigo");
             altar.transform.SetParent(transform, false);
-            altar.transform.localPosition = PrototypeRuinsLayout.Altar;
+            altar.transform.localPosition = RuinsLayout.Altar;
             altar.transform.localScale = new Vector3(.65f,.65f,.65f);
             var shrine = new Painter(altar.transform, 1.5f, material, pixelAssets);
             shrine.Rect(-.9f, 0, 1.8f, .18f, "C2AE84");

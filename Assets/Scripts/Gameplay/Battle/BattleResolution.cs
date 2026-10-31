@@ -1,5 +1,4 @@
 using DragonQuest.Combat;
-using DragonQuest.Equipment;
 using DragonQuest.Exploration;
 using DragonQuest.Progression;
 

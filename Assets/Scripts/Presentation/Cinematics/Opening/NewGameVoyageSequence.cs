@@ -1,6 +1,6 @@
 using System;
 
-namespace DragonQuest.Prototype
+namespace DragonQuest.Presentation.Cinematics.Opening
 {
     // A single unscaled clock keeps the ship, party, scroll and transition in sync.
     public sealed class NewGameVoyageSequence

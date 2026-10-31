@@ -1,8 +1,9 @@
+using DragonQuest.Presentation.Common;
 using System.Collections.Generic;
 using DragonQuest.Combat;
 using UnityEngine;
 
-namespace DragonQuest.Prototype
+namespace DragonQuest.Presentation.Battle
 {
     // Small pixel glyphs match the existing GUI and remain legible at battle scale.
     public sealed class BattleStatusIcons : System.IDisposable
@@ -87,7 +88,7 @@ namespace DragonQuest.Prototype
         {
             if (count == null)
             {
-                count = PrototypeTypography.Style(GUI.skin.label, 12, true);
+                count = GameTypography.Style(GUI.skin.label, 12, true);
                 count.alignment = TextAnchor.LowerRight; count.padding = new RectOffset(0,0,0,0);
             }
             int index = 0;

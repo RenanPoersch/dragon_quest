@@ -1,9 +1,10 @@
+using DragonQuest.Presentation.Battle;
+using DragonQuest.Content;
 using System;
 using System.Linq;
 using DragonQuest.Combat;
 using DragonQuest.Equipment;
 using DragonQuest.Inventory;
-using DragonQuest.Prototype;
 
 public static class UltimateChecks
 {
@@ -21,7 +22,7 @@ public static class UltimateChecks
 
     private static void Signatures()
     {
-        foreach(var member in PrototypePartyFactory.Create().Members)
+        foreach(var member in PartySetup.Create().Members)
         {
             var actor=member.CreateCombatant();
             var ultimate=actor.Definition.Abilities.Single(a=>a.UsesLimit);

@@ -1,10 +1,13 @@
-using DragonQuest.Authoring;
+using DragonQuest.Progression;
+using DragonQuest.Presentation.World.Scenery;
+using DragonQuest.Presentation.World.Rendering;
+using DragonQuest.Presentation.World.Characters;
+using DragonQuest.Exploration.Layouts;
 using System;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
 using DragonQuest.Exploration;
-using DragonQuest.Prototype;
 using UnityEngine;
 
 internal static class ObliqueChecks
@@ -72,10 +75,10 @@ internal static class ObliqueChecks
             Near(screen.x,input.x,"Controles horizontais precisam corresponder à tela.");
             Near(screen.y,input.y*ObliqueProjection.GroundScale,"Controles verticais precisam corresponder à tela.");
         }
-        var travel=new PrototypeTravel();
+        var travel=new WorldNavigation();
         foreach(var map in travel.Maps)
         {
-            Assert(map.FixedCamera==(map.Id!=PrototypeTravel.City&&map.Id!=PrototypeTravel.World&&map.Id!=PrototypeTravel.Volcano),"Ilha, cidade e trilha do vulcao seguem o heroi; ambientes menores usam enquadramento fixo.");
+            Assert(map.FixedCamera==(map.Id!=WorldNavigation.City&&map.Id!=WorldNavigation.World&&map.Id!=WorldNavigation.Volcano),"Ilha, cidade e trilha do vulcao seguem o heroi; ambientes menores usam enquadramento fixo.");
             foreach(var hero in new[]{map.Spawn,new Vector2(map.Bounds.xMax,map.Bounds.yMax)})
             {
                 var focus=ObliqueProjection.CameraFocus(hero,map.Bounds,map.CameraSize,16f/9,map.FixedCamera);
@@ -93,11 +96,11 @@ internal static class ObliqueChecks
                 }
             }
         }
-        foreach(var point in new[]{PrototypeWorldLayout.Spawn,PrototypeWorldLayout.Castle,PrototypeWorldLayout.WestForest,
-            PrototypeWorldLayout.EastForest,PrototypeWorldLayout.Ruins,PrototypeWorldLayout.Volcano,new Vector2(-14,0),new Vector2(12,-6)})
+        foreach(var point in new[]{WorldLayout.Spawn,WorldLayout.Castle,WorldLayout.WestForest,
+            WorldLayout.EastForest,WorldLayout.Ruins,WorldLayout.Volcano,new Vector2(-14,0),new Vector2(12,-6)})
             foreach(float aspect in new[]{16f/9,4f/3,0.75f})
             {
-                Vector2 focus=ObliqueProjection.CameraFocus(point,PrototypeWorldLayout.Bounds,travel.Current.CameraSize,aspect,false);
+                Vector2 focus=ObliqueProjection.CameraFocus(point,WorldLayout.Bounds,travel.Current.CameraSize,aspect,false);
                 Vector2 body=ObliqueProjection.ScreenPlane(new Vector2(point.x-focus.x,point.y-focus.y),ObliqueProjection.HeroCenterHeight);
                 Vector2 anchor=ObliqueProjection.ScreenPlane(Vector2.zero,ObliqueProjection.HeroCenterHeight);
                 Near(body.x,0,"Herói precisa ficar no centro horizontal da ilha, inclusive ao nascer e junto à costa.");
@@ -106,22 +109,22 @@ internal static class ObliqueChecks
         foreach(var point in new[]{new Vector2(-12,21),new Vector2(12,21),new Vector2(-12,-21),new Vector2(12,-21)})
             foreach(float aspect in new[]{16f/9,4f/3})
             {
-                Vector2 focus=ObliqueProjection.CameraFocus(point,PrototypeCityLayout.Bounds,7.5f,aspect,false);
+                Vector2 focus=ObliqueProjection.CameraFocus(point,CityLayout.Bounds,7.5f,aspect,false);
                 Vector2 relative=new Vector2(point.x-focus.x,point.y-focus.y);
                 var foot=ObliqueProjection.ScreenPlane(relative);var head=ObliqueProjection.ScreenPlane(relative,1.45f);
                 Assert(Math.Abs(foot.x)<7.5f*aspect&&Math.Abs(foot.y)<7.5f&&Math.Abs(head.y)<7.5f,"Câmera deve manter pés/cabeça visíveis nas extremidades.");
-                Assert(PrototypeCityLayout.Bounds.Contains(focus),"Acompanhamento nos cantos deve manter foco dentro da periferia.");
+                Assert(CityLayout.Bounds.Contains(focus),"Acompanhamento nos cantos deve manter foco dentro da periferia.");
             }
         foreach(float aspect in new[]{16f/9,4f/3})
         {
-            float size=PrototypeRuinsLayout.CameraSize;
-            float flameY=PrototypeRuinsLayout.Altar.y+2.15f-PrototypeRuinsLayout.CameraHeight;
+            float size=RuinsLayout.CameraSize;
+            float flameY=RuinsLayout.Altar.y+2.15f-RuinsLayout.CameraHeight;
             Assert(Math.Abs(flameY)<size,"Camera lateral deve enquadrar altar e chama sobre os tres degraus.");
         }
 
         var world=LegacySceneryGeometry.IslandData(); Validate(world,"Costa e mar");
         // Area triangulada da superficie precisa corresponder ao contorno concavo.
-        var inner=PrototypeWorldLayout.Coast.Select(p=>new Vector2(p.x*0.955f,p.y*0.955f)).ToArray();
+        var inner=WorldLayout.Coast.Select(p=>new Vector2(p.x*0.955f,p.y*0.955f)).ToArray();
         var surface=new ObliqueMeshData();surface.Polygon(inner,0,ObliqueMeshData.Hex("71806A"));
         double polygonArea=0,triangleArea=0;
         for(int i=0;i<inner.Length;i++) {var a=inner[i];var b=inner[(i+1)%inner.Length];polygonArea+=(double)a.x*b.y-(double)b.x*a.y;}
@@ -131,35 +134,35 @@ internal static class ObliqueChecks
         var islandGround = WorldIslandArt.Ground(); Validate(islandGround,"Pintura continua da ilha");
         for (int i = 0; i < islandGround.Vertices.Count; i++)
         {
-            var p = islandGround.Vertices[i]; var bounds = PrototypeWorldLayout.GroundPaintingBounds;
+            var p = islandGround.Vertices[i]; var bounds = WorldLayout.GroundPaintingBounds;
             Near(islandGround.UVs[i].x, (p.x - bounds.xMin) / bounds.width, "UV X absoluta da pintura da ilha.");
             Near(islandGround.UVs[i].y, (p.y - bounds.yMin) / bounds.height, "UV Y absoluta da pintura da ilha.");
             Assert(islandGround.UVs[i].x >= 0 && islandGround.UVs[i].x <= 1 && islandGround.UVs[i].y >= 0 && islandGround.UVs[i].y <= 1,
                 "Ilha inteira deve ficar dentro da pintura, sem repeticao nas bordas.");
         }
-        var ward = new ObliqueMeshData(); ward.Append(WorldIslandArt.Ward(), ObliqueProjection.Point(PrototypeWorldLayout.Volcano));
+        var ward = new ObliqueMeshData(); ward.Append(WorldIslandArt.Ward(), ObliqueProjection.Point(WorldLayout.Volcano));
         Validate(ward,"Barreira magica circular");
         Assert(ward.Colors.All(c=>c.a>0&&c.a<1),"Barreira deve permitir ver o vulcao atraves dela.");
         foreach (var p in WorldIslandArt.Ward().Vertices)
-            Near((float)Math.Sqrt(p.x*p.x+p.y*p.y),PrototypeWorldLayout.WardRadius,"Parede magica deve acompanhar o colisor circular.");
+            Near((float)Math.Sqrt(p.x*p.x+p.y*p.y),WorldLayout.WardRadius,"Parede magica deve acompanhar o colisor circular.");
         MapDefinition worldMap=travel.Current;
         float worldSize=ObliqueProjection.FrameSize(worldMap.CameraSize,worldMap.Bounds,16f/9,worldMap.FixedCamera);
-        Vector2 worldFocus=ObliqueProjection.CameraFocus(PrototypeWorldLayout.Spawn,worldMap.Bounds,worldSize,16f/9,worldMap.FixedCamera);
+        Vector2 worldFocus=ObliqueProjection.CameraFocus(WorldLayout.Spawn,worldMap.Bounds,worldSize,16f/9,worldMap.FixedCamera);
         Export(directory,"WorldOblique",world,worldFocus,worldSize,ObliqueProjection.HeroCenterHeight,
-            new[]{Sprite("ArenWalk",0,PrototypeWorldLayout.Spawn),
-                WorldIcon(0,PrototypeWorldLayout.Castle),WorldIcon(1,PrototypeWorldLayout.WestForest),
-                WorldIcon(2,PrototypeWorldLayout.EastForest),WorldIcon(3,PrototypeWorldLayout.Ruins),WorldIcon(4,PrototypeWorldLayout.Volcano)});
+            new[]{Sprite("ArenWalk",0,WorldLayout.Spawn),
+                WorldIcon(0,WorldLayout.Castle),WorldIcon(1,WorldLayout.WestForest),
+                WorldIcon(2,WorldLayout.EastForest),WorldIcon(3,WorldLayout.Ruins),WorldIcon(4,WorldLayout.Volcano)});
         Export(directory,"WorldGround",islandGround,worldFocus,worldSize,ObliqueProjection.HeroCenterHeight,atlas:"WorldGroundMap",singleTexture:true);
         Export(directory,"WorldWard",ward,worldFocus,worldSize,ObliqueProjection.HeroCenterHeight,additive:true);
 
         var city=new ObliqueMeshData(); var cityDetails=new ObliqueMeshData(); var cityGlow=new ObliqueMeshData(); var fortress=new ObliqueMeshData();
-        foreach(var block in PrototypeCityLayout.Blocks)
+        foreach(var block in CityLayout.Blocks)
         {
             var data=CityPeripheryArt.Block(block); Validate(data,block.Name);
             var target = block.Name.StartsWith("Ponte de pedra") || block.Name == "Patio da entrada do castelo" ? fortress : city;
             target.Append(data,ObliqueProjection.Point(block.Position));
         }
-        foreach(var building in PrototypeCityLayout.Buildings)
+        foreach(var building in CityLayout.Buildings)
         {
             var art=CityPeripheryArt.Building(building.Name,building.Size,building.Color);
             Validate(art.Body,building.Name); Validate(art.Details,building.Name+" / detalhes"); Validate(art.Glow,building.Name+" / vapor");
@@ -183,7 +186,7 @@ internal static class ObliqueChecks
         var streets=CityPeripheryArt.Streets(); Validate(streets.Body,"Detalhes das ruas"); Validate(streets.Glow,"Transparencia das ruas");
         var ground = CityGroundArt.Build();
         Assert(ground.Vertices.Where(p=>p.z==0).All(p=>p.y<=10.1f||p.y>=14.9f),"Piso da cidade nao pode cobrir o fosso seco, inclusive alem da area caminhavel.");
-        var moat = CityPeripheryArt.Block(PrototypeCityLayout.Blocks.First(b=>b.Name.StartsWith("Fosso seco")));
+        var moat = CityPeripheryArt.Block(CityLayout.Blocks.First(b=>b.Name.StartsWith("Fosso seco")));
         Assert(moat.Vertices.Any(p=>p.z>0.5f),"Fosso precisa ficar visualmente abaixo da rua, com bloqueio fisico definido no layout.");
         city.Append(streets.Body,Vector3.zero);cityGlow.Append(streets.Glow,Vector3.zero);
         CheckEquipmentApproach();
@@ -194,29 +197,29 @@ internal static class ObliqueChecks
         Assert(sign.Vertices.All(p=>p.y< -2),"Letreiro precisa estar preso a fachada, nao flutuar sobre o telhado.");
         Validate(LegacySceneryGeometry.PersonBodyData("B4A078",true),"Herói");
         foreach(float x in new[]{-0.12f,0.12f})Validate(LegacySceneryGeometry.LegData(x,ObliqueMeshData.Hex("B4A078")),"Perna");
-        Export(directory,"CityOblique",city,PrototypeCityLayout.Spawn,6,ObliqueProjection.HeroCenterHeight,
-            new[]{Sprite("ArenWalk",0,PrototypeCityLayout.Spawn),Sprite("NpcRoster",0,PrototypeCityLayout.Citizen),Sprite("NpcRoster",10,PrototypeCityLayout.Guard)},"CityMaterialsAtlas");
-        Export(directory,"CityDetails",cityDetails,PrototypeCityLayout.Spawn,6,ObliqueProjection.HeroCenterHeight,atlas:"CityDetailsAtlas");
-        Export(directory,"CityGlow",cityGlow,PrototypeCityLayout.Spawn,6,ObliqueProjection.HeroCenterHeight,additive:true);
-        Export(directory,"CityFortress",fortress,PrototypeCityLayout.Spawn,6,ObliqueProjection.HeroCenterHeight,atlas:"CastleMaterialsAtlas");
+        Export(directory,"CityOblique",city,CityLayout.Spawn,6,ObliqueProjection.HeroCenterHeight,
+            new[]{Sprite("ArenWalk",0,CityLayout.Spawn),Sprite("NpcRoster",0,CityLayout.Citizen),Sprite("NpcRoster",10,CityLayout.Guard)},"CityMaterialsAtlas");
+        Export(directory,"CityDetails",cityDetails,CityLayout.Spawn,6,ObliqueProjection.HeroCenterHeight,atlas:"CityDetailsAtlas");
+        Export(directory,"CityGlow",cityGlow,CityLayout.Spawn,6,ObliqueProjection.HeroCenterHeight,additive:true);
+        Export(directory,"CityFortress",fortress,CityLayout.Spawn,6,ObliqueProjection.HeroCenterHeight,atlas:"CastleMaterialsAtlas");
         var hall=new ObliqueMeshData();
-        foreach(var block in PrototypeWorldLayout.CastleBlocks)
+        foreach(var block in WorldLayout.CastleBlocks)
         {Validate(ObliqueScenery.BlockData(block.Name,block.Size,block.Color,block.Solid,block.Order),block.Name);AddBlock(hall,block);}
         var king=LegacySceneryGeometry.KingData();var spirit=LegacySceneryGeometry.SpiritData();
         Validate(king,"Rei Rubro e coroa");Validate(LegacySceneryGeometry.KingData(false),"Rei liberto");Validate(spirit,"Espirito maligno");
         Assert(king.Vertices.All(p=>p.z<=0),"Botas do rei nao podem ficar abaixo do piso.");
-        hall.Append(spirit,ObliqueProjection.Point(PrototypeWorldLayout.Throne+Vector2.right*1.8f));
+        hall.Append(spirit,ObliqueProjection.Point(WorldLayout.Throne+Vector2.right*1.8f));
         Export(directory,"KingPortrait",king,Vector2.zero,1.1f,0.85f);
         Export(directory,"SpiritPortrait",spirit,Vector2.zero,1.4f,1.05f);
         Export(directory,"CastleOblique",hall,Vector2.zero,9,0,
-            new[]{Sprite("ArenWalk",0,PrototypeWorldLayout.CastleSpawn),Sprite("NpcRoster",11,PrototypeWorldLayout.Throne)});
+            new[]{Sprite("ArenWalk",0,WorldLayout.CastleSpawn),Sprite("NpcRoster",11,WorldLayout.Throne)});
         // Ruins now use bitmap layers; their previews are generated by RuinsSideValidation in Unity.
         var dragon=LegacySceneryGeometry.DragonData();Validate(dragon,"Dragao e asas");
         Export(directory,"DragonPortrait",dragon,new Vector2(0,0.5f),2.6f,1);
         var cavern=new ObliqueMeshData();
-        foreach(var block in PrototypeVolcanoLayout.Blocks)
+        foreach(var block in VolcanoLayout.Blocks)
         {Validate(ObliqueScenery.BlockData(block.Name,block.Size,block.Color,block.Solid,block.Order),block.Name);AddBlock(cavern,block);}
-        cavern.Append(dragon,ObliqueProjection.Point(PrototypeVolcanoLayout.Dragon));
+        cavern.Append(dragon,ObliqueProjection.Point(VolcanoLayout.Dragon));
         Export(directory,"VolcanoOblique",cavern,new Vector2(0,5),7.5f,ObliqueProjection.HeroCenterHeight,
             new[]{Sprite("ArenWalk",0,new Vector2(0,5))});
         // The complete painted inn is rendered and checked by InnValidation in Unity.
@@ -227,7 +230,7 @@ internal static class ObliqueChecks
             Export(directory,"Ending"+ending,data,Vector2.zero,5.8f);
         }
         foreach(bool eastern in new[]{false,true})
-            foreach(var block in PrototypeWorldLayout.CreateForestBlocks(eastern))Validate(ObliqueScenery.BlockData(block.Name,block.Size,block.Color,block.Solid,block.Order),block.Name);
+            foreach(var block in WorldLayout.CreateForestBlocks(eastern))Validate(ObliqueScenery.BlockData(block.Name,block.Size,block.Color,block.Solid,block.Order),block.Name);
         Validate(ObliqueScenery.BlockData("Balcao",new Vector2(4,0.6f),"614533",true,4),"Balcão");
         Validate(ObliqueScenery.BlockData("Estante",new Vector2(1.5f,3),"705033",true,3),"Estante");
         Console.WriteLine(checks+" verificacoes de perspectiva, camera e malhas passaram.");
@@ -236,12 +239,12 @@ internal static class ObliqueChecks
     {
         var ground=CityGroundArt.Build();Validate(ground,"Pintura unica do chao");
         var bounds=CityGroundArt.TerrainBounds;
-        var coreMin=CityGroundArt.MapUv(new Vector2(PrototypeCityLayout.Bounds.xMin,PrototypeCityLayout.Bounds.yMin));
-        var coreMax=CityGroundArt.MapUv(new Vector2(PrototypeCityLayout.Bounds.xMax,PrototypeCityLayout.Bounds.yMax));
-        NearPixel(coreMin.x*PrototypeCityLayout.GroundTextureWidth,670,"Piso original deve comecar no pixel horizontal nativo.");
-        NearPixel((1-coreMax.y)*PrototypeCityLayout.GroundTextureHeight,673,"Piso original deve comecar no pixel vertical nativo.");
-        NearPixel((coreMax.x-coreMin.x)*PrototypeCityLayout.GroundTextureWidth,965,"Largura original nao pode ser ampliada no mapa unico.");
-        NearPixel((coreMax.y-coreMin.y)*PrototypeCityLayout.GroundTextureHeight,1629,"Altura original nao pode ser ampliada no mapa unico.");
+        var coreMin=CityGroundArt.MapUv(new Vector2(CityLayout.Bounds.xMin,CityLayout.Bounds.yMin));
+        var coreMax=CityGroundArt.MapUv(new Vector2(CityLayout.Bounds.xMax,CityLayout.Bounds.yMax));
+        NearPixel(coreMin.x*CityLayout.GroundTextureWidth,670,"Piso original deve comecar no pixel horizontal nativo.");
+        NearPixel((1-coreMax.y)*CityLayout.GroundTextureHeight,673,"Piso original deve comecar no pixel vertical nativo.");
+        NearPixel((coreMax.x-coreMin.x)*CityLayout.GroundTextureWidth,965,"Largura original nao pode ser ampliada no mapa unico.");
+        NearPixel((coreMax.y-coreMin.y)*CityLayout.GroundTextureHeight,1629,"Altura original nao pode ser ampliada no mapa unico.");
         Assert(ground.Vertices.Count==24&&ground.Triangles.Count==24,"Todo o terreno deve usar uma pintura inteira; o fosso nao pode ter tampas laterais na antiga borda.");
         Assert(ground.UVs.All(uv=>uv.x>=0&&uv.x<=1&&uv.y>=0&&uv.y<=1),"UV deve permanecer dentro da imagem, sem repeticao.");
         for(int i=0;i<ground.Vertices.Count;i++)
@@ -250,28 +253,28 @@ internal static class ObliqueChecks
             Near(uv.x*bounds.width+bounds.xMin,p.x,"Cada pixel horizontal precisa corresponder a mesma posicao na planta.");
             Near(uv.y*bounds.height+bounds.yMin,p.y,"Norte e sul da imagem precisam corresponder a planta, sem inversao.");
         }
-        foreach(var point in PrototypeCityLayout.Street.Concat(new[]{PrototypeCityLayout.Spawn,PrototypeCityLayout.ItemDoor,
-            PrototypeCityLayout.EquipmentDoor,PrototypeCityLayout.MateriaDoor,PrototypeCityLayout.InnDoor,PrototypeCityLayout.CastleDoor}))
+        foreach(var point in CityLayout.Street.Concat(new[]{CityLayout.Spawn,CityLayout.ItemDoor,
+            CityLayout.EquipmentDoor,CityLayout.MateriaDoor,CityLayout.InnDoor,CityLayout.CastleDoor}))
         {
             float height=10-RayDistance(ObliqueProjection.Point(point,10),new Vector3(0,0,1),ground);
             Assert(height>=-0.0001f&&height<=0.06f,"Vielas, retornos e portas devem permanecer cobertos pelo chao unico sem desnivel maior que a ponte.");
         }
-        Near(10-RayDistance(ObliqueProjection.Point(PrototypeCityLayout.Spawn,10),new Vector3(0,0,1),ground),0,
+        Near(10-RayDistance(ObliqueProjection.Point(CityLayout.Spawn,10),new Vector3(0,0,1),ground),0,
             "Piso da chegada deve permanecer na altura do chao.");
-        Near(10-RayDistance(ObliqueProjection.Point(PrototypeCityLayout.Bridge,10),new Vector3(0,0,1),ground),0.058f,
+        Near(10-RayDistance(ObliqueProjection.Point(CityLayout.Bridge,10),new Vector3(0,0,1),ground),0.058f,
             "Pintura da ponte deve ficar sobre o volume de pedra.");
         foreach(float x in new[]{bounds.xMin+1,-20f,-7f,7f,20f,bounds.xMax-1})
-            Near(10-RayDistance(ObliqueProjection.Point(new Vector2(x,PrototypeCityLayout.Bridge.y),10),new Vector3(0,0,1),ground),-0.7f,
+            Near(10-RayDistance(ObliqueProjection.Point(new Vector2(x,CityLayout.Bridge.y),10),new Vector3(0,0,1),ground),-0.7f,
                 "Fosso deve conservar profundidade em toda a largura visivel.");
-        foreach(var block in PrototypeCityLayout.Blocks.Where(b=>b.Name.StartsWith("Fosso seco")))
+        foreach(var block in CityLayout.Blocks.Where(b=>b.Name.StartsWith("Fosso seco")))
         {
             var wall=CityPeripheryArt.Block(block);
             float edge=block.Position.x<0 ? wall.Vertices.Min(p=>p.x)+block.Position.x : wall.Vertices.Max(p=>p.x)+block.Position.x;
             Near(edge,block.Position.x<0 ? bounds.xMin : bounds.xMax,"Paredes do fosso devem continuar ate a borda da pintura.");
         }
-        foreach(var block in PrototypeCityLayout.Blocks.Where(b=>CityGroundArt.ReplacesBlock(b.Name)))
+        foreach(var block in CityLayout.Blocks.Where(b=>CityGroundArt.ReplacesBlock(b.Name)))
             Assert(CityPeripheryArt.Block(block).Vertices.Count==0,"Pisos antigos nao podem cobrir a textura unica com blocos repetidos.");
-        Export(directory,"CityGround",ground,PrototypeCityLayout.Spawn,6,ObliqueProjection.HeroCenterHeight,
+        Export(directory,"CityGround",ground,CityLayout.Spawn,6,ObliqueProjection.HeroCenterHeight,
             atlas:"CityGroundMap",singleTexture:true);
     }
     private static void CheckEquipmentApproach()
@@ -284,19 +287,19 @@ internal static class ObliqueChecks
         Assert(float.IsFinite(RayDistance(ObliqueProjection.Point(new Vector2(4.2f,-13.225f),0.075f),towardCamera,oldHouse)),
             "Regressao deve reproduzir a casa ocultando o acesso antigo da loja de armas.");
         var others=new ObliqueMeshData();
-        foreach(var building in PrototypeCityLayout.Buildings.Where(b=>b.Name!="Loja de equipamentos"))
+        foreach(var building in CityLayout.Buildings.Where(b=>b.Name!="Loja de equipamentos"))
             others.Append(CityPeripheryArt.Building(building.Name,building.Size,building.Color).Body,ObliqueProjection.Point(building.Position));
         foreach(float x in new[]{-0.3f,0,0.3f}) foreach(float h in new[]{0.075f,0.7f,1.4f})
-            Assert(!float.IsFinite(RayDistance(ObliqueProjection.Point(PrototypeCityLayout.DoorReturn(PrototypeCityLayout.EquipmentDoor)+Vector2.right*x,h),towardCamera,others)),
+            Assert(!float.IsFinite(RayDistance(ObliqueProjection.Point(CityLayout.DoorReturn(CityLayout.EquipmentDoor)+Vector2.right*x,h),towardCamera,others)),
                 "Casa vizinha nao pode esconder o personagem no patio de acesso da loja de armas.");
         foreach(float x in new[]{-1f,0,1f})
-            Assert(!float.IsFinite(RayDistance(ObliqueProjection.Point(new Vector2(PrototypeCityLayout.EquipmentDoor.x+x,-12.445f),2.2f),towardCamera,others)),
+            Assert(!float.IsFinite(RayDistance(ObliqueProjection.Point(new Vector2(CityLayout.EquipmentDoor.x+x,-12.445f),2.2f),towardCamera,others)),
                 "Casa vizinha nao pode esconder o letreiro ARMAS.");
     }
     private static void CheckExplorerVisibility()
     {
         var buildings=new ObliqueMeshData();
-        foreach(var building in PrototypeCityLayout.Buildings)
+        foreach(var building in CityLayout.Buildings)
             buildings.Append(CityPeripheryArt.Building(building.Name,building.Size,building.Color).Body,ObliqueProjection.Point(building.Position));
         buildings.Append(CityPeripheryArt.Streets().Body,Vector3.zero);
         var towardCamera=new Vector3(ObliqueProjection.YawSin*ObliqueProjection.HeightScale,
@@ -304,15 +307,15 @@ internal static class ObliqueChecks
         Assert(float.IsFinite(RayDistance(ObliqueProjection.Point(new Vector2(7.7f,-0.2f),0.5f),towardCamera,buildings)),
             "Posicao anterior da exploradora deve reproduzir a oclusao por uma casa.");
         foreach(float x in new[]{-0.2f,0,0.2f}) foreach(float height in new[]{0.075f,0.5f,1f,1.4f})
-            Assert(!float.IsFinite(RayDistance(ObliqueProjection.Point(PrototypeCityLayout.Explorer+Vector2.right*x,height),towardCamera,buildings)),
+            Assert(!float.IsFinite(RayDistance(ObliqueProjection.Point(CityLayout.Explorer+Vector2.right*x,height),towardCamera,buildings)),
                 "Exploradora deve aparecer inteira na rua central.");
     }
     private static void CheckCityViewportCoverage(string directory)
     {
         var floor = CityGroundArt.Build();
-        foreach (var block in PrototypeCityLayout.Blocks.Where(b => b.Name.StartsWith("Fosso seco")))
+        foreach (var block in CityLayout.Blocks.Where(b => b.Name.StartsWith("Fosso seco")))
             floor.Append(CityPeripheryArt.Block(block), ObliqueProjection.Point(block.Position));
-        Rect city = PrototypeCityLayout.Bounds, terrain = CityGroundArt.TerrainBounds;
+        Rect city = CityLayout.Bounds, terrain = CityGroundArt.TerrainBounds;
         // Dentro e fora do antigo limite usam a mesma funcao linear: densidade de texels identica.
         foreach (float y in new[] {-22f, -10, 0, 22f}) foreach (float edge in new[] {-13f, 13f})
         {
@@ -330,7 +333,7 @@ internal static class ObliqueChecks
             Near(middle.y - below.y, above.y - middle.y, "Escala vertical da textura nao pode mudar na antiga borda.");
             Near(middle.x, below.x, "UV horizontal deve ser continuo ao cruzar a antiga borda.");
         }
-        foreach (var block in PrototypeCityLayout.Blocks.Where(b => b.Name.StartsWith("Muralha ")))
+        foreach (var block in CityLayout.Blocks.Where(b => b.Name.StartsWith("Muralha ")))
             Assert(block.Solid && CityPeripheryArt.Block(block).Vertices.Count == 0,
                 "Limites de movimento devem continuar solidos sem mureta cortando a pintura.");
         var forward = new Vector3(-ObliqueProjection.YawSin * ObliqueProjection.HeightScale,
@@ -361,8 +364,8 @@ internal static class ObliqueChecks
             var clamped = ObliqueProjection.CameraFocus(new Vector2(city.xMax + 10, city.yMin - 10), city, size, aspect, false, terrain);
             Assert(clamped == new Vector2(city.xMax, city.yMin), "A camera nao pode ultrapassar os limites da cidade.");
         }
-        foreach (var map in new PrototypeTravel().Maps)
-            Assert(map.CoveredGroundBounds.HasValue == (map.Id == PrototypeTravel.City),
+        foreach (var map in new WorldNavigation().Maps)
+            Assert(map.CoveredGroundBounds.HasValue == (map.Id == WorldNavigation.City),
                 "A regra de cobertura so deve estar ativa na periferia nesta entrega.");
     }
     private static void CheckCameraTracking()
@@ -378,7 +381,7 @@ internal static class ObliqueChecks
             var velocity=ObliqueProjection.GroundDirection(direction.normalized)*4;
             float time=0.5f,maxFocusError=0,maxShiftError=0;
             var presented=velocity*(time-physicsStep);
-            var previousCamera=ObliqueProjection.CameraPosition(presented,PrototypeWorldLayout.Bounds,6.85f,16f/9,false,forward);
+            var previousCamera=ObliqueProjection.CameraPosition(presented,WorldLayout.Bounds,6.85f,16f/9,false,forward);
             for(int frame=0;frame<160;frame++)
             {
                 float dt=pattern[frame%pattern.Length];time+=dt;
@@ -386,7 +389,7 @@ internal static class ObliqueChecks
                 float tick=(float)Math.Floor(time/physicsStep)*physicsStep;
                 float alpha=(time-tick)/physicsStep;
                 presented=velocity*(tick-physicsStep)+velocity*physicsStep*alpha;
-                var camera=ObliqueProjection.CameraPosition(presented,PrototypeWorldLayout.Bounds,6.85f,16f/9,false,forward);
+                var camera=ObliqueProjection.CameraPosition(presented,WorldLayout.Bounds,6.85f,16f/9,false,forward);
                 var focus=camera+forward*ObliqueProjection.Distance;
                 maxFocusError=Math.Max(maxFocusError,Math.Abs(focus.x-presented.x)+Math.Abs(focus.y-presented.y)
                     +Math.Abs(focus.z+ObliqueProjection.HeroCenterHeight));
@@ -397,8 +400,8 @@ internal static class ObliqueChecks
             Assert(maxFocusError<0.0001f,"Camera deve manter o centro do corpo alinhado ao alvo apresentado nas oito direcoes.");
             Assert(maxShiftError<0.0001f,"Pan deve acompanhar cada deslocamento interpolado sem atraso adicional, inclusive com tempos de quadro variaveis.");
         }
-        var fixedCamera=ObliqueProjection.CameraPosition(PrototypeInnLayout.Spawn,PrototypeInnLayout.Bounds,6,16f/9,true,forward);
-        Assert(fixedCamera==ObliqueProjection.CameraPosition(Vector2.zero,PrototypeInnLayout.Bounds,6,16f/9,true,forward),
+        var fixedCamera=ObliqueProjection.CameraPosition(InnLayout.Spawn,InnLayout.Bounds,6,16f/9,true,forward);
+        Assert(fixedCamera==ObliqueProjection.CameraPosition(Vector2.zero,InnLayout.Bounds,6,16f/9,true,forward),
             "Interiores com camera fixa nao podem acompanhar a caminhada.");
     }
     private static void CheckSpriteDepth(string directory)

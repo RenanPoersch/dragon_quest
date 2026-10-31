@@ -1,10 +1,13 @@
+using DragonQuest.Presentation.World.Scenery;
+using DragonQuest.Presentation.World.Rendering;
+using DragonQuest.Presentation.World.Characters;
+using DragonQuest.Exploration.Layouts;
 using DragonQuest.Content;
 using System.Collections.Generic;
 using DragonQuest.Audio;
 using DragonQuest.Exploration;
 using DragonQuest.Interactions;
 using DragonQuest.Progression;
-using DragonQuest.Prototype;
 using UnityEngine;
 
 namespace DragonQuest.Presentation.World
@@ -16,12 +19,12 @@ namespace DragonQuest.Presentation.World
         private readonly PhysicsMaterial2D frictionless;
         private readonly AncientSecrets secrets;
         private readonly DragonProgress dragon;
-        private readonly PrototypeTravel navigation;
+        private readonly WorldNavigation navigation;
         private readonly WorldActions actions;
         private InnSavePoint innSavePoint;
 
         public WorldBuilder(Transform root, ObliqueScenery scenery, PhysicsMaterial2D frictionless,
-            AncientSecrets secrets, DragonProgress dragon, PrototypeTravel navigation, WorldActions actions)
+            AncientSecrets secrets, DragonProgress dragon, WorldNavigation navigation, WorldActions actions)
         {
             this.root = root; this.scenery = scenery; this.frictionless = frictionless;
             this.secrets = secrets; this.dragon = dragon; this.navigation = navigation; this.actions = actions;
@@ -35,34 +38,34 @@ namespace DragonQuest.Presentation.World
             Transform buildings = Group("Predios", city);
             Transform obstacles = Group("Obstaculos e limites", city);
 
-            foreach (CityBlock block in PrototypeCityLayout.Blocks)
+            foreach (CityBlock block in CityLayout.Blocks)
                 Block(block.Name, block.Position, block.Size, block.Color,
                     block.Solid || block.Order >= 0 ? obstacles : ground, block.Solid, block.Order, cityAppearance: true);
-            foreach (CityBlock building in PrototypeCityLayout.Buildings)
+            foreach (CityBlock building in CityLayout.Buildings)
                 Building(building.Name, building.Position, building.Size, building.Color, buildings);
             scenery.CityStreets(Group("Detalhes urbanos", city));
 
             var interactables = new List<Interactable>();
             Transform interactions = Group("Moradores e bau", city);
-            NpcInteraction citizen = CreateNpc("Aldeão", NpcAppearance.Villager, PrototypeCityLayout.Citizen, interactions);
+            NpcInteraction citizen = CreateNpc("Aldeão", NpcAppearance.Villager, CityLayout.Citizen, interactions);
             citizen.Initialize(DialogueCatalog.Citizen);
             interactables.Add(citizen);
-            GameObject peasant = CreateNpcFigure("Camponesa", NpcAppearance.Peasant, PrototypeCityLayout.Resident, interactions);
+            GameObject peasant = CreateNpcFigure("Camponesa", NpcAppearance.Peasant, CityLayout.Resident, interactions);
             interactables.Add(AddSecret(peasant, SecretObject.Peasant));
-            NpcInteraction traveler = CreateNpc("Viajante", NpcAppearance.Traveler, PrototypeCityLayout.Traveler, interactions);
+            NpcInteraction traveler = CreateNpc("Viajante", NpcAppearance.Traveler, CityLayout.Traveler, interactions);
             traveler.Initialize(DialogueCatalog.Traveler, CompleteTravelerConversation);
             interactables.Add(traveler);
-            NpcInteraction explorer = CreateNpc("Exploradora", NpcAppearance.Explorer, PrototypeCityLayout.Explorer, interactions);
+            NpcInteraction explorer = CreateNpc("Exploradora", NpcAppearance.Explorer, CityLayout.Explorer, interactions);
             explorer.Initialize(DialogueCatalog.Explorer);
             interactables.Add(explorer);
             interactables.Add(CreateChest(interactions));
-            CreatePassage("Loja de itens", PrototypeTravel.City, city, "item-shop");
-            CreatePassage("Loja de materias", PrototypeTravel.City, city, "materia-shop");
-            CreatePassage("Loja de equipamentos", PrototypeTravel.City, city, "equipment-shop");
-            CreatePassage("Portao para a ilha", PrototypeTravel.City, city, PrototypeTravel.World);
-            CreatePassage("Entrada do castelo", PrototypeTravel.City, city, PrototypeTravel.Castle);
-            CreatePassage("Hospedaria",PrototypeTravel.City,city,PrototypeTravel.Inn);
-            GameObject guard = Entity("Guarda Real", PrototypeCityLayout.Guard, city);
+            CreatePassage("Loja de itens", WorldNavigation.City, city, "item-shop");
+            CreatePassage("Loja de materias", WorldNavigation.City, city, "materia-shop");
+            CreatePassage("Loja de equipamentos", WorldNavigation.City, city, "equipment-shop");
+            CreatePassage("Portao para a ilha", WorldNavigation.City, city, WorldNavigation.World);
+            CreatePassage("Entrada do castelo", WorldNavigation.City, city, WorldNavigation.Castle);
+            CreatePassage("Hospedaria",WorldNavigation.City,city,WorldNavigation.Inn);
+            GameObject guard = Entity("Guarda Real", CityLayout.Guard, city);
             GameObject sentry = Entity("Sentinela da ponte", new Vector2(-1.2f, 0), guard.transform);
             BoxCollider2D guardCollider = sentry.AddComponent<BoxCollider2D>();
             guardCollider.size = new Vector2(0.65f, 0.7f);
@@ -73,7 +76,7 @@ namespace DragonQuest.Presentation.World
             soldierCollider.size = guardCollider.size;
             soldierCollider.sharedMaterial = frictionless;
             scenery.PixelPerson(soldier.transform, "NpcRoster", PixelSpriteLibrary.NpcFrame(NpcAppearance.Guard));
-            GameObject bridgeBarrier = Entity("Bloqueio da patrulha", PrototypeCityLayout.Bridge - PrototypeCityLayout.Guard, guard.transform);
+            GameObject bridgeBarrier = Entity("Bloqueio da patrulha", CityLayout.Bridge - CityLayout.Guard, guard.transform);
             BoxCollider2D barrierCollider = bridgeBarrier.AddComponent<BoxCollider2D>();
             barrierCollider.size = new Vector2(3.7f, .7f);
             barrierCollider.sharedMaterial = frictionless;
@@ -82,14 +85,14 @@ namespace DragonQuest.Presentation.World
 
             var mapRoots = new Dictionary<string, GameObject>
             {
-                { PrototypeTravel.World, CreateWorld(interactables).gameObject },
-                { PrototypeTravel.City, city.gameObject },
-                { PrototypeTravel.Castle, CreateCastle(interactables).gameObject },
-                { PrototypeTravel.WestForest, CreateQuarry(interactables).gameObject },
-                { PrototypeTravel.EastForest, CreateForest(interactables).gameObject },
-                { PrototypeTravel.Ruins, CreateRuins(interactables).gameObject },
-                { PrototypeTravel.Volcano,CreateVolcano(interactables).gameObject },
-                { PrototypeTravel.Inn,CreateInn(interactables).gameObject }
+                { WorldNavigation.World, CreateWorld(interactables).gameObject },
+                { WorldNavigation.City, city.gameObject },
+                { WorldNavigation.Castle, CreateCastle(interactables).gameObject },
+                { WorldNavigation.WestForest, CreateQuarry(interactables).gameObject },
+                { WorldNavigation.EastForest, CreateForest(interactables).gameObject },
+                { WorldNavigation.Ruins, CreateRuins(interactables).gameObject },
+                { WorldNavigation.Volcano,CreateVolcano(interactables).gameObject },
+                { WorldNavigation.Inn,CreateInn(interactables).gameObject }
             };
             string[] shopIds = { "item-shop", "equipment-shop", "materia-shop" };
             string[] shopNames = { "Loja de itens", "Loja de equipamentos", "Loja de matérias" };
@@ -149,7 +152,7 @@ namespace DragonQuest.Presentation.World
 
         private ChestInteraction CreateChest(Transform parent)
         {
-            GameObject chest = Entity("Bau da praca", PrototypeCityLayout.Chest, parent);
+            GameObject chest = Entity("Bau da praca", CityLayout.Chest, parent);
             BoxCollider2D collider = chest.AddComponent<BoxCollider2D>();
             collider.size = new Vector2(0.9f, 0.7f);
             collider.sharedMaterial = frictionless;
@@ -163,7 +166,7 @@ namespace DragonQuest.Presentation.World
         private void CreatePassage(string doorName, string source, Transform parent, string destination)
         {
             Rect area = navigation.RouteFrom(source, destination).Entrance;
-            // Ancora na Hierarchy; a passagem usa a area invisivel declarada em PrototypeTravel.
+            // Ancora na Hierarchy; a passagem usa a area invisivel declarada em WorldNavigation.
             Entity(doorName, area.center, parent);
         }
 
@@ -174,33 +177,33 @@ namespace DragonQuest.Presentation.World
             foreach (Collider2D collider in world.GetComponentsInChildren<Collider2D>()) collider.sharedMaterial = frictionless;
             GameObject coast = Entity("Costa - limite do mar", Vector2.zero, world);
             EdgeCollider2D shoreline = coast.AddComponent<EdgeCollider2D>();
-            var perimeter = new Vector2[PrototypeWorldLayout.Coast.Count + 1];
-            for (int i = 0; i < PrototypeWorldLayout.Coast.Count; i++) perimeter[i] = PrototypeWorldLayout.Coast[i];
+            var perimeter = new Vector2[WorldLayout.Coast.Count + 1];
+            for (int i = 0; i < WorldLayout.Coast.Count; i++) perimeter[i] = WorldLayout.Coast[i];
             perimeter[perimeter.Length - 1] = perimeter[0];
             shoreline.points = perimeter;
             shoreline.edgeRadius = 0.08f;
             shoreline.sharedMaterial = frictionless;
 
-            Transform castle = Entity("Castelo - icone global", PrototypeWorldLayout.Castle, world).transform;
+            Transform castle = Entity("Castelo - icone global", WorldLayout.Castle, world).transform;
             scenery.CastleIcon(castle);
             castle.GetComponent<BoxCollider2D>().sharedMaterial = frictionless;
-            CreatePassage("Castelo e arredores", PrototypeTravel.World, world, PrototypeTravel.City);
-            Transform quarry = Entity("Pedreira - icone global", PrototypeWorldLayout.WestForest, world).transform;
+            CreatePassage("Castelo e arredores", WorldNavigation.World, world, WorldNavigation.City);
+            Transform quarry = Entity("Pedreira - icone global", WorldLayout.WestForest, world).transform;
             scenery.QuarryIcon(quarry);
             quarry.GetComponent<BoxCollider2D>().sharedMaterial = frictionless;
-            CreateForestIcon(world, PrototypeWorldLayout.EastForest);
-            CreatePassage("Pedreira dos monolitos", PrototypeTravel.World, world, PrototypeTravel.WestForest);
-            CreatePassage("Floresta leste", PrototypeTravel.World, world, PrototypeTravel.EastForest);
+            CreateForestIcon(world, WorldLayout.EastForest);
+            CreatePassage("Pedreira dos monolitos", WorldNavigation.World, world, WorldNavigation.WestForest);
+            CreatePassage("Floresta leste", WorldNavigation.World, world, WorldNavigation.EastForest);
 
-            Transform ruins = Entity("Ruinas - icone global",PrototypeWorldLayout.Ruins,world).transform;
+            Transform ruins = Entity("Ruinas - icone global",WorldLayout.Ruins,world).transform;
             scenery.RuinsIcon(ruins);
             ruins.GetComponent<BoxCollider2D>().sharedMaterial=frictionless;
-            CreatePassage("Ruinas antigas", PrototypeTravel.World, world, PrototypeTravel.Ruins);
+            CreatePassage("Ruinas antigas", WorldNavigation.World, world, WorldNavigation.Ruins);
 
-            Transform volcano = Entity("Vulcao - icone global", PrototypeWorldLayout.Volcano, world).transform;
+            Transform volcano = Entity("Vulcao - icone global", WorldLayout.Volcano, world).transform;
             scenery.VolcanoIcon(volcano);
-            CreatePassage("Entrada do vulcao",PrototypeTravel.World,world,PrototypeTravel.Volcano);
-            GameObject passage = Entity("Passagem oculta", PrototypeWorldLayout.Trail, world);
+            CreatePassage("Entrada do vulcao",WorldNavigation.World,world,WorldNavigation.Volcano);
+            GameObject passage = Entity("Passagem oculta", WorldLayout.Trail, world);
             BlockedPassageInteraction gate = passage.AddComponent<BlockedPassageInteraction>();
             gate.Initialize(barrier, secrets); interactions.Add(gate);
             return world;
@@ -216,7 +219,7 @@ namespace DragonQuest.Presentation.World
         {
             Transform quarry = Group("Pedreira dos monolitos - interior pixel art");
             quarry.gameObject.AddComponent<QuarryPixelScenery>().Build(secrets, interactions, frictionless);
-            CreatePassage("Saida da pedreira", PrototypeTravel.WestForest, quarry, PrototypeTravel.World);
+            CreatePassage("Saida da pedreira", WorldNavigation.WestForest, quarry, WorldNavigation.World);
             NpcInteraction worker = CreateNpc("Lenhador", NpcAppearance.QuarryKeeper, QuarryLayout.Worker, quarry);
             worker.Initialize(DialogueCatalog.QuarryKeeper);
             interactions.Add(worker);
@@ -227,21 +230,21 @@ namespace DragonQuest.Presentation.World
         {
             Transform forest = Group("Floresta leste - interior");
             forest.gameObject.AddComponent<ForestPixelScenery>().Build(secrets);
-            foreach (CityBlock block in PrototypeWorldLayout.CreateForestBlocks(true))
+            foreach (CityBlock block in WorldLayout.CreateForestBlocks(true))
             {
                 if (!block.Solid || !(block.Name.StartsWith("Limite") || block.Name == "Pedra com escamas")) continue;
-                Vector2 position = block.Name == "Pedra com escamas" ? PrototypeSecretLayout.ClawStone : block.Position;
+                Vector2 position = block.Name == "Pedra com escamas" ? SecretLayout.ClawStone : block.Position;
                 GameObject obstacle = Entity(block.Name, position, forest);
                 BoxCollider2D collider = obstacle.AddComponent<BoxCollider2D>();
                 collider.size = block.Size; collider.sharedMaterial = frictionless;
             }
-            CreatePassage("Saida da floresta", PrototypeTravel.EastForest, forest, PrototypeTravel.World);
+            CreatePassage("Saida da floresta", WorldNavigation.EastForest, forest, WorldNavigation.World);
             NpcInteraction gardener = CreateNpc("Jardineiro", NpcAppearance.Gardener, EastForestLayout.Gardener, forest);
             gardener.Initialize(DialogueCatalog.Gardener);
             interactions.Add(gardener);
-            GameObject stone = Entity("Marcas na pedra", PrototypeSecretLayout.ClawStone, forest);
+            GameObject stone = Entity("Marcas na pedra", SecretLayout.ClawStone, forest);
             interactions.Add(AddSecret(stone, SecretObject.ClawStone));
-            GameObject tree = Entity("Raizes da arvore oca", PrototypeSecretLayout.HollowTree, forest);
+            GameObject tree = Entity("Raizes da arvore oca", SecretLayout.HollowTree, forest);
             BoxCollider2D roots = tree.AddComponent<BoxCollider2D>();
             roots.size = new Vector2(1.6f,1f); roots.sharedMaterial = frictionless;
             interactions.Add(AddSecret(tree, SecretObject.HollowTree));
@@ -252,7 +255,7 @@ namespace DragonQuest.Presentation.World
         {
             Transform castle = Group("Castelo - interior");
             castle.gameObject.AddComponent<ThroneRoomPixelScenery>().Build();
-            CreatePassage("Saida do castelo", PrototypeTravel.Castle, castle, PrototypeTravel.City);
+            CreatePassage("Saida do castelo", WorldNavigation.Castle, castle, WorldNavigation.City);
             GameObject king=Entity("Rei Rubro",ThroneRoomLayout.King,castle);
             BoxCollider2D collider=king.AddComponent<BoxCollider2D>();collider.size=new Vector2(0.55f,0.6f);collider.sharedMaterial=frictionless;
             scenery.PixelPerson(king.transform, "TyrantSeated");
@@ -272,7 +275,7 @@ namespace DragonQuest.Presentation.World
             Transform ruins=Group("Ruinas antigas - altar da lenda");
             Transform altar=ruins.gameObject.AddComponent<RuinsSideScenery>().Build(out GameObject flame);
             interactions.Add(AddSecret(altar.gameObject,SecretObject.Altar,MonolithSymbol.Sun,flame));
-            CreatePassage("Saida das ruinas", PrototypeTravel.Ruins, ruins, PrototypeTravel.World);
+            CreatePassage("Saida das ruinas", WorldNavigation.Ruins, ruins, WorldNavigation.World);
             return ruins;
         }
 
@@ -281,8 +284,8 @@ namespace DragonQuest.Presentation.World
             Transform volcano = Group("Covil do dragao - caverna lateral");
             var lair = volcano.gameObject.AddComponent<DragonLairScenery>();
             lair.Build();
-            CreatePassage("Saida do covil", PrototypeTravel.Volcano, volcano, PrototypeTravel.World);
-            GameObject boss = Entity("Dragao corrompido", PrototypeVolcanoLayout.Dragon, volcano);
+            CreatePassage("Saida do covil", WorldNavigation.Volcano, volcano, WorldNavigation.World);
+            GameObject boss = Entity("Dragao corrompido", VolcanoLayout.Dragon, volcano);
             var model = lair.CreateDragon(boss.transform);
             GameObject glow = lair.CreateEssence(boss.transform);
             DragonInteraction interaction = boss.AddComponent<DragonInteraction>();
@@ -295,14 +298,14 @@ namespace DragonQuest.Presentation.World
         {
             Transform inn=Group("Hospedaria - interior");
             inn.gameObject.AddComponent<InnPixelScenery>().Build(frictionless);
-            CreatePassage("Saida da hospedaria",PrototypeTravel.Inn,inn,PrototypeTravel.City);
-            InnInteraction keeper=CreateNpcFigure("Hospedeira",NpcAppearance.Innkeeper,PrototypeInnLayout.Keeper,inn).AddComponent<InnInteraction>();
+            CreatePassage("Saida da hospedaria",WorldNavigation.Inn,inn,WorldNavigation.City);
+            InnInteraction keeper=CreateNpcFigure("Hospedeira",NpcAppearance.Innkeeper,InnLayout.Keeper,inn).AddComponent<InnInteraction>();
             keeper.Initialize(actions.OpenInnSaveMenu, actions.RestAtInn);
             interactions.Add(keeper);
-            InnInteraction reception=Entity("Recepcao / falar com a hospedeira",PrototypeInnLayout.Reception,inn).AddComponent<InnInteraction>();
+            InnInteraction reception=Entity("Recepcao / falar com a hospedeira",InnLayout.Reception,inn).AddComponent<InnInteraction>();
             reception.Initialize(actions.OpenInnSaveMenu, actions.RestAtInn);
             interactions.Add(reception);
-            innSavePoint=Entity("Cristal de salvamento",PrototypeInnLayout.SavePoint,inn).AddComponent<InnSavePoint>();
+            innSavePoint=Entity("Cristal de salvamento",InnLayout.SavePoint,inn).AddComponent<InnSavePoint>();
             return inn;
         }
 
@@ -325,7 +328,7 @@ namespace DragonQuest.Presentation.World
             merchant.Initialize(shopId); interactions.Add(merchant);
             MerchantInteraction counter=Entity("Balcao / negociar",counterPoint,shop).AddComponent<MerchantInteraction>();
             counter.Initialize(shopId); interactions.Add(counter);
-            CreatePassage("Saida da loja",shopId,shop,PrototypeTravel.City);
+            CreatePassage("Saida da loja",shopId,shop,WorldNavigation.City);
         }
 
         private void Building(string buildingName, Vector2 position, Vector2 size, string roofColor, Transform parent)
@@ -340,7 +343,7 @@ namespace DragonQuest.Presentation.World
         {
             GameObject player = new GameObject("Heroi");
             player.transform.SetParent(root, false);
-            player.transform.position = PrototypeWorldLayout.Spawn;
+            player.transform.position = WorldLayout.Spawn;
             Rigidbody2D body = player.AddComponent<Rigidbody2D>();
             body.gravityScale = 0f;
             BoxCollider2D collider = player.AddComponent<BoxCollider2D>();

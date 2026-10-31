@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace DragonQuest.Prototype
+namespace DragonQuest.Exploration.Layouts
 {
     // A fisica continua no plano XY. A camera em perspectiva projeta esse piso sobre a pintura aprovada.
     public static class ThroneRoomLayout

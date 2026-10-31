@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace DragonQuest.Prototype
+namespace DragonQuest.Presentation.Cinematics.Opening
 {
     // Partition the original drawing along the curved near gunwale, without repainting it.
     // Both layers keep identical registration, so the party can stand inside the hull.

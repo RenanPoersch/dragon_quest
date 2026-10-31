@@ -1,5 +1,5 @@
+using DragonQuest.Presentation.Cinematics.Opening;
 using System;
-using DragonQuest.Prototype;
 
 public static class IntroChecks
 {

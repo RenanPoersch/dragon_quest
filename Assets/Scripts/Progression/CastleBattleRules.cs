@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using DragonQuest.Combat;
-using DragonQuest.Equipment;
 
 namespace DragonQuest.Progression
 {

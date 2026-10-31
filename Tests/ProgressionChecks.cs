@@ -1,30 +1,30 @@
+using DragonQuest.Content;
 using System;
 using DragonQuest.Combat;
 using DragonQuest.Exploration;
 using DragonQuest.Progression;
-using DragonQuest.Prototype;
 using DragonQuest.Shops;
 
 internal static class ProgressionChecks
 {
     private static int checks;
     private static void Assert(bool condition, string description) { checks++; if (!condition) throw new Exception(description); }
-    private static ShopService Create(int gold = 50) => PrototypeShopFactory.Create(PrototypePartyFactory.Create(), new ExplorationProgress(gold));
+    private static ShopService Create(int gold = 50) => ShopCatalog.Create(PartySetup.Create(), new ExplorationProgress(gold));
     private static ShopProduct Product(ShopInventory shop, string id)
     { foreach (ShopProduct product in shop.Products) if (product.Id == id) return product; throw new Exception("Produto ausente: " + id); }
 
     private static BattleSession Fixture(bool victory, int goldReward = 35)
     {
-        var hero = new CombatantState("hero", new CombatantDefinition("Heroi", "Teste", 10, 0, victory ? 100 : 1, 0, 0, victory ? 20 : 1, PrototypeBattleFactory.Attack), CombatTeam.Party);
+        var hero = new CombatantState("hero", new CombatantDefinition("Heroi", "Teste", 10, 0, victory ? 100 : 1, 0, 0, victory ? 20 : 1, AbilityCatalog.Attack), CombatTeam.Party);
         var enemy = new CombatantState("enemy", new CombatantDefinition("Inimigo", "Teste", 10, 0, victory ? 1 : 100, 0, 0, victory ? 1 : 20,
-            ElementalAffinities.Neutral, goldReward, PrototypeBattleFactory.Attack), CombatTeam.Enemy);
+            ElementalAffinities.Neutral, goldReward, AbilityCatalog.Attack), CombatTeam.Enemy);
         return new BattleSession(hero, enemy);
     }
     private static void Finish(BattleSession battle)
     {
         CombatantState target = null;
         foreach (CombatantState candidate in battle.Combatants) if (candidate != battle.CurrentActor) target = candidate;
-        Assert(battle.TryAct(battle.CurrentActor, PrototypeBattleFactory.Attack, target, out _), "Fixture de recompensa deve terminar.");
+        Assert(battle.TryAct(battle.CurrentActor, AbilityCatalog.Attack, target, out _), "Fixture de recompensa deve terminar.");
     }
 
     private static void CheckBattleRewards()
@@ -58,21 +58,21 @@ internal static class ProgressionChecks
 
     private static CombatantDefinition RewardEnemy(string name, int gold, int attack = 1)
         => new CombatantDefinition(name, "Inimigo", 10, 0, attack, 0, 0, 1,
-            ElementalAffinities.Neutral, gold, PrototypeBattleFactory.Attack);
+            ElementalAffinities.Neutral, gold, AbilityCatalog.Attack);
 
     private static BattleSession RewardEncounter(params CombatantDefinition[] enemies)
     {
         var participants = new CombatantState[enemies.Length + 1];
         participants[0] = new CombatantState("hero", new CombatantDefinition("Heroi", "Teste", 10, 7, 1000, 0, 0, 20,
-            ElementalAffinities.Neutral, 999, PrototypeBattleFactory.Attack, PrototypeBattleFactory.Cleave), CombatTeam.Party);
+            ElementalAffinities.Neutral, 999, AbilityCatalog.Attack, AbilityCatalog.Cleave), CombatTeam.Party);
         for (int i = 0; i < enemies.Length; i++) participants[i + 1] = new CombatantState("enemy-" + i, enemies[i], CombatTeam.Enemy);
         return new BattleSession(participants);
     }
 
     private static void FinishAll(BattleSession battle)
     {
-        var targets = battle.GetValidTargets(PrototypeBattleFactory.Cleave);
-        Assert(targets.Count > 0 && battle.TryAct(battle.CurrentActor, PrototypeBattleFactory.Cleave, targets[0], out _)
+        var targets = battle.GetValidTargets(AbilityCatalog.Cleave);
+        Assert(targets.Count > 0 && battle.TryAct(battle.CurrentActor, AbilityCatalog.Cleave, targets[0], out _)
             && battle.Outcome == BattleOutcome.Victory, "Ataque em area deve concluir fixture com varios inimigos.");
     }
 
@@ -87,13 +87,13 @@ internal static class ProgressionChecks
 
         battle = RewardEncounter(RewardEnemy("Batedor", 12), RewardEnemy("Capitao", 48));
         Assert(!rewards.TryClaim(battle, out _) && progress.Gold == 127, "Inimigos vivos nao concedem ouro antecipado.");
-        Assert(battle.TryAct(battle.CurrentActor, PrototypeBattleFactory.Attack, battle.Combatants[1], out _)
+        Assert(battle.TryAct(battle.CurrentActor, AbilityCatalog.Attack, battle.Combatants[1], out _)
             && !battle.Combatants[1].IsAlive && battle.Combatants[2].IsAlive && battle.Outcome == BattleOutcome.None,
             "Fixture deve derrotar somente o primeiro inimigo.");
         Assert(!rewards.TryClaim(battle, out _) && !rewards.HasClaimed(battle) && progress.Gold == 127,
             "Uma eliminacao parcial aguarda a vitoria para pagar.");
-        Assert(battle.TryAct(battle.CurrentActor, PrototypeBattleFactory.Attack, battle.Combatants[0], out _), "Inimigo restante deve concluir seu turno.");
-        Assert(battle.TryAct(battle.CurrentActor, PrototypeBattleFactory.Attack, battle.Combatants[2], out _)
+        Assert(battle.TryAct(battle.CurrentActor, AbilityCatalog.Attack, battle.Combatants[0], out _), "Inimigo restante deve concluir seu turno.");
+        Assert(battle.TryAct(battle.CurrentActor, AbilityCatalog.Attack, battle.Combatants[2], out _)
             && battle.Outcome == BattleOutcome.Victory, "Segundo inimigo derrotado deve concluir a vitoria.");
         Assert(rewards.TryClaim(battle, out string message) && progress.Gold == 187,
             "Recompensa soma 12 + 48; ignora as 999 moedas na definicao do aliado vivo.");
@@ -112,8 +112,8 @@ internal static class ProgressionChecks
         Assert(!rewards.TryClaim(battle, out _) && progress.Gold == 222, "Recompensa zero tambem deve ser registrada uma unica vez.");
 
         battle = RewardEncounter(RewardEnemy("Batedor", 12), RewardEnemy("Capitao", 48, 1000));
-        Assert(battle.TryAct(battle.CurrentActor, PrototypeBattleFactory.Attack, battle.Combatants[1], out _)
-            && battle.TryAct(battle.CurrentActor, PrototypeBattleFactory.Attack, battle.Combatants[0], out _)
+        Assert(battle.TryAct(battle.CurrentActor, AbilityCatalog.Attack, battle.Combatants[1], out _)
+            && battle.TryAct(battle.CurrentActor, AbilityCatalog.Attack, battle.Combatants[0], out _)
             && battle.Outcome == BattleOutcome.Defeat, "Fixture deve perder apos derrotar um inimigo.");
         Assert(!rewards.TryClaim(battle, out _) && !rewards.HasClaimed(battle) && progress.Gold == 222,
             "Derrota com eliminacao parcial continua sem conceder ouro.");
@@ -133,8 +133,8 @@ internal static class ProgressionChecks
         battle = Fixture(true, int.MaxValue); Finish(battle);
         Assert(maximumRewards.TryClaim(battle, out _) && maximum.Gold == int.MaxValue, "Recompensa no limite exato deve ser permitida quando o saldo esta vazio.");
 
-        Assert(new CombatantDefinition("Sem configuracao", "Teste", 10, 0, 1, 0, 0, 1, PrototypeBattleFactory.Attack).GoldReward == 0
-            && new CombatantDefinition("Com afinidades", "Teste", 10, 0, 1, 0, 0, 1, ElementalAffinities.Neutral, PrototypeBattleFactory.Attack).GoldReward == 0,
+        Assert(new CombatantDefinition("Sem configuracao", "Teste", 10, 0, 1, 0, 0, 1, AbilityCatalog.Attack).GoldReward == 0
+            && new CombatantDefinition("Com afinidades", "Teste", 10, 0, 1, 0, 0, 1, ElementalAffinities.Neutral, AbilityCatalog.Attack).GoldReward == 0,
             "Definicoes antigas sem recompensa explicita devem assumir zero.");
         bool rejected = false;
         try { RewardEnemy("Invalido", -1); } catch (ArgumentOutOfRangeException) { rejected = true; }
@@ -150,7 +150,7 @@ internal static class ProgressionChecks
     {
         ShopService shops = Create();
         var rewards = new BattleRewards(shops.Progress);
-        BattleSession battle = PrototypeBattleFactory.CreateEncounter(shops.Party);
+        BattleSession battle = EncounterCatalog.CreateEncounter(shops.Party);
         CombatantState guard = battle.Combatants[3];
         Assert(guard.Definition.GoldReward == 25 && battle.Combatants[4].Definition.GoldReward == 10,
             "Patrulha jogavel deve configurar 25 no guarda e 10 no soldado.");
@@ -173,7 +173,7 @@ internal static class ProgressionChecks
         }
         Assert(turns < 500 && battle.Outcome == BattleOutcome.Victory, "Kit economico deve permitir primeira vitoria sem exigir compras ou consumiveis extras.");
         Assert(rewards.TryClaim(battle, out _) && shops.Progress.Gold == 85
-            && shops.Party.Consumables.QuantityOf(PrototypePartyFactory.Potion) == 2 && shops.Party.Consumables.QuantityOf(PrototypePartyFactory.Antidote) == 1,
+            && shops.Party.Consumables.QuantityOf(ItemCatalog.Potion) == 2 && shops.Party.Consumables.QuantityOf(ItemCatalog.Antidote) == 1,
             "Primeira vitoria viavel concede ouro e preserva itens que nao foram usados.");
         ShopInventory materiaShop = shops.FindShop("materia-shop");
         Assert(shops.Progress.TryOpenChest("praca-primeiro-bau", 25) && shops.Progress.Gold == 110,
@@ -187,7 +187,7 @@ internal static class ProgressionChecks
         var aren = shops.Party.Members[0];
         Assert(shops.Party.TryEquip(aren, aren.Armor, 2, shops.Party.Materias[5], out _)
             && shops.Party.TryEquip(aren, aren.Armor, 3, shops.Party.Materias[6], out _), "Combo comprado deve poder ser montado na armadura inicial.");
-        var next = PrototypeBattleFactory.CreateEncounter(shops.Party);
+        var next = EncounterCatalog.CreateEncounter(shops.Party);
         AbilityDefinition fireAll = Command(next.Combatants[0], "fire");
         Assert(fireAll.Targets == TargetRule.AllEnemies && fireAll.Element == DamageElement.Fire && fireAll.MpCost == 9,
             "Proxima batalha deve reconhecer o combo comprado com as recompensas.");

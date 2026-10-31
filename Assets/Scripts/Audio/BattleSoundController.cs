@@ -1,6 +1,6 @@
+using DragonQuest.Gameplay.Battle;
 using System.Collections.Generic;
 using DragonQuest.Input;
-using DragonQuest.Prototype;
 using UnityEngine;
 
 namespace DragonQuest.Audio
@@ -12,7 +12,7 @@ namespace DragonQuest.Audio
         private readonly Dictionary<string, AudioClip> clips = new Dictionary<string, AudioClip>();
         private readonly AudioSource[] voices = new AudioSource[VoiceCount];
         private readonly double[] occupiedUntil = new double[VoiceCount];
-        private PrototypeBattleController battle;
+        private BattleController battle;
         public string CurrentSound { get; private set; }
         public int PlayCount { get; private set; }
 
@@ -36,7 +36,7 @@ namespace DragonQuest.Audio
             }
         }
 
-        public void Initialize(PrototypeBattleController controller)
+        public void Initialize(BattleController controller)
         {
             Unsubscribe(); StopAll(); battle = controller;
             if (isActiveAndEnabled && battle != null) battle.ActionPresented += OnActionPresented;

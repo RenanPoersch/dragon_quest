@@ -1,7 +1,7 @@
+using DragonQuest.Presentation.Battle.Animations;
 using System.Collections.Generic;
 using DragonQuest.Combat;
 using DragonQuest.Progression;
-using DragonQuest.Prototype;
 using UnityEngine;
 
 namespace DragonQuest.Presentation.Battle

@@ -1,8 +1,9 @@
+using DragonQuest.Presentation.Common;
 using System;
 using DragonQuest.Progression;
 using UnityEngine;
 
-namespace DragonQuest.Prototype
+namespace DragonQuest.Presentation.Cinematics.Endings
 {
     public sealed class CastleDestroyedPresentation : IDisposable
     {
@@ -131,8 +132,8 @@ namespace DragonQuest.Prototype
         private void EnsureStyles()
         {
             if (story != null) return;
-            story = PrototypeTypography.Style(GUI.skin.label, 28);
-            caption = PrototypeTypography.Style(GUI.skin.label, 20, true);
+            story = GameTypography.Style(GUI.skin.label, 28);
+            caption = GameTypography.Style(GUI.skin.label, 20, true);
             foreach (GUIStyle style in new[] { story, caption })
             { style.normal.textColor = Color.white; style.padding = new RectOffset(); style.wordWrap = false; }
         }

@@ -1,7 +1,9 @@
+using DragonQuest.Progression;
+using DragonQuest.Content;
+using DragonQuest.Authoring;
 using System;
 using DragonQuest.Combat;
 using DragonQuest.Equipment;
-using DragonQuest.Prototype;
 
 internal static class ElementalChecks
 {
@@ -174,7 +176,7 @@ internal static class ElementalChecks
     {
         foreach (string id in new[] { "fire", "ice", "thunder", "phoenix" })
         {
-            PartyProgress party = PrototypePartyFactory.CreateTestParty();
+            PartyProgress party = PartyFixture.Create();
             PartyMember member = party.Members[1]; // Lia: demonstra que os comandos nao sao restritos a classe.
             MateriaInstance source = FindMateria(party, id), all = FindMateria(party, "all"), infuse = FindMateria(party, "infuse");
             AbilityDefinition original = source.Definition.Abilities[0];
@@ -233,10 +235,10 @@ internal static class ElementalChecks
 
     private static void CheckPlayableEncounter()
     {
-        PartyProgress party = PrototypePartyFactory.CreateTestParty();
+        PartyProgress party = PartyFixture.Create();
         PartyMember aren = party.Members[0];
         Equip(party, aren, 2, FindMateria(party, "fire")); // All ja esta no encaixe 3.
-        BattleSession battle = PrototypeBattleFactory.CreateEncounter(party);
+        BattleSession battle = EncounterCatalog.CreateEncounter(party);
         CombatantState hero = battle.Combatants[0], guard = battle.Combatants[3], soldier = battle.Combatants[4];
         AbilityDefinition fireAll = Command(hero, "fire");
         Assert(guard.Definition.Affinities.DamagePercent(DamageElement.Lightning) == 150

@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace DragonQuest.Prototype
+namespace DragonQuest.Presentation.Battle.Sprites
 {
     // Coordinates are inspected from the source PNG; no pixel rewriting or per-pose resizing.
     public sealed class UltimateSpriteSheet

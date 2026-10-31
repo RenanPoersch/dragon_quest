@@ -1,6 +1,7 @@
+using DragonQuest.Presentation.Battle;
 using UnityEngine;
 
-namespace DragonQuest.Prototype
+namespace DragonQuest.Presentation.Battle.Animations
 {
     public sealed class CastleSpellAnimation
     {

@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace DragonQuest.Prototype
+namespace DragonQuest.Presentation.Battle.Sprites
 {
     // Coordinates are measured from the generated source; PNG pixels and alpha stay unchanged.
     public sealed class SpiritBossSpriteSheet

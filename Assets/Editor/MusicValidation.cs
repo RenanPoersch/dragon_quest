@@ -1,3 +1,11 @@
+using DragonQuest.Presentation.World;
+using DragonQuest.Presentation.Cinematics.Opening;
+using DragonQuest.Presentation.Cinematics.Exploration;
+using DragonQuest.Presentation.Cinematics.Endings;
+using DragonQuest.Presentation.Battle;
+using DragonQuest.Gameplay.Saving;
+using DragonQuest.Gameplay.Battle;
+using DragonQuest.Exploration;
 using DragonQuest.Content;
 using DragonQuest.Presentation.Menus;
 using System;
@@ -6,7 +14,6 @@ using System.Reflection;
 using DragonQuest.Audio;
 using DragonQuest.Combat;
 using DragonQuest.Interactions;
-using DragonQuest.Prototype;
 using DragonQuest.Progression;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -20,17 +27,17 @@ public static class MusicValidation
     private const BindingFlags Private = BindingFlags.Instance | BindingFlags.NonPublic;
     private static int checks, step, nextFrame;
     private static double nextAt, began;
-    private static PrototypeSaveController saves;
-    private static PrototypeBattleController battle;
-    private static PrototypeMusicController music;
-    private static PrototypeLocations maps;
-    private static PrototypeIntroPresentation intro;
+    private static SaveController saves;
+    private static BattleController battle;
+    private static MusicController music;
+    private static WorldLocationController maps;
+    private static IntroPresentation intro;
     private static DragonInteraction dragon;
     private static DialogueController dialogue;
     private static AudioSource preludeVoice, lairVoice, fadeVoice;
     private static float fadeVolume;
     private static InnRestController rest;
-    private static PrototypeEndingController endings;
+    private static EndingController endings;
 
     static MusicValidation()
     {
@@ -124,7 +131,7 @@ public static class MusicValidation
         Run();
         SessionState.SetInt(CheckCount, checks);
         SessionState.SetBool(Running, true);
-        EditorSceneManager.OpenScene("Assets/Scenes/CidadePrototipo.unity");
+        EditorSceneManager.OpenScene("Assets/Scenes/Game.unity");
         EditorApplication.update -= Tick;
         EditorApplication.update += Tick;
         EditorApplication.EnterPlaymode();
@@ -203,7 +210,7 @@ public static class MusicValidation
     }
     private static void Restore(string map)
     {
-        var definition = new PrototypeTravel().Maps.First(m => m.Id == map);
+        var definition = new WorldNavigation().Maps.First(m => m.Id == map);
         maps.Restore(map,definition.Spawn);
     }
     private static void Silent()
@@ -241,9 +248,9 @@ public static class MusicValidation
         foreach (string field in new[] { "aftermath","possession","liberation" })
         {
             ((IDisposable)Field(endings,field))?.Dispose();
-            typeof(PrototypeEndingController).GetField(field,Private).SetValue(endings,null);
+            typeof(EndingController).GetField(field,Private).SetValue(endings,null);
         }
-        typeof(PrototypeEndingController).GetField("pages",Private).SetValue(endings,null);
+        typeof(EndingController).GetField("pages",Private).SetValue(endings,null);
     }
 
     private static void Tick()
@@ -265,16 +272,16 @@ public static class MusicValidation
             switch (step)
             {
                 case 0:
-                    saves = UnityEngine.Object.FindAnyObjectByType<PrototypeSaveController>();
-                    battle = UnityEngine.Object.FindAnyObjectByType<PrototypeBattleController>();
-                    music = UnityEngine.Object.FindAnyObjectByType<PrototypeMusicController>();
-                    maps = UnityEngine.Object.FindAnyObjectByType<PrototypeLocations>();
+                    saves = UnityEngine.Object.FindAnyObjectByType<SaveController>();
+                    battle = UnityEngine.Object.FindAnyObjectByType<BattleController>();
+                    music = UnityEngine.Object.FindAnyObjectByType<MusicController>();
+                    maps = UnityEngine.Object.FindAnyObjectByType<WorldLocationController>();
                     Check(saves != null && battle != null && music != null && maps != null, "scene wires music dependencies");
                     Check(music.CurrentCue == MusicCue.Intro, "intro is selected in the real scene");
                     Check(music.GetComponentsInChildren<AudioSource>().Length == 2, "only two music sources");
-                    intro = (PrototypeIntroPresentation)Field(FrontEnd,"intro");
+                    intro = (IntroPresentation)Field(FrontEnd,"intro");
                     // Batch mode has no visible Game view: simulate its first rendered frame.
-                    typeof(PrototypeIntroPresentation).GetField("hasDrawn",Private).SetValue(intro,true);
+                    typeof(IntroPresentation).GetField("hasDrawn",Private).SetValue(intro,true);
                     break;
                 case 1:
                     Check(IntroVoice.isPlaying && IntroVoice.timeSamples > 0, "supplied track actually plays and advances");
@@ -298,7 +305,7 @@ public static class MusicValidation
                     Check(saves.IsFrontEndVisible, "new game voyage remains a front-end screen");
                     ((NewGameVoyagePresentation)Field(FrontEnd,"voyage")).Dispose();
                     FrontEnd.GetType().GetField("voyage",Private).SetValue(FrontEnd,null);
-                    typeof(PrototypeSaveController).GetField("<IsMenuVisible>k__BackingField",Private).SetValue(saves,false);
+                    typeof(SaveController).GetField("<IsMenuVisible>k__BackingField",Private).SetValue(saves,false);
                     saves.enabled = false; battle.enabled = false;
                     maps.enabled = false; battle.SetRandomEncountersEnabled(true);
                     Restore("world");
@@ -630,7 +637,7 @@ public static class MusicValidation
                     break;
                 case 60:
                     VillagePlays(); Check(!saves.IsVoyagePlaying && !saves.IsMenuVisible,"completing the voyage restores map music");
-                    endings = music.GetComponent<PrototypeEndingController>(); endings.enabled = false;
+                    endings = music.GetComponent<EndingController>(); endings.enabled = false;
                     battle.RestoreEnding(GameEnding.KingFreed);
                     break;
                 case 61:

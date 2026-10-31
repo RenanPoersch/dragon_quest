@@ -1,14 +1,15 @@
+using DragonQuest.Presentation.Battle.Animations;
+using DragonQuest.Content;
 using System;
 using System.Linq;
 using DragonQuest.Combat;
 using DragonQuest.Inventory;
-using DragonQuest.Prototype;
 
 internal static class SpiritAttackChecks
 {
     private static int checks;
-    private static readonly AbilityDefinition Attack = PrototypeBattleFactory.Attack, Defend = PrototypeBattleFactory.Defend;
-    private static readonly AbilityDefinition Mind = PrototypeCastleBattleFactory.MindControl, Silence = PrototypeCastleBattleFactory.Silence;
+    private static readonly AbilityDefinition Attack = AbilityCatalog.Attack, Defend = AbilityCatalog.Defend;
+    private static readonly AbilityDefinition Mind = AbilityCatalog.MindControl, Silence = AbilityCatalog.Silence;
     private static readonly AbilityDefinition Spell = new AbilityDefinition("spell", "Magia", "", 3, 4,
         AbilityEffect.MagicDamage, TargetRule.Enemy, menuGroup: AbilityMenuGroup.Magic);
     private static readonly AbilityDefinition Summon = new AbilityDefinition("summon", "Invocacao", "", 4, 5,
@@ -20,7 +21,7 @@ internal static class SpiritAttackChecks
     private static void Check(bool value, string text) { checks++; if (!value) throw new Exception(text); }
     private static CombatantState Hero(string id, int speed = 10) => new CombatantState(id,
         new CombatantDefinition(id, "Heroi", 100, 30, 20, 2, 15, speed, Attack, Defend, Spell, Summon,
-            FreeSpell, Physical, PrototypeBattleFactory.Heal), CombatTeam.Party);
+            FreeSpell, Physical, AbilityCatalog.Heal), CombatTeam.Party);
     private static CombatantState Spirit(params AbilityDefinition[] abilities) => new CombatantState("evil-spirit",
         new CombatantDefinition("Espirito", "Inimigo", 300, 0, 0, 3, 30, 20, abilities), CombatTeam.Enemy);
 
@@ -56,14 +57,14 @@ internal static class SpiritAttackChecks
     {
         var hero = Hero("hero"); var spirit = Spirit(Silence, Defend);
         var inventory = new ItemInventory();
-        inventory.TryAdd(PrototypePartyFactory.Potion, 1, out _);
+        inventory.TryAdd(ItemCatalog.Potion, 1, out _);
         var battle = new BattleSession(inventory, hero, spirit);
         Check(battle.TryAct(spirit, Silence, hero, out _) && hero.SilenceTurns == 1, "Silence dura ate a acao do alvo, inclusive quando ele age em seguida.");
         Check(CombatStatuses.Active(hero).Any(s => s.Status == CombatStatus.Silenced && s.Turns == 1), "Silencio aparece no painel.");
         int mp = hero.Mp, turns = hero.TurnsTaken;
         hero.Limit.AddDamage(100,100); int limit = hero.Limit.Charge;
-        foreach (var magic in new[] { Spell, Summon, FreeSpell, PrototypeBattleFactory.Heal })
-            Check(!battle.TryAct(hero, magic, magic == PrototypeBattleFactory.Heal ? hero : spirit, out var message)
+        foreach (var magic in new[] { Spell, Summon, FreeSpell, AbilityCatalog.Heal })
+            Check(!battle.TryAct(hero, magic, magic == AbilityCatalog.Heal ? hero : spirit, out var message)
                 && message.Contains("Silencio") && hero.Mp == mp && hero.TurnsTaken == turns && hero.SilenceTurns == 1
                 && hero.Limit.Charge == limit, "Silencio bloqueia magia, invocacao, magia gratis e cura sem gastar recursos.");
         Check(battle.TryAct(hero, Physical, spirit, out _) && hero.SilenceTurns == 0 && hero.Mp == mp - 2,
@@ -73,7 +74,7 @@ internal static class SpiritAttackChecks
         battle.TryAct(spirit, Silence, hero, out _);
         Check(battle.TryAct(hero, Defend, hero, out _) && !hero.IsSilenced, "Defender e permitido e consome a duracao.");
         battle.TryAct(spirit, Silence, hero, out _); hero.TakeDamage(20);
-        Check(battle.TryUseItem(hero, PrototypePartyFactory.Potion, hero, out _) && !hero.IsSilenced,
+        Check(battle.TryUseItem(hero, ItemCatalog.Potion, hero, out _) && !hero.IsSilenced,
             "Itens sao permitidos durante Silence e consomem a duracao.");
 
         hero = Hero("hero"); var other = Hero("other", 15); spirit = Spirit(Silence, Defend);
@@ -94,26 +95,26 @@ internal static class SpiritAttackChecks
         hero.RecoverHp(10);
         Check(!CombatStatuses.Active(hero).Any(s => s.Status == CombatStatus.MindControlled || s.Status == CombatStatus.Silenced), "Reviver nao reaplica estados antigos.");
         hero = Hero("hero"); hero.TakeDamage(90); hero.GrantDamageShield(2,false);
-        var spirit = Spirit(PrototypeCastleBattleFactory.DrainLife); spirit.TakeDamage(290);
+        var spirit = Spirit(AbilityCatalog.DrainLife); spirit.TakeDamage(290);
         var battle = new BattleSession(hero, spirit);
         Check(EnemyAI.TryTakeTurn(battle, out _) && hero.Hp == 0 && spirit.Hp == 20,
             "Sugar vida recupera apenas HP perdido, respeitando Shield e limite do golpe fatal.");
-        hero = Hero("hero"); spirit = Spirit(PrototypeCastleBattleFactory.DrainLife); spirit.TakeDamage(1);
+        hero = Hero("hero"); spirit = Spirit(AbilityCatalog.DrainLife); spirit.TakeDamage(1);
         battle = new BattleSession(hero,spirit); EnemyAI.TryTakeTurn(battle,out _);
         Check(spirit.Hp == spirit.Definition.MaxHp, "Drenagem nao ultrapassa HP maximo do espirito.");
     }
 
     private static void CheckEnemyCycle()
     {
-        var hero = Hero("hero"); var spirit = Spirit(Mind, Silence, PrototypeCastleBattleFactory.DrainLife, Defend);
+        var hero = Hero("hero"); var spirit = Spirit(Mind, Silence, AbilityCatalog.DrainLife, Defend);
         var battle = new BattleSession(hero, spirit);
         Check(EnemyAI.ChooseAbility(battle) == Mind && EnemyAI.TryTakeTurn(battle, out _), "IA seleciona mind control.");
         battle.TryTakeMindControlTurn(0,out _,out _);
         Check(EnemyAI.ChooseAbility(battle) == Silence && EnemyAI.TryTakeTurn(battle,out _), "IA seleciona silencio.");
         battle.TryAct(hero,Defend,hero,out _);
-        Check(EnemyAI.ChooseAbility(battle) == PrototypeCastleBattleFactory.DrainLife, "IA inclui drenagem no ciclo.");
-        foreach (var ability in new[] { Mind, Silence, PrototypeCastleBattleFactory.DrainLife,
-            PrototypeCastleBattleFactory.Chains, PrototypeCastleBattleFactory.ChaosMagic })
+        Check(EnemyAI.ChooseAbility(battle) == AbilityCatalog.DrainLife, "IA inclui drenagem no ciclo.");
+        foreach (var ability in new[] { Mind, Silence, AbilityCatalog.DrainLife,
+            AbilityCatalog.Chains, AbilityCatalog.ChaosMagic })
             Check(BattleAnimationCatalog.Resource("evil-spirit",ability) == SpiritAttackTimeline.Resource(ability), "Cada ataque seleciona seu atlas independente.");
         Check(BattleAnimationCatalog.Idle("evil-spirit") == "SpiritBattle"
             && BattleAnimationCatalog.ImpactDelay("evil-spirit",Mind) == SpiritAttackTimeline.Impact(Mind), "Sprite idle e sincronismo do impacto ficam definidos.");
@@ -121,8 +122,8 @@ internal static class SpiritAttackChecks
 
     private static void CheckPresentation()
     {
-        var abilities = new[] { Mind, Silence, PrototypeCastleBattleFactory.DrainLife,
-            PrototypeCastleBattleFactory.Chains, PrototypeCastleBattleFactory.ChaosMagic };
+        var abilities = new[] { Mind, Silence, AbilityCatalog.DrainLife,
+            AbilityCatalog.Chains, AbilityCatalog.ChaosMagic };
         Check(abilities.Select(SpiritAttackTimeline.Resource).Distinct().Count() == 5, "Habilidades nao compartilham sprites recoloridos.");
         Check(abilities.Select(SpiritAttackTimeline.Duration).Distinct().Count() == 5, "Cada ritual tem seu proprio ritmo.");
         foreach(var ability in abilities)
@@ -145,7 +146,7 @@ internal static class SpiritAttackChecks
             }
             Check(previous==7,"O ritual termina no ultimo sprite, sem repetir o impacto.");
         }
-        Check(SpiritAttackTimeline.Impact(PrototypeCastleBattleFactory.DrainLife)>2,
+        Check(SpiritAttackTimeline.Impact(AbilityCatalog.DrainLife)>2,
             "Cura de Sugar Vida espera as almas chegarem ao espirito.");
     }
 

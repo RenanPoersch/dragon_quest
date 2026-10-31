@@ -1,6 +1,6 @@
+using DragonQuest.Presentation.World.Animations;
 using System;
 using DragonQuest.Progression;
-using DragonQuest.Prototype;
 
 class QuarryRuneChecks
 {

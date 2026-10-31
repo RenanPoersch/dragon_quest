@@ -1,9 +1,9 @@
+using DragonQuest.Presentation.Common;
 using System;
 using UnityEngine;
-using DragonQuest.Exploration;
 using DragonQuest.Persistence;
 
-namespace DragonQuest.Prototype
+namespace DragonQuest.Presentation.Menus
 {
     public sealed class SaveSelectionPresentation : IDisposable
     {
@@ -31,14 +31,14 @@ namespace DragonQuest.Prototype
         private void EnsureStyles()
         {
             if (heading != null) return;
-            heading = PrototypeTypography.Style(GUI.skin.label, 48);
-            text = PrototypeTypography.Style(GUI.skin.label, 44);
-            number = PrototypeTypography.Style(text, 44, true);
+            heading = GameTypography.Style(GUI.skin.label, 48);
+            text = GameTypography.Style(GUI.skin.label, 44);
+            number = GameTypography.Style(text, 44, true);
             right = new GUIStyle(number) { alignment = TextAnchor.UpperRight };
             level = new GUIStyle(text); level.normal.textColor = new Color(0, .95f, .88f);
             empty = new GUIStyle(text); empty.normal.textColor = new Color(1, .97f, .08f);
-            note = PrototypeTypography.Style(GUI.skin.label, 24); note.wordWrap = true;
-            BackStyle = PrototypeTypography.Style(GUI.skin.label, 28); BackStyle.alignment = TextAnchor.MiddleCenter;
+            note = GameTypography.Style(GUI.skin.label, 24); note.wordWrap = true;
+            BackStyle = GameTypography.Style(GUI.skin.label, 28); BackStyle.alignment = TextAnchor.MiddleCenter;
             foreach (GUIStyle style in new[] { heading, text, number, right, note, BackStyle })
             {
                 style.normal.textColor = Color.white; style.hover.textColor = Color.white;

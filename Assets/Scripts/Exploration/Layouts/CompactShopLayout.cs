@@ -1,9 +1,9 @@
+using DragonQuest.Presentation.World.Rendering;
 using System;
 using System.Collections.Generic;
-using DragonQuest.Exploration;
 using UnityEngine;
 
-namespace DragonQuest.Prototype
+namespace DragonQuest.Exploration.Layouts
 {
     // Duas plantas pequenas sobre pinturas 4:3; UV tem origem no canto superior esquerdo.
     public sealed class CompactShopLayout

@@ -1,6 +1,7 @@
+using DragonQuest.Exploration.Layouts;
+using DragonQuest.Exploration;
 using System;
 using DragonQuest.Progression;
-using DragonQuest.Prototype;
 using UnityEngine;
 
 internal static class DragonLairChecks
@@ -29,32 +30,32 @@ internal static class DragonLairChecks
         state.Wake(); state.Finish();
         Assert(state.State == DragonRestState.Awake && state.Frame == 2, "Dialogo rapido termina na pose acordada.");
 
-        Assert(PrototypeVolcanoLayout.Spawn.x < PrototypeVolcanoLayout.Dragon.x, "Percurso segue da esquerda ao dragao.");
-        Assert(PrototypeVolcanoLayout.MinX <= PrototypeVolcanoLayout.Exit.x, "Saida fica dentro do percurso lateral.");
-        Assert(Math.Abs(PrototypeVolcanoLayout.MaxX - PrototypeVolcanoLayout.Dragon.x) < 1.6f, "Dragao fica ao alcance da tecla E.");
+        Assert(VolcanoLayout.Spawn.x < VolcanoLayout.Dragon.x, "Percurso segue da esquerda ao dragao.");
+        Assert(VolcanoLayout.MinX <= VolcanoLayout.Exit.x, "Saida fica dentro do percurso lateral.");
+        Assert(Math.Abs(VolcanoLayout.MaxX - VolcanoLayout.Dragon.x) < 1.6f, "Dragao fica ao alcance da tecla E.");
         float previous = 0;
-        for (float x = PrototypeVolcanoLayout.MinX; x <= PrototypeVolcanoLayout.MaxX; x += .025f)
+        for (float x = VolcanoLayout.MinX; x <= VolcanoLayout.MaxX; x += .025f)
         {
-            float floor = PrototypeVolcanoLayout.FloorAt(x);
+            float floor = VolcanoLayout.FloorAt(x);
             Assert(floor >= previous - .0001f && floor - previous < .03f, "Degraus formam caminho continuo.");
-            Assert(PrototypeVolcanoLayout.Bounds.Contains(new Vector2(x, floor)), "Todo percurso fica dentro do mapa.");
+            Assert(VolcanoLayout.Bounds.Contains(new Vector2(x, floor)), "Todo percurso fica dentro do mapa.");
             previous = floor;
         }
         Assert(Math.Abs(previous - .9f) < .0001f, "Patamar do dragao fica alinhado aos tres degraus.");
-        Assert(PrototypeVolcanoLayout.SafeSavedPosition(new Vector2(0, 8)) == PrototypeVolcanoLayout.Spawn, "Save antigo recupera a entrada.");
-        var valid = new Vector2(10, PrototypeVolcanoLayout.FloorAt(10));
-        Assert(PrototypeVolcanoLayout.SafeSavedPosition(valid) == valid, "Save lateral conserva o ponto do piso.");
+        Assert(VolcanoLayout.SafeSavedPosition(new Vector2(0, 8)) == VolcanoLayout.Spawn, "Save antigo recupera a entrada.");
+        var valid = new Vector2(10, VolcanoLayout.FloorAt(10));
+        Assert(VolcanoLayout.SafeSavedPosition(valid) == valid, "Save lateral conserva o ponto do piso.");
         var secrets = new AncientSecrets();
-        var travel = new PrototypeTravel(secrets);
-        Assert(!travel.TryTravel(PrototypeTravel.Volcano, out _), "Barreira permanece protegida pelos segredos.");
+        var travel = new WorldNavigation(secrets);
+        Assert(!travel.TryTravel(WorldNavigation.Volcano, out _), "Barreira permanece protegida pelos segredos.");
         secrets.LearnPoem(); secrets.TrySolveAltar(LegendPoem.Flame);
         secrets.Activate(MonolithSymbol.Moon); secrets.Activate(MonolithSymbol.Star); secrets.Activate(MonolithSymbol.Sun);
         secrets.TryCollectScale(); secrets.TryOpenPassage();
-        Assert(travel.TryTravel(PrototypeTravel.Volcano, out Vector2 arrival) && arrival == PrototypeVolcanoLayout.Spawn, "Entrada usa o novo corredor.");
-        Assert(!travel.Current.FixedCamera && travel.Current.CameraSize == PrototypeVolcanoLayout.CameraSize, "Camera acompanha como nas ruinas.");
-        var exit = travel.RouteFrom(PrototypeTravel.Volcano, PrototypeTravel.World).Entrance;
-        Assert(!exit.Contains(arrival) && exit.Contains(PrototypeVolcanoLayout.Exit), "Chegada nao retorna imediatamente e saida permanece acessivel.");
-        Assert(travel.TryRestore(PrototypeTravel.Volcano, new Vector2(0,-10)), "Save do vulcao antigo continua aceito.");
+        Assert(travel.TryTravel(WorldNavigation.Volcano, out Vector2 arrival) && arrival == VolcanoLayout.Spawn, "Entrada usa o novo corredor.");
+        Assert(!travel.Current.FixedCamera && travel.Current.CameraSize == VolcanoLayout.CameraSize, "Camera acompanha como nas ruinas.");
+        var exit = travel.RouteFrom(WorldNavigation.Volcano, WorldNavigation.World).Entrance;
+        Assert(!exit.Contains(arrival) && exit.Contains(VolcanoLayout.Exit), "Chegada nao retorna imediatamente e saida permanece acessivel.");
+        Assert(travel.TryRestore(WorldNavigation.Volcano, new Vector2(0,-10)), "Save do vulcao antigo continua aceito.");
         Assert(travel.TryRecoverAtInn(out _), "Derrota ainda retorna a hospedaria.");
         int combatChecks = DragonChecks.Run();
         Console.WriteLine("PASS: " + checks + " verificacoes do covil e " + combatChecks + " verificacoes do combate, armadura e recompensa do dragao.");

@@ -1,5 +1,5 @@
+using DragonQuest.Presentation.Cinematics.Endings;
 using System;
-using DragonQuest.Prototype;
 
 public static class CastleImpactChecks
 {

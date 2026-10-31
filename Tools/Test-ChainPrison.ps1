@@ -18,12 +18,10 @@ foreach ($folder in @('Combat','Content','Equipment','Inventory','Shops','Progre
     $castleArgs += Get-ChildItem (Join-Path $castleRoot "Assets/Scripts/$folder") -Filter '*.cs' | ForEach-Object { '"'+$_.FullName+'"' }
 }
 foreach ($relative in @('Assets/Scripts/Exploration/ExplorationProgress.cs',
-    'Assets/Scripts/Prototype/PrototypeBattleFactory.cs','Assets/Scripts/Prototype/PrototypeCastleBattleFactory.cs',
-    'Assets/Scripts/Prototype/PrototypePartyFactory.cs','Assets/Scripts/Prototype/PrototypeShopFactory.cs',
-    'Assets/Scripts/Presentation/Battle/Animations/BattleAnimationCatalog.cs','Assets/Scripts/Presentation/Battle/CastleMeteorPresentation.cs',
+    'Assets/Editor/Tools/Fixtures/PartyFixture.cs','Assets/Scripts/Presentation/Battle/HeroKnockoutPresentation.cs','Assets/Scripts/Presentation/Battle/DefeatedEnemyPresentation.cs','Assets/Scripts/Presentation/Battle/UltimateSpriteTimeline.cs','Assets/Scripts/Presentation/Battle/Animations/BattleAnimationCatalog.cs','Assets/Scripts/Presentation/Battle/CastleMeteorPresentation.cs',
     'Tests/ChainPrisonChecks.cs')) { $castleArgs += '"'+(Join-Path $castleRoot $relative)+'"' }
 $castleRsp = Join-Path $WorkDirectory 'ChainPrisonChecks.rsp'
-$castleArgs | Set-Content -LiteralPath $castleRsp -Encoding utf8
+$castleArgs | Select-Object -Unique | Set-Content -LiteralPath $castleRsp -Encoding utf8
 & $castleDotnet $castleCsc.FullName ('@'+$castleRsp)
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 @{runtimeOptions=@{tfm=$castleRefs.Name;framework=@{name='Microsoft.NETCore.App';version=$castleRuntime.Name}}} | ConvertTo-Json -Depth 5 | Set-Content (Join-Path $WorkDirectory 'ChainPrisonChecks.runtimeconfig.json') -Encoding utf8

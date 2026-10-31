@@ -1,8 +1,9 @@
+using DragonQuest.Presentation.World.Rendering;
+using DragonQuest.Exploration.Layouts;
 using System;
 using System.Collections.Generic;
 using DragonQuest.Exploration;
 using DragonQuest.Progression;
-using DragonQuest.Prototype;
 using UnityEngine;
 
 class QuarryChecks
@@ -68,18 +69,18 @@ class QuarryChecks
         Check(exit, "Spawn connects to island exit");
         for (float u=.46f;u<=.55f;u+=.01f)
         {
-            var travel = new PrototypeTravel();
-            Check(travel.TryTravel(PrototypeTravel.WestForest,out var arrival) && arrival == QuarryLayout.Spawn, "Island arrival matches quarry");
+            var travel = new WorldNavigation();
+            Check(travel.TryTravel(WorldNavigation.WestForest,out var arrival) && arrival == QuarryLayout.Spawn, "Island arrival matches quarry");
             var feet = QuarryLayout.Ground(u,.92f); bool left=false;
             for (int step=0;step<40;step++)
             {
                 feet=QuarryLayout.ConstrainMove(feet,ObliqueProjection.GroundDirection(Vector2.down)*.08f);
                 if (travel.TryEnter(feet,false,out arrival))
-                { Check(arrival == PrototypeWorldLayout.WestForest+Vector2.down*2.5f,"Exit returns to quarry icon"); left=true; break; }
+                { Check(arrival == WorldLayout.WestForest+Vector2.down*2.5f,"Exit returns to quarry icon"); left=true; break; }
             }
             Check(left, "Entire entrance path permits leaving");
         }
-        var blocked = new PrototypeTravel(); blocked.TryTravel(PrototypeTravel.WestForest,out _);
+        var blocked = new WorldNavigation(); blocked.TryTravel(WorldNavigation.WestForest,out _);
         Check(!blocked.TryEnter(QuarryLayout.Exit,true,out _), "Menus suspend travel");
         Check(!blocked.TryEnter(QuarryLayout.Spawn,false,out _), "Spawn cannot instantly exit");
         Check(!blocked.TryEnter(QuarryLayout.Ground(.15f,.98f),false,out _), "Foreground does not exit");

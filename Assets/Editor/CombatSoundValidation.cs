@@ -1,3 +1,6 @@
+using DragonQuest.Presentation.Battle;
+using DragonQuest.Gameplay.Battle;
+using DragonQuest.Content;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -6,12 +9,10 @@ using System.Reflection;
 using System.Security.Cryptography;
 using DragonQuest.Audio;
 using DragonQuest.Combat;
-using DragonQuest.Equipment;
 using DragonQuest.Exploration;
 using DragonQuest.Input;
 using DragonQuest.Interactions;
 using DragonQuest.Progression;
-using DragonQuest.Prototype;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -28,7 +29,7 @@ public static class CombatSoundValidation
     private static int checks, index, phase, playCount;
     private static double due, began;
     private static GameObject fixture, listener;
-    private static PrototypeBattleController battle;
+    private static BattleController battle;
     private static BattleSoundController sounds;
     private static AudioSource observed, music;
     private static Dictionary<string, AbilityDefinition> definitions;
@@ -46,7 +47,7 @@ public static class CombatSoundValidation
     private static void Focus(bool value) => typeof(GameInput).GetField("hasFocus", BindingFlags.Static | BindingFlags.NonPublic)
         .SetValue(null, (Func<bool>)(() => value));
     private static Row[] ReadRows() => JsonUtility.FromJson<Manifest>("{\"sounds\":"
-        + File.ReadAllText("Docs/CombatSoundManifest.json") + "}").sounds;
+        + File.ReadAllText("Docs/ArtReferences/Audio/CombatSoundManifest.json") + "}").sounds;
 
     public static void RunPlayback()
     {
@@ -93,10 +94,10 @@ public static class CombatSoundValidation
         fixture = new GameObject("Combat SFX validation");
         var hero = fixture.AddComponent<PlayerMovement>();
         var dialogue = fixture.AddComponent<DialogueController>();
-        battle = fixture.AddComponent<PrototypeBattleController>();
+        battle = fixture.AddComponent<BattleController>();
         battle.Initialize(hero, dialogue, new ExplorationProgress());
         battle.enabled = false; // Advance the presentation fixtures explicitly, without enemy AI input.
-        fixture.GetComponent<PrototypePostBattleHud>().enabled = false;
+        fixture.GetComponent<PostBattleHud>().enabled = false;
         Check(fixture.GetComponent<BattleSoundController>() == null, "battle logic also works in scenes without audio presentation");
         sounds = fixture.AddComponent<BattleSoundController>(); sounds.Initialize(battle);
         Check(sounds != null && Voices.Length == 8, "scene composition installs one bounded voice pool");
@@ -111,7 +112,7 @@ public static class CombatSoundValidation
         for (int i = 0; i < musicData.Length; i++) musicData[i] = Mathf.Sin(i * Mathf.PI * 2 * 220 / 48000) * .02f;
         musicClip.SetData(musicData, 0); music.clip = musicClip; music.loop = true; music.Play();
         definitions = new Dictionary<string, AbilityDefinition>();
-        foreach (Type type in new[] { typeof(PrototypeBattleFactory), typeof(PrototypePartyFactory), typeof(PrototypeCastleBattleFactory), typeof(CastleBattleRules), typeof(HeroUltimates) })
+        foreach (Type type in new[] { typeof(EncounterCatalog), typeof(PartySetup), typeof(AbilityCatalog), typeof(CastleBattleRules), typeof(HeroUltimates) })
             foreach (var field in type.GetFields(BindingFlags.Public | BindingFlags.Static))
                 if (field.FieldType == typeof(AbilityDefinition))
                 {
@@ -138,13 +139,13 @@ public static class CombatSoundValidation
         Check(!BattleSoundCatalog.Resolve("aren", new AbilityDefinition("use-item", "Pocao", "", 0, 0,
             AbilityEffect.Defend, TargetRule.Self)).IsValid, "items never fall through to a defend or attack sound");
         Check(!BattleSoundCatalog.Resolve("aren", null).IsValid, "missing actions remain silent");
-        Check(BattleSoundCatalog.Resolve("soldier", PrototypeBattleFactory.Attack).Key == "attack-guard", "soldiers share the guard recording");
-        Check(BattleSoundCatalog.Resolve("wolf-3", PrototypeBattleFactory.Attack).Key == "attack-wolf", "numbered regional enemies retain their family recording");
+        Check(BattleSoundCatalog.Resolve("soldier", AbilityCatalog.Attack).Key == "attack-guard", "soldiers share the guard recording");
+        Check(BattleSoundCatalog.Resolve("wolf-3", AbilityCatalog.Attack).Key == "attack-wolf", "numbered regional enemies retain their family recording");
         Check(BattleSoundCatalog.Resolve("aren", HeroUltimates.Omnislash).StartOffset(5.32f) == 0
             && BattleSoundCatalog.Resolve("lia", HeroUltimates.Salvation).StartOffset(3.65f) == 0
             && BattleSoundCatalog.Resolve("bram", HeroUltimates.Aegis).StartOffset(2.85f) == 0,
             "all three limits retain their authored timeline, including all 13 cuts");
-        Check(BattleSoundCatalog.Resolve("aren", PrototypePartyFactory.Thunder).Key == "thunder-all",
+        Check(BattleSoundCatalog.Resolve("aren", AbilityCatalog.Thunder).Key == "thunder-all",
             "single-target spells use the approved All recording");
         Check(!BattleSoundCatalog.Resolve("aren", definitions["prepare-meteor"]).IsValid,
             "meteor preparation is intentionally silent");
@@ -174,9 +175,9 @@ public static class CombatSoundValidation
         string actorId = row.actor == "guard/soldier" ? "guard" : row.actor == "dragon" ? DragonProgress.EnemyId
             : string.IsNullOrEmpty(row.actor) ? "aren" : row.actor;
         var actor = new CombatantState(actorId, new CombatantDefinition("Fixture", "", 100, 100, 20, 5, 20, 10,
-            ElementalAffinities.Neutral, 0, 0, 0, PrototypeBattleFactory.Attack), CombatTeam.Party);
+            ElementalAffinities.Neutral, 0, 0, 0, AbilityCatalog.Attack), CombatTeam.Party);
         Property(battle, "IsActive", true);
-        var session = PrototypeCastleBattleFactory.Create(battle.Party);
+        var session = EncounterCatalog.CreateCastle(battle.Party);
         Property(session.Rules, "MeteorAbsorbed", row.id == "meteor-absorbed");
         Property(battle, "Session", session);
         Put(battle, "pendingMeteorImpact", row.id == "flaming-meteor");
@@ -204,7 +205,7 @@ public static class CombatSoundValidation
         Focus(false); Call(sounds, "LateUpdate");
         Check(Voices.All(v => !v.isPlaying) && sounds.CurrentSound == null, "focus loss cancels active and scheduled effects");
         int count = sounds.PlayCount;
-        Call(battle, "PresentAction", battle.PresentingActor, PrototypeBattleFactory.Attack, new CombatantState[0]);
+        Call(battle, "PresentAction", battle.PresentingActor, AbilityCatalog.Attack, new CombatantState[0]);
         Check(sounds.PlayCount == count, "unfocused actions are silent and are not queued for later");
         Focus(true); sounds.Initialize(battle);
         Call(battle, "PresentAction", battle.PresentingActor, HeroUltimates.Omnislash, new CombatantState[0]);

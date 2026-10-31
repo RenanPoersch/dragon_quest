@@ -9,7 +9,7 @@ if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 # Validate in a new empty scene/project, preserving the open Editor and player saves.
 $combatProject = Join-Path $WorkDirectory ('Unity-' + [Guid]::NewGuid().ToString('N').Substring(0,8))
-foreach ($folder in @('Assets/Editor','Assets/Resources','ProjectSettings','Packages','Docs')) {
+foreach ($folder in @('Assets/Editor','Assets/Resources','ProjectSettings','Packages','Docs/ArtReferences/Audio')) {
     New-Item -ItemType Directory -Path (Join-Path $combatProject $folder) -Force | Out-Null
 }
 Copy-Item -LiteralPath (Join-Path $combatRoot 'Assets/Scripts') -Destination (Join-Path $combatProject 'Assets') -Recurse
@@ -19,7 +19,7 @@ Copy-Item -LiteralPath (Join-Path $combatRoot 'Assets/Resources/CombatSounds.met
 foreach ($file in @('CombatSoundValidation.cs','CombatSoundValidation.cs.meta')) {
     Copy-Item -LiteralPath (Join-Path $combatRoot "Assets/Editor/$file") -Destination (Join-Path $combatProject 'Assets/Editor')
 }
-Copy-Item -LiteralPath (Join-Path $combatRoot 'Docs/CombatSoundManifest.json') -Destination (Join-Path $combatProject 'Docs')
+Copy-Item -LiteralPath (Join-Path $combatRoot 'Docs/ArtReferences/Audio/CombatSoundManifest.json') -Destination (Join-Path $combatProject 'Docs/ArtReferences/Audio')
 foreach ($file in @('ProjectVersion.txt','ProjectSettings.asset','AudioManager.asset')) {
     Copy-Item -LiteralPath (Join-Path $combatRoot "ProjectSettings/$file") -Destination (Join-Path $combatProject 'ProjectSettings')
 }

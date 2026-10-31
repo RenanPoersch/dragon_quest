@@ -1,6 +1,7 @@
+using DragonQuest.Exploration.Layouts;
 using UnityEngine;
 
-namespace DragonQuest.Prototype
+namespace DragonQuest.Presentation.World.Scenery
 {
     public sealed class CompactShopPixelScenery : PaintedInteriorScenery
     {

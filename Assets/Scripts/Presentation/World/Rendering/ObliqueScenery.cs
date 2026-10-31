@@ -1,9 +1,13 @@
+using DragonQuest.Presentation.World.Scenery;
+using DragonQuest.Presentation.World.Characters;
+using DragonQuest.Presentation.World.Animations;
+using DragonQuest.Presentation.Battle.Animations;
+using DragonQuest.Exploration.Layouts;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using DragonQuest.Exploration;
 
-namespace DragonQuest.Prototype
+namespace DragonQuest.Presentation.World.Rendering
 {
     // Modelos originais de poucos poligonos. Nao adiciona colliders: a planta continua no layout.
     public sealed class ObliqueScenery : IDisposable
@@ -300,11 +304,11 @@ namespace DragonQuest.Prototype
         public GameObject World(Transform parent)
         {
             ShowWithMaterial("Mapa completo em pixel art / terreno, costa e mar",WorldIslandArt.Ground(),parent,worldGroundMaterial);
-            var seal = new GameObject(PrototypeSecretLayout.SealedRocks);
-            seal.transform.SetParent(parent, false); seal.transform.localPosition = PrototypeWorldLayout.Volcano;
+            var seal = new GameObject(SecretLayout.SealedRocks);
+            seal.transform.SetParent(parent, false); seal.transform.localPosition = WorldLayout.Volcano;
             var data = WorldIslandArt.Ward();
             RenderMesh("Tres selos ao redor do vulcao",data,data.Triangles,glowMaterial,seal);
-            seal.AddComponent<CircleCollider2D>().radius = PrototypeWorldLayout.WardRadius;
+            seal.AddComponent<CircleCollider2D>().radius = WorldLayout.WardRadius;
             return seal;
         }
 
@@ -312,7 +316,7 @@ namespace DragonQuest.Prototype
         {
             WorldPoi(parent, 0);
             // Mantem exatamente a area de colisao do icone declarada no layout.
-            CityBlock footprint=PrototypeWorldLayout.CastleIcon[0];
+            CityBlock footprint=WorldLayout.CastleIcon[0];
             BoxCollider2D collider=parent.gameObject.AddComponent<BoxCollider2D>();
             collider.size=footprint.Size; collider.offset=footprint.Position;
         }
@@ -323,7 +327,7 @@ namespace DragonQuest.Prototype
         public void QuarryIcon(Transform parent)
         {
             WorldPoi(parent, 1);
-            CityBlock footprint = PrototypeWorldLayout.QuarryIcon[0];
+            CityBlock footprint = WorldLayout.QuarryIcon[0];
             var collider = parent.gameObject.AddComponent<BoxCollider2D>();
             collider.size = footprint.Size; collider.offset = footprint.Position;
         }
@@ -358,7 +362,7 @@ namespace DragonQuest.Prototype
         public void RuinsIcon(Transform parent)
         {
             WorldPoi(parent, 3);
-            CityBlock footprint=PrototypeRuinsLayout.Icon[0];
+            CityBlock footprint=RuinsLayout.Icon[0];
             BoxCollider2D collider=parent.gameObject.AddComponent<BoxCollider2D>();
             collider.size=footprint.Size;collider.offset=footprint.Position;
         }

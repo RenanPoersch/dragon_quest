@@ -1,3 +1,7 @@
+using DragonQuest.Presentation.World;
+using DragonQuest.Presentation.Cinematics.Endings;
+using DragonQuest.Gameplay.Saving;
+using DragonQuest.Gameplay.Battle;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -6,7 +10,6 @@ using DragonQuest.Combat;
 using DragonQuest.Exploration;
 using DragonQuest.Interactions;
 using DragonQuest.Progression;
-using DragonQuest.Prototype;
 using UnityEditor;
 using UnityEngine;
 
@@ -53,14 +56,14 @@ public static class EndingTransitionUnityChecks
         {
             var movement = hero.AddComponent<PlayerMovement>();
             var follow = camera.AddComponent<CameraFollow>();
-            var endings = root.AddComponent<PrototypeEndingController>(); endings.enabled = false;
+            var endings = root.AddComponent<EndingController>(); endings.enabled = false;
             endings.Initialize(new Dictionary<string, GameObject> { { "castle", map } }, movement, follow);
-            var battle = root.AddComponent<PrototypeBattleController>(); battle.enabled = false;
+            var battle = root.AddComponent<BattleController>(); battle.enabled = false;
             battle.Initialize(movement, root.AddComponent<DialogueController>(), new ExplorationProgress(), endingPresentation: endings.Show);
-            var saves = root.AddComponent<PrototypeSaveController>(); saves.enabled = false;
+            var saves = root.AddComponent<SaveController>(); saves.enabled = false;
             Set(saves, "IsMenuVisible", false);
-            var locations = root.AddComponent<PrototypeLocations>(); locations.enabled = false;
-            var music = root.AddComponent<PrototypeMusicController>();
+            var locations = root.AddComponent<WorldLocationController>(); locations.enabled = false;
+            var music = root.AddComponent<MusicController>();
             music.Initialize(saves, locations, battle);
             clip = AudioClip.Create("Transition tone", 96000, 1, 48000, false);
             var samples = new float[96000];

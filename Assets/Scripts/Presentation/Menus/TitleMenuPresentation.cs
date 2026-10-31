@@ -1,5 +1,5 @@
+using DragonQuest.Presentation.Common;
 using System;
-using DragonQuest.Prototype;
 using UnityEngine;
 
 namespace DragonQuest.Presentation.Menus
@@ -34,7 +34,7 @@ namespace DragonQuest.Presentation.Menus
         {
             if (buttonStyle != null) return;
             scaleSprite = Resources.Load<Texture2D>("PixelArt/DragonScale");
-            buttonStyle = PrototypeTypography.Style(GUI.skin.label, 36, true);
+            buttonStyle = GameTypography.Style(GUI.skin.label, 36, true);
             buttonStyle.alignment = TextAnchor.MiddleCenter;
             buttonStyle.normal.textColor = Color.white;
             buttonStyle.hover.textColor = new Color(0.96f, 0.8f, 0.48f);

@@ -1,12 +1,13 @@
+using DragonQuest.Content;
+using DragonQuest.Authoring;
 using System;
 using DragonQuest.Combat;
-using DragonQuest.Prototype;
 
 internal static class AbilityChecks
 {
     private static int checks;
-    private static AbilityDefinition Attack => PrototypeBattleFactory.Attack;
-    private static AbilityDefinition Defend => PrototypeBattleFactory.Defend;
+    private static AbilityDefinition Attack => AbilityCatalog.Attack;
+    private static AbilityDefinition Defend => AbilityCatalog.Defend;
 
     private static void Assert(bool condition, string description)
     {
@@ -38,7 +39,7 @@ internal static class AbilityChecks
 
     private static void CheckAreaDamage()
     {
-        AbilityDefinition cleave = PrototypeBattleFactory.Cleave;
+        AbilityDefinition cleave = AbilityCatalog.Cleave;
         var hero = Fighter("hero", CombatTeam.Party, 30, abilities: new[] { Attack, cleave, Defend });
         var one = Fighter("one", CombatTeam.Enemy, 20, hp: 30);
         var two = Fighter("two", CombatTeam.Enemy, 10, hp: 10);
@@ -66,8 +67,8 @@ internal static class AbilityChecks
 
     private static void CheckPoisonAndCleanse()
     {
-        AbilityDefinition poison = PrototypeBattleFactory.PoisonStrike;
-        AbilityDefinition cleanse = PrototypeBattleFactory.Cleanse;
+        AbilityDefinition poison = AbilityCatalog.PoisonStrike;
+        AbilityDefinition cleanse = AbilityCatalog.Cleanse;
         var enemy = Fighter("enemy", CombatTeam.Enemy, 20, attack: 10, abilities: new[] { poison, Defend });
         var hero = Fighter("hero", CombatTeam.Party, 10, hp: 101, defense: 0, abilities: new[] { cleanse, Attack, Defend });
         var battle = new BattleSession(enemy, hero);
@@ -123,8 +124,8 @@ internal static class AbilityChecks
 
     private static void CheckTauntAndProtection()
     {
-        AbilityDefinition taunt = PrototypeBattleFactory.Taunt;
-        AbilityDefinition protect = PrototypeBattleFactory.Protect;
+        AbilityDefinition taunt = AbilityCatalog.Taunt;
+        AbilityDefinition protect = AbilityCatalog.Protect;
         var tank = Fighter("tank", CombatTeam.Party, 30, hp: 150, abilities: new[] { taunt, protect, Attack, Defend });
         var ally = Fighter("ally", CombatTeam.Party, 20);
         var enemy = Fighter("enemy", CombatTeam.Enemy, 10);
@@ -158,26 +159,26 @@ internal static class AbilityChecks
         // Ataques em area ignoram provocacao e nao sao interceptados por protecao.
         tank = Fighter("tank", CombatTeam.Party, 30, abilities: new[] { taunt, protect, Defend });
         ally = Fighter("ally", CombatTeam.Party, 20);
-        enemy = Fighter("enemy", CombatTeam.Enemy, 10, abilities: new[] { PrototypeBattleFactory.EnemySweep, Defend });
+        enemy = Fighter("enemy", CombatTeam.Enemy, 10, abilities: new[] { AbilityCatalog.EnemySweep, Defend });
         battle = new BattleSession(tank, ally, enemy);
         Act(battle, taunt, enemy);
         Act(battle, Defend, ally);
-        Assert(battle.GetValidTargets(PrototypeBattleFactory.EnemySweep).Count == 2, "Area inclui a equipe apesar da provocacao.");
+        Assert(battle.GetValidTargets(AbilityCatalog.EnemySweep).Count == 2, "Area inclui a equipe apesar da provocacao.");
         Assert(EnemyAI.TryTakeTurn(battle, out _), "IA deve conseguir usar area provocada.");
         Assert(tank.Hp == 22 && ally.Hp == 61, "Area aplica defesa de cada alvo separadamente.");
         Act(battle, protect, ally);
         Act(battle, Defend, ally);
-        Act(battle, PrototypeBattleFactory.EnemySweep, ally);
+        Act(battle, AbilityCatalog.EnemySweep, ally);
         Assert(tank.Hp == 0 && ally.Hp == 22 && ally.ProtectedBy == null, "Area nao transfere dano e protecao expira no inicio do turno seguinte.");
 
         // O golpe interceptado tambem transfere o veneno novo para o protetor.
         tank = Fighter("tank", CombatTeam.Party, 30, abilities: new[] { protect, Defend });
         ally = Fighter("ally", CombatTeam.Party, 20);
-        enemy = Fighter("enemy", CombatTeam.Enemy, 10, abilities: new[] { PrototypeBattleFactory.PoisonStrike });
+        enemy = Fighter("enemy", CombatTeam.Enemy, 10, abilities: new[] { AbilityCatalog.PoisonStrike });
         battle = new BattleSession(tank, ally, enemy);
         Act(battle, protect, ally);
         Act(battle, Defend, ally);
-        Act(battle, PrototypeBattleFactory.PoisonStrike, ally);
+        Act(battle, AbilityCatalog.PoisonStrike, ally);
         Assert(tank.PoisonTurns == 3 && ally.PoisonTurns == 0 && ally.Hp == 100, "Veneno do golpe interceptado deve afetar somente o tank.");
 
         // Morte do protetor remove os vinculos antes da proxima acao inimiga.
@@ -202,9 +203,9 @@ internal static class AbilityChecks
 
     private static void CheckReviveAndTurnOrder()
     {
-        AbilityDefinition revive = PrototypeBattleFactory.Revive;
+        AbilityDefinition revive = AbilityCatalog.Revive;
         var fast = Fighter("fast", CombatTeam.Party, 30, hp: 101, defense: 0);
-        var healer = Fighter("healer", CombatTeam.Party, 20, abilities: new[] { revive, PrototypeBattleFactory.Heal, Attack, Defend });
+        var healer = Fighter("healer", CombatTeam.Party, 20, abilities: new[] { revive, AbilityCatalog.Heal, Attack, Defend });
         var enemy = Fighter("enemy", CombatTeam.Enemy, 10, hp: 1000, attack: 120, defense: 0);
         var battle = new BattleSession(fast, healer, enemy);
         Act(battle, Attack, enemy);
@@ -213,7 +214,7 @@ internal static class AbilityChecks
         fast.PoisonTurns = 3;
         Act(battle, Attack, fast);
         Assert(fast.Hp == 0 && fast.PoisonTurns == 0 && battle.Round == 2 && battle.CurrentActor == healer, "Morte limpa condicoes e remove o derrotado da nova rodada.");
-        Assert(!battle.TryAct(healer, PrototypeBattleFactory.Heal, fast, out _), "Cura comum continua sem reviver.");
+        Assert(!battle.TryAct(healer, AbilityCatalog.Heal, fast, out _), "Cura comum continua sem reviver.");
         Assert(battle.GetValidTargets(revive).Count == 1 && battle.GetValidTargets(revive)[0] == fast, "Reviver deve listar somente aliado derrotado.");
         Act(battle, revive, fast);
         Assert(fast.Hp == 31 && healer.Mp == 48 && fast.PoisonTurns == 0, "Reviver deve restaurar 30% arredondado para cima e gastar 12 MP.");
@@ -237,7 +238,7 @@ internal static class AbilityChecks
     {
         for (int strategy = 0; strategy < 2; strategy++)
         {
-            BattleSession battle = PrototypeBattleFactory.CreateEncounter(PrototypePartyFactory.CreateTestParty());
+            BattleSession battle = EncounterCatalog.CreateEncounter(PartyFixture.Create());
             Assert(battle.Combatants.Count == 5, "Encontro atual deve ter tres aliados e dois inimigos.");
             int actions = 0;
             bool usedArea = false, usedCleanse = false, usedTaunt = false;
@@ -254,21 +255,21 @@ internal static class AbilityChecks
                 {
                     if (actor.Id == "aren")
                     {
-                        if (actor.Mp >= PrototypeBattleFactory.Cleave.MpCost && battle.GetValidTargets(Attack).Count > 1)
-                        { ability = PrototypeBattleFactory.Cleave; usedArea = true; }
-                        else if (actor.Mp >= PrototypeBattleFactory.HeavyStrike.MpCost) ability = PrototypeBattleFactory.HeavyStrike;
+                        if (actor.Mp >= AbilityCatalog.Cleave.MpCost && battle.GetValidTargets(Attack).Count > 1)
+                        { ability = AbilityCatalog.Cleave; usedArea = true; }
+                        else if (actor.Mp >= AbilityCatalog.HeavyStrike.MpCost) ability = AbilityCatalog.HeavyStrike;
                     }
                     else if (actor.Id == "lia")
                     {
-                        if (actor.Mp >= PrototypeBattleFactory.Revive.MpCost && battle.GetValidTargets(PrototypeBattleFactory.Revive).Count > 0)
-                            ability = PrototypeBattleFactory.Revive;
-                        else if (actor.Mp >= PrototypeBattleFactory.Cleanse.MpCost && battle.GetValidTargets(PrototypeBattleFactory.Cleanse).Count > 0)
-                        { ability = PrototypeBattleFactory.Cleanse; usedCleanse = true; }
-                        else if (actor.Mp >= PrototypeBattleFactory.Heal.MpCost && battle.GetValidTargets(PrototypeBattleFactory.Heal).Count > 0)
-                            ability = PrototypeBattleFactory.Heal;
+                        if (actor.Mp >= AbilityCatalog.Revive.MpCost && battle.GetValidTargets(AbilityCatalog.Revive).Count > 0)
+                            ability = AbilityCatalog.Revive;
+                        else if (actor.Mp >= AbilityCatalog.Cleanse.MpCost && battle.GetValidTargets(AbilityCatalog.Cleanse).Count > 0)
+                        { ability = AbilityCatalog.Cleanse; usedCleanse = true; }
+                        else if (actor.Mp >= AbilityCatalog.Heal.MpCost && battle.GetValidTargets(AbilityCatalog.Heal).Count > 0)
+                            ability = AbilityCatalog.Heal;
                     }
-                    else if (actor.Mp >= PrototypeBattleFactory.Taunt.MpCost && Find(battle, "guard").IsAlive && Find(battle, "guard").TauntTurns == 0)
-                    { ability = PrototypeBattleFactory.Taunt; usedTaunt = true; }
+                    else if (actor.Mp >= AbilityCatalog.Taunt.MpCost && Find(battle, "guard").IsAlive && Find(battle, "guard").TauntTurns == 0)
+                    { ability = AbilityCatalog.Taunt; usedTaunt = true; }
                 }
                 CombatantState target = ability.Targets == TargetRule.Self ? actor : battle.GetValidTargets(ability)[0];
                 Act(battle, ability, target);
@@ -277,7 +278,7 @@ internal static class AbilityChecks
             Assert(battle.Outcome == (strategy == 0 ? BattleOutcome.Victory : BattleOutcome.Defeat), "Encontro atual deve permitir vencer e perder.");
             if (strategy == 0) Assert(usedArea && usedCleanse && usedTaunt, "Estrategia vencedora deve exercitar habilidades dos tres papeis.");
         }
-        BattleSession fresh = PrototypeBattleFactory.CreateEncounter(PrototypePartyFactory.CreateTestParty());
+        BattleSession fresh = EncounterCatalog.CreateEncounter(PartyFixture.Create());
         Assert(Find(fresh, "lia").Mp == 60 && Find(fresh, "bram").Mp == 30 && Find(fresh, "aren").Mp == 28, "Repeticao inicia com recursos novos.");
         foreach (CombatantState actor in fresh.Combatants)
             Assert(actor.PoisonTurns == 0 && actor.TauntTurns == 0 && actor.ProtectedBy == null && actor.TurnsTaken == 0, "Efeitos nao podem vazar entre encontros.");
@@ -287,7 +288,7 @@ internal static class AbilityChecks
     {
         var hero = Fighter("hero", CombatTeam.Party, 10, hp: 200);
         var enemy = Fighter("enemy", CombatTeam.Enemy, 20, mp: 0,
-            abilities: new[] { PrototypeBattleFactory.PoisonStrike, Attack, PrototypeBattleFactory.EnemySweep, Defend });
+            abilities: new[] { AbilityCatalog.PoisonStrike, Attack, AbilityCatalog.EnemySweep, Defend });
         var battle = new BattleSession(hero, enemy);
         Assert(EnemyAI.ChooseAbility(battle) == Attack, "Inimigo sem MP deve escolher ataque basico.");
         Assert(enemy.TurnsTaken == 0 && enemy.Mp == 0, "Consultar intencao da IA nao deve consumir recursos.");

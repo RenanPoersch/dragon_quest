@@ -1,7 +1,8 @@
+using DragonQuest.Presentation.Battle.Animations;
+using DragonQuest.Content;
 using System;
 using DragonQuest.Combat;
 using DragonQuest.Equipment;
-using DragonQuest.Prototype;
 
 public static class SpellAnimationChecks
 {
@@ -9,9 +10,9 @@ public static class SpellAnimationChecks
     public static void Main()
     {
         var cases = new[] {
-            PrototypePartyFactory.Fire, PrototypePartyFactory.Ice, PrototypePartyFactory.Thunder,
-            PrototypePartyFactory.Earth, PrototypePartyFactory.Chaos, PrototypeBattleFactory.Heal,
-            PrototypeBattleFactory.Cleanse, PrototypeBattleFactory.Revive };
+            AbilityCatalog.Fire, AbilityCatalog.Ice, AbilityCatalog.Thunder,
+            AbilityCatalog.Earth, AbilityCatalog.Chaos, AbilityCatalog.Heal,
+            AbilityCatalog.Cleanse, AbilityCatalog.Revive };
         foreach (var original in cases)
         {
             Check(SpellAnimation.Resource(original) != null, "Missing spell: " + original.Id);

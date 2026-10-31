@@ -1,7 +1,8 @@
+using DragonQuest.Presentation.Common;
 using DragonQuest.Progression;
 using UnityEngine;
 
-namespace DragonQuest.Prototype
+namespace DragonQuest.Presentation.Menus
 {
     // A single temporary notification on the title menu's 1280 x 720 canvas.
     public sealed class EndingAchievementPresentation
@@ -64,10 +65,10 @@ namespace DragonQuest.Prototype
         private void EnsureStyles()
         {
             if (counterStyle != null) return;
-            counterStyle = PrototypeTypography.Style(GUI.skin.label, 24, true);
+            counterStyle = GameTypography.Style(GUI.skin.label, 24, true);
             counterStyle.normal.textColor = Color.white;
             counterStyle.alignment = TextAnchor.MiddleLeft;
-            nameStyle = PrototypeTypography.Style(GUI.skin.label, 28, true);
+            nameStyle = GameTypography.Style(GUI.skin.label, 28, true);
             nameStyle.normal.textColor = new Color(.96f, .8f, .48f);
         }
     }

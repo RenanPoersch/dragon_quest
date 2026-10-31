@@ -1,17 +1,17 @@
+using DragonQuest.Content;
 using System;
 using System.Linq;
 using DragonQuest.Combat;
 using DragonQuest.Inventory;
-using DragonQuest.Prototype;
 
 internal static class ChainPrisonChecks
 {
     private static int checks;
     private static void Check(bool condition, string message)
     { checks++; if (!condition) throw new Exception(message); }
-    private static readonly AbilityDefinition Attack = PrototypeBattleFactory.Attack;
+    private static readonly AbilityDefinition Attack = AbilityCatalog.Attack;
     private static readonly AbilityDefinition Defend = new AbilityDefinition("wait", "Esperar", "", 0, 0, AbilityEffect.Defend, TargetRule.Self);
-    private static readonly AbilityDefinition Bind = PrototypeCastleBattleFactory.Chains;
+    private static readonly AbilityDefinition Bind = AbilityCatalog.Chains;
     private static readonly AbilityDefinition Magic = new AbilityDefinition("ice", "Gelo", "", 3, 5, AbilityEffect.MagicDamage, TargetRule.Enemy);
     private static readonly AbilityDefinition Area = new AbilityDefinition("area", "Area", "", 4, 7, AbilityEffect.MagicDamage, TargetRule.AllEnemies);
     private static CombatantState Actor(string id, CombatTeam team, int speed, params AbilityDefinition[] abilities)
@@ -58,7 +58,7 @@ internal static class ChainPrisonChecks
         victim.TakeDamage(10000, damageOverTime:true); victim.RecoverHp(100);
         Check(!victim.IsBound, "Death and revival cannot retain a stale prison.");
 
-        foreach (var skill in new[] { Attack, Magic, PrototypeCastleBattleFactory.MindControl, PrototypeCastleBattleFactory.Silence })
+        foreach (var skill in new[] { Attack, Magic, AbilityCatalog.MindControl, AbilityCatalog.Silence })
         {
             var boss = Actor("boss", CombatTeam.Enemy, 30, skill);
             var target = Actor("target", CombatTeam.Party, 20, Defend); target.BoundActions = 1;
@@ -89,19 +89,19 @@ internal static class ChainPrisonChecks
         Act(battle, combo, first);
         Check(first.Hp == 1000 && !first.IsBound && rescuer.Limit.Charge == 0, "Multi-hit rescue consumes the action without remaining hits spilling onto the ally.");
 
-        var heal = PrototypeBattleFactory.Heal;
+        var heal = AbilityCatalog.Heal;
         rescuer = Actor("rescuer", CombatTeam.Party, 40, heal);
         first = Actor("first", CombatTeam.Party, 30, Defend); first.BoundActions = 1;
         boss = Actor("boss", CombatTeam.Enemy, 10, Defend);
         battle = new BattleSession(rescuer, first, boss);
         Check(battle.GetValidTargets(heal).Contains(first), "Recovery can target a prison even at full HP.");
         Act(battle, heal, first); Check(!first.IsBound, "Recovery spell also breaks chains.");
-        var inventory = new ItemInventory(); inventory.TryAdd(PrototypePartyFactory.Potion, 1, out _);
+        var inventory = new ItemInventory(); inventory.TryAdd(ItemCatalog.Potion, 1, out _);
         rescuer = Actor("rescuer", CombatTeam.Party, 40, Defend);
         first.BoundActions = 1;
         battle = new BattleSession(inventory, rescuer, first, boss);
-        Check(battle.GetValidItemTargets(PrototypePartyFactory.Potion).Contains(first), "Items can target a full-HP chained hero.");
-        Check(battle.TryUseItem(rescuer, PrototypePartyFactory.Potion, first, out _) && !first.IsBound, "Item hit releases the prisoner and consumes item normally.");
+        Check(battle.GetValidItemTargets(ItemCatalog.Potion).Contains(first), "Items can target a full-HP chained hero.");
+        Check(battle.TryUseItem(rescuer, ItemCatalog.Potion, first, out _) && !first.IsBound, "Item hit releases the prisoner and consumes item normally.");
     }
     private static void CheckTurnSafety()
     {

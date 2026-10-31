@@ -1,3 +1,4 @@
+using DragonQuest.Progression;
 using UnityEngine;
 
 namespace DragonQuest.Interactions

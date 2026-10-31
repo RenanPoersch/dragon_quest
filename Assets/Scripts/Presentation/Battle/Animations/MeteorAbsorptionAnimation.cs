@@ -1,7 +1,8 @@
+using DragonQuest.Presentation.Battle;
 using System;
 using UnityEngine;
 
-namespace DragonQuest.Prototype
+namespace DragonQuest.Presentation.Battle.Animations
 {
     // All layers are transparent, point-filtered sprite atlases drawn in the battle's 2D plane.
     public sealed class MeteorAbsorptionAnimation

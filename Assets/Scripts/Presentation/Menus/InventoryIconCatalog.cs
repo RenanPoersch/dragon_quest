@@ -2,9 +2,8 @@ using DragonQuest.Content;
 using System.Collections.Generic;
 using DragonQuest.Equipment;
 using DragonQuest.Inventory;
-using DragonQuest.Progression;
 
-namespace DragonQuest.Prototype
+namespace DragonQuest.Presentation.Menus
 {
     // Equipment uses definition identity, never the instance ID or translated display name.
     public static class InventoryIconCatalog

@@ -1,8 +1,9 @@
+using DragonQuest.Presentation.World.Characters;
+using DragonQuest.Presentation.Common;
 using System;
 using UnityEngine;
-using DragonQuest.Exploration;
 
-namespace DragonQuest.Prototype
+namespace DragonQuest.Presentation.Cinematics.Opening
 {
     public sealed class NewGameVoyagePresentation : IDisposable
     {
@@ -183,9 +184,9 @@ namespace DragonQuest.Prototype
         private void EnsureStyles()
         {
             if (story != null) return;
-            story = PrototypeTypography.Style(GUI.skin.label, 26);
-            heading = PrototypeTypography.Style(GUI.skin.label, 38, true);
-            chapter = PrototypeTypography.Style(GUI.skin.label, 18);
+            story = GameTypography.Style(GUI.skin.label, 26);
+            heading = GameTypography.Style(GUI.skin.label, 38, true);
+            chapter = GameTypography.Style(GUI.skin.label, 18);
             foreach (GUIStyle style in new[] { story, heading, chapter })
             { style.normal.textColor = Color.white; style.padding = new RectOffset(); style.wordWrap = false; }
         }

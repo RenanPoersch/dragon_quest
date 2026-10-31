@@ -1,8 +1,9 @@
+using DragonQuest.Presentation.World.Rendering;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace DragonQuest.Exploration
+namespace DragonQuest.Presentation.World.Characters
 {
     public sealed class PixelSpriteAtlas : IDisposable
     {

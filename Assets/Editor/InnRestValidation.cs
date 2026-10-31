@@ -1,11 +1,18 @@
+using DragonQuest.Progression;
+using DragonQuest.Presentation.World.Scenery;
+using DragonQuest.Presentation.World.Rendering;
+using DragonQuest.Presentation.World.Characters;
+using DragonQuest.Presentation.World;
+using DragonQuest.Presentation.Cinematics.Exploration;
+using DragonQuest.Exploration.Layouts;
+using DragonQuest.Content;
+using DragonQuest.Combat;
 using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using DragonQuest.Equipment;
 using DragonQuest.Exploration;
 using DragonQuest.Interactions;
-using DragonQuest.Prototype;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -41,7 +48,7 @@ public static class InnRestValidation
             hidden.AddComponent<SpriteRenderer>().enabled=false;
             var dialogue=root.AddComponent<DialogueController>();
             var rest=root.AddComponent<InnRestController>();
-            PartyProgress party=PrototypePartyFactory.Create();
+            PartyProgress party=PartySetup.Create();
             bool atInn=true, blocked=false;
             rest.Initialize(movement,()=>party,scenery,()=>atInn,()=>blocked||rest.IsPlaying);
             var service=root.AddComponent<InnInteraction>();
@@ -60,11 +67,11 @@ public static class InnRestValidation
             camera.overrideSceneCullingMask=EditorSceneManager.GetSceneCullingMask(scene);
             camera.clearFlags=CameraClearFlags.SolidColor; camera.backgroundColor=Color.black;
             var follow=cameraObject.AddComponent<CameraFollow>();
-            follow.SetArtworkFrame(true,true,PrototypeInnLayout.ArtAspect);
-            follow.Initialize(hero.transform,PrototypeInnLayout.Bounds,PrototypeInnLayout.CameraSize,true);
+            follow.SetArtworkFrame(true,true,InnLayout.ArtAspect);
+            follow.Initialize(hero.transform,InnLayout.Bounds,InnLayout.CameraSize,true);
 
-            var starts=new[] { PrototypeInnLayout.Reception,PrototypeInnLayout.Ground(.6f,.56f),
-                PrototypeInnLayout.Ground(.8f,.69f) };
+            var starts=new[] { InnLayout.Reception,InnLayout.Ground(.6f,.56f),
+                InnLayout.Ground(.8f,.69f) };
             for (int run=0;run<starts.Length;run++)
             {
                 movement.Teleport(starts[run]);
@@ -92,7 +99,7 @@ public static class InnRestValidation
                     Advance(rest,.05f);
                     foreach (Transform guest in root.transform.Cast<Transform>().Where(t=>t.name.EndsWith("/ descanso na pousada")))
                     {
-                        Check(PrototypeInnLayout.IsWalkable(guest.position),"rota permanece no piso livre");
+                        Check(InnLayout.IsWalkable(guest.position),"rota permanece no piso livre");
                         var character=guest.GetComponentInChildren<PixelCharacter>(true);
                         typeof(PixelCharacter).GetField("view",Private).SetValue(character,camera);
                         typeof(PixelCharacter).GetMethod("LateUpdate",Private).Invoke(character,null);
@@ -118,7 +125,7 @@ public static class InnRestValidation
                 Check(steps<250 && dimmed && black && revealed,"caminhada, fade, noite e retorno terminam");
                 Check(rest.BlackOpacity==0 && heroVisual.GetComponent<Renderer>().enabled
                     && !hidden.GetComponent<Renderer>().enabled,"visibilidade original restaurada");
-                Check(PrototypeInnLayout.IsWalkable(movement.transform.position),"heroi acorda perto da cama em piso livre");
+                Check(InnLayout.IsWalkable(movement.transform.position),"heroi acorda perto da cama em piso livre");
                 Check((bool)typeof(PlayerMovement).GetField("movementEnabled",Private).GetValue(movement),"controles liberados ao terminar");
                 Check(party.Members.All(m=>m.Limit.Charge==47),"descanso preserva Limit");
             }
@@ -131,7 +138,7 @@ public static class InnRestValidation
             atInn=true; rest.Begin(); rest.enabled=false;
             typeof(InnRestController).GetMethod("OnDisable",Private).Invoke(rest,null);
             Check(!rest.IsPlaying && heroVisual.GetComponent<Renderer>().enabled,"desativar limpa a sequencia");
-            rest.enabled=true; rest.Begin(); movement.Teleport(PrototypeInnLayout.Spawn); Advance(rest,.1f);
+            rest.enabled=true; rest.Begin(); movement.Teleport(InnLayout.Spawn); Advance(rest,.1f);
             Check(!rest.IsPlaying && heroVisual.GetComponent<Renderer>().enabled,"teleporte interrompe sem deixar heroi invisivel");
             Debug.Log("INN_REST_VALIDATION_OK: "+checks+" checks; escolhas, equipe, rotas, controles, recuperacao, fades e limpeza.");
             File.WriteAllText(Path.Combine(output,"rest-result.txt"),"INN_REST_VALIDATION_OK: "+checks+" checks.");

@@ -1,5 +1,5 @@
+using DragonQuest.Progression;
 using DragonQuest.Combat;
-using DragonQuest.Equipment;
 
 namespace DragonQuest.Content
 {

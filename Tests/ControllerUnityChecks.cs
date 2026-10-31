@@ -1,3 +1,9 @@
+using DragonQuest.Progression;
+using DragonQuest.Presentation.Battle;
+using DragonQuest.Inventory;
+using DragonQuest.Gameplay.Shops;
+using DragonQuest.Gameplay.Battle;
+using DragonQuest.Equipment;
 using DragonQuest.Presentation.Menus;
 using System;
 using System.Linq;
@@ -6,7 +12,6 @@ using DragonQuest.Input;
 using DragonQuest.Combat;
 using DragonQuest.Exploration;
 using DragonQuest.Interactions;
-using DragonQuest.Prototype;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -49,12 +54,12 @@ public static class ControllerUnityChecks
         var dialogue = fixture.AddComponent<DialogueController>();
         var secrets = new DragonQuest.Progression.AncientSecrets(); secrets.LearnPoem();
         var progress = new ExplorationProgress(50);
-        var battle = fixture.AddComponent<PrototypeBattleController>();
+        var battle = fixture.AddComponent<BattleController>();
         battle.Initialize(movement, dialogue, progress, ancientSecrets: secrets);
         var interaction = fixture.AddComponent<PlayerInteraction>();
         interaction.Initialize(new InteractionContext(dialogue, progress, _ => {},
             isBusy: () => battle.IsBusy, secrets: secrets), new Interactable[0]);
-        var inventoryHost = fixture.AddComponent<PrototypeMateriaHud>(); inventoryHost.Initialize(battle, secrets); var inventory = inventoryHost.Presenter;
+        var inventoryHost = fixture.AddComponent<InventoryHud>(); inventoryHost.Initialize(battle, secrets); var inventory = inventoryHost.Presenter;
         var page = typeof(InventoryMenuPresenter).GetField("page", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
         var open = typeof(InventoryMenuPresenter).GetMethod("OpenCommand", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
         State(new GamepadState().WithButton(GamepadButton.North)); Call(interaction, "Update"); Call(battle, "Update");
@@ -102,7 +107,7 @@ public static class ControllerUnityChecks
         State(new GamepadState().WithButton(GamepadButton.East).WithButton(GamepadButton.South)); Call(interaction, "Update");
         Check(!dialogue.IsOpen && chosen == -1 && !GameInput.ConfirmPressed,
             "Circle cancels a dialogue choice even when confirmation is pressed together.");
-        var shop = fixture.AddComponent<PrototypeShopController>(); shop.Initialize(movement, dialogue, battle, progress);
+        var shop = fixture.AddComponent<ShopController>(); shop.Initialize(movement, dialogue, battle, progress);
         shop.Open("item-shop"); shop.ChooseAction(0); shop.Menu.BeginQuantity();
         Check(shop.Menu.Phase.ToString() == "Quantity", "Shop quantity selection opens.");
         int gold = progress.Gold;
@@ -116,7 +121,7 @@ public static class ControllerUnityChecks
         Check(!shop.IsOpen, "Circle closes the shop from its action menu.");
         State(keyboard);
         battle.StartBattle();
-        var battleHud = fixture.AddComponent<PrototypeBattleHud>(); battleHud.Initialize(battle);
+        var battleHud = fixture.AddComponent<BattleHud>(); battleHud.Initialize(battle);
         battleHud.Arena.GetType().GetField("observedBattle", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public).SetValue(battleHud.Arena, battle.Session);
         State(new GamepadState().WithButton(GamepadButton.South)); Call(battleHud, "Update");
         var commandMenu = battleHud.Menu;
@@ -199,11 +204,11 @@ public static class ControllerUnityChecks
     }
     private static void Age(object target, string property, float seconds)
     {
-        if (target is PrototypeBattleController battle && property == "ActionStartedAt") target = battle.ActionPresentation;
+        if (target is BattleController battle && property == "ActionStartedAt") target = battle.ActionPresentation;
         target.GetType().GetField("<" + property + ">k__BackingField", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
             .SetValue(target, Time.unscaledTime - seconds);
     }
-    private static void CheckBattleEscape(Keyboard keyboard, PrototypeBattleController battle, PlayerMovement movement)
+    private static void CheckBattleEscape(Keyboard keyboard, BattleController battle, PlayerMovement movement)
     {
         State(keyboard, Key.Q); Check(!GameInput.EscapeHeld, "Q alone cannot request escape.");
         State(keyboard, Key.E); Check(!GameInput.EscapeHeld, "E alone keeps its existing behavior.");
@@ -246,8 +251,8 @@ public static class ControllerUnityChecks
             if (battle.IsPresentingAction) Age(battle, "ActionStartedAt", 100);
             if (battle.Session.CurrentActor?.Team == CombatTeam.Enemy)
             {
-                typeof(PrototypeBattleController).GetField("pendingEnemy", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public).SetValue(battle, battle.Session.CurrentActor);
-                typeof(PrototypeBattleController).GetField("enemyActionTime", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public).SetValue(battle, Time.unscaledTime - 2);
+                typeof(BattleController).GetField("pendingEnemy", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public).SetValue(battle, battle.Session.CurrentActor);
+                typeof(BattleController).GetField("enemyActionTime", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public).SetValue(battle, Time.unscaledTime - 2);
             }
             Call(battle, "Update");
         }
@@ -284,9 +289,9 @@ public static class ControllerUnityChecks
             var fixture = new GameObject("Battle confirmation " + key);
             var movement = fixture.AddComponent<PlayerMovement>(); Call(movement, "Awake");
             var dialogue = fixture.AddComponent<DialogueController>();
-            var battle = fixture.AddComponent<PrototypeBattleController>();
+            var battle = fixture.AddComponent<BattleController>();
             battle.Initialize(movement, dialogue, new ExplorationProgress());
-            var hud = fixture.AddComponent<PrototypeBattleHud>(); hud.Initialize(battle);
+            var hud = fixture.AddComponent<BattleHud>(); hud.Initialize(battle);
             var interaction = fixture.AddComponent<PlayerInteraction>();
             interaction.Initialize(new InteractionContext(dialogue, new ExplorationProgress(), _ => {},
                 battle.StartBattle, () => battle.IsBusy), new Interactable[0]);
@@ -394,13 +399,13 @@ public static class ControllerUnityChecks
             Check(dialogue.SelectedChoice == 1, "The D-pad moves dialogue choices.");
             State(new GamepadState().WithButton(GamepadButton.South)); Call(interaction, "Update");
             Check(choice == 1, "South activates the selected dialogue choice.");
-            var battle = hero.AddComponent<PrototypeBattleController>();
+            var battle = hero.AddComponent<BattleController>();
             battle.Initialize(movement, dialogue, new ExplorationProgress());
             State(new GamepadState().WithButton(GamepadButton.North)); Call(battle, "Update");
             Check(battle.IsMenuOpen, "Triangle opens the actual inventory controller.");
             State(new GamepadState().WithButton(GamepadButton.East)); Call(battle, "Update");
             Check(!battle.IsMenuOpen && !GameInput.CancelPressed, "Closing inventory consumes the cancel press.");
-            var shop = hero.AddComponent<PrototypeShopController>(); shop.Initialize(movement, dialogue, battle, new ExplorationProgress());
+            var shop = hero.AddComponent<ShopController>(); shop.Initialize(movement, dialogue, battle, new ExplorationProgress());
             shop.Open("item-shop"); Check(shop.IsOpen, "Shop fixture opens.");
             State(new GamepadState().WithButton(GamepadButton.East)); Call(shop, "Update");
             Check(!shop.IsOpen && !GameInput.CancelPressed, "East closes the actual shop controller.");

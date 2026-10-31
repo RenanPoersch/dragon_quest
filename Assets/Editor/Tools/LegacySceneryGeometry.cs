@@ -1,4 +1,5 @@
-using DragonQuest.Prototype;
+using DragonQuest.Presentation.World.Scenery;
+using DragonQuest.Presentation.World.Rendering;
 using DragonQuest.Progression;
 using UnityEngine;
 

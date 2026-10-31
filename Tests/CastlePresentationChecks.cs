@@ -1,7 +1,9 @@
+using DragonQuest.Presentation.Battle.Animations;
+using DragonQuest.Presentation.Battle;
+using DragonQuest.Content;
 using System;
 using System.Linq;
 using DragonQuest.Combat;
-using DragonQuest.Prototype;
 using DragonQuest.Progression;
 
 public static class CastlePresentationChecks
@@ -13,7 +15,7 @@ public static class CastlePresentationChecks
         CheckCastCounter();
         CheckMeteorDisplayAndAbsorption();
         CheckReleaseTiming();
-        var rules=new CastleBattleRules(PrototypePartyFactory.Create());
+        var rules=new CastleBattleRules(PartySetup.Create());
         Check(!CastleMeteorPresentation.HoldCastPose(rules,false)&&CastleMeteorPresentation.HoldCastPose(rules,true),"A queda preserva a pose mesmo apos resolver o combate.");
         Check(BattleAnimationCatalog.Resource("tyrant",CastleBattleRules.Protect)=="TyrantBattle","Shield usa a postura normal antes da conjuracao.");
         Check(BattleAnimationCatalog.Resource("tyrant",CastleBattleRules.PrepareMeteor)=="TyrantMeteorCharge","A conjuracao usa o sprite do rei.");
@@ -87,7 +89,7 @@ public static class CastlePresentationChecks
     }
     private static void CheckCastCounter()
     {
-        var source=PrototypeCastleBattleFactory.Create(PrototypePartyFactory.Create());
+        var source=EncounterCatalog.CreateCastle(PartySetup.Create());
         var battle=new BattleSession(()=>1d,source.Rules,source.Inventory,source.Combatants.ToArray());
         var rules=(CastleBattleRules)battle.Rules;
         var king=battle.Combatants.Single(c=>c.Id==CastleBattleRules.TyrantId);

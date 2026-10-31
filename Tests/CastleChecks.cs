@@ -1,10 +1,10 @@
+using DragonQuest.Content;
 using System;
 using System.Linq;
 using DragonQuest.Combat;
 using DragonQuest.Equipment;
 using DragonQuest.Exploration;
 using DragonQuest.Progression;
-using DragonQuest.Prototype;
 
 internal static class CastleChecks
 {
@@ -14,7 +14,7 @@ internal static class CastleChecks
     private static CastleBattleRules Rules(BattleSession battle) => (CastleBattleRules)battle.Rules;
     private static PartyProgress Party(bool armor,int bearer=2)
     {
-        var party=PrototypePartyFactory.Create();
+        var party=PartySetup.Create();
         if(armor)
         {
             var item=new EquipmentLoadout(DragonProgress.Armor);
@@ -24,7 +24,7 @@ internal static class CastleChecks
     }
     private static BattleSession Create(PartyProgress party)
     {
-        var original=PrototypeCastleBattleFactory.Create(party);
+        var original=EncounterCatalog.CreateCastle(party);
         return new BattleSession(()=>1d,original.Rules,original.Inventory,original.Combatants.ToArray());
     }
     private static void Defend(BattleSession battle)
@@ -42,7 +42,7 @@ internal static class CastleChecks
             // Alvo fixo impede Silence aleatorio de bloquear a pluma de Lia neste roteiro.
             if(actor.Team==CombatTeam.Enemy) Assert(EnemyAI.TryTakeTurn(battle,0,out _),"Espirito deve agir durante a preparacao.");
             else if(revive&&actor.Id=="lia"&&!Find(battle,"bram").IsAlive)
-                Assert(battle.TryUseItem(actor,PrototypePartyFactory.PhoenixFeather,Find(battle,"bram"),out _),"Pluma pode reviver o portador antes do meteoro.");
+                Assert(battle.TryUseItem(actor,ItemCatalog.PhoenixFeather,Find(battle,"bram"),out _),"Pluma pode reviver o portador antes do meteoro.");
             else Defend(battle);
         }
         Assert(battle.Outcome==BattleOutcome.None&&battle.CurrentActor.Id==CastleBattleRules.TyrantId,"Contagem deve chegar ao turno do Rei Rubro.");
@@ -113,7 +113,7 @@ internal static class CastleChecks
             var actor=battle.CurrentActor;var original=actor.Definition;
             var strike=multiHit?HeroUltimates.Omnislash:new AbilityDefinition("phase-hit","Golpe de teste","",0,0,effect,TargetRule.Enemy);
             actor.RefreshDefinition(new CombatantDefinition(original.Name,original.Role,original.MaxHp,original.MaxMp,
-                2000,original.Defense,2000,original.Speed,original.Affinities,0,0,1,strike,PrototypeBattleFactory.Defend));
+                2000,original.Defense,2000,original.Speed,original.Affinities,0,0,1,strike,AbilityCatalog.Defend));
             actor.Limit.Restore(100);
             int impactsBefore=king.VitalChanges.Count,hpBefore=king.Hp;
             Assert(battle.TryAct(actor,strike,king,out _),"O golpe que atravessa o limiar precisa ser resolvido.");
@@ -157,10 +157,10 @@ internal static class CastleChecks
         var party=Party(true);battle=Create(party);Find(battle,"bram").TakeDamage(150);
         PrepareUntilMeteor(battle);BeforeKing(battle);
         Assert(EnemyAI.TryTakeTurn(battle,out _)&&Rules(battle).Ending==GameEnding.CastleDestroyed,"Portador derrotado nao pode absorver o meteoro.");
-        party=Party(true);party.Consumables.TryAdd(PrototypePartyFactory.PhoenixFeather,1,out _);
+        party=Party(true);party.Consumables.TryAdd(ItemCatalog.PhoenixFeather,1,out _);
         battle=Create(party);Find(battle,"bram").TakeDamage(150);
         PrepareUntilMeteor(battle);BeforeKing(battle,true);
-        Assert(EnemyAI.TryTakeTurn(battle,out _)&&Rules(battle).MeteorAbsorbed&&party.Consumables.QuantityOf(PrototypePartyFactory.PhoenixFeather)==0,"Reviver antes do lancamento restaura a absorcao e gasta a pluma.");
+        Assert(EnemyAI.TryTakeTurn(battle,out _)&&Rules(battle).MeteorAbsorbed&&party.Consumables.QuantityOf(ItemCatalog.PhoenixFeather)==0,"Reviver antes do lancamento restaura a absorcao e gasta a pluma.");
     }
     private static void CheckEndings()
     {
@@ -174,7 +174,7 @@ internal static class CastleChecks
         var king=Find(battle,CastleBattleRules.TyrantId);king.RestoreVitals(1,king.Mp,false,0);
         Assert(battle.TryAct(battle.CurrentActor,battle.CurrentActor.Definition.Abilities.Single(a=>a.Id=="attack"),king,out _)
             &&Rules(battle).Ending==GameEnding.HeroPossessed,"Matar Rei Rubro sem armadura deve levar a possessao de Aren.");
-        var party=Party(true);var cleave=new MateriaInstance("ending-cleave",PrototypePartyFactory.CleaveMateria);party.TryAddMaterias(cleave);party.TryEquip(party.Members[0],party.Members[0].Armor,2,cleave,out _);
+        var party=Party(true);var cleave=new MateriaInstance("ending-cleave",MateriaCatalog.CleaveMateria);party.TryAddMaterias(cleave);party.TryEquip(party.Members[0],party.Members[0].Armor,2,cleave,out _);
         battle=Create(party);Threshold(battle);BeforeKing(battle);EnemyAI.TryTakeTurn(battle,out _);
         foreach(var enemy in battle.Combatants.Where(c=>c.Team==CombatTeam.Enemy)) enemy.RestoreVitals(1,enemy.Mp,false,0);
         Assert(battle.TryAct(battle.CurrentActor,battle.CurrentActor.Definition.Abilities.Single(a=>a.SourceAbilityId=="cleave"),Find(battle,CastleBattleRules.SpiritId),out _)
@@ -189,12 +189,12 @@ internal static class CastleChecks
     }
     private static void CheckSpiritEffects()
     {
-        var hero=new CombatantState("hero",new CombatantDefinition("Heroi","Aliado",10,0,1,0,0,5,PrototypeBattleFactory.Attack),CombatTeam.Party);
-        var spirit=new CombatantState("spirit",new CombatantDefinition("Espirito","Inimigo",100,0,0,0,30,20,PrototypeCastleBattleFactory.DrainLife),CombatTeam.Enemy);
+        var hero=new CombatantState("hero",new CombatantDefinition("Heroi","Aliado",10,0,1,0,0,5,AbilityCatalog.Attack),CombatTeam.Party);
+        var spirit=new CombatantState("spirit",new CombatantDefinition("Espirito","Inimigo",100,0,0,0,30,20,AbilityCatalog.DrainLife),CombatTeam.Enemy);
         spirit.TakeDamage(80);var battle=new BattleSession(hero,spirit);
         Assert(EnemyAI.TryTakeTurn(battle,out _)&&hero.Hp==0&&spirit.Hp==30,"Drenagem recupera apenas HP realmente perdido pelo alvo, sem excesso do golpe fatal.");
-        hero=new CombatantState("hero",new CombatantDefinition("Heroi","Aliado",100,20,1,0,0,5,PrototypeBattleFactory.Attack),CombatTeam.Party);
-        spirit=new CombatantState("spirit",new CombatantDefinition("Espirito","Inimigo",100,0,0,0,0,20,PrototypeCastleBattleFactory.Chains),CombatTeam.Enemy);
+        hero=new CombatantState("hero",new CombatantDefinition("Heroi","Aliado",100,20,1,0,0,5,AbilityCatalog.Attack),CombatTeam.Party);
+        spirit=new CombatantState("spirit",new CombatantDefinition("Espirito","Inimigo",100,0,0,0,0,20,AbilityCatalog.Chains),CombatTeam.Enemy);
         battle=new BattleSession(hero,spirit);
         Assert(EnemyAI.TryTakeTurn(battle,out _)&&hero.TurnsTaken==1&&hero.IsBound&&hero.Mp==20&&hero.Limit.Charge==0,"Correntes impede a acao e permanece sem gastar MP nem Limit.");
         Assert(battle.LastMessage.Contains("acorrentado")&&battle.CurrentActor==spirit,"Perda de acao deve ter feedback e avancar ordem de turnos.");
@@ -203,10 +203,10 @@ internal static class CastleChecks
     }
     private static void CheckFullGoodAndDefeat()
     {
-        var party=Party(true);var ice=new MateriaInstance("castle-ice",PrototypePartyFactory.IceMateria);party.TryAddMaterias(ice);party.TryEquip(party.Members[1],party.Members[1].Armor,2,ice,out _);
+        var party=Party(true);var ice=new MateriaInstance("castle-ice",MateriaCatalog.IceMateria);party.TryAddMaterias(ice);party.TryEquip(party.Members[1],party.Members[1].Armor,2,ice,out _);
         foreach(var member in party.Members) member.Progression.AddExperience(CharacterProgression.ExperienceForLevel(20));
         party.RecoverAtInn();
-        party.Consumables.TryAdd(PrototypePartyFactory.Ether,2,out _);
+        party.Consumables.TryAdd(ItemCatalog.Ether,2,out _);
         var battle=Create(party);int actions=0;
         while(battle.Outcome==BattleOutcome.None&&actions++<250)
         {
@@ -214,8 +214,8 @@ internal static class CastleChecks
             if(actor.MindControlTurns>0) {Assert(battle.TryTakeMindControlTurn(.5,out _,out _),"Confusao deve progredir no castelo.");continue;}
             if(actor.Team==CombatTeam.Enemy) {Assert(EnemyAI.TryTakeTurn(battle,out _),"IA deve progredir em combate completo do castelo.");continue;}
             AbilityDefinition ability=actor.Definition.Abilities.Single(a=>a.Id=="attack");var target=Find(battle,CastleBattleRules.SpiritId);
-            if(actor.Id=="lia"&&actor.Mp<6&&battle.Inventory.QuantityOf(PrototypePartyFactory.Ether)>0)
-            {Assert(battle.TryUseItem(actor,PrototypePartyFactory.Ether,actor,out _),"Eter deve permitir sustentar a equipe.");continue;}
+            if(actor.Id=="lia"&&actor.Mp<6&&battle.Inventory.QuantityOf(ItemCatalog.Ether)>0)
+            {Assert(battle.TryUseItem(actor,ItemCatalog.Ether,actor,out _),"Eter deve permitir sustentar a equipe.");continue;}
             if(actor.Id=="bram"&&Find(battle,CastleBattleRules.TyrantId).TauntTurns==0&&actor.Mp>=3)
             {ability=actor.Definition.Abilities.Single(a=>a.Effect==AbilityEffect.Taunt);target=Find(battle,CastleBattleRules.TyrantId);}
             else if(actor.Id=="lia"&&actor.Mp>=6&&!actor.IsSilenced)

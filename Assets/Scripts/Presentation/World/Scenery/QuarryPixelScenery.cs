@@ -1,11 +1,14 @@
+using DragonQuest.Presentation.World.Rendering;
+using DragonQuest.Presentation.World.Characters;
+using DragonQuest.Presentation.World.Animations;
+using DragonQuest.Exploration.Layouts;
 using System;
 using System.Collections.Generic;
-using DragonQuest.Exploration;
 using DragonQuest.Interactions;
 using DragonQuest.Progression;
 using UnityEngine;
 
-namespace DragonQuest.Prototype
+namespace DragonQuest.Presentation.World.Scenery
 {
     public sealed class QuarryPixelScenery : MonoBehaviour
     {

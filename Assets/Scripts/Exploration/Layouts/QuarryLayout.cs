@@ -1,9 +1,9 @@
+using DragonQuest.Presentation.World.Rendering;
 using System;
 using System.Collections.Generic;
-using DragonQuest.Exploration;
 using UnityEngine;
 
-namespace DragonQuest.Prototype
+namespace DragonQuest.Exploration.Layouts
 {
     // U goes left to right; V goes top to bottom in the continuous quarry painting.
     public static class QuarryLayout

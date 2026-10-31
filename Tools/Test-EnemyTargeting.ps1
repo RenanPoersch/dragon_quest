@@ -21,7 +21,7 @@ foreach ($folder in @('Combat','Content', 'Equipment', 'Inventory', 'Shops', 'Pr
 $targetArgs += Join-Path $targetProjectRoot 'Assets/Scripts/Exploration/ExplorationProgress.cs'
 $targetArgs += Join-Path $targetProjectRoot 'Tests/EnemyTargetingChecks.cs'
 $targetResponse = Join-Path $WorkDirectory 'EnemyTargetingChecks.rsp'
-$targetArgs | ForEach-Object { '"' + $_ + '"' } | Set-Content -LiteralPath $targetResponse -Encoding utf8
+$targetArgs | Select-Object -Unique | ForEach-Object { '"' + $_ + '"' } | Set-Content -LiteralPath $targetResponse -Encoding utf8
 & $targetDotnet $targetCsc.FullName "@$targetResponse"
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 @{ runtimeOptions = @{ tfm = $targetRefs.Name; framework = @{ name = 'Microsoft.NETCore.App'; version = $targetRuntime.Name } } } |

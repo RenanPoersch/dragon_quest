@@ -1,8 +1,9 @@
+using DragonQuest.Presentation.Battle.Animations;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace DragonQuest.Prototype
+namespace DragonQuest.Presentation.Battle.Sprites
 {
     // A primeira pose define o tamanho do corpo; fogo e arcos nao reduzem o dragao.
     public sealed class DragonBattleSprites

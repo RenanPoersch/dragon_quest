@@ -1,3 +1,5 @@
+using DragonQuest.Gameplay.Saving;
+using DragonQuest.Gameplay.Battle;
 using DragonQuest.Presentation.Menus;
 using System;
 using System.IO;
@@ -7,7 +9,6 @@ using DragonQuest.Input;
 using DragonQuest.Interactions;
 using DragonQuest.Persistence;
 using DragonQuest.Progression;
-using DragonQuest.Prototype;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -43,7 +44,7 @@ public static class ExitMenuUnityChecks
     public static void Run()
     {
         var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
-        new GameObject("Title fixture").AddComponent<PrototypeSaveController>();
+        new GameObject("Title fixture").AddComponent<SaveController>();
         EditorSceneManager.SaveScene(scene, ScenePath);
         EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(ScenePath, true) };
         SessionState.SetBool(Pending, true);
@@ -61,14 +62,14 @@ public static class ExitMenuUnityChecks
             if (step == 0)
             {
                 original = GameObject.Find("Title fixture");
-                var saves = original.GetComponent<PrototypeSaveController>();
+                var saves = original.GetComponent<SaveController>();
                 saves.enabled = false;
                 var player = original.AddComponent<PlayerMovement>();
                 var dialogue = original.AddComponent<DialogueController>();
-                var battle = original.AddComponent<PrototypeBattleController>();
+                var battle = original.AddComponent<BattleController>();
                 battle.Initialize(player, dialogue, new ExplorationProgress());
                 battle.enabled = false;
-                var inventoryHost = original.AddComponent<PrototypeMateriaHud>();
+                var inventoryHost = original.AddComponent<InventoryHud>();
                 inventoryHost.Initialize(battle, new AncientSecrets()); inventoryHost.enabled = false;
                 var inventory = inventoryHost.Presenter;
                 saveDirectory = Path.Combine(Path.GetTempPath(), "DragonQuestExitMenu-" + Guid.NewGuid().ToString("N"));
@@ -90,7 +91,7 @@ public static class ExitMenuUnityChecks
             }
             else if (Time.frameCount > requestedFrame && original == null)
             {
-                var title = UnityEngine.Object.FindAnyObjectByType<PrototypeSaveController>();
+                var title = UnityEngine.Object.FindAnyObjectByType<SaveController>();
                 Check(title != null && title.IsMenuVisible && title.IsFrontEndVisible, "Sair reloads the initial title state.");
                 Check(SceneManager.GetActiveScene().path == ScenePath, "The current game scene reloads through the same return path used by endings.");
                 Check(File.ReadAllText(Path.Combine(saveDirectory, "keep.txt")) == "existing save content"

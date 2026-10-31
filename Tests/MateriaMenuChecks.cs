@@ -1,7 +1,9 @@
+using DragonQuest.Progression;
+using DragonQuest.Content;
+using DragonQuest.Authoring;
 using System;
 using System.Collections.Generic;
 using DragonQuest.Equipment;
-using DragonQuest.Prototype;
 
 internal static class MateriaMenuChecks
 {
@@ -19,7 +21,7 @@ internal static class MateriaMenuChecks
     }
     private static void SelectionAndExchange()
     {
-        var party = PrototypePartyFactory.Create(); var menu = new MateriaMenuSession(); menu.Reset(party);
+        var party = PartySetup.Create(); var menu = new MateriaMenuSession(); menu.Reset(party);
         Check(menu.Sockets.Count == 18 && menu.Materias.Count == 5, "The menu exposes both equipment rows for all three allies.");
         var aren = party.Members[0]; var lia = party.Members[1];
         var source = aren.Weapon.Sockets[0]; var previous = lia.Weapon.Sockets[0];
@@ -40,9 +42,9 @@ internal static class MateriaMenuChecks
     }
     private static void NavigationAndSixSockets()
     {
-        var party = PrototypePartyFactory.CreateTestParty(); var menu = new MateriaMenuSession(); menu.Reset(party);
+        var party = PartyFixture.Create(); var menu = new MateriaMenuSession(); menu.Reset(party);
         var lia = party.Members[1]; EquipmentLoadout robe = null;
-        foreach (var gear in party.Equipments) if (gear.Definition == PrototypePartyFactory.ArcaneRobe) robe = gear;
+        foreach (var gear in party.Equipments) if (gear.Definition == EquipmentCatalog.ArcaneRobe) robe = gear;
         Check(party.TryEquipEquipment(lia, robe, out _), "Six-socket fixture equips the robe.");
         menu.Refresh(party); Check(menu.Sockets.Count == 20, "The target list reflects the new socket count.");
         menu.BeginEquip(party); menu.SelectSocket(Find(menu, robe, 5));
@@ -63,7 +65,7 @@ internal static class MateriaMenuChecks
         for (int i = 0; i < expected.Length; i++)
             Check(menu.Materias[i].Definition.Id == expected[i], "Arrange groups green, blue, red and purple, alphabetically within each color.");
         var originalFire = menu.Materias[2];
-        var addition = new MateriaInstance("new-fire", PrototypePartyFactory.FireMateria);
+        var addition = new MateriaInstance("new-fire", MateriaCatalog.FireMateria);
         Check(party.TryAddMaterias(addition), "A new materia can enter the arranged inventory.");
         menu.Refresh(party);
         Check(menu.SelectedMateria == materia && menu.Materias.Count == expected.Length + 1
@@ -72,7 +74,7 @@ internal static class MateriaMenuChecks
     }
     private static void RemovalAndRefresh()
     {
-        var party = PrototypePartyFactory.Create(); var menu = new MateriaMenuSession(); menu.Reset(party);
+        var party = PartySetup.Create(); var menu = new MateriaMenuSession(); menu.Reset(party);
         Check(menu.BeginRemove(party) && menu.Removing && menu.ChoosingSocket, "Remove selects an occupied socket.");
         var target = menu.SelectedSocket; var materia = target.Equipment.Sockets[target.Index];
         Check(menu.ConfirmSocket(party) && target.Equipment.Sockets[target.Index] == null && party.Materias.Count == 5,
@@ -92,7 +94,7 @@ internal static class MateriaMenuChecks
     }
     private static void Submenus()
     {
-        var party = PrototypePartyFactory.CreateTestParty(); var menu = new MateriaMenuSession(); menu.Reset(party);
+        var party = PartyFixture.Create(); var menu = new MateriaMenuSession(); menu.Reset(party);
         var selected = menu.SelectedMateria; var equipped = party.Members[0].Weapon.Sockets[0];
         menu.MoveSubmenu(1, party);
         Check(menu.SubmenuIndex == 1 && menu.Removing && menu.ChoosingSocket && menu.BrowsingSubmenus,

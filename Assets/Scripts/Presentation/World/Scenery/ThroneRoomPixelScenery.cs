@@ -1,8 +1,9 @@
+using DragonQuest.Exploration.Layouts;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace DragonQuest.Prototype
+namespace DragonQuest.Presentation.World.Scenery
 {
     public sealed class ThroneRoomPixelScenery : MonoBehaviour
     {

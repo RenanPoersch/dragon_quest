@@ -1,7 +1,8 @@
+using DragonQuest.Presentation.Menus;
+using DragonQuest.Presentation.Common;
 using System;
 using DragonQuest.Audio;
 using DragonQuest.Input;
-using DragonQuest.Prototype;
 using UnityEngine;
 
 namespace DragonQuest.Presentation.Battle
@@ -102,13 +103,13 @@ namespace DragonQuest.Presentation.Battle
                 battleSkin.verticalScrollbarThumb.focused, battleSkin.verticalScrollbarThumb.onNormal,
                 battleSkin.verticalScrollbarThumb.onHover, battleSkin.verticalScrollbarThumb.onActive,
                 battleSkin.verticalScrollbarThumb.onFocused }) state.background = pixel;
-            title = PrototypeTypography.Style(GUI.skin.label, 28, true);
-            text = PrototypeTypography.Style(GUI.skin.label, 24); text.wordWrap = true;
-            small = PrototypeTypography.Style(GUI.skin.label, 16); small.wordWrap = true;
-            centered = PrototypeTypography.Style(GUI.skin.label, 24); centered.alignment = TextAnchor.MiddleCenter;
-            number = PrototypeTypography.Style(centered, 40, true);
-            castNumber = PrototypeTypography.Style(number, number.fontSize + CastleMeteorPresentation.TurnNumberFontIncrease, true);
-            button = PrototypeTypography.Style(GUI.skin.label, 24);
+            title = GameTypography.Style(GUI.skin.label, 28, true);
+            text = GameTypography.Style(GUI.skin.label, 24); text.wordWrap = true;
+            small = GameTypography.Style(GUI.skin.label, 16); small.wordWrap = true;
+            centered = GameTypography.Style(GUI.skin.label, 24); centered.alignment = TextAnchor.MiddleCenter;
+            number = GameTypography.Style(centered, 40, true);
+            castNumber = GameTypography.Style(number, number.fontSize + CastleMeteorPresentation.TurnNumberFontIncrease, true);
+            button = GameTypography.Style(GUI.skin.label, 24);
             button.wordWrap = false; button.clipping = TextClipping.Clip;
             button.alignment = TextAnchor.MiddleLeft; button.padding = new RectOffset(50, 4, 2, 2);
             itemButton = InventoryPixelArt.ButtonStyle(button, 86);

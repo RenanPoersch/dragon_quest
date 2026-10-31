@@ -1,10 +1,11 @@
+using DragonQuest.Presentation.Common;
+using DragonQuest.Exploration;
 using System;
 using System.Collections.Generic;
 using DragonQuest.Gameplay.Saving;
 using DragonQuest.Audio;
 using DragonQuest.Persistence;
 using DragonQuest.Progression;
-using DragonQuest.Prototype;
 using UnityEngine;
 
 namespace DragonQuest.Presentation.Menus
@@ -188,7 +189,7 @@ namespace DragonQuest.Presentation.Menus
         private static string LocationTitle(RestoredJourney journey)
         {
             if (journey.Data.Ending != 0) return EndingNarrative.Title((GameEnding)journey.Data.Ending);
-            var navigation = new PrototypeTravel(journey.Secrets);
+            var navigation = new WorldNavigation(journey.Secrets);
             navigation.TryRestore(journey.Data.Map, new Vector2(journey.Data.X, journey.Data.Y)); return navigation.Current.Name;
         }
 
@@ -203,9 +204,9 @@ namespace DragonQuest.Presentation.Menus
             pixel = new Texture2D(1, 1); pixel.SetPixel(0, 0, Color.white); pixel.Apply();
             saveScreen = new SaveSelectionPresentation();
             LoadHandSprite();
-            textStyle = PrototypeTypography.Style(GUI.skin.label, 24); textStyle.wordWrap = true; textStyle.normal.textColor = Color.white;
-            smallStyle = PrototypeTypography.Style(textStyle, 20);
-            buttonStyle = PrototypeTypography.Style(GUI.skin.label, 24);
+            textStyle = GameTypography.Style(GUI.skin.label, 24); textStyle.wordWrap = true; textStyle.normal.textColor = Color.white;
+            smallStyle = GameTypography.Style(textStyle, 20);
+            buttonStyle = GameTypography.Style(GUI.skin.label, 24);
             buttonStyle.alignment = TextAnchor.MiddleCenter;
             buttonStyle.padding = new RectOffset(0, 0, 0, 0);
             foreach (GUIStyleState state in new[] { buttonStyle.normal, buttonStyle.hover, buttonStyle.active, buttonStyle.focused })

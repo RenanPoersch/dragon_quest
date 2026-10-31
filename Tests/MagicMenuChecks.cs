@@ -1,9 +1,11 @@
+using DragonQuest.Progression;
+using DragonQuest.Content;
+using DragonQuest.Authoring;
 using System;
 using System.Linq;
 using DragonQuest.Combat;
 using DragonQuest.Equipment;
 using DragonQuest.Inventory;
-using DragonQuest.Prototype;
 
 internal static class MagicMenuChecks
 {
@@ -12,7 +14,7 @@ internal static class MagicMenuChecks
     { checks++; if (!condition) throw new Exception(message); }
     private static PartyProgress Party()
     {
-        var party = PrototypePartyFactory.CreateTestParty();
+        var party = PartyFixture.Create();
         party.Members[0].RestoreVitals(10, 20, true, 0);
         party.Members[1].RestoreVitals(10, 60, false, 0);
         party.Members[2].RestoreVitals(0, 0, false, 0);
@@ -35,7 +37,7 @@ internal static class MagicMenuChecks
         menu.Move(-1, party); Check(menu.CasterIndex == 1 && menu.Spells.Count == 3, "Lia lists equipped Heal, Cleanse and Revive.");
         menu.ConfirmCaster();
         Check(!menu.ChoosingCaster && !menu.ChoosingTarget && !menu.ConfirmTarget(party), "Selecting a caster cannot cast a spell.");
-        int mp = caster.Mp, hp = target.Hp, stock = party.Consumables.QuantityOf(PrototypePartyFactory.Potion);
+        int mp = caster.Mp, hp = target.Hp, stock = party.Consumables.QuantityOf(ItemCatalog.Potion);
         menu.Move(-1, party); Check(menu.SelectedSpell.SourceAbilityId == "revive", "Spell selection wraps backward.");
         menu.Move(1, party); Check(menu.BeginUse(party), "Confirming Heal opens portrait targeting.");
         Check(caster.Mp == mp && target.Hp == hp, "Entering targets spends no MP and restores no HP.");
@@ -46,7 +48,7 @@ internal static class MagicMenuChecks
         menu.BeginUse(party);
         Check(menu.ConfirmTarget(party) && target.Hp == hp + Spell(caster, "heal").Power + caster.Magic
             && caster.Mp == mp - 6, "A valid heal restores battle-equivalent HP and charges the caster six MP.");
-        Check(menu.ChoosingTarget && party.Consumables.QuantityOf(PrototypePartyFactory.Potion) == stock, "Repeated casting remains in targets and consumes no items.");
+        Check(menu.ChoosingTarget && party.Consumables.QuantityOf(ItemCatalog.Potion) == stock, "Repeated casting remains in targets and consumes no items.");
         menu.SelectTarget(1, party); mp = caster.Mp; hp = caster.Hp;
         Check(menu.ConfirmTarget(party) && caster.Hp > hp && caster.Mp == mp - 6, "Self-healing persists both HP and MP changes.");
         Check(menu.Cancel() && menu.Cancel() && menu.ChoosingCaster && !menu.Cancel(), "Cancel returns target, spell, caster, then overview one step at a time.");
@@ -68,7 +70,7 @@ internal static class MagicMenuChecks
         Check(!revive.ConfirmTarget(party) && caster.Mp == mp, "Revive rejects living targets.");
         revive.SelectTarget(2, party);
         Check(revive.ConfirmTarget(party) && party.Members[2].Hp == (party.Members[2].MaxHp * 30 + 99) / 100
-            && caster.Mp == mp - PrototypeBattleFactory.Revive.MpCost, "Revive restores its configured HP percentage and deducts its configured MP cost.");
+            && caster.Mp == mp - AbilityCatalog.Revive.MpCost, "Revive restores its configured HP percentage and deducts its configured MP cost.");
         target.RestoreVitals(1, 20, true, 1); mp = caster.Mp;
         Check(party.TryCastMagic(caster, heal.Id, target, out _) && target.BoundActions == 0, "Recovery also breaks the target's chains, matching battle recovery.");
         caster.RestoreVitals(caster.Hp, 5, false, 0);
@@ -79,13 +81,13 @@ internal static class MagicMenuChecks
         caster.RestoreVitals(1, 60, false, 1);
         Check(!party.TryCastMagic(caster, heal.Id, target, out _), "A bound caster cannot cast.");
         caster.RestoreVitals(1, 60, false, 0);
-        Check(!party.TryCastMagic(caster, PrototypeBattleFactory.Heal.Id, target, out _), "Base spell IDs cannot bypass equipped-materia ownership.");
-        Check(!party.TryCastMagic(caster, heal.Id, PrototypePartyFactory.Create().Members[0], out _), "An outsider cannot receive the party's spells.");
-        Check(!party.TryCastMagic(PrototypePartyFactory.Create().Members[1], heal.Id, target, out _), "An outsider cannot spend the party's MP.");
+        Check(!party.TryCastMagic(caster, AbilityCatalog.Heal.Id, target, out _), "Base spell IDs cannot bypass equipped-materia ownership.");
+        Check(!party.TryCastMagic(caster, heal.Id, PartySetup.Create().Members[0], out _), "An outsider cannot receive the party's spells.");
+        Check(!party.TryCastMagic(PartySetup.Create().Members[1], heal.Id, target, out _), "An outsider cannot spend the party's MP.");
         Check(!party.TryCastMagic(caster, HeroUltimates.ForHero("lia").Id, target, out _), "Field Magic cannot cast a limit break.");
-        Check(!PartyProgress.IsFieldMagic(PrototypePartyFactory.Summon) && !PartyProgress.IsFieldMagic(PrototypePartyFactory.Fire), "Summons and attack spells are excluded.");
+        Check(!PartyProgress.IsFieldMagic(AbilityCatalog.Summon) && !PartyProgress.IsFieldMagic(AbilityCatalog.Fire), "Summons and attack spells are excluded.");
         menu = Menu(party, "heal"); menu.BeginUse(party);
-        var materia = party.Materias.Single(m => m.Definition == PrototypePartyFactory.CureMateria);
+        var materia = party.Materias.Single(m => m.Definition == MateriaCatalog.CureMateria);
         party.TryUnequip(caster, caster.Weapon, 0, out _);
         int hp = target.Hp; mp = caster.Mp;
         Check(!menu.ConfirmTarget(party) && target.Hp == hp && caster.Mp == mp, "Unequipping the source revokes a pending cast without spending MP.");
@@ -94,7 +96,7 @@ internal static class MagicMenuChecks
     private static void AllTargets()
     {
         var party = Party(); var caster = party.Members[1];
-        var all = party.Materias.First(m => m.Definition == PrototypePartyFactory.AllMateria);
+        var all = party.Materias.First(m => m.Definition == MateriaCatalog.AllMateria);
         party.TryEquip(caster, caster.Weapon, 1, all, out _);
         var menu = Menu(party, "heal");
         Check(menu.SelectedSpell.Targets == TargetRule.AllAllies && menu.SelectedSpell.MpCost == 9, "Linked All exposes the resolved group spell and cost.");
@@ -110,13 +112,13 @@ internal static class MagicMenuChecks
         menu = Menu(party, "cleanse"); menu.BeginUse(party); mp = caster.Mp;
         Check(menu.ConfirmTarget(party) && !caster.IsPoisoned && !party.Members[0].IsPoisoned && caster.Mp == mp - 6,
             "All purifies every poisoned ally for one increased cost.");
-        var reviveMateria = party.Materias.Single(m => m.Definition == PrototypePartyFactory.ReviveMateria);
+        var reviveMateria = party.Materias.Single(m => m.Definition == MateriaCatalog.ReviveMateria);
         party.TryEquip(caster, caster.Weapon, 0, reviveMateria, out _); party.TryEquip(caster, caster.Weapon, 1, all, out _);
         party.Members[0].RestoreVitals(0, 0, false, 0);
         menu = Menu(party, "revive"); menu.BeginUse(party); mp = caster.Mp;
         Check(menu.ConfirmTarget(party) && party.Members[0].IsAlive && party.Members[2].IsAlive && caster.Mp == mp - 18,
             "All revives each KO ally and charges its resolved cost once.");
-        party.TryEquip(caster, caster.Weapon, 0, party.Materias.Single(m => m.Definition == PrototypePartyFactory.CureMateria), out _);
+        party.TryEquip(caster, caster.Weapon, 0, party.Materias.Single(m => m.Definition == MateriaCatalog.CureMateria), out _);
         party.TryUnequip(caster, caster.Weapon, 1, out _);
         caster.RestoreVitals(1, 6, false, 0);
         menu = Menu(party, "heal"); menu.BeginUse(party); menu.SelectTarget(1, party);

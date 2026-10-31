@@ -2,7 +2,7 @@ using System;
 using DragonQuest.Progression;
 using UnityEngine;
 
-namespace DragonQuest.Prototype
+namespace DragonQuest.Presentation.World.Animations
 {
     [ExecuteAlways]
     [RequireComponent(typeof(SpriteRenderer))]

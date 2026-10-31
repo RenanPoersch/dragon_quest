@@ -1,15 +1,17 @@
+using DragonQuest.Presentation.Battle;
+using DragonQuest.Gameplay.Saving;
+using DragonQuest.Gameplay.Battle;
+using DragonQuest.Content;
 using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using DragonQuest.Combat;
-using DragonQuest.Equipment;
 using DragonQuest.Exploration;
 using DragonQuest.Input;
 using DragonQuest.Interactions;
 using DragonQuest.Persistence;
 using DragonQuest.Progression;
-using DragonQuest.Prototype;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -40,15 +42,15 @@ public static class AutomaticDefeatUnityChecks
         var method = typeof(CombatantState).GetMethod("TakeDamage", Hidden);
         method.Invoke(target, method.GetParameters().Select(p => p.HasDefaultValue ? p.DefaultValue : (object)amount).ToArray());
     }
-    private static void Age(PrototypeBattleController battle, float elapsed) => Put(battle.ActionPresentation, "<ActionStartedAt>k__BackingField", Time.unscaledTime - elapsed);
+    private static void Age(BattleController battle, float elapsed) => Put(battle.ActionPresentation, "<ActionStartedAt>k__BackingField", Time.unscaledTime - elapsed);
     private static void Focus(bool value) => typeof(GameInput).GetField("hasFocus", StaticHidden).SetValue(null, (Func<bool>)(() => value));
-    private static bool LoadRequested => (bool)typeof(PrototypeSaveController).GetField("loadGameOnStart", StaticHidden).GetValue(null);
-    private static string Page(PrototypeSaveController saves) => Get(saves, "page").ToString();
+    private static bool LoadRequested => (bool)typeof(SaveController).GetField("loadGameOnStart", StaticHidden).GetValue(null);
+    private static string Page(SaveController saves) => Get(saves, "page").ToString();
 
     public static void Run()
     {
         var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
-        new GameObject("Load Game fixture").AddComponent<PrototypeSaveController>();
+        new GameObject("Load Game fixture").AddComponent<SaveController>();
         EditorSceneManager.SaveScene(scene, ScenePath);
         EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(ScenePath, true) };
         SessionState.SetBool(Pending, true);
@@ -64,17 +66,17 @@ public static class AutomaticDefeatUnityChecks
         EditorApplication.isPaused = false;
         EditorApplication.update -= Tick; EditorApplication.update += Tick;
     }
-    private static PrototypeSaveController InitializeTitle()
+    private static SaveController InitializeTitle()
     {
         original = GameObject.Find("Load Game fixture");
-        var saves = original.GetComponent<PrototypeSaveController>(); saves.enabled = false;
+        var saves = original.GetComponent<SaveController>(); saves.enabled = false;
         var player = original.AddComponent<PlayerMovement>();
         var dialogue = original.AddComponent<DialogueController>();
-        var battle = original.AddComponent<PrototypeBattleController>(); battle.enabled = false;
+        var battle = original.AddComponent<BattleController>(); battle.enabled = false;
         var progress = new ExplorationProgress(50);
         Action goToLoad = () => { requests++; saves.ReturnToLoadGame(); };
         battle.Initialize(player, dialogue, progress, defeatPresentation: goToLoad);
-        original.GetComponent<PrototypePostBattleHud>().enabled = false;
+        original.GetComponent<PostBattleHud>().enabled = false;
         saves.Initialize(player, battle, null, null, dialogue, progress, new AncientSecrets(), new DragonProgress(), journey =>
         {
             installed++;
@@ -97,11 +99,11 @@ public static class AutomaticDefeatUnityChecks
             {
                 int loads = 0, endings = 0;
                 var player = root.AddComponent<PlayerMovement>();
-                var battle = root.AddComponent<PrototypeBattleController>(); battle.enabled = false;
+                var battle = root.AddComponent<BattleController>(); battle.enabled = false;
                 battle.Initialize(player, root.AddComponent<DialogueController>(), new ExplorationProgress(),
                     defeatPresentation: () => loads++, endingPresentation: _ => endings++);
-                root.GetComponent<PrototypePostBattleHud>().enabled = false;
-                if (kind == 1) Call(battle, "StartEncounter", PrototypeBattleFactory.CreateDragonEncounter(battle.Party), true);
+                root.GetComponent<PostBattleHud>().enabled = false;
+                if (kind == 1) Call(battle, "StartEncounter", EncounterCatalog.CreateDragonEncounter(battle.Party), true);
                 else if (kind == 2) battle.StartCastleBattle();
                 else battle.StartBattle();
                 battle.EntryTransition.Cancel();
@@ -134,15 +136,15 @@ public static class AutomaticDefeatUnityChecks
             {
                 typeof(GameInput).GetMethod("Reset", StaticHidden).Invoke(null, null); Focus(false);
                 CheckEncounterRoutes();
-                var party = PrototypePartyFactory.Create(); var progress = new ExplorationProgress(50);
+                var party = PartySetup.Create(); var progress = new ExplorationProgress(50);
                 store = new SaveStore(Path.Combine(Directory.GetParent(Application.dataPath).FullName, "TestSaves"));
                 Check(store.TryWrite(2, JourneySnapshot.Capture(party, progress, new AncientSecrets(), new DragonProgress(),
-                    PrototypeShopFactory.Create(party, progress), PrototypeTravel.World, 0, -7), out _), "Create a saved journey in the test project.");
+                    ShopCatalog.Create(party, progress), WorldNavigation.World, 0, -7), out _), "Create a saved journey in the test project.");
                 savedBytes = File.ReadAllBytes(store.SlotPath(2));
                 // Skip artwork in this fixture; the real return request is exercised below.
-                typeof(PrototypeSaveController).GetField("loadGameOnStart", StaticHidden).SetValue(null, true);
+                typeof(SaveController).GetField("loadGameOnStart", StaticHidden).SetValue(null, true);
                 var saves = InitializeTitle(); Put(saves, "<IsMenuVisible>k__BackingField", false);
-                var battle = original.GetComponent<PrototypeBattleController>();
+                var battle = original.GetComponent<BattleController>();
                 battle.StartBattle(); battle.EntryTransition.Cancel();
                 var hero = battle.Session.Combatants.First(c => c.Team == CombatTeam.Party);
                 foreach (var ally in battle.Session.Combatants.Where(c => c.Team == CombatTeam.Party)) Damage(ally, ally.Hp - (ally == hero ? 1 : 0));
@@ -176,7 +178,7 @@ public static class AutomaticDefeatUnityChecks
                 {
                     Check(installed == 0 && (int)Get(saves, "selectedOption") == 1, "Load Game selects the first available save without auto-loading it.");
                     Call(saves, "Continue", 2);
-                    var battle = original.GetComponent<PrototypeBattleController>();
+                    var battle = original.GetComponent<BattleController>();
                     Check(installed == 1 && !saves.IsMenuVisible && saves.ActiveSlot == 2 && battle.Party.HasLivingMembers,
                         "Selecting a slot restores the saved party and leaves the menu.");
                     Check(battle.Party.Members.All(m => m.Hp == m.MaxHp) && !defeatedParty.HasLivingMembers,

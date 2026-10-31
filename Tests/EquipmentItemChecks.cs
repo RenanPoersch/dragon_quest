@@ -1,16 +1,18 @@
+using DragonQuest.Progression;
+using DragonQuest.Content;
+using DragonQuest.Authoring;
 using System;
 using DragonQuest.Combat;
 using DragonQuest.Equipment;
 using DragonQuest.Inventory;
-using DragonQuest.Prototype;
 
 internal static class EquipmentItemChecks
 {
     private static int checks;
-    private static ConsumableDefinition Potion => PrototypePartyFactory.Potion;
-    private static ConsumableDefinition Ether => PrototypePartyFactory.Ether;
-    private static ConsumableDefinition Antidote => PrototypePartyFactory.Antidote;
-    private static ConsumableDefinition Feather => PrototypePartyFactory.PhoenixFeather;
+    private static ConsumableDefinition Potion => ItemCatalog.Potion;
+    private static ConsumableDefinition Ether => ItemCatalog.Ether;
+    private static ConsumableDefinition Antidote => ItemCatalog.Antidote;
+    private static ConsumableDefinition Feather => ItemCatalog.PhoenixFeather;
 
     private static void Assert(bool condition, string description)
     {
@@ -45,7 +47,7 @@ internal static class EquipmentItemChecks
 
     private static void CheckGearAndMateriaReturn()
     {
-        PartyProgress party = PrototypePartyFactory.CreateTestParty();
+        PartyProgress party = PartyFixture.Create();
         PartyMember aren = Member(party, "aren"), lia = Member(party, "lia"), bram = Member(party, "bram");
         var sword = Gear(party, "iron-sword");
         EquipmentLoadout oldWeapon = aren.Weapon, oldArmor = aren.Armor;
@@ -203,15 +205,15 @@ internal static class EquipmentItemChecks
 
     private static void CheckStockPersistenceAndValidation()
     {
-        PartyProgress party = PrototypePartyFactory.CreateTestParty();
-        BattleSession battle = PrototypeBattleFactory.CreateEncounter(party);
+        PartyProgress party = PartyFixture.Create();
+        BattleSession battle = EncounterCatalog.CreateEncounter(party);
         CombatantState hero = battle.CurrentActor;
         hero.TakeDamage(10);
         Use(battle, Potion, hero);
-        BattleSession next = PrototypeBattleFactory.CreateEncounter(party);
+        BattleSession next = EncounterCatalog.CreateEncounter(party);
         Assert(next.Inventory.QuantityOf(Potion) == 5 && next.CurrentActor.Hp == 100 && Member(party, "aren").Limit.Charge == 10,
             "Nova batalha deve preservar estoque e Limit, restaurando HP nesta fase.");
-        Assert(PrototypePartyFactory.CreateTestParty().Consumables.QuantityOf(Potion) == 6, "Sessoes separadas devem ter estoque independente.");
+        Assert(PartyFixture.Create().Consumables.QuantityOf(Potion) == 6, "Sessoes separadas devem ter estoque independente.");
 
         var originalStack = new ItemStack(Potion, 1);
         var inventory = new ItemInventory(originalStack);

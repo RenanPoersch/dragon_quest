@@ -1,6 +1,6 @@
 using System;
 
-namespace DragonQuest.Prototype
+namespace DragonQuest.Presentation.Cinematics.Endings
 {
     // Both ends of the fade wait for a repaint; loading cannot skip the battle or expose the cut.
     public sealed class BattleExitSequence
