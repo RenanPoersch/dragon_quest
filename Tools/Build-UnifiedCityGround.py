@@ -21,11 +21,11 @@ def sha256(path):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--source', type=Path, default=ROOT / 'Docs/ArtInputs/CityGroundNatural.png')
-    parser.add_argument('--generation', type=Path, default=ROOT / 'Docs/ArtInputs/CityGroundNativeGeneration.json')
+    parser.add_argument('--source', type=Path, default=ROOT / 'Assets/Resources/PixelArt/CityGroundMap.png')
+    parser.add_argument('--generation', type=Path, default=ROOT / 'Docs/ArtReferences/ArtInputs/CityGroundNativeGeneration.json')
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--core-output', type=Path)
-    parser.add_argument('--manifest', type=Path, default=ROOT / 'Docs/ArtInputs/CityGroundBake.json')
+    parser.add_argument('--manifest', type=Path, default=ROOT / 'Docs/ArtReferences/ArtInputs/CityGroundBake.json')
     args = parser.parse_args()
     image = Image.open(args.source)
     image.load()
@@ -51,7 +51,7 @@ def main():
         image.crop((left, top, right, bottom)).save(args.core_output)
     metadata = dict(width=width, height=height,
         core=dict(x=left, y=top, width=right-left, height=bottom-top),
-        source='Docs/ArtInputs/CityGroundNatural.png', sourceSize=list(image.size),
+        source='Assets/Resources/PixelArt/CityGroundMap.png', sourceSize=list(image.size),
         sourceSha256=sha256(args.source), sha256=sha256(args.output), upscaled=False,
         sampling='byte-for-byte native source copy; no resampling or warp',
         coordinateCalibration=list(ORIGINAL_SIZE),

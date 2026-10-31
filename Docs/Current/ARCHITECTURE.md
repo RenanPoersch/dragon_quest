@@ -371,7 +371,7 @@ GameEntryPoint.OnDestroy chama GameBootstrap.Dispose, que libera os recursos de 
 
 Voltar ao título e o fluxo de derrota recarregam a cena. Os GameObjects da cena são recriados, e o bootstrap monta os sistemas novamente. Alguns catálogos/caches estáticos e o perfil de conquistas têm ciclo próprio; não representam um save automático da jornada.
 
-Assets/Editor contém ferramentas de autoria, previews, exportadores e verificações. Tools contém utilitários externos. Docs reúne documentação e referências. Esses diretórios não são o caminho que recebe o comando de gameplay no executável.
+Assets/Editor contém a configuração de importação de música e a prévia de ultimates. Tools contém utilitários externos de autoria de áudio, chão e quadros. Docs reúne a documentação vigente e as fontes dos recursos em uso. Esses diretórios não são o caminho que recebe o comando de gameplay no executável.
 
 | Se quiser mudar… | Começar por… |
 | --- | --- |

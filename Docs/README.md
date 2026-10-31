@@ -1,16 +1,18 @@
 # Documentação
 
-## Comportamento vigente
+## Jogo atual
 
 - [Arquitetura e fluxo](Current/ARCHITECTURE.md)
 - [Níveis e atributos](Current/LEVEL_PROGRESSION.md)
 - [Resultados de batalha](Current/POST_BATTLE_RESULTS.md)
 - [Saves e conquistas](Current/PERSISTENCE.md)
 
-## Registros preservados
+## Recursos em uso
 
-- History contém entregas, validações e auditorias anteriores. As regras nesses registros descrevem a data da entrega; Current é a referência vigente.
-- ArtReferences contém prompts, fontes, decisões e imagens de autoria de arte e áudio. Algumas referências registram versões substituídas.
-- [Arquivo de recursos fora do runtime](../ArtSource/Archive/README.md) conserva os originais retirados de Assets/Resources com hashes e GUIDs.
+- [Fontes da música](ArtReferences/Audio/MUSIC.md)
+- [Créditos dos efeitos sonoros](ArtReferences/Audio/COMBAT_SOUND_CREDITS.md)
+- [Tipografia](ArtReferences/PIXEL_OPERATOR.md)
 
-Os nomes dos tipos e caminhos de código nos registros foram atualizados para acompanhar a estrutura atual. As versões anteriores do README e dos documentos reescritos continuam em History.
+ArtReferences/ArtInputs conserva apenas os metadados usados pela ferramenta de instalação do chão atual. A imagem do jogo fica em Assets/Resources/PixelArt/CityGroundMap.png.
+
+Assets/Editor mantém a configuração de importação de música e a prévia de ultimates. Tools contém os utilitários de autoria de áudio, chão e quadros de animação.

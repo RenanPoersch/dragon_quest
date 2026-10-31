@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace DragonQuest.Interactions
 {
-    // Fluxo de paginas/escolhas testavel sem MonoBehaviour. Cancela sem executar a resposta.
+    // Fluxo de paginas/escolhas independente de MonoBehaviour. Cancela sem executar a resposta.
     public sealed class DialogueSession
     {
         private string[] pages;

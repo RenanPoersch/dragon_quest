@@ -12,9 +12,8 @@ namespace DragonQuest.Input
         private static MenuDirection navigation;
         private static uint navigationUpdate;
         private static int observedDevice = -1;
-        private static System.Func<bool> hasFocus = () => Application.isFocused;
-        // One gate for exploration and every screen, also replaceable in isolated input checks.
-        public static bool IsFocused => hasFocus();
+        // One focus gate for exploration and every screen.
+        public static bool IsFocused => Application.isFocused;
         public static bool IsFrameAvailable => IsFocused && consumedFrame != Time.frameCount;
         private static bool PadAvailable => IsFrameAvailable
             && Gamepad.current != null && Gamepad.current.enabled;
@@ -24,7 +23,6 @@ namespace DragonQuest.Input
         {
             repeat.Reset(); navigationFrame = consumedFrame = observedDevice = -1; navigation = MenuDirection.None;
             navigationUpdate = 0;
-            hasFocus = () => Application.isFocused;
         }
 
         public static Vector2 Movement

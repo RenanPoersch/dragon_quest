@@ -10,7 +10,7 @@ using UnityEngine;
 
 namespace DragonQuest.Authoring
 {
-    // Shared by the editor's scrub/replay window and automated captures of the real effects.
+    // Renders the real effects in the editor's scrub/replay authoring window.
     public sealed class UltimatePreviewRenderer
     {
         private readonly UltimateAnimation animation = new UltimateAnimation();
