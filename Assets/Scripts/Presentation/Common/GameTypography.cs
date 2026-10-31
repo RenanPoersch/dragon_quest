@@ -1,3 +1,4 @@
+using DragonQuest.Infrastructure;
 using System;
 using UnityEngine;
 
@@ -14,8 +15,7 @@ namespace DragonQuest.Presentation.Common
             if (font == null)
             {
                 string resource = emphasized ? "Fonts/PixelOperator-Bold" : "Fonts/PixelOperator";
-                font = Resources.Load<Font>(resource);
-                if (font == null) throw new InvalidOperationException("Fonte do jogo ausente: " + resource);
+                font = GameAssets.Required<Font>(resource);
                 if (emphasized) bold = font;
                 else regular = font;
             }

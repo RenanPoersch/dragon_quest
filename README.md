@@ -35,6 +35,6 @@ O salvamento manual fica disponível no mapa global e na pousada, fora dos estad
 - [Arquitetura e fluxo completo](Docs/Current/ARCHITECTURE.md): bootstrap, jornada, diálogos, navegação, encontros, combate, assets e áudio.
 - [Progressão](Docs/Current/LEVEL_PROGRESSION.md), [resultados de batalha](Docs/Current/POST_BATTLE_RESULTS.md) e [persistência](Docs/Current/PERSISTENCE.md).
 - [Índice da documentação](Docs/README.md): contratos atuais e referências de autoria em uso.
-- Assets/Scripts contém runtime; Assets/Editor contém ferramentas de autoria; Tools contém utilitários externos.
+- Assets/Scripts contém runtime; Assets/Editor contém ferramentas de autoria; Tools contém utilitários externos. Diálogos usam um catálogo com falantes explícitos, menus compartilham a leitura de comandos, GameFlowState define permissões e GameAssets padroniza o carregamento de recursos.
 
 A documentação vigente fica em Docs/Current. Os testes e registros antigos foram retirados do projeto.

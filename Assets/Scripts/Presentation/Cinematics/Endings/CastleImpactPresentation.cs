@@ -1,3 +1,4 @@
+using DragonQuest.Infrastructure;
 using System;
 using UnityEngine;
 
@@ -21,8 +22,8 @@ namespace DragonQuest.Presentation.Cinematics.Endings
         {
             castle = Load(CastleResource);
             Texture2D meteor = Load(MeteorResource);
-            Shader shader = Resources.Load<Shader>(ShaderResource);
-            if (shader == null || !shader.isSupported)
+            Shader shader = GameAssets.Required<Shader>(ShaderResource);
+            if (!shader.isSupported)
                 throw new InvalidOperationException("Shader do impacto no castelo indisponível.");
             composite = new Material(shader)
                 { name = "Castle impact / storm and falling meteor", hideFlags = HideFlags.HideAndDontSave };
@@ -78,12 +79,7 @@ namespace DragonQuest.Presentation.Cinematics.Endings
             }
             finally { GUI.matrix = previousMatrix; GUI.color = previousColor; GUI.depth = previousDepth; }
         }
-        private static Texture2D Load(string resource)
-        {
-            var texture = Resources.Load<Texture2D>(resource);
-            if (texture == null) throw new InvalidOperationException("Arte do impacto ausente: " + resource);
-            return texture;
-        }
+        private static Texture2D Load(string resource) => GameAssets.Required<Texture2D>(resource);
         private static void Fill(Rect area, Color color)
         { GUI.color = color; GUI.DrawTexture(area, Texture2D.whiteTexture); }
         public void Dispose()

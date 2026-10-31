@@ -1,3 +1,4 @@
+using DragonQuest.Infrastructure;
 using System;
 using DragonQuest.Progression;
 using UnityEngine;
@@ -38,8 +39,8 @@ namespace DragonQuest.Presentation.World.Animations
         public void Initialize(MonolithSymbol symbol)
         {
             Symbol = symbol; view = GetComponent<SpriteRenderer>();
-            Source = Resources.Load<Texture2D>("PixelArt/" + Resource(symbol));
-            if (Source == null || !Source.isReadable || Source.width%Columns != 0 || Source.height%Rows != 0)
+            Source = GameAssets.Required<Texture2D>("PixelArt/" + Resource(symbol));
+            if (!Source.isReadable || Source.width%Columns != 0 || Source.height%Rows != 0)
                 throw new InvalidOperationException("Atlas da runa deve ser legivel, com quatro colunas e duas linhas: " + symbol);
             Color32[] pixels = Source.GetPixels32();
             int width = Source.width/Columns, height = Source.height/Rows;

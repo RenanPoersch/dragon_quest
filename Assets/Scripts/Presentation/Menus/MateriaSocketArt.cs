@@ -1,3 +1,4 @@
+using DragonQuest.Infrastructure;
 using System;
 using System.Collections.Generic;
 using DragonQuest.Equipment;
@@ -13,8 +14,7 @@ namespace DragonQuest.Presentation.Menus
         private static readonly Dictionary<Texture2D, Rect> materiaBounds = new Dictionary<Texture2D, Rect>();
         private static Texture2D atlas;
 
-        private static Texture2D Atlas => atlas != null ? atlas : atlas = Resources.Load<Texture2D>("PixelArt/Inventory/MateriaSockets")
-            ?? throw new InvalidOperationException("Sprite de encaixes de materia ausente.");
+        private static Texture2D Atlas => atlas != null ? atlas : atlas = GameAssets.Required<Texture2D>("PixelArt/Inventory/MateriaSockets");
 
         public static void DrawSingle(Rect rect) => DrawPart(rect, single);
 

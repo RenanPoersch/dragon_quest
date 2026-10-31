@@ -1,3 +1,4 @@
+using DragonQuest.Infrastructure;
 using DragonQuest.Presentation.Common;
 using System;
 using UnityEngine;
@@ -33,10 +34,8 @@ namespace DragonQuest.Presentation.Cinematics.Opening
 
         public IntroPresentation()
         {
-            background = Resources.Load<Texture2D>("PixelArt/Intro/Sunset");
-            Texture2D sheet = Resources.Load<Texture2D>("PixelArt/Intro/BirdFlight");
-            if (background == null || sheet == null)
-                throw new InvalidOperationException("Arte da abertura ausente em Resources/PixelArt/Intro.");
+            background = GameAssets.Required<Texture2D>("PixelArt/Intro/Sunset");
+            Texture2D sheet = GameAssets.Required<Texture2D>("PixelArt/Intro/BirdFlight");
             background.filterMode = sheet.filterMode = FilterMode.Point;
             int width = sheet.width / BirdFrameCount;
             for (int frame = 0; frame < BirdFrameCount; frame++)

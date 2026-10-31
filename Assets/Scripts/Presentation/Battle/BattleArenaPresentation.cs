@@ -1,3 +1,4 @@
+using DragonQuest.Infrastructure;
 using DragonQuest.Presentation.World.Characters;
 using DragonQuest.Presentation.Battle.Sprites;
 using DragonQuest.Presentation.Battle.Animations;
@@ -65,8 +66,8 @@ namespace DragonQuest.Presentation.Battle
         {
             if (battleSprites != null) return;
             battleSprites = new BattleSprites();
-            dragonPortrait = Resources.Load<Texture2D>("DragonPortrait");
-            spiritPortrait = Resources.Load<Texture2D>("PixelArt/SpiritBattle"); kingPortrait = Resources.Load<Texture2D>("KingPortrait");
+            dragonPortrait = GameAssets.Optional<Texture2D>("DragonPortrait");
+            spiritPortrait = GameAssets.Optional<Texture2D>("PixelArt/SpiritBattle"); kingPortrait = GameAssets.Optional<Texture2D>("KingPortrait");
         }
 
         public void ClearNumbers() => numbers.Clear();
@@ -101,7 +102,7 @@ namespace DragonQuest.Presentation.Battle
                 ultimateAnimation.Prepare();
                 spiritFloatStartedAt = Time.unscaledTime;
                 // Optional map-specific art; the menu and fighter anchors do not depend on the background.
-                background = Resources.Load<Texture2D>("BattleBackgrounds/" + controller.BattleLocationId);
+                background = GameAssets.Optional<Texture2D>("BattleBackgrounds/" + controller.BattleLocationId);
                 if (controller.IsCastleEncounter) { castleSpells.Prepare(); spiritAttacks.Prepare(); }
             }
             foreach (CombatantState participant in battle.Combatants)

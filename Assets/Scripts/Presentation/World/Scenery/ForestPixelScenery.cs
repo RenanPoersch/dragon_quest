@@ -1,3 +1,4 @@
+using DragonQuest.Infrastructure;
 using DragonQuest.Presentation.World.Rendering;
 using DragonQuest.Exploration.Layouts;
 using DragonQuest.Progression;
@@ -20,10 +21,8 @@ namespace DragonQuest.Presentation.World.Scenery
         public void Build(AncientSecrets progress = null)
         {
             secrets = progress;
-            var texture = Resources.Load<Texture2D>("PixelArt/EastForestBackdrop");
-            var shader = Resources.Load<Shader>("ForestPixelBackdrop");
-            if (texture == null || shader == null)
-                throw new System.InvalidOperationException("Cenario pixel art da floresta leste ausente.");
+            var texture = GameAssets.Required<Texture2D>("PixelArt/EastForestBackdrop");
+            var shader = GameAssets.Required<Shader>("ForestPixelBackdrop");
             material = new Material(shader) { name = "Floresta ancestral / pintura pixel art" };
             material.mainTexture = texture;
             var painting = new GameObject("Floresta / arvores gigantes, musgo e raios de luz");
@@ -44,10 +43,8 @@ namespace DragonQuest.Presentation.World.Scenery
 
         private void AddScale(Transform painting)
         {
-            var texture = Resources.Load<Texture2D>("PixelArt/DragonScale");
-            var shader = Resources.Load<Shader>("ForestScale");
-            if (texture == null || shader == null)
-                throw new System.InvalidOperationException("Sprite da escama ancestral ausente.");
+            var texture = GameAssets.Required<Texture2D>("PixelArt/DragonScale");
+            var shader = GameAssets.Required<Shader>("ForestScale");
             scaleMaterial = new Material(shader) { name = "Escama vermelha / sombra do tronco" };
             scaleMaterial.mainTexture = texture;
             scale = new GameObject("Escama ancestral / discreta no oco do tronco");

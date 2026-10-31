@@ -1,9 +1,9 @@
+using DragonQuest.Infrastructure;
 using DragonQuest.Presentation.Common;
 using DragonQuest.Content;
 using System;
 using System.Collections.Generic;
 using DragonQuest.Interactions;
-using UnityEngine.InputSystem;
 using DragonQuest.Input;
 using UnityEngine;
 
@@ -129,8 +129,8 @@ namespace DragonQuest.Presentation.Dialogue
                 scroll.y = Mathf.Clamp(scroll.y, 0, Mathf.Max(0, contentHeight - viewport.height));
                 lastSelectedChoice = dialogue.SelectedChoice;
             }
-            if (Event.current.type == EventType.Repaint && GameInput.IsFocused && Gamepad.current != null)
-                scroll.y = Mathf.Clamp(scroll.y - Gamepad.current.rightStick.ReadValue().y * 260 * Time.unscaledDeltaTime,
+            if (Event.current.type == EventType.Repaint && GameInput.IsFocused)
+                scroll.y = Mathf.Clamp(scroll.y - GameInput.ScrollAxis * 260 * Time.unscaledDeltaTime,
                     0, Mathf.Max(0, contentHeight - viewport.height));
             // An idle mouse must not pull selection away from arrow-key navigation.
             Vector2 pointer = Event.current.mousePosition;
@@ -197,8 +197,7 @@ namespace DragonQuest.Presentation.Dialogue
 
         private void LoadChoiceHand()
         {
-            hand = Resources.Load<Texture2D>("PixelArt/BattleGloveCursor");
-            if (hand == null) throw new InvalidOperationException("Cursor de conversa ausente: BattleGloveCursor");
+            hand = GameAssets.Required<Texture2D>("PixelArt/BattleGloveCursor");
             // Use the existing menu artwork; transparent margins are trimmed only by drawing UVs.
             Color32[] pixels = hand.GetPixels32();
             int left = hand.width, right = -1, bottom = hand.height, top = -1;
@@ -226,8 +225,7 @@ namespace DragonQuest.Presentation.Dialogue
             string resource = DialoguePortraitCatalog.ResourceFor(speaker);
             if (!portraits.TryGetValue(resource, out var portrait))
             {
-                portrait = Resources.Load<Texture2D>(resource);
-                if (portrait == null) throw new InvalidOperationException("Retrato de conversa ausente: " + resource);
+                portrait = GameAssets.Required<Texture2D>(resource);
                 portraits.Add(resource, portrait);
             }
             float aspect = portrait.width / (float)portrait.height;

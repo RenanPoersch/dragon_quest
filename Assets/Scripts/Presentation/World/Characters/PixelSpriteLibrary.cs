@@ -1,3 +1,4 @@
+using DragonQuest.Infrastructure;
 using DragonQuest.Presentation.World.Rendering;
 using System;
 using System.Collections.Generic;
@@ -11,8 +12,7 @@ namespace DragonQuest.Presentation.World.Characters
         public Sprite[] Sprites { get; }
         public PixelSpriteAtlas(string resource)
         {
-            Texture = Resources.Load<Texture2D>("PixelArt/" + resource);
-            if (Texture == null) throw new InvalidOperationException("Atlas ausente: " + resource);
+            Texture = GameAssets.Required<Texture2D>("PixelArt/" + resource);
             Color32[] pixels = Texture.GetPixels32(); var alpha = new byte[pixels.Length];
             for (int i = 0; i < pixels.Length; i++) alpha[i] = pixels[i].a;
             bool walkingSheet = resource == "ArenWalk" || resource == "ArenDiagonalWalk";
@@ -58,8 +58,7 @@ namespace DragonQuest.Presentation.World.Characters
         public Material Material { get; }
         public PixelSpriteLibrary()
         {
-            var shader = Resources.Load<Shader>("PixelCharacter");
-            if (shader == null) throw new InvalidOperationException("Shader PixelCharacter ausente.");
+            var shader = GameAssets.Required<Shader>("PixelCharacter");
             Material = new Material(shader) {name = "Sprites pixel art / profundidade"};
         }
         public PixelSpriteAtlas Atlas(string name)

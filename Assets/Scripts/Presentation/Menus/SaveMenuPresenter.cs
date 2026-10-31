@@ -1,3 +1,4 @@
+using DragonQuest.Infrastructure;
 using DragonQuest.Presentation.Common;
 using DragonQuest.Exploration;
 using System;
@@ -169,7 +170,7 @@ namespace DragonQuest.Presentation.Menus
 
         private void LoadHandSprite()
         {
-            hand = Resources.Load<Texture2D>("PixelArt/BattleGloveCursor");
+            hand = GameAssets.Optional<Texture2D>("PixelArt/BattleGloveCursor");
             if (hand == null) return;
             Color32[] pixels = hand.GetPixels32();
             int left = hand.width, right = -1, bottom = hand.height, top = -1;

@@ -1,3 +1,4 @@
+using DragonQuest.Infrastructure;
 using System;
 using UnityEngine;
 
@@ -15,8 +16,8 @@ namespace DragonQuest.Presentation.Battle.Animations
         public Texture2D Prepare()
         {
             if (texture != null) return texture;
-            texture = Resources.Load<Texture2D>("PixelArt/" + Resource);
-            if (texture == null || texture.width % 4 != 0 || texture.height % 2 != 0)
+            texture = GameAssets.Required<Texture2D>("PixelArt/" + Resource);
+            if (texture.width % 4 != 0 || texture.height % 2 != 0)
                 throw new InvalidOperationException("Missing or invalid chain prison atlas.");
             texture.filterMode = FilterMode.Point;
             return texture;

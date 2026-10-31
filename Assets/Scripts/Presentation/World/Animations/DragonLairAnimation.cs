@@ -1,3 +1,4 @@
+using DragonQuest.Infrastructure;
 using System;
 using System.Collections.Generic;
 using DragonQuest.Progression;
@@ -16,8 +17,7 @@ namespace DragonQuest.Presentation.World.Animations
 
         public void Initialize(Material material)
         {
-            Texture2D source = Resources.Load<Texture2D>("PixelArt/DragonLairStates");
-            if (source == null) throw new InvalidOperationException("Poses do dragao no covil ausentes.");
+            Texture2D source = GameAssets.Required<Texture2D>("PixelArt/DragonLairStates");
             Color32[] pixels = source.GetPixels32();
             Pose[] regions = SplitPoses(source.width, source.height, pixels, out int[] labels);
             int width = 1, bottom = source.height, top = 0;

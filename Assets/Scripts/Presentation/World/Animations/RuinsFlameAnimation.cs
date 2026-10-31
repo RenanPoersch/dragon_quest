@@ -1,3 +1,4 @@
+using DragonQuest.Infrastructure;
 using System;
 using UnityEngine;
 
@@ -16,8 +17,8 @@ namespace DragonQuest.Presentation.World.Animations
 
         public void Initialize(Material material, float phaseOffset = 0)
         {
-            var source=Resources.Load<Texture2D>("PixelArt/RuinsAltarFlame");
-            if(source==null || !source.isReadable || source.width%Columns!=0 || source.height%Rows!=0)
+            var source=GameAssets.Required<Texture2D>("PixelArt/RuinsAltarFlame");
+            if(!source.isReadable || source.width%Columns!=0 || source.height%Rows!=0)
                 throw new InvalidOperationException("Atlas da chama deve ser legivel, com quatro colunas e duas linhas.");
             renderer=GetComponent<SpriteRenderer>();renderer.sharedMaterial=material;
             Color32[] original=source.GetPixels32();

@@ -1,3 +1,4 @@
+using DragonQuest.Infrastructure;
 using DragonQuest.Presentation.World.Animations;
 using System;
 using System.Collections.Generic;
@@ -12,9 +13,8 @@ namespace DragonQuest.Presentation.World.Scenery
 
         public void Build()
         {
-            Shader shader = Resources.Load<Shader>("RuinsSide");
-            Texture2D painting = Resources.Load<Texture2D>("PixelArt/DragonLairPanorama");
-            if (shader == null || painting == null) throw new InvalidOperationException("Pixel art do covil ausente.");
+            Shader shader = GameAssets.Required<Shader>("RuinsSide");
+            Texture2D painting = GameAssets.Required<Texture2D>("PixelArt/DragonLairPanorama");
             material = new Material(shader) { name = "Covil / pixel art lateral" }; owned.Add(material);
             // Preserve the generated source and sample only in memory, like the ruins panorama.
             const int height = 320;

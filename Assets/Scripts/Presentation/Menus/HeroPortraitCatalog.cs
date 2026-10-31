@@ -1,3 +1,4 @@
+using DragonQuest.Infrastructure;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -23,7 +24,7 @@ namespace DragonQuest.Presentation.Menus
             string resource = ResourceFor(memberId);
             if (!portraits.TryGetValue(resource, out var portrait) || portrait == null)
             {
-                portrait = Resources.Load<Texture2D>(resource);
+                portrait = GameAssets.Optional<Texture2D>(resource);
                 if (portrait != null) portraits[resource] = portrait;
             }
             return portrait;

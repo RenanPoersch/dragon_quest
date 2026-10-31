@@ -1,3 +1,4 @@
+using DragonQuest.Infrastructure;
 using DragonQuest.Gameplay.Battle;
 using System.Collections.Generic;
 using DragonQuest.Input;
@@ -30,7 +31,7 @@ namespace DragonQuest.Audio
             // Import/preload before combat so the first hit does not wait for disk/decode.
             foreach (string key in BattleSoundCatalog.ResourceKeys)
             {
-                var clip = Resources.Load<AudioClip>("CombatSounds/" + key);
+                var clip = GameAssets.Optional<AudioClip>("CombatSounds/" + key);
                 clips.Add(key, clip);
                 if (clip == null) Debug.LogError("Som de combate ausente: " + key, this);
             }

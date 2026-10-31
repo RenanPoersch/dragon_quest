@@ -1,3 +1,4 @@
+using DragonQuest.Infrastructure;
 using DragonQuest.Presentation.Common;
 using DragonQuest.Progression;
 using UnityEngine;
@@ -28,7 +29,7 @@ namespace DragonQuest.Presentation.Menus
             counter = total;
             elapsed = 0;
             hasDrawn = false;
-            icon = unlocked == null ? null : Resources.Load<Texture2D>(unlocked.IconResource);
+            icon = unlocked == null ? null : GameAssets.Optional<Texture2D>(unlocked.IconResource);
             if (icon != null) icon.filterMode = FilterMode.Point;
         }
 

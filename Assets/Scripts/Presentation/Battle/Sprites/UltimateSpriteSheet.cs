@@ -1,3 +1,4 @@
+using DragonQuest.Infrastructure;
 using System;
 using UnityEngine;
 
@@ -25,9 +26,8 @@ namespace DragonQuest.Presentation.Battle.Sprites
         {
             this.drawFrame=drawFrame;
             string path="PixelArt/Ultimates/"+name;
-            texture=Resources.Load<Texture2D>(path);
-            var coordinates=Resources.Load<TextAsset>(path+"Frames");
-            if(texture==null || coordinates==null) throw new InvalidOperationException("Ultimate atlas missing: "+path);
+            texture=GameAssets.Required<Texture2D>(path);
+            var coordinates=GameAssets.Required<TextAsset>(path+"Frames");
             atlas=JsonUtility.FromJson<Atlas>(coordinates.text);
             if(atlas==null || atlas.frames==null || atlas.frames.Length!=16 || atlas.referenceHeight<=0
                 || atlas.width!=texture.width || atlas.height!=texture.height)

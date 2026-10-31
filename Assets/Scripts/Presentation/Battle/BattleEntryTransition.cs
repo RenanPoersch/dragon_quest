@@ -1,3 +1,4 @@
+using DragonQuest.Infrastructure;
 using DragonQuest.Gameplay.Battle;
 using DragonQuest.Input;
 using UnityEngine;
@@ -60,7 +61,7 @@ namespace DragonQuest.Presentation.Battle
             bool fadeOnly = GetComponent<BattleController>()?.IsCastleEncounter == true;
             if (!fadeOnly)
             {
-                Shader shader = Resources.Load<Shader>("BattleEntrySwirl");
+                Shader shader = GameAssets.Optional<Shader>("BattleEntrySwirl");
                 if (shader == null || !shader.isSupported) return;
                 swirl = new Material(shader) { name = "Battle entry / swirl", hideFlags = HideFlags.HideAndDontSave };
             }

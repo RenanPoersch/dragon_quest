@@ -1,3 +1,4 @@
+using DragonQuest.Infrastructure;
 using System.Collections.Generic;
 using DragonQuest.Equipment;
 using DragonQuest.Inventory;
@@ -18,7 +19,7 @@ namespace DragonQuest.Presentation.Menus
             if (key == null) return null;
             if (!textures.TryGetValue(key, out Texture2D texture))
             {
-                texture = Resources.Load<Texture2D>("PixelArt/Inventory/" + key);
+                texture = GameAssets.Optional<Texture2D>("PixelArt/Inventory/" + key);
                 textures.Add(key, texture);
             }
             return texture;

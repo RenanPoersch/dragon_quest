@@ -1,3 +1,4 @@
+using DragonQuest.Infrastructure;
 using DragonQuest.Presentation.Common;
 using System;
 using DragonQuest.Progression;
@@ -81,12 +82,7 @@ namespace DragonQuest.Presentation.Cinematics.Endings
             // Anchor the speech at the top so the crown stays visible throughout the slow push.
             return new Rect(-20 - 16 * t, isProsperity ? (660 - height) / 2 : 0, width, height);
         }
-        private static Texture2D Load(string resource)
-        {
-            var texture = Resources.Load<Texture2D>(resource);
-            if (texture == null) throw new InvalidOperationException("Arte do final bom ausente: " + resource);
-            return texture;
-        }
+        private static Texture2D Load(string resource) => GameAssets.Required<Texture2D>(resource);
         private static void Fill(Rect area, Color color)
         { GUI.color = color; GUI.DrawTexture(area, Texture2D.whiteTexture); }
         public void Dispose()

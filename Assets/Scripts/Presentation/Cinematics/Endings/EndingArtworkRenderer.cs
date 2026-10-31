@@ -1,3 +1,4 @@
+using DragonQuest.Infrastructure;
 using System;
 using UnityEngine;
 
@@ -13,8 +14,8 @@ namespace DragonQuest.Presentation.Cinematics.Endings
 
         public EndingArtworkRenderer()
         {
-            Shader shader = Resources.Load<Shader>(ShaderResource);
-            if (shader == null || !shader.isSupported)
+            Shader shader = GameAssets.Required<Shader>(ShaderResource);
+            if (!shader.isSupported)
                 throw new InvalidOperationException("Shader de movimento dos finais indisponível.");
             material = new Material(shader)
                 { name = "Ending / continuous artwork crop", hideFlags = HideFlags.HideAndDontSave };

@@ -1,3 +1,4 @@
+using DragonQuest.Infrastructure;
 using DragonQuest.Presentation.Battle.Animations;
 using System;
 using System.Collections.Generic;
@@ -39,7 +40,7 @@ namespace DragonQuest.Presentation.Battle.Sprites
 
         private void Load(string id, string resource, int[] boundaries)
         {
-            Texture2D texture = Resources.Load<Texture2D>("PixelArt/" + resource);
+            Texture2D texture = GameAssets.Optional<Texture2D>("PixelArt/" + resource);
             if (texture == null) return;
             Color32[] pixels = texture.GetPixels32();
             // The selected spirit is one complete sprite, shared by all action phases.

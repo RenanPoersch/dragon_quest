@@ -1,3 +1,4 @@
+using DragonQuest.Infrastructure;
 using System.Collections.Generic;
 using DragonQuest.Input;
 using UnityEngine;
@@ -42,7 +43,7 @@ namespace DragonQuest.Audio
             voice.priority = 32; voice.volume = .6f;
             foreach (MenuSound sound in System.Enum.GetValues(typeof(MenuSound)))
             {
-                clips[(int)sound] = Resources.Load<AudioClip>("MenuSounds/" + sound.ToString().ToLowerInvariant());
+                clips[(int)sound] = GameAssets.Optional<AudioClip>("MenuSounds/" + sound.ToString().ToLowerInvariant());
                 if (clips[(int)sound] == null) Debug.LogError("Som de menu ausente: " + sound, this);
             }
         }

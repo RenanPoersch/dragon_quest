@@ -1,3 +1,4 @@
+using DragonQuest.Infrastructure;
 using DragonQuest.Presentation.Menus;
 using DragonQuest.Presentation.Common;
 using System;
@@ -122,7 +123,7 @@ namespace DragonQuest.Presentation.Battle
 
         private void LoadHandSprite()
         {
-            hand = Resources.Load<Texture2D>("PixelArt/BattleGloveCursor");
+            hand = GameAssets.Optional<Texture2D>("PixelArt/BattleGloveCursor");
             if (hand == null) return;
             // Keep the original PNG intact; trim transparent margins only through drawing UVs.
             Color32[] pixels = hand.GetPixels32();

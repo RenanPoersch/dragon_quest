@@ -1,3 +1,4 @@
+using DragonQuest.Infrastructure;
 using DragonQuest.Presentation.World.Rendering;
 using DragonQuest.Presentation.World.Characters;
 using DragonQuest.Presentation.World.Animations;
@@ -19,13 +20,11 @@ namespace DragonQuest.Presentation.World.Scenery
 
         public void Build(AncientSecrets progress, List<Interactable> interactions, PhysicsMaterial2D physics = null)
         {
-            Texture2D backdrop = Resources.Load<Texture2D>("PixelArt/QuarryBackdrop");
-            Texture2D atlas = Resources.Load<Texture2D>("PixelArt/QuarryTotems");
-            Shader backgroundShader = Resources.Load<Shader>("ForestPixelBackdrop");
-            Shader propShader = Resources.Load<Shader>("PixelCharacter");
-            runeShader = Resources.Load<Shader>("QuarryRune");
-            if (backdrop == null || atlas == null || backgroundShader == null || propShader == null || runeShader == null)
-                throw new InvalidOperationException("Cenario pixel art da pedreira ausente.");
+            Texture2D backdrop = GameAssets.Required<Texture2D>("PixelArt/QuarryBackdrop");
+            Texture2D atlas = GameAssets.Required<Texture2D>("PixelArt/QuarryTotems");
+            Shader backgroundShader = GameAssets.Required<Shader>("ForestPixelBackdrop");
+            Shader propShader = GameAssets.Required<Shader>("PixelCharacter");
+            runeShader = GameAssets.Required<Shader>("QuarryRune");
             var painting = new GameObject("Pedreira / paredes de rocha, musgo e luz da floresta");
             painting.transform.SetParent(transform, false);
             Quaternion cameraRotation = Quaternion.AngleAxis(ObliqueProjection.YawDegrees, Vector3.forward)

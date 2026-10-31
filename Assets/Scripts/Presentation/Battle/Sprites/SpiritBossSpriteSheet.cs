@@ -1,3 +1,4 @@
+using DragonQuest.Infrastructure;
 using System;
 using UnityEngine;
 
@@ -25,9 +26,8 @@ namespace DragonQuest.Presentation.Battle.Sprites
         public Texture2D Texture => texture;
         public SpiritBossSpriteSheet(string resource, Action<Texture2D, Rect, Rect, Color> draw)
         {
-            texture = Resources.Load<Texture2D>("PixelArt/" + resource);
-            var coordinates = Resources.Load<TextAsset>("PixelArt/" + resource + "Frames");
-            if (texture == null || coordinates == null) throw new InvalidOperationException("Missing spirit skill atlas: " + resource);
+            texture = GameAssets.Required<Texture2D>("PixelArt/" + resource);
+            var coordinates = GameAssets.Required<TextAsset>("PixelArt/" + resource + "Frames");
             Coordinates = JsonUtility.FromJson<Atlas>(coordinates.text);
             if (Coordinates?.frames == null || Coordinates.frames.Length != 12 || Coordinates.casterHeight <= 0
                 || Coordinates.effectHeight <= 0 || Coordinates.width != texture.width || Coordinates.height != texture.height)
@@ -40,8 +40,7 @@ namespace DragonQuest.Presentation.Battle.Sprites
         private static Texture2D LoadOptional(string resource)
         {
             if (string.IsNullOrEmpty(resource)) return null;
-            var replacement = Resources.Load<Texture2D>("PixelArt/" + resource);
-            if (replacement == null) throw new InvalidOperationException("Missing spirit frame source: " + resource);
+            var replacement = GameAssets.Required<Texture2D>("PixelArt/" + resource);
             replacement.filterMode = FilterMode.Point;
             return replacement;
         }

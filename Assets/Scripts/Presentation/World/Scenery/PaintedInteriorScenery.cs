@@ -1,3 +1,4 @@
+using DragonQuest.Infrastructure;
 using DragonQuest.Presentation.World.Rendering;
 using System;
 using System.Collections.Generic;
@@ -12,11 +13,9 @@ namespace DragonQuest.Presentation.World.Scenery
         protected void BuildPainting(string name,string resource,float halfHeight,float aspect,
             Vector2[][] foregrounds,Vector2[] anchors,Vector2[][] fixtures,PhysicsMaterial2D physics)
         {
-            var painting = Resources.Load<Texture2D>("PixelArt/"+resource);
-            var backdropShader = Resources.Load<Shader>("ForestPixelBackdrop");
-            var depthShader = Resources.Load<Shader>("PixelCharacter");
-            if (painting == null || backdropShader == null || depthShader == null)
-                throw new InvalidOperationException("Pintura completa ausente: "+name);
+            var painting = GameAssets.Required<Texture2D>("PixelArt/"+resource);
+            var backdropShader = GameAssets.Required<Shader>("ForestPixelBackdrop");
+            var depthShader = GameAssets.Required<Shader>("PixelCharacter");
             var backdrop = new Material(backdropShader) { name = name+" / pintura integral",mainTexture = painting };
             var depth = new Material(depthShader) { name = name+" / profundidade da pintura",mainTexture = painting };
             owned.Add(backdrop); owned.Add(depth);

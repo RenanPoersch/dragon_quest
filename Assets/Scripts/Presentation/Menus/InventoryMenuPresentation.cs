@@ -1,3 +1,4 @@
+using DragonQuest.Infrastructure;
 using DragonQuest.Presentation.Common;
 using System;
 using DragonQuest.Progression;
@@ -52,7 +53,7 @@ namespace DragonQuest.Presentation.Menus
                     gradient.SetPixel(x, y, Color.Lerp(lower, upper, v));
                 }
             gradient.Apply();
-            hand = Resources.Load<Texture2D>("PixelArt/BattleGloveCursor");
+            hand = GameAssets.Optional<Texture2D>("PixelArt/BattleGloveCursor");
             if (hand == null) return;
             Color32[] pixels = hand.GetPixels32();
             int left = hand.width, bottom = hand.height, right = -1, top = -1;

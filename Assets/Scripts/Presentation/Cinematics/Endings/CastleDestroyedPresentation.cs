@@ -1,3 +1,4 @@
+using DragonQuest.Infrastructure;
 using DragonQuest.Presentation.Common;
 using System;
 using DragonQuest.Progression;
@@ -119,12 +120,7 @@ namespace DragonQuest.Presentation.Cinematics.Endings
             narrative.Draw(lines, "CINZAS DO CASTELO", Sequence.TextOffset, opacity);
         }
 
-        private static Texture2D Load(string resource)
-        {
-            Texture2D texture = Resources.Load<Texture2D>(resource);
-            if (texture == null) throw new InvalidOperationException("Arte do FinalOne ausente: " + resource);
-            return texture;
-        }
+        private static Texture2D Load(string resource) => GameAssets.Required<Texture2D>(resource);
         private static void Fill(Rect area, Color color)
         { GUI.color = color; GUI.DrawTexture(area, Texture2D.whiteTexture); }
         public void Dispose()

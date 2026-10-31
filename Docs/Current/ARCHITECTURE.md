@@ -57,7 +57,7 @@ WorldActions guarda callbacks como StartDragonBattle e RestAtInn, além de consu
 
 ## 4. Instalar uma jornada é diferente de construir a cena
 
-[JourneyInstaller](../../Assets/Scripts/Bootstrap/JourneyInstaller.cs#L50) conecta os sistemas ao progresso e à equipe em uso.
+[JourneyInstaller](../../Assets/Scripts/Bootstrap/JourneyInstaller.cs#L49) conecta os sistemas ao progresso e à equipe em uso.
 
 StartNewJourney cria ExplorationProgress com o ouro inicial. O controller de batalha cria a equipe por PartySetup.Create; a loja cria seu serviço por ShopCatalog.Create. PartySetup instancia Aren, Lia, Bram, equipamentos, matérias iniciais e consumíveis.
 
@@ -91,11 +91,11 @@ A Unity chama Update para leitura de comandos e avanço dos controllers; FixedUp
 
 Esses grupos não são uma fila única de métodos de todo o projeto. Cada componente tem seu próprio ciclo. Há ordens explícitas em pontos importantes, como PlayerInteraction e CameraFollow.
 
-GameInput lê teclado e gamepad sob demanda, centraliza botões e navegação com repetição e observa o foco. ConsumeGamepadFrame tem nome legado, mas consome também os comandos de teclado centralizados: impede que uma confirmação abra outra tela no mesmo frame.
+GameInput lê teclado e gamepad sob demanda. ReadMenu entrega um MenuInput com direção, confirmação e cancelamento; KeyPressed e GamepadButtonPressed cobrem os atalhos específicos usando o mesmo bloqueio de foco/frame. ControllerNavigation mantém o atraso e a repetição únicos. ConsumeFrame impede que a ação de uma tela seja recebida novamente por outra no mesmo quadro. Loja, inventário, batalha, save, cheats e escolhas de diálogo usam essa leitura comum.
 
 [GameFlowState](../../Assets/Scripts/Gameplay/GameFlowState.cs#L8) consulta os componentes ativos por funções. Não guarda uma segunda cópia dos seus booleanos. Expõe bloqueios e uma prioridade de input: sem foco → nenhum; depois final, cheats, save, cinematic de descanso, batalha, loja, inventário, diálogo e exploração.
 
-O movimento consulta esse bloqueio tanto em Update como em FixedUpdate. IsBusy não inclui diálogo, porque PlayerInteraction precisa continuar recebendo a confirmação da conversa. BlocksTravel e BlocksMovement incluem diálogo.
+CanReceiveInput define o dono dos comandos. CanInteract, CanTravel, CanOpenShop, CanStartBattle, CanOpenSaveMenu, CanSave e CanReturnToTitle concentram as permissões gerais. Os controllers mantêm apenas seus requisitos próprios: mapa permitido para salvar, equipe viva, chefe derrotado ou passagem liberada. Sem um fluxo instalado, as ações aguardam a inicialização. O movimento consulta esse bloqueio tanto em Update como em FixedUpdate. IsBusy não inclui diálogo, porque PlayerInteraction precisa continuar recebendo a confirmação da conversa. BlocksTravel e BlocksMovement incluem diálogo.
 
 PlayerMovement aplica aceleração/desaceleração, colisões e restrições próprias do mapa. Teleport incrementa uma revisão para que outros sistemas distingam transporte de caminhada. PixelCharacter usa deslocamento/direção para escolher a pose; CameraFollow aplica os limites e enquadramento configurados pelo mapa.
 
@@ -110,10 +110,10 @@ E ou confirmação do controle
   → FindNearest
   → NpcInteraction.Interact(context)
   → DialogueController.Open(definition, callback)
-  → DialogueSession.OpenIdentified
+  → DialogueSession.Open
 ```
 
-[PlayerInteraction.FindNearest](../../Assets/Scripts/Interactions/PlayerInteraction.cs#L74) percorre os candidatos fornecidos pelo mundo, descarta os que não podem interagir e escolhe o mais próximo dentro do alcance padrão de 1,6 unidades. Esse método não exige que o jogador esteja olhando para o NPC nem faz uma busca global por nome.
+[PlayerInteraction.FindNearest](../../Assets/Scripts/Interactions/PlayerInteraction.cs#L64) percorre os candidatos fornecidos pelo mundo, descarta os que não podem interagir e escolhe o mais próximo dentro do alcance padrão de 1,6 unidades. Esse método não exige que o jogador esteja olhando para o NPC nem faz uma busca global por nome.
 
 InteractionContext entrega acesso a diálogo, progresso, navegação, batalha, loja e segredos. Cada interação usa apenas as partes de que precisa.
 
@@ -125,13 +125,13 @@ DialogueHud.OnGUI
   → painel + retrato + nome + VisibleText + opções
 ```
 
-DialoguePortraitCatalog resolve a imagem do falante. DialoguePresentation carrega/cacheia os retratos e desenha a conversa. Ela também permite selecionar opções pela interface.
+DialogueDefinition reúne ID, DialogueSpeaker, título, páginas, opções e indicação de aviso. DialoguePortraitCatalog resolve o retrato pela identidade tipada do falante, separada do nome exibido. DialoguePresentation cacheia os retratos e desenha a conversa. Ela também permite selecionar opções pela interface.
 
 Confirmar enquanto o texto é revelado mostra o restante da página. Confirmar novamente avança. Ao terminar a última página, DialogueSession fecha a conversa e chama a função de conclusão. Uma escolha fecha a conversa antes de executar seu callback, permitindo abrir outra conversa ou menu.
 
 Fechar a conversa de confronto com o dragão ou o aviso dos guardas inicia a batalha, inclusive usando Esc ou bolinha. Na pousada, fechar sem selecionar uma opção apenas encerra a conversa. As ações de escolha continuam executando a opção selecionada.
 
-OpenNotice é um aviso breve, com texto revelado imediatamente. Nem todas as falas estão no catálogo: interações de segredos e mensagens dependentes do estado também abrem texto diretamente.
+Todas as conversas, escolhas e avisos usam DialogueController.Open com uma DialogueDefinition. DialogueCatalog reúne as falas, opções e templates de mensagens variáveis, como ouro e nome do monólito. As páginas da essência do dragão são compartilhadas pelos dois contextos de exibição. Os versos do enigma continuam tendo LegendPoem como fonte única. Definições de aviso revelam o texto imediatamente. As interações fornecem as ações de conclusão, fechamento ou escolha; o sistema não guarda um motivo de encerramento.
 
 ## 8. Todas as famílias de interação
 
@@ -197,7 +197,7 @@ EncounterCatalog cria os combatentes e seleciona as regras apropriadas. PartyMem
 
 PartyProgress continua sendo o estado da jornada. BattleSession contém o estado próprio do encontro. Há recursos compartilhados deliberadamente: o inventário de consumíveis da batalha é o da equipe, e o medidor de LIMIT é passado ao combatente.
 
-[StartEncounter](../../Assets/Scripts/Gameplay/Battle/BattleController.cs#L180) instala a sessão, prepara os resultados, limpa a apresentação anterior, registra o mapa, bloqueia movimento, emite EncounterStarted e inicia BattleEntryTransition.
+[StartEncounter](../../Assets/Scripts/Gameplay/Battle/BattleController.cs#L178) instala a sessão, prepara os resultados, limpa a apresentação anterior, registra o mapa, bloqueia movimento, emite EncounterStarted e inicia BattleEntryTransition.
 
 Nos encontros comuns, a transição captura a câmera e aplica o shader de espiral. No rei, usa fade de 2 segundos para preto, espera de 3 segundos e fade de 2 segundos para a batalha. A revelação espera sinais de quadro preto, batalha desenhada e música preparada.
 
@@ -250,10 +250,10 @@ Na loja, MerchantInteraction chama ShopController.Open. ShopMenuSession guarda a
 
 ## 15. Assets: onde entram e quando são carregados
 
-Os arquivos importados ficam principalmente em Assets/Resources. Não há um AssetManager único: os carregadores são centralizados por família.
+Os arquivos importados ficam principalmente em Assets/Resources. Infrastructure/GameAssets centraliza a chamada à Unity: Required<T> exige o recurso e informa tipo/caminho quando ausente; Optional<T> permite o fallback previsto pelo consumidor. Caches, preparação, validação de coordenadas e descarte continuam na família que usa cada recurso.
 
 ```csharp
-Resources.Load<Texture2D>("PixelArt/ArenWalk")
+GameAssets.Required<Texture2D>("PixelArt/ArenWalk")
 ```
 
 Esse caminho aponta para Assets/Resources/PixelArt/ArenWalk.png, sem incluir a pasta Resources ou a extensão na chamada. O código solicita o asset importado pela Unity; não abre o PNG bruto manualmente.
@@ -333,7 +333,7 @@ CastleBattleRules implementa IBattleRules e IBattleDamageRules. Decide revelaç�
 
 Sem portador vivo da armadura no lançamento do meteoro, o resultado é CastleDestroyed. A morte do rei leva a HeroPossessed; derrotar o espírito com o rei vivo leva a KingFreed.
 
-EndingController recebe o resultado, faz a saída da batalha, oculta o mundo e instala a apresentação correspondente. Os objetos Sequence controlam o relógio e as fases; os objetos Presentation carregam/desenham a arte. EndingNarrative guarda os textos.
+EndingController recebe o resultado, faz a saída da batalha, oculta o mundo e instala a apresentação correspondente. Os objetos Sequence controlam o relógio e as fases; os objetos Presentation carregam/desenham a arte. NarrativePanel compartilha o gradiente, estilos, títulos, sombra, rolagem e fade nas bordas da narração da viagem e dos finais, usando as dimensões e cores de cada cena. O painel possui apenas a textura gerada e a libera no descarte. EndingNarrative guarda os textos dos finais.
 
 Ao terminar, AchievementService registra o final em um perfil separado, persistentDataPath/Achievements/endings.json, e recarrega a cena. A abertura pode então mostrar a notificação pendente. As conquistas não dependem de um slot individual da jornada.
 
@@ -353,7 +353,7 @@ A música combina consultas de estado e evento de entrada. Sons de combate segue
 | Composição e conexões iniciais | GameBootstrap |
 | Instalação/restauração da jornada | JourneyInstaller |
 | Consultas de bloqueio e prioridade de input | GameFlowState |
-| Leitura dos controles | GameInput |
+| Leitura dos controles | GameInput.ReadMenu, ControllerNavigation e atalhos centralizados |
 | Definições de conteúdo | Catálogos de Content |
 | Regras e turnos do encontro | BattleSession e regras especiais |
 | Encerramento/recompensas da batalha | BattleResolution e BattleRewards |
@@ -363,7 +363,8 @@ A música combina consultas de estado e evento de entrada. Sons de combate segue
 | Formato e validação do save | JourneyData / JourneySnapshot / SaveCatalog |
 | Arquivos dos slots | SaveStore |
 | Seleção da música | MusicCuePolicy |
-| Assets | Carregadores específicos de cada família |
+| Carregamento de assets | GameAssets.Required / Optional; caches específicos de cada família |
+| Desenho da narração | NarrativePanel configurado por cada cinematic |
 
 ## 20. Encerramento, ferramentas e localização de mudanças
 

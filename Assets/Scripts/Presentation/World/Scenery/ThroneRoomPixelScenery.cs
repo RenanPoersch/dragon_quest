@@ -1,3 +1,4 @@
+using DragonQuest.Infrastructure;
 using DragonQuest.Exploration.Layouts;
 using System;
 using System.Collections.Generic;
@@ -10,10 +11,9 @@ namespace DragonQuest.Presentation.World.Scenery
         private readonly List<UnityEngine.Object> owned=new List<UnityEngine.Object>();
         public void Build()
         {
-            var painting=Resources.Load<Texture2D>("PixelArt/ThroneRoomInterior");
-            var shader=Resources.Load<Shader>("ForestPixelBackdrop");
-            var depthShader=Resources.Load<Shader>("PixelCharacter");
-            if(painting==null||shader==null||depthShader==null) throw new InvalidOperationException("Pintura da sala do trono ausente.");
+            var painting=GameAssets.Required<Texture2D>("PixelArt/ThroneRoomInterior");
+            var shader=GameAssets.Required<Shader>("ForestPixelBackdrop");
+            var depthShader=GameAssets.Required<Shader>("PixelCharacter");
             var backdrop=new Material(shader){name="Sala do trono / pintura integral",mainTexture=painting}; owned.Add(backdrop);
             var foreground=new Material(depthShader){name="Sala do trono / profundidade",mainTexture=painting}; owned.Add(foreground);
             Draw("Sala do trono / pintura frontal",new[]{Vector2.zero,Vector2.up,Vector2.one,Vector2.right},60,backdrop);

@@ -1,3 +1,4 @@
+using DragonQuest.Infrastructure;
 using System;
 using System.Collections.Generic;
 using DragonQuest.Combat;
@@ -53,7 +54,7 @@ namespace DragonQuest.Presentation.Battle.Animations
         private Sheet Load(string resource)
         {
             if (sheets.TryGetValue(resource, out Sheet cached)) return cached;
-            Texture2D texture = Resources.Load<Texture2D>("PixelArt/Spells/" + resource);
+            Texture2D texture = GameAssets.Optional<Texture2D>("PixelArt/Spells/" + resource);
             if (texture == null) { sheets[resource] = null; return null; }
             texture.filterMode = FilterMode.Point;
             var sheet = new Sheet { Texture = texture };

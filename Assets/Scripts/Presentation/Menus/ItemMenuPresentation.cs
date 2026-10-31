@@ -1,3 +1,4 @@
+using DragonQuest.Infrastructure;
 using DragonQuest.Progression;
 using DragonQuest.Presentation.Common;
 using System;
@@ -28,7 +29,7 @@ namespace DragonQuest.Presentation.Menus
             heading = new GUIStyle(text) { fontSize = 38 };
             quantity = new GUIStyle(text) { alignment = TextAnchor.MiddleRight };
             muted = new GUIStyle(text); muted.normal.textColor = new Color(.48f, .5f, .64f);
-            scale = Resources.Load<Texture2D>("PixelArt/DragonScale");
+            scale = GameAssets.Optional<Texture2D>("PixelArt/DragonScale");
         }
 
         public void Draw(InventoryMenuPresentation theme, ItemMenuSession session, PartyProgress party,

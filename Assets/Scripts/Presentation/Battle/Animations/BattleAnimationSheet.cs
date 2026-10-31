@@ -1,3 +1,4 @@
+using DragonQuest.Infrastructure;
 using System;
 using UnityEngine;
 
@@ -20,7 +21,7 @@ namespace DragonQuest.Presentation.Battle.Animations
             Action<Texture2D, Rect, Rect, Color> drawTexture = null)
         {
             this.drawTexture = drawTexture ?? DrawGui;
-            texture = Resources.Load<Texture2D>(resource);
+            texture = GameAssets.Optional<Texture2D>(resource);
             uv = new Rect[columns * rows]; size = new Vector2[uv.Length]; anchor = new float[uv.Length];
             feet = new float[uv.Length]; frameScale = new float[uv.Length]; frameTextures = new Texture2D[uv.Length];
             for (int i = 0; i < frameScale.Length; i++) frameScale[i] = 1;
@@ -83,7 +84,7 @@ namespace DragonQuest.Presentation.Battle.Animations
         public bool ReplaceFrame(int frame, string resource)
         {
             if (frame < 0 || frame >= uv.Length || size[frame].y <= 0) return false;
-            Texture2D replacement = Resources.Load<Texture2D>(resource);
+            Texture2D replacement = GameAssets.Optional<Texture2D>(resource);
             if (replacement == null) return false;
             replacement.filterMode = FilterMode.Point;
             Color32[] pixels = replacement.GetPixels32();

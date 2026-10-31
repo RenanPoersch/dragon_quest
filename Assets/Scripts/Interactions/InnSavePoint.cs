@@ -1,3 +1,4 @@
+using DragonQuest.Infrastructure;
 using DragonQuest.Presentation.World.Rendering;
 using DragonQuest.Presentation.World.Characters;
 using System;
@@ -30,9 +31,9 @@ namespace DragonQuest.Interactions
         {
             if(view!=null) throw new InvalidOperationException("Ponto de salvamento ja inicializado.");
             player=hero;isBlocked=blocked;openSaveMenu=showSaveMenu;
-            Source=Resources.Load<Texture2D>("PixelArt/InnSavePoint");
-            var shader=Resources.Load<Shader>("PixelCharacter");
-            if(Source==null||shader==null||!Source.isReadable||Source.width%Columns!=0||Source.height%Rows!=0)
+            Source=GameAssets.Required<Texture2D>("PixelArt/InnSavePoint");
+            var shader=GameAssets.Required<Shader>("PixelCharacter");
+            if(!Source.isReadable||Source.width%Columns!=0||Source.height%Rows!=0)
                 throw new InvalidOperationException("Atlas do save deve ser legivel, com quatro colunas e duas linhas.");
             int width=Source.width/Columns,height=Source.height/Rows;
             Color32[] pixels=Source.GetPixels32();

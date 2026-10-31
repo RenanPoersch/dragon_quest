@@ -1,3 +1,4 @@
+using DragonQuest.Infrastructure;
 using DragonQuest.Presentation.World.Scenery;
 using DragonQuest.Presentation.World.Characters;
 using DragonQuest.Presentation.World.Animations;
@@ -19,40 +20,33 @@ namespace DragonQuest.Presentation.World.Rendering
         public PixelSpriteLibrary PixelSprites { get; }
         public ObliqueScenery()
         {
-            Shader shader = Resources.Load<Shader>("ObliqueWorld");
-            if (shader == null) throw new InvalidOperationException("Shader Resources/ObliqueWorld ausente.");
+            Shader shader = GameAssets.Required<Shader>("ObliqueWorld");
             material = new Material(shader) { name = "Cenario 2.5D - cores por face" };
-            var atlas = Resources.Load<Texture2D>("PixelArt/TerrainAtlas");
-            if (atlas == null) throw new InvalidOperationException("Atlas de materiais ausente.");
+            var atlas = GameAssets.Required<Texture2D>("PixelArt/TerrainAtlas");
             material.SetTexture("_PixelAtlas", atlas);
             cityMaterial = AtlasMaterial(shader, "CityMaterialsAtlas", "Periferia / materiais gastos");
             cityMaterial.SetFloat("_Brightness", 0.8f);
             cityDetailsMaterial = AtlasMaterial(shader, "CityDetailsAtlas", "Periferia / fachadas e letreiros");
             castleMaterial = AtlasMaterial(shader, "CastleMaterialsAtlas", "Castelo / alvenaria de pedra");
             castleMaterial.SetFloat("_Brightness", 0.95f);
-            var groundShader = Resources.Load<Shader>("CityGround");
-            var groundPainting = Resources.Load<Texture2D>("PixelArt/CityGroundMap");
-            if (groundShader == null || groundPainting == null) throw new InvalidOperationException("Pintura ou shader do chao da periferia ausente.");
+            var groundShader = GameAssets.Required<Shader>("CityGround");
+            var groundPainting = GameAssets.Required<Texture2D>("PixelArt/CityGroundMap");
             cityGroundMaterial = new Material(groundShader) {name = "Periferia / chao pintado uma vez"};
             cityGroundMaterial.SetTexture("_MainTex", groundPainting);
-            var worldShader = Resources.Load<Shader>("WorldGround");
-            var worldPainting = Resources.Load<Texture2D>("PixelArt/WorldGroundMap");
-            if (worldShader == null || worldPainting == null) throw new InvalidOperationException("Mapa continuo da ilha ausente.");
+            var worldShader = GameAssets.Required<Shader>("WorldGround");
+            var worldPainting = GameAssets.Required<Texture2D>("PixelArt/WorldGroundMap");
             worldGroundMaterial = new Material(worldShader) { name = "Ilha / uma pintura continua de terreno, costa e mar" };
             worldGroundMaterial.SetTexture("_MainTex", worldPainting);
-            var glowShader = Resources.Load<Shader>("PixelGlow");
-            if (glowShader == null) throw new InvalidOperationException("Shader PixelGlow ausente.");
+            var glowShader = GameAssets.Required<Shader>("PixelGlow");
             glowMaterial = new Material(glowShader) {name = "Periferia / vapor"};
             PixelSprites = new PixelSpriteLibrary();
-            var shadowShader = Resources.Load<Shader>("PixelShadow");
-            if (shadowShader == null) throw new InvalidOperationException("Shader PixelShadow ausente.");
+            var shadowShader = GameAssets.Required<Shader>("PixelShadow");
             shadowMaterial = new Material(shadowShader) {name = "Sombra transparente no chao"};
         }
 
         private static Material AtlasMaterial(Shader shader, string resource, string name)
         {
-            var texture = Resources.Load<Texture2D>("PixelArt/" + resource);
-            if (texture == null) throw new InvalidOperationException("Atlas ausente: " + resource);
+            var texture = GameAssets.Required<Texture2D>("PixelArt/" + resource);
             var appearance = new Material(shader) {name = name}; appearance.SetTexture("_PixelAtlas", texture); return appearance;
         }
 

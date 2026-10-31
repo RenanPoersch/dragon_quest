@@ -1,3 +1,4 @@
+using DragonQuest.Infrastructure;
 using DragonQuest.Presentation.World.Characters;
 using DragonQuest.Presentation.Common;
 using System;
@@ -194,8 +195,7 @@ namespace DragonQuest.Presentation.Cinematics.Opening
 
         private static Texture2D PixelTexture(string resource, int height, bool readable = false)
         {
-            Texture2D source = Resources.Load<Texture2D>(resource);
-            if (source == null) throw new InvalidOperationException("Arte da travessia ausente: " + resource);
+            Texture2D source = GameAssets.Required<Texture2D>(resource);
             int width = Mathf.RoundToInt(height * source.width / (float)source.height);
             var texture = new Texture2D(width, height, TextureFormat.RGBA32, false)
                 { name = resource + " / pixel grid", filterMode = FilterMode.Point, wrapMode = TextureWrapMode.Clamp };

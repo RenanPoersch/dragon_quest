@@ -30,6 +30,9 @@ namespace DragonQuest.Input
         // One focus gate for exploration and every screen.
         public static bool IsFocused => Application.isFocused;
         public static bool IsFrameAvailable => IsFocused && consumedFrame != Time.frameCount;
+        // Continuous scrolling remains available after the dialogue handles its discrete commands.
+        public static float ScrollAxis => IsFocused && Gamepad.current != null
+            ? Gamepad.current.rightStick.ReadValue().y : 0;
         private static bool PadAvailable => IsFrameAvailable
             && Gamepad.current != null && Gamepad.current.enabled;
 

@@ -1,3 +1,4 @@
+using DragonQuest.Infrastructure;
 using DragonQuest.Progression;
 using DragonQuest.Presentation.World;
 using DragonQuest.Presentation.Cinematics.Exploration;
@@ -44,7 +45,7 @@ namespace DragonQuest.Audio
             if (sources[0] != null) return;
             if (rest != null)
             {
-                var sleep = Resources.Load<AudioClip>(MusicCuePolicy.ResourceName(MusicCue.Sleep));
+                var sleep = GameAssets.Optional<AudioClip>(MusicCuePolicy.ResourceName(MusicCue.Sleep));
                 if (sleep != null) { clips[MusicCue.Sleep] = sleep; rest.ConfigureSleepMusic(sleep.length); }
             }
             for (int i = 0; i < sources.Length; i++)
@@ -103,7 +104,7 @@ namespace DragonQuest.Audio
             if (cue == MusicCue.Silence) { current = -1; return; }
             if (!clips.TryGetValue(cue, out AudioClip clip))
             {
-                clip = Resources.Load<AudioClip>(MusicCuePolicy.ResourceName(cue));
+                clip = GameAssets.Optional<AudioClip>(MusicCuePolicy.ResourceName(cue));
                 clips.Add(cue, clip);
                 if (clip == null) Debug.LogError("Trilha ausente: " + MusicCuePolicy.ResourceName(cue), this);
             }

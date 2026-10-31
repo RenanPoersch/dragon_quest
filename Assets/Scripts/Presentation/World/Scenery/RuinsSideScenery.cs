@@ -1,3 +1,4 @@
+using DragonQuest.Infrastructure;
 using DragonQuest.Presentation.World.Animations;
 using DragonQuest.Exploration.Layouts;
 using System.Collections.Generic;
@@ -18,7 +19,7 @@ namespace DragonQuest.Presentation.World.Scenery
 
         public Transform Build(out GameObject flame)
         {
-            material = new Material(Resources.Load<Shader>("RuinsSide"));
+            material = new Material(GameAssets.Required<Shader>("RuinsSide"));
             fullColumn=PixelSprite("PixelArt/RuinsPaintedColumns",new Rect(88,101,420,1332),160,new Vector2(.5f,0));
             brokenColumn=PixelSprite("PixelArt/RuinsPaintedColumns",new Rect(576,101,394,713),86,new Vector2(.5f,0));
             rearColumn=PixelSprite("PixelArt/RuinsPaintedColumns",new Rect(88,101,420,1332),160,new Vector2(.5f,0),new Color(.42f,.49f,.56f));
@@ -139,8 +140,7 @@ namespace DragonQuest.Presentation.World.Scenery
         // Sample imported artwork onto a fixed pixel grid, preserving the drawing and its alpha.
         private Sprite PixelSprite(string resource, Rect crop, int pixelHeight, Vector2 pivot, Color? tint=null)
         {
-            Texture2D source=Resources.Load<Texture2D>(resource);
-            if(source==null) throw new System.InvalidOperationException("Arte das ruinas ausente: "+resource);
+            Texture2D source=GameAssets.Required<Texture2D>(resource);
             if(crop.width==0) crop=new Rect(0,0,source.width,source.height);
             int width=Mathf.RoundToInt(pixelHeight*crop.width/crop.height);
             Color32[] original=source.GetPixels32(),pixels=new Color32[width*pixelHeight];

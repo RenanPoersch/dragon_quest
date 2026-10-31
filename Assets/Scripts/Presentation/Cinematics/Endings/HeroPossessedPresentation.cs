@@ -1,3 +1,4 @@
+using DragonQuest.Infrastructure;
 using DragonQuest.Presentation.Common;
 using System;
 using DragonQuest.Progression;
@@ -37,8 +38,8 @@ namespace DragonQuest.Presentation.Cinematics.Endings
             throne = Load(ThroneResource);
             var spirit = Load(SpiritResource);
             lightning = new[] { Load(LightningAResource), Load(LightningBResource), Load(LightningCResource), Load(LightningDResource) };
-            Shader shader = Resources.Load<Shader>(CompositeResource);
-            if (shader == null || !shader.isSupported) throw new InvalidOperationException("Shader do final de possessão indisponível.");
+            Shader shader = GameAssets.Required<Shader>(CompositeResource);
+            if (!shader.isSupported) throw new InvalidOperationException("Shader do final de possessão indisponível.");
             composite = new Material(shader) { name = "Possession / lightning behind the throne", hideFlags = HideFlags.HideAndDontSave };
             composite.SetTexture("_SpiritTex", spirit);
             composite.SetTexture("_LightningTex", lightning[0]);
@@ -139,12 +140,7 @@ namespace DragonQuest.Presentation.Cinematics.Endings
                 * (1 - Mathf.Clamp01((Sequence.Elapsed - Sequence.TextEndAt) / 1.2f));
             narrative.Draw(lines, "O NOVO HOSPEDEIRO", Sequence.TextOffset, opacity);
         }
-        private static Texture2D Load(string resource)
-        {
-            var texture = Resources.Load<Texture2D>(resource);
-            if (texture == null) throw new InvalidOperationException("Arte do final de possessão ausente: " + resource);
-            return texture;
-        }
+        private static Texture2D Load(string resource) => GameAssets.Required<Texture2D>(resource);
         private static void Fill(Rect area, Color color)
         { GUI.color = color; GUI.DrawTexture(area, Texture2D.whiteTexture); }
         public void Dispose()
