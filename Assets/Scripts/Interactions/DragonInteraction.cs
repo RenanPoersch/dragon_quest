@@ -2,6 +2,7 @@ using DragonQuest.Presentation.World.Animations;
 using System;
 using UnityEngine;
 using DragonQuest.Progression;
+using DragonQuest.Content;
 
 namespace DragonQuest.Interactions
 {
@@ -44,26 +45,18 @@ namespace DragonQuest.Interactions
             ClearPrelude();
             if (progress.IsDefeated)
             {
-                context.Dialogue.Open("Essência liberta",
-                    "As vozes... Minha mente... eu... eu... sou eu novamente! Estou livre!",
-                    "Meu coração está em dívida com vocês. Espero que isso ajude em sua jornada...");
+                context.Dialogue.Open(DialogueCatalog.FreedDragonEssence);
                 return;
             }
             bool wasSleeping = restingDragon?.State == DragonRestState.Sleeping;
             restingDragon?.Wake();
-            const string outburst = "Minha mente... DEIXE-ME EM PAZ!";
-            string[] messages = wasSleeping ? new[]
-            {
-                "O dragão dorme sobre o basalto quente. Ao ouvir seus passos, abre os olhos, ergue a cabeça e estende as asas. O covil estremece com seu rugido.",
-                outburst
-            } : new[] { outburst };
-            context.Dialogue.OpenWithCloseAction("Dragão corrompido", () =>
+            context.Dialogue.Open(DialogueCatalog.DragonConfrontation(wasSleeping), closed: () =>
             {
                 ClearPrelude();
                 // A fast dialogue advance still switches to the awake pose before battle.
                 restingDragon?.FinishAwakening();
                 startBattle?.Invoke();
-            }, messages);
+            });
             battleDialogue = context.Dialogue;
             encounterPageCount = battleDialogue.PageCount;
             finalPageVersion = battleDialogue.ContentVersion + encounterPageCount - 1;

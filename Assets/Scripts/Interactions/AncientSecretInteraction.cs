@@ -1,6 +1,7 @@
 using UnityEngine;
 using DragonQuest.Audio;
 using DragonQuest.Progression;
+using DragonQuest.Content;
 
 namespace DragonQuest.Interactions
 {
@@ -26,52 +27,42 @@ namespace DragonQuest.Interactions
             bool visible=kind==SecretObject.Altar?secrets.AltarSolved:kind==SecretObject.Monolith&&secrets.IsLit(symbol);
             if(light.activeSelf!=visible) light.SetActive(visible);
         }
-        public static string SymbolName(MonolithSymbol symbol) => symbol==MonolithSymbol.Moon?"Lua":symbol==MonolithSymbol.Star?"Estrela":"Sol";
-
         public override void Interact(InteractionContext context)
         {
             if (!CanInteract) return;
             DialogueController dialogue=context.Dialogue;
             if(kind==SecretObject.Peasant)
             {
-                dialogue.OpenWithCompletion("Camponesa",secrets.LearnPoem,
-                    "Minha avó me contava uma lenda quando eu era pequena. Eu sentava pertinho dela e pedia para ouvir de novo, mesmo já sabendo como terminava.",
-                    "Hoje já não lembro direito... Era algo sobre chamas, lua e coisas assim. Ela dizia que tinha a ver com aquelas ruínas a sudoeste da ilha.",
-                    "Não sei se acredito nessas coisas... Mas ela falava com tanta certeza. Queria poder perguntar de novo.");
+                dialogue.Open(DialogueCatalog.PeasantLegend, secrets.LearnPoem);
             }
             else if(kind==SecretObject.Altar)
             {
-                if(!secrets.KnowsPoem) dialogue.Open("Altar antigo",
-                    "Uma inscrição em latim está gravada na pedra, você ainda não entende o que significa.");
-                else dialogue.OpenChoices("Altar antigo","Uma chama envolve um reino em ruínas. Qual verso da lenda você recita?",LegendPoem.AltarChoices,index=>
+                if(!secrets.KnowsPoem) dialogue.Open(DialogueCatalog.UnknownAltar);
+                else dialogue.Open(DialogueCatalog.AltarVerse, selected: index=>
                 {
-                    if(secrets.TrySolveAltar(LegendPoem.AltarChoices[index]))
-                        dialogue.Open("Altar antigo","Uma chama desperta no altar. Ao longe, algo parece ceder entre as montanhas.");
-                    else dialogue.Open("Altar antigo","...");
+                    if(secrets.TrySolveAltar(DialogueCatalog.AltarVerse.Choices[index]))
+                        dialogue.Open(DialogueCatalog.AltarAwakened);
+                    else dialogue.Open(DialogueCatalog.AltarSilent);
                     RefreshLight();
                 });
             }
             else if(kind==SecretObject.Inscription)
-                dialogue.Open("Inscrição antiga",LegendPoem.Sky,"Os três monólitos parecem esperar a passagem de um mesmo ciclo.");
+                dialogue.Open(DialogueCatalog.AncientInscription);
             else if(kind==SecretObject.Monolith)
             {
                 MonolithResult result=secrets.Activate(symbol);
-                dialogue.Open("Monolito / "+SymbolName(symbol),result==MonolithResult.Reset
-                    ? "..."
-                    : result==MonolithResult.Completed?"Os três símbolos se erguem acima das pedras. Um tremor distante atravessa o chão."
-                    : result==MonolithResult.AlreadyCompleted?"O ciclo foi completado."
-                    : "O símbolo ganha um brilho suave. As outras pedras continuam em silêncio.");
+                dialogue.Open(DialogueCatalog.Monolith(symbol, result));
                 RefreshLight();
             }
             else if(kind==SecretObject.ClawStone)
-                dialogue.Open("Pedra marcada",LegendPoem.Forest);
+                dialogue.Open(DialogueCatalog.ClawStone);
             else
-                dialogue.OpenWithCompletion("Árvore oca", () =>
+                dialogue.Open(DialogueCatalog.HollowTreeScale, () =>
                 {
                     if(!secrets.TryCollectScale()) return;
                     MenuSounds.Play(MenuSound.Confirm);
-                    dialogue.OpenNotice("Recebeu Escama ancestral");
-                }, "Entre as raízes você encontra uma Escama ancestral. Ela vibra por um instante, como se respondesse a algo distante.");
+                    dialogue.Open(DialogueCatalog.AncestralScaleReceived);
+                });
         }
     }
 }

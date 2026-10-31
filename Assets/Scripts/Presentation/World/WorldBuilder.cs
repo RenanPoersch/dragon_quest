@@ -127,7 +127,7 @@ namespace DragonQuest.Presentation.World
         {
             if (!TravelerGift.TryGivePhoenix(actions.GetParty(), context.Progress)) return;
             MenuSounds.Play(MenuSound.Confirm);
-            context.Dialogue.OpenNotice("Recebeu Phoenix");
+            context.Dialogue.Open(DialogueCatalog.PhoenixReceived);
         }
 
         private NpcInteraction CreateNpc(string npcName, NpcAppearance appearance, Vector2 position, Transform parent)

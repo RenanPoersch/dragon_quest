@@ -437,13 +437,11 @@ namespace DragonQuest.Gameplay.Battle
             pendingEnemy = null;
             if (IsDragonEncounter && Session.Outcome == BattleOutcome.Victory)
             {
-                dialogue.OpenWithCompletion("Essência do dragão", () =>
+                dialogue.Open(DialogueCatalog.DragonEssence, () =>
                     {
                         MenuSounds.Play(MenuSound.Confirm);
-                        dialogue.OpenNotice("Recebeu Armadura Dracônica");
-                    },
-                    "As vozes... Minha mente... eu... eu... sou eu novamente! Estou livre!",
-                    "Meu coração está em dívida com vocês. Espero que isso ajude em sua jornada...");
+                        dialogue.Open(DialogueCatalog.DraconicArmorReceived);
+                    });
                 movement.SetMovementEnabled(false);
             }
         }

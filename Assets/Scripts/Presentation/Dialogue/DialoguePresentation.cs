@@ -1,4 +1,5 @@
 using DragonQuest.Presentation.Common;
+using DragonQuest.Content;
 using System;
 using System.Collections.Generic;
 using DragonQuest.Interactions;
@@ -102,7 +103,7 @@ namespace DragonQuest.Presentation.Dialogue
                 }
             }
             Panel(panel);
-            DrawPortrait(face, dialogue.Title);
+            DrawPortrait(face, dialogue.Speaker);
             // The name stays in place while only the speech and responses scroll.
             ShadowLabel(new Rect(left, panel.y + 16, contentWidth, titleHeight), dialogue.Title, title);
             float textTop = panel.y + 16 + titleHeight + 8;
@@ -220,7 +221,7 @@ namespace DragonQuest.Presentation.Dialogue
             GUI.DrawTextureWithTexCoords(new Rect(0, row.center.y - height / 2, width, height), hand, handUv, true);
         }
 
-        private void DrawPortrait(Rect area, string speaker)
+        private void DrawPortrait(Rect area, DialogueSpeaker speaker)
         {
             string resource = DialoguePortraitCatalog.ResourceFor(speaker);
             if (!portraits.TryGetValue(resource, out var portrait))

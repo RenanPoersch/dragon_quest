@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using DragonQuest.Content;
 
 namespace DragonQuest.Presentation.Dialogue
 {
@@ -12,26 +13,26 @@ namespace DragonQuest.Presentation.Dialogue
             "traveler", "innkeeper", "guard", "tyrant", "dragon", "dragon-essence"
         });
 
-        public static string CharacterFor(string speaker)
+        public static string CharacterFor(DialogueSpeaker speaker)
         {
             switch (speaker)
             {
-                case "Aldeão": case "Aldeao": return "villager";
-                case "Camponesa": return "peasant";
-                case "Jardineiro": return "gardener";
-                case "Exploradora": return "explorer";
-                case "Guardião da pedreira": case "Guardiao da pedreira": case "Lenhador": return "quarry-keeper";
-                case "Viajante": return "traveler";
-                case "Hospedeira": case "Hospedaria": return "innkeeper";
-                case "Guarda Real": return "guard";
-                case "Rei Rubro": return "tyrant";
-                case "Dragão corrompido": case "Dragao corrompido": return "dragon";
-                case "Essência do dragão": case "Essência liberta": case "Essencia liberta": case "Essencia do dragao": return "dragon-essence";
+                case DialogueSpeaker.Citizen: return "villager";
+                case DialogueSpeaker.Peasant: return "peasant";
+                case DialogueSpeaker.Gardener: return "gardener";
+                case DialogueSpeaker.Explorer: return "explorer";
+                case DialogueSpeaker.QuarryKeeper: return "quarry-keeper";
+                case DialogueSpeaker.Traveler: return "traveler";
+                case DialogueSpeaker.Innkeeper: return "innkeeper";
+                case DialogueSpeaker.RoyalGuard: return "guard";
+                case DialogueSpeaker.Tyrant: return "tyrant";
+                case DialogueSpeaker.Dragon: return "dragon";
+                case DialogueSpeaker.DragonEssence: return "dragon-essence";
                 default: return "aren";
             }
         }
 
-        public static string ResourceFor(string speaker) => Resource(CharacterFor(speaker));
+        public static string ResourceFor(DialogueSpeaker speaker) => Resource(CharacterFor(speaker));
         public static string Resource(string character) => Root + character;
     }
 }

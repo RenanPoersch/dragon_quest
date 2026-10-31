@@ -1,4 +1,5 @@
 using UnityEngine;
+using DragonQuest.Content;
 
 namespace DragonQuest.Interactions
 {
@@ -30,9 +31,9 @@ namespace DragonQuest.Interactions
         public override void Interact(InteractionContext context)
         {
             if (context.Progress.TryOpenChest(chestId, goldReward))
-                context.Dialogue.Open("Baú da praça", "Você encontrou " + goldReward + " moedas de ouro!");
+                context.Dialogue.Open(DialogueCatalog.ChestGold(goldReward));
             else
-                context.Dialogue.Open("Baú da praça", "O baú está vazio");
+                context.Dialogue.Open(DialogueCatalog.ChestEmpty);
 
             opened = true;
             showState?.Invoke(true);

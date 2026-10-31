@@ -1,3 +1,5 @@
+using DragonQuest.Content;
+
 namespace DragonQuest.Interactions
 {
     public sealed class InnInteraction : Interactable
@@ -8,8 +10,7 @@ namespace DragonQuest.Interactions
 
         public override void Interact(InteractionContext context)
         {
-            context.Dialogue.OpenChoices("Hospedeira", "Bem-vindos à pousada. O que desejam?",
-                new[] { "Salvar", "Passar a noite" }, choice =>
+            context.Dialogue.Open(DialogueCatalog.Inn, selected: choice =>
                 {
                     if (choice==0) save?.Invoke();
                     else if (choice==1) spendNight?.Invoke();

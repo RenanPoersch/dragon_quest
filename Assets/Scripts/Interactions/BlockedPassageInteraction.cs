@@ -1,4 +1,5 @@
 using DragonQuest.Progression;
+using DragonQuest.Content;
 using UnityEngine;
 
 namespace DragonQuest.Interactions
@@ -28,14 +29,11 @@ namespace DragonQuest.Interactions
             {
                 barrier.GetComponent<Collider2D>().enabled=false;
                 Physics2D.SyncTransforms(); opening=true; openingTime=0;
-                context.Dialogue.Open("Barreira ancestral","A Escama ancestral vibra. Os três selos se desfazem e a barreira mágica ao redor do vulcão se dissipa.");
+                context.Dialogue.Open(DialogueCatalog.PassageOpened);
             }
             else
             {
-                const string description = "Uma barreira mágica envolve o vulcão. Três selos brilham sobre a superfície.";
-                if(context.Secrets.HasScale)
-                    context.Dialogue.Open("Barreira ancestral",description,"A escama vibra, mas alguns selos ainda resistem.");
-                else context.Dialogue.Open("Barreira ancestral",description);
+                context.Dialogue.Open(context.Secrets.HasScale ? DialogueCatalog.PassageResisting : DialogueCatalog.PassageSealed);
             }
         }
         private void Update()

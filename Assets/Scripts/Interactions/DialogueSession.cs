@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using DragonQuest.Content;
 
 namespace DragonQuest.Interactions
 {
@@ -16,36 +17,22 @@ namespace DragonQuest.Interactions
         public bool HasChoices => IsOpen && choices != null;
         public string Title { get; private set; }
         public string Id { get; private set; }
+        public DialogueSpeaker Speaker { get; private set; }
+        public bool IsNotice { get; private set; }
         public string Text => IsOpen ? pages[pageIndex] : string.Empty;
         public int PageNumber => IsOpen ? pageIndex + 1 : 0;
         public int PageCount => IsOpen ? pages.Length : 0;
         public IReadOnlyList<string> Choices => choices;
 
-        public void Open(string title, Action completed, params string[] messages)
+        public void Open(DialogueDefinition definition, Action completed = null, Action closed = null, Action<int> selected = null)
         {
-            if (messages == null || messages.Length == 0) return;
-            Clear(); Title = title; pages = (string[])messages.Clone(); completion = completed;
-        }
-
-        public void OpenWithCloseAction(string title, Action action, params string[] messages)
-        {
-            if (messages == null || messages.Length == 0) return;
-            Open(title, null, messages);
-            closeAction = action;
-        }
-
-        public void OpenIdentified(string id, string title, Action completed, params string[] messages)
-        {
-            if (messages == null || messages.Length == 0) return;
-            Open(title, completed, messages); Id = id;
-        }
-
-        public void OpenChoices(string title, string message, IReadOnlyList<string> options, Action<int> selected)
-        {
-            if (options == null || options.Count == 0 || selected == null) throw new ArgumentException("Escolhas precisam de opcoes e resposta.");
-            var copy = new string[options.Count];
-            for (int i=0; i<copy.Length; i++) copy[i] = options[i];
-            Open(title, null, message); choices = Array.AsReadOnly(copy); choiceCallback = selected;
+            if (definition == null) throw new ArgumentNullException(nameof(definition));
+            if (definition.Choices.Count > 0 && selected == null) throw new ArgumentException("Escolhas precisam de resposta.");
+            Clear();
+            Id = definition.Id; Speaker = definition.Speaker; Title = definition.Title; IsNotice = definition.IsNotice;
+            pages = definition.CreatePages();
+            choices = definition.Choices.Count > 0 ? definition.Choices : null;
+            completion = completed; closeAction = closed; choiceCallback = selected;
         }
 
         public void Advance()
@@ -71,6 +58,9 @@ namespace DragonQuest.Interactions
         }
 
         private void Clear()
-        { Id = null; pages = null; pageIndex = 0; choices = null; completion = null; closeAction = null; choiceCallback = null; }
+        {
+            Id = null; Title = null; Speaker = DialogueSpeaker.Aren; IsNotice = false;
+            pages = null; pageIndex = 0; choices = null; completion = null; closeAction = null; choiceCallback = null;
+        }
     }
 }
