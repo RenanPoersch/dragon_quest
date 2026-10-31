@@ -179,7 +179,7 @@ namespace DragonQuest.Gameplay.Battle
 
         private void StartEncounter(BattleSession encounter, bool dragonEncounter)
         {
-            GameInput.ConsumeGamepadFrame();
+            GameInput.ConsumeFrame();
             Session = encounter; IsDragonEncounter = dragonEncounter;
             EscapeStartedAt = EscapeCompletedAt = 0;
             PostBattle = new PostBattleResults(Party, encounter);
@@ -309,7 +309,7 @@ namespace DragonQuest.Gameplay.Battle
             HasEnded = true; IsActive = false; IsMenuOpen = false; IsPostBattleOpen = false;
             pendingEnemy = null; exploration.ResetWalk();
             movement.SetMovementEnabled(false);
-            GameInput.ConsumeGamepadFrame();
+            GameInput.ConsumeFrame();
             showLoadGame?.Invoke();
         }
 
@@ -363,12 +363,12 @@ namespace DragonQuest.Gameplay.Battle
             }
             if (Flow?.CanToggleInventory ?? (!HasEnded && !IsActive && !otherMenuOpen() && !dialogue.IsOpen && GameInput.IsFocused))
             {
-                if (IsMenuOpen && GameInput.CancelPressed) { if (TryCancelInventorySelection?.Invoke() != true) CloseMenu(); GameInput.ConsumeGamepadFrame(); }
+                if (IsMenuOpen && GameInput.CancelPressed) { if (TryCancelInventorySelection?.Invoke() != true) CloseMenu(); GameInput.ConsumeFrame(); }
                 else if (GameInput.InventoryPressed)
                 {
                     if (IsMenuOpen) CloseMenu();
                     else { IsMenuOpen = true; movement.SetMovementEnabled(false); }
-                    GameInput.ConsumeGamepadFrame();
+                    GameInput.ConsumeFrame();
                 }
             }
             if (!IsActive || Session.CurrentActor == null || Session.CurrentActor.Team != CombatTeam.Enemy)

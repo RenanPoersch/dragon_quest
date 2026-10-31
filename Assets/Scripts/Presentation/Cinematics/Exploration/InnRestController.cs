@@ -76,7 +76,7 @@ namespace DragonQuest.Presentation.Cinematics.Exploration
             }
             foreach (Renderer renderer in player.GetComponentsInChildren<Renderer>())
             { heroRenderers.Add(renderer,renderer.enabled); renderer.enabled=false; }
-            GameInput.ConsumeGamepadFrame();
+            GameInput.ConsumeFrame();
         }
 
         private void Update()

@@ -100,7 +100,7 @@ namespace DragonQuest.Presentation.Menus
             bool previous = GUI.enabled; GUI.enabled = previous && enabled;
             bool clicked = GUI.Button(rect, GUIContent.none, GUIStyle.none); GUI.enabled = previous;
             if (!clicked || type != EventType.MouseUp || activatedFrame == Time.frameCount) return false;
-            activatedFrame = Time.frameCount; MenuSounds.Play(sound); DragonQuest.Input.GameInput.ConsumeGamepadFrame(); return true;
+            activatedFrame = Time.frameCount; MenuSounds.Play(sound); DragonQuest.Input.GameInput.ConsumeFrame(); return true;
         }
         private static void Label(Rect rect, string value, GUIStyle style)
         {

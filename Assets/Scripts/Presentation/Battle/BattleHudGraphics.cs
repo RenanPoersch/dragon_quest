@@ -65,7 +65,7 @@ namespace DragonQuest.Presentation.Battle
             InventoryPixelArt.Draw(new Rect(rect.x + 50, rect.center.y - 14, 28, 28), icon);
             GUI.enabled = previous;
             if (focused) DrawHand(new Rect(rect.x + 2, rect.center.y - 15, 44, 30));
-            if (clicked) { MenuSounds.Play(MenuSound.Confirm); GameInput.ConsumeGamepadFrame(); }
+            if (clicked) { MenuSounds.Play(MenuSound.Confirm); GameInput.ConsumeFrame(); }
             return clicked;
         }
 

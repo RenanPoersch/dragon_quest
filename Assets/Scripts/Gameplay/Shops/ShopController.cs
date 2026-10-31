@@ -37,7 +37,7 @@ namespace DragonQuest.Gameplay.Shops
             if (shop == null) return;
             MenuSounds.Play(MenuSound.Confirm);
             ActiveShop = shop; Menu.Open(Service, shop); ActionIndex = 0;
-            movement.SetMovementEnabled(false); GameInput.ConsumeGamepadFrame();
+            movement.SetMovementEnabled(false); GameInput.ConsumeFrame();
         }
         public void Close()
         {
@@ -49,7 +49,7 @@ namespace DragonQuest.Gameplay.Shops
             MenuSounds.Play(MenuSound.Cancel);
             if (Menu.Back()) Close();
             ActionIndex = Menu.Selling ? 1 : 0;
-            GameInput.ConsumeGamepadFrame();
+            GameInput.ConsumeFrame();
         }
         public void ChooseAction(int index)
         {
@@ -58,43 +58,41 @@ namespace DragonQuest.Gameplay.Shops
             ActionIndex = index;
             if (index == 0 || index == 1) Menu.Browse(index == 1);
             else Close();
-            GameInput.ConsumeGamepadFrame();
+            GameInput.ConsumeFrame();
         }
         private void Update()
         {
-            if (!IsOpen || IsInputBlocked || !GameInput.IsFrameAvailable) return;
-            if (GameInput.CancelPressed) { Back(); return; }
+            if (!IsOpen || IsInputBlocked) return;
+            MenuInput input = GameInput.ReadMenu();
+            if (!input.Available) return;
+            if (input.Cancel) { Back(); return; }
             var before = (ActionIndex, Menu.Index, Menu.Filter, Menu.Quantity);
-            var keys = Keyboard.current;
-            MenuDirection direction = GameInput.Navigation;
-            int horizontal = direction == MenuDirection.Left || keys?.leftArrowKey.wasPressedThisFrame == true || keys?.aKey.wasPressedThisFrame == true ? -1
-                : direction == MenuDirection.Right || keys?.rightArrowKey.wasPressedThisFrame == true || keys?.dKey.wasPressedThisFrame == true ? 1 : 0;
-            int vertical = direction == MenuDirection.Up || keys?.upArrowKey.wasPressedThisFrame == true || keys?.wKey.wasPressedThisFrame == true ? -1
-                : direction == MenuDirection.Down || keys?.downArrowKey.wasPressedThisFrame == true || keys?.sKey.wasPressedThisFrame == true ? 1 : 0;
+            int horizontal = input.Horizontal, vertical = input.Vertical;
+            bool shortcutHandled = false;
             if (Menu.Phase == ShopMenuPhase.Actions)
             {
                 const int count = 3;
                 int delta = horizontal != 0 ? horizontal : vertical;
                 ActionIndex = (ActionIndex + delta + count) % count;
-                if (GameInput.ConfirmPressed) ChooseAction(ActionIndex);
+                if (input.Confirm) ChooseAction(ActionIndex);
             }
             else if (Menu.Phase == ShopMenuPhase.Browse)
             {
                 if (vertical != 0) Menu.Move(vertical);
                 if (horizontal != 0) Menu.ChangeFilter(horizontal);
-                if (GameInput.ConfirmPressed) Menu.BeginQuantity();
+                if (input.Confirm) Menu.BeginQuantity();
             }
             else
             {
                 if (horizontal != 0) Menu.AdjustQuantity(horizontal);
                 if (vertical != 0) Menu.AdjustQuantity(-vertical * 10);
-                if (keys?.homeKey.wasPressedThisFrame == true) Menu.AdjustQuantity(int.MinValue);
-                if (keys?.endKey.wasPressedThisFrame == true) Menu.SetMaximum();
-                if (GameInput.ConfirmPressed) Menu.Confirm();
+                if (GameInput.KeyPressed(Key.Home)) { Menu.AdjustQuantity(int.MinValue); shortcutHandled = true; }
+                if (GameInput.KeyPressed(Key.End)) { Menu.SetMaximum(); shortcutHandled = true; }
+                if (input.Confirm) Menu.Confirm();
             }
             MenuSounds.Navigate(before, (ActionIndex, Menu.Index, Menu.Filter, Menu.Quantity));
-            if (GameInput.ConfirmPressed) MenuSounds.Play(MenuSound.Confirm);
-            if (horizontal != 0 || vertical != 0 || GameInput.ConfirmPressed) GameInput.ConsumeGamepadFrame();
+            if (input.Confirm && GameInput.IsFrameAvailable) MenuSounds.Play(MenuSound.Confirm);
+            if (horizontal != 0 || vertical != 0 || input.Confirm || shortcutHandled) GameInput.ConsumeFrame();
         }
     }
 }

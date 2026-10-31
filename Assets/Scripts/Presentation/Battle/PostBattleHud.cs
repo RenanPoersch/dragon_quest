@@ -24,7 +24,7 @@ namespace DragonQuest.Presentation.Battle
                 bool cancel = GameInput.CancelPressed;
                 controller.ReturnToCity();
                 if (!controller.IsPostBattleOpen) MenuSounds.Play(cancel ? MenuSound.Cancel : MenuSound.Confirm);
-                GameInput.ConsumeGamepadFrame();
+                GameInput.ConsumeFrame();
             }
         }
         private void OnGUI()

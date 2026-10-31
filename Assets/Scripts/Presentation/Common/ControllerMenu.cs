@@ -25,13 +25,13 @@ namespace DragonQuest.Presentation.Common
             bool opened = Time.frameCount > lastDrawFrame + 1;
             if (opened) { focus.Reset(); selectedScroll = revealIndex = -1; }
             processedFrame = lastDrawFrame = Time.frameCount;
-            confirm = !blocked && !opened && GameInput.ConfirmPressed;
-            if (blocked) return;
-            MenuDirection direction = GameInput.Navigation;
-            if (direction != MenuDirection.None)
+            MenuInput input = blocked ? default : GameInput.ReadMenu();
+            confirm = !opened && input.Confirm;
+            if (!input.Available) return;
+            if (input.Step != 0)
             {
                 int previous = focus.Selected;
-                focus.Move(direction == MenuDirection.Up || direction == MenuDirection.Left ? -1 : 1);
+                focus.Move(input.Step);
                 MenuSounds.Navigate(previous, focus.Selected);
                 revealIndex = focus.Selected;
             }
@@ -64,10 +64,10 @@ namespace DragonQuest.Presentation.Common
                 GUI.DrawTexture(new Rect(area.x, area.yMax - 2, area.width, 2), Texture2D.whiteTexture);
                 GUI.color = color;
             }
-            bool activate = selected && confirm && GUI.enabled && activatedFrame != Time.frameCount
+            bool activate = selected && confirm && GameInput.IsFrameAvailable && GUI.enabled && activatedFrame != Time.frameCount
                 && Event.current.type == EventType.Repaint;
             if (activate || clicked)
-            { activatedFrame = Time.frameCount; confirm = false; MenuSounds.Play(sound); GameInput.ConsumeGamepadFrame(); }
+            { activatedFrame = Time.frameCount; confirm = false; MenuSounds.Play(sound); GameInput.ConsumeFrame(); }
             return clicked || activate;
         }
         public Vector2 BeginScrollView(Rect viewport, Vector2 scroll, Rect content)

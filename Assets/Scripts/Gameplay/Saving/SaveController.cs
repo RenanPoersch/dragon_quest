@@ -120,7 +120,7 @@ namespace DragonQuest.Gameplay.Saving
         public void ReturnToTitle()
         {
             if (!CanReturnToTitle) return;
-            GameInput.ConsumeGamepadFrame();
+            GameInput.ConsumeFrame();
             SceneManager.LoadScene(SceneManager.GetActiveScene().path);
         }
 
@@ -130,7 +130,7 @@ namespace DragonQuest.Gameplay.Saving
         public void ReturnToLoadGame()
         {
             loadGameOnStart = true;
-            GameInput.ConsumeGamepadFrame();
+            GameInput.ConsumeFrame();
             SceneManager.LoadScene(SceneManager.GetActiveScene().path);
         }
 
@@ -209,23 +209,26 @@ namespace DragonQuest.Gameplay.Saving
             }
             if (IsMenuVisible)
             {
-                if (frontEnd.AcceptsMenuInput && GameInput.IsFrameAvailable)
+                MenuInput input = GameInput.ReadMenu();
+                if (frontEnd.AcceptsMenuInput && input.Available)
                 {
-                    MenuDirection direction = GameInput.Navigation;
-                    if (GameInput.CancelPressed)
-                    { UpdateMenuInput(KeyCode.Escape); GameInput.ConsumeGamepadFrame(); }
+                    if (input.Cancel)
+                    {
+                        if (overwriteSlot != 0) CancelOverwrite();
+                        else if (page != JourneyMenuPage.Title) Back();
+                        GameInput.ConsumeFrame();
+                    }
                     else
                     {
-                        if (direction == MenuDirection.Up || direction == MenuDirection.Left) MoveSelection(-1);
-                        else if (direction == MenuDirection.Down || direction == MenuDirection.Right) MoveSelection(1);
-                        if (GameInput.ConfirmPressed)
-                        { UpdateMenuInput(KeyCode.Return); GameInput.ConsumeGamepadFrame(); }
+                        if (input.Step != 0) MoveSelection(input.Step);
+                        if (input.Confirm)
+                        { ConfirmMenuInput(); GameInput.ConsumeFrame(); }
                     }
                 }
                 return;
             }
             if (!IsMenuVisible && !dialogue.IsOpen && !battle.IsBusy && GameInput.IsFocused
-                && GameInput.SavePressed) { SaveManual(); GameInput.ConsumeGamepadFrame(); }
+                && GameInput.SavePressed) { SaveManual(); GameInput.ConsumeFrame(); }
             if (GameInput.IsFocused && !battle.HasEnded) playSeconds += Time.unscaledDeltaTime;
         }
         private void OpenPage(JourneyMenuPage next)
@@ -244,19 +247,8 @@ namespace DragonQuest.Gameplay.Saving
             else if (SlotSession.Slots[slot - 1].Occupied) { overwriteSlot = slot; selectedOption = 0; }
             else SaveToSlot(slot);
         }
-        private void UpdateMenuInput(KeyCode key)
+        private void ConfirmMenuInput()
         {
-            if (key == KeyCode.Escape)
-            {
-                if (overwriteSlot != 0) CancelOverwrite();
-                else if (page != JourneyMenuPage.Title) Back();
-                return;
-            }
-            if (key == KeyCode.UpArrow || key == KeyCode.W)
-                MoveSelection(-1);
-            if (key == KeyCode.DownArrow || key == KeyCode.S)
-                MoveSelection(1);
-            if (key != KeyCode.Return && key != KeyCode.KeypadEnter && key != KeyCode.Space) return;
             if (!OptionEnabled(selectedOption)) return;
             if (overwriteSlot != 0)
             {

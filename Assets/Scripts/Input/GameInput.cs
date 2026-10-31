@@ -4,6 +4,21 @@ using UnityEngine.InputSystem.LowLevel;
 
 namespace DragonQuest.Input
 {
+    // A screen reads once before handling its commands; consuming then blocks every later reader.
+    public readonly struct MenuInput
+    {
+        public bool Available { get; }
+        public MenuDirection Direction { get; }
+        public bool Confirm { get; }
+        public bool Cancel { get; }
+        public int Horizontal => Direction == MenuDirection.Left ? -1 : Direction == MenuDirection.Right ? 1 : 0;
+        public int Vertical => Direction == MenuDirection.Up ? -1 : Direction == MenuDirection.Down ? 1 : 0;
+        public int Step => Horizontal != 0 ? Horizontal : Vertical;
+
+        internal MenuInput(MenuDirection direction, bool confirm, bool cancel)
+        { Available = true; Direction = direction; Confirm = confirm; Cancel = cancel; }
+    }
+
     // Read devices on demand so connecting/reconnecting never requires restarting the game.
     public static class GameInput
     {
@@ -80,25 +95,25 @@ namespace DragonQuest.Input
         public static bool EscapeHeld => IsFocused && (Keyboard.current != null
             && Keyboard.current.qKey.isPressed && Keyboard.current.eKey.isPressed
             || PadAvailable && Gamepad.current.leftTrigger.isPressed && Gamepad.current.rightTrigger.isPressed);
-        public static bool GamepadConfirmPressed => PadAvailable && Gamepad.current.buttonSouth.wasPressedThisFrame;
-        public static bool GamepadCancelPressed => PadAvailable && Gamepad.current.buttonEast.wasPressedThisFrame;
-        public static bool ConfirmPressed => IsFrameAvailable && (GamepadConfirmPressed
-            || Keyboard.current != null && (Keyboard.current.enterKey.wasPressedThisFrame
-                || Keyboard.current.numpadEnterKey.wasPressedThisFrame || Keyboard.current.spaceKey.wasPressedThisFrame
-                || Keyboard.current.eKey.wasPressedThisFrame));
-        public static bool CancelPressed => IsFrameAvailable && (GamepadCancelPressed
-            || Keyboard.current?.escapeKey.wasPressedThisFrame == true);
-        public static bool InteractPressed => IsFrameAvailable && (GamepadConfirmPressed
-            || Keyboard.current?.eKey.wasPressedThisFrame == true);
-        public static bool InventoryPressed => IsFrameAvailable && (PadAvailable
-            && (Gamepad.current.buttonNorth.wasPressedThisFrame || Gamepad.current.startButton.wasPressedThisFrame)
-            || Keyboard.current?.iKey.wasPressedThisFrame == true);
-        public static bool SavePressed => IsFrameAvailable && Keyboard.current?.f5Key.wasPressedThisFrame == true;
-        public static bool CheatsPressed => IsFrameAvailable && (PadAvailable
-            && (Gamepad.current.selectButton.wasPressedThisFrame || Gamepad.current.rightStickButton.wasPressedThisFrame)
-            || Keyboard.current?.backquoteKey.wasPressedThisFrame == true);
+        public static bool KeyPressed(Key key) => IsFrameAvailable && Keyboard.current != null
+            && Keyboard.current[key].wasPressedThisFrame;
+        public static bool GamepadButtonPressed(GamepadButton button) => PadAvailable
+            && Gamepad.current[button].wasPressedThisFrame;
+        public static bool GamepadConfirmPressed => GamepadButtonPressed(GamepadButton.South);
+        public static bool GamepadCancelPressed => GamepadButtonPressed(GamepadButton.East);
+        public static bool ConfirmPressed => GamepadConfirmPressed || KeyPressed(Key.Enter)
+            || KeyPressed(Key.NumpadEnter) || KeyPressed(Key.Space) || KeyPressed(Key.E);
+        public static bool CancelPressed => GamepadCancelPressed || KeyPressed(Key.Escape);
+        public static bool InteractPressed => GamepadConfirmPressed || KeyPressed(Key.E);
+        public static bool InventoryPressed => GamepadButtonPressed(GamepadButton.North)
+            || GamepadButtonPressed(GamepadButton.Start) || KeyPressed(Key.I);
+        public static bool SavePressed => KeyPressed(Key.F5);
+        public static bool CheatsPressed => GamepadButtonPressed(GamepadButton.Select)
+            || GamepadButtonPressed(GamepadButton.RightStick) || KeyPressed(Key.Backquote);
 
-        // Legacy name: consume keyboard and gamepad presses so one screen cannot activate another.
-        public static void ConsumeGamepadFrame() => consumedFrame = Time.frameCount;
+        public static MenuInput ReadMenu() => IsFrameAvailable
+            ? new MenuInput(Navigation, ConfirmPressed, CancelPressed) : default;
+
+        public static void ConsumeFrame() => consumedFrame = Time.frameCount;
     }
 }

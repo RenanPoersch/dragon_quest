@@ -6,7 +6,6 @@ using DragonQuest.Combat;
 using DragonQuest.Input;
 using DragonQuest.Inventory;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 namespace DragonQuest.Presentation.Battle
 {
@@ -65,21 +64,20 @@ namespace DragonQuest.Presentation.Battle
             if (controller.IsEnteringBattle) return;
             if (controller.IsBattleInputBlocked || controller.IsEscaping || GameInput.EscapeHeld) return;
             if (controller.IsPresentingAction) return;
-            Keyboard keys = Keyboard.current;
-            if (!GameInput.IsFrameAvailable) return;
+            MenuInput input = GameInput.ReadMenu();
+            if (!input.Available) return;
             if (observedBattle.Outcome != BattleOutcome.None)
             {
-                if (observedBattle.Outcome != BattleOutcome.Defeat && GameInput.ConfirmPressed)
-                { MenuSounds.Play(MenuSound.Confirm); controller.ReturnToCity(); GameInput.ConsumeGamepadFrame(); }
+                if (observedBattle.Outcome != BattleOutcome.Defeat && input.Confirm)
+                { MenuSounds.Play(MenuSound.Confirm); controller.ReturnToCity(); GameInput.ConsumeFrame(); }
                 return;
             }
             if (observedActor == null || observedActor.Team != CombatTeam.Party || observedActor.MindControlTurns > 0) return;
-            if (GameInput.CancelPressed)
-            { Cancel(); GameInput.ConsumeGamepadFrame(); return; }
+            if (input.Cancel)
+            { Cancel(); GameInput.ConsumeFrame(); return; }
             bool targeting = selected != null || selectedItem != null;
-            MenuDirection navigation = GameInput.Navigation;
-            bool leftPressed = navigation == MenuDirection.Left || keys?.leftArrowKey.wasPressedThisFrame == true || keys?.aKey.wasPressedThisFrame == true;
-            bool rightPressed = navigation == MenuDirection.Right || keys?.rightArrowKey.wasPressedThisFrame == true || keys?.dKey.wasPressedThisFrame == true;
+            bool leftPressed = input.Horizontal < 0;
+            bool rightPressed = input.Horizontal > 0;
             if (leftPressed)
             {
                 if (!targeting && CanOpenDefendMenu)
@@ -87,14 +85,13 @@ namespace DragonQuest.Presentation.Battle
                     defendMode = true; MenuSounds.Play(MenuSound.Navigate);
                 }
                 else if (targeting || InSubmenu) Cancel();
-                GameInput.ConsumeGamepadFrame(); return;
+                GameInput.ConsumeFrame(); return;
             }
             if (rightPressed && !targeting && !InSubmenu && defendMode && commandIndex == 0)
-            { defendMode = false; MenuSounds.Play(MenuSound.Navigate); GameInput.ConsumeGamepadFrame(); return; }
+            { defendMode = false; MenuSounds.Play(MenuSound.Navigate); GameInput.ConsumeFrame(); return; }
             int count = targeting ? TargetRowCount() : CommandCount();
             if (targeting) targetIndex = Mathf.Clamp(targetIndex, 0, Mathf.Max(0, count - 1));
-            int delta = navigation == MenuDirection.Down || keys?.downArrowKey.wasPressedThisFrame == true || keys?.sKey.wasPressedThisFrame == true ? 1
-                : navigation == MenuDirection.Up || keys?.upArrowKey.wasPressedThisFrame == true || keys?.wKey.wasPressedThisFrame == true ? -1 : 0;
+            int delta = input.Vertical;
             if (count > 0 && delta != 0)
             {
                 if (count > 1) MenuSounds.Play(MenuSound.Navigate);
@@ -109,11 +106,11 @@ namespace DragonQuest.Presentation.Battle
                     actionsScroll.y = BattleCommandMenu.KeepRowVisible(actionsScroll.y, commandIndex, count, 120);
                 }
             }
-            if (GameInput.ConfirmPressed)
+            if (input.Confirm)
             {
                 if (targeting && count > 0) ExecuteTarget(Targets()[targetIndex]);
                 else if (!targeting) ChooseCommand(commandIndex);
-                GameInput.ConsumeGamepadFrame();
+                GameInput.ConsumeFrame();
             }
             else if (!targeting && rightPressed)
                 ChooseCommand(commandIndex, navigateOnly: true);

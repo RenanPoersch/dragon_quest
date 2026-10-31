@@ -9,6 +9,7 @@ using DragonQuest.Inventory;
 using DragonQuest.Progression;
 using DragonQuest.Input;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.LowLevel;
 
 namespace DragonQuest.Presentation.Menus
 {
@@ -68,22 +69,16 @@ namespace DragonQuest.Presentation.Menus
             if (controller == null || !controller.IsMenuOpen)
             { if (wasOpen) MenuSounds.Play(MenuSound.Cancel); wasOpen = false; return; }
             CheckOpened();
-            if (IsInputBlocked || !GameInput.IsFocused || openedFrame == Time.frameCount) return;
-            if (page == InventoryPage.Materia) { UpdateMateriaInput(); return; }
-            if (page == InventoryPage.Equipment) { UpdateEquipmentInput(); return; }
-            if (page == InventoryPage.Items) { UpdateItemInput(); return; }
-            if (page == InventoryPage.Status) { UpdateStatusInput(); return; }
-            if (page == InventoryPage.Magic) { UpdateMagicInput(); return; }
+            if (IsInputBlocked || !GameInput.IsFrameAvailable || openedFrame == Time.frameCount) return;
+            if (page == InventoryPage.Config) return;
+            MenuInput input = GameInput.ReadMenu();
+            if (page == InventoryPage.Materia) { UpdateMateriaInput(input); return; }
+            if (page == InventoryPage.Equipment) { UpdateEquipmentInput(input); return; }
+            if (page == InventoryPage.Items) { UpdateItemInput(input); return; }
+            if (page == InventoryPage.Status) { UpdateStatusInput(input); return; }
+            if (page == InventoryPage.Magic) { UpdateMagicInput(input); return; }
             if (page != InventoryPage.Overview) return;
-            MenuDirection direction = GameInput.Navigation;
-            Keyboard keys = Keyboard.current;
-            int step = direction == MenuDirection.Up || direction == MenuDirection.Left ? -1
-                : direction == MenuDirection.Down || direction == MenuDirection.Right ? 1 : 0;
-            if (keys != null)
-            {
-                if (keys.upArrowKey.wasPressedThisFrame || keys.wKey.wasPressedThisFrame) step = -1;
-                else if (keys.downArrowKey.wasPressedThisFrame || keys.sKey.wasPressedThisFrame) step = 1;
-            }
+            int step = input.Step;
             if (step != 0)
             {
                 int next = selectedMenu;
@@ -91,7 +86,7 @@ namespace DragonQuest.Presentation.Menus
                 while (!CommandEnabled(next) && next != selectedMenu);
                 MenuSounds.Select(ref selectedMenu, next);
             }
-            if (GameInput.ConfirmPressed) { OpenCommand(selectedMenu); GameInput.ConsumeGamepadFrame(); }
+            if (input.Confirm) { OpenCommand(selectedMenu); GameInput.ConsumeFrame(); }
         }
 
         private void CheckOpened()
@@ -137,31 +132,23 @@ namespace DragonQuest.Presentation.Menus
             }
         }
 
-        private void UpdateMagicInput()
+        private void UpdateMagicInput(MenuInput input)
         {
             magicMenu.Refresh(controller.Party);
-            if (!GameInput.IsFrameAvailable || GameInput.CancelPressed || GameInput.InventoryPressed) return;
-            MenuDirection direction = GameInput.Navigation;
-            Keyboard keys = Keyboard.current;
-            int step = direction == MenuDirection.Up || direction == MenuDirection.Left ? -1
-                : direction == MenuDirection.Down || direction == MenuDirection.Right ? 1 : 0;
-            if (keys != null)
-            {
-                if (keys.upArrowKey.wasPressedThisFrame || keys.wKey.wasPressedThisFrame) step = -1;
-                else if (keys.downArrowKey.wasPressedThisFrame || keys.sKey.wasPressedThisFrame) step = 1;
-            }
+            if (input.Cancel || GameInput.InventoryPressed) return;
+            int step = input.Step;
             if (step != 0)
             {
                 var before = (magicMenu.CasterIndex, magicMenu.SpellIndex, magicMenu.TargetIndex);
                 magicMenu.Move(step, controller.Party);
                 MenuSounds.Navigate(before, (magicMenu.CasterIndex, magicMenu.SpellIndex, magicMenu.TargetIndex));
             }
-            if (!GameInput.ConfirmPressed) return;
+            if (!input.Confirm) return;
             MenuSounds.Play(MenuSound.Confirm);
             if (magicMenu.ChoosingCaster) magicMenu.ConfirmCaster();
             else if (magicMenu.ChoosingTarget) magicMenu.ConfirmTarget(controller.Party);
             else magicMenu.BeginUse(controller.Party);
-            GameInput.ConsumeGamepadFrame();
+            GameInput.ConsumeFrame();
         }
 
         private void ChangeStatusMember(int step)
@@ -171,45 +158,25 @@ namespace DragonQuest.Presentation.Menus
             statusScreen.Reset();
         }
 
-        private void UpdateStatusInput()
+        private void UpdateStatusInput(MenuInput input)
         {
-            if (GameInput.CancelPressed || GameInput.InventoryPressed) return;
-            MenuDirection direction = GameInput.Navigation;
-            int step = direction == MenuDirection.Left || direction == MenuDirection.Up ? -1
-                : direction == MenuDirection.Right || direction == MenuDirection.Down ? 1 : 0;
-            Keyboard keys = Keyboard.current;
-            if (keys != null)
-            {
-                if (keys.aKey.wasPressedThisFrame || keys.leftArrowKey.wasPressedThisFrame || keys.upArrowKey.wasPressedThisFrame) step = -1;
-                else if (keys.dKey.wasPressedThisFrame || keys.rightArrowKey.wasPressedThisFrame || keys.downArrowKey.wasPressedThisFrame) step = 1;
-            }
-            if (step != 0) ChangeStatusMember(step);
+            if (input.Cancel || GameInput.InventoryPressed) return;
+            if (input.Step != 0) ChangeStatusMember(input.Step);
         }
 
-        private void UpdateItemInput()
+        private void UpdateItemInput(MenuInput input)
         {
             itemMenu.Refresh(controller.Party);
             // The controller owns cancellation so the same press cannot close the screen as well.
-            if (!GameInput.IsFrameAvailable || GameInput.CancelPressed || GameInput.InventoryPressed) return;
-            MenuDirection direction = GameInput.Navigation;
-            Keyboard keys = Keyboard.current;
-            if (keys != null)
-            {
-                if (keys.upArrowKey.wasPressedThisFrame || keys.wKey.wasPressedThisFrame) direction = MenuDirection.Up;
-                else if (keys.downArrowKey.wasPressedThisFrame || keys.sKey.wasPressedThisFrame) direction = MenuDirection.Down;
-                else if (keys.leftArrowKey.wasPressedThisFrame || keys.aKey.wasPressedThisFrame) direction = MenuDirection.Left;
-                else if (keys.rightArrowKey.wasPressedThisFrame || keys.dKey.wasPressedThisFrame) direction = MenuDirection.Right;
-            }
-            bool horizontal = direction == MenuDirection.Left || direction == MenuDirection.Right;
-            if (horizontal && !itemMenu.ChoosingTarget)
+            if (input.Cancel || GameInput.InventoryPressed) return;
+            if (input.Horizontal != 0 && !itemMenu.ChoosingTarget)
             {
                 int previous = itemMenu.SubmenuIndex;
-                itemMenu.MoveSubmenu(direction == MenuDirection.Left ? -1 : 1, controller.Party);
+                itemMenu.MoveSubmenu(input.Horizontal, controller.Party);
                 MenuSounds.Navigate(previous, itemMenu.SubmenuIndex);
-                GameInput.ConsumeGamepadFrame(); return;
+                GameInput.ConsumeFrame(); return;
             }
-            int step = direction == MenuDirection.Up || direction == MenuDirection.Left ? -1
-                : direction == MenuDirection.Down || direction == MenuDirection.Right ? 1 : 0;
+            int step = input.Step;
             if (step != 0)
             {
                 itemMenu.FocusContent();
@@ -217,85 +184,64 @@ namespace DragonQuest.Presentation.Menus
                 itemMenu.Move(step, controller.Party);
                 MenuSounds.Navigate(before, (itemMenu.ItemIndex, itemMenu.TargetIndex));
             }
-            if (!GameInput.ConfirmPressed) return;
+            if (!input.Confirm) return;
             MenuSounds.Play(MenuSound.Confirm);
             if (itemMenu.BrowsingSubmenus) itemMenu.FocusContent();
             else if (itemMenu.ChoosingTarget) itemMenu.ConfirmTarget(controller.Party);
             else itemMenu.BeginUse(controller.Party);
-            GameInput.ConsumeGamepadFrame();
+            GameInput.ConsumeFrame();
         }
 
-        private void UpdateMateriaInput()
+        private void UpdateMateriaInput(MenuInput input)
         {
             materiaMenu.Refresh(controller.Party);
-            if (!GameInput.IsFrameAvailable || GameInput.CancelPressed || GameInput.InventoryPressed) return;
-            Keyboard keys = Keyboard.current;
-            if (keys?.deleteKey.wasPressedThisFrame == true || keys?.backspaceKey.wasPressedThisFrame == true
-                || Gamepad.current?.buttonNorth.wasPressedThisFrame == true)
-            { materiaMenu.BeginRemove(controller.Party); MenuSounds.Play(MenuSound.Confirm); GameInput.ConsumeGamepadFrame(); return; }
-            MenuDirection direction = GameInput.Navigation;
-            if (keys != null)
-            {
-                if (keys.upArrowKey.wasPressedThisFrame || keys.wKey.wasPressedThisFrame) direction = MenuDirection.Up;
-                else if (keys.downArrowKey.wasPressedThisFrame || keys.sKey.wasPressedThisFrame) direction = MenuDirection.Down;
-                else if (keys.leftArrowKey.wasPressedThisFrame || keys.aKey.wasPressedThisFrame) direction = MenuDirection.Left;
-                else if (keys.rightArrowKey.wasPressedThisFrame || keys.dKey.wasPressedThisFrame) direction = MenuDirection.Right;
-            }
-            bool horizontal = direction == MenuDirection.Left || direction == MenuDirection.Right;
-            if (horizontal && (materiaMenu.BrowsingSubmenus || !materiaMenu.ChoosingSocket))
+            if (input.Cancel || GameInput.InventoryPressed) return;
+            if (GameInput.KeyPressed(Key.Delete) || GameInput.KeyPressed(Key.Backspace)
+                || GameInput.GamepadButtonPressed(GamepadButton.North))
+            { materiaMenu.BeginRemove(controller.Party); MenuSounds.Play(MenuSound.Confirm); GameInput.ConsumeFrame(); return; }
+            if (input.Horizontal != 0 && (materiaMenu.BrowsingSubmenus || !materiaMenu.ChoosingSocket))
             {
                 int previous = materiaMenu.SubmenuIndex;
-                materiaMenu.MoveSubmenu(direction == MenuDirection.Left ? -1 : 1, controller.Party);
+                materiaMenu.MoveSubmenu(input.Horizontal, controller.Party);
                 MenuSounds.Navigate(previous, materiaMenu.SubmenuIndex);
-                GameInput.ConsumeGamepadFrame(); return;
+                GameInput.ConsumeFrame(); return;
             }
             var before = (materiaMenu.MateriaIndex, materiaMenu.SocketIndex);
-            if (direction == MenuDirection.Up || direction == MenuDirection.Down)
+            if (input.Vertical != 0)
             {
                 materiaMenu.FocusContent();
-                materiaMenu.MoveVertical(direction == MenuDirection.Up ? -1 : 1);
+                materiaMenu.MoveVertical(input.Vertical);
             }
-            else if (direction == MenuDirection.Left || direction == MenuDirection.Right)
-                materiaMenu.Move(direction == MenuDirection.Left ? -1 : 1);
+            else if (input.Horizontal != 0) materiaMenu.Move(input.Horizontal);
             MenuSounds.Navigate(before, (materiaMenu.MateriaIndex, materiaMenu.SocketIndex));
-            if (!GameInput.ConfirmPressed) return;
+            if (!input.Confirm) return;
             MenuSounds.Play(MenuSound.Confirm);
             if (materiaMenu.BrowsingSubmenus) materiaMenu.FocusContent();
             else if (materiaMenu.ChoosingSocket) materiaMenu.ConfirmSocket(controller.Party);
             else if (materiaMenu.SubmenuIndex == 1) materiaMenu.BeginRemove(controller.Party);
             else materiaMenu.BeginEquip(controller.Party);
-            GameInput.ConsumeGamepadFrame();
+            GameInput.ConsumeFrame();
         }
 
-        private void UpdateEquipmentInput()
+        private void UpdateEquipmentInput(MenuInput input)
         {
             equipmentMenu.Refresh(controller.Party);
-            if (!GameInput.IsFrameAvailable || GameInput.CancelPressed || GameInput.InventoryPressed) return;
-            Keyboard keys = Keyboard.current; Gamepad pad = Gamepad.current;
-            int memberStep = keys?.qKey.wasPressedThisFrame == true || keys?.pageUpKey.wasPressedThisFrame == true
-                || pad?.leftShoulder.wasPressedThisFrame == true ? -1
-                : keys?.rKey.wasPressedThisFrame == true || keys?.pageDownKey.wasPressedThisFrame == true
-                || pad?.rightShoulder.wasPressedThisFrame == true ? 1 : 0;
+            if (input.Cancel || GameInput.InventoryPressed) return;
+            int memberStep = GameInput.KeyPressed(Key.Q) || GameInput.KeyPressed(Key.PageUp)
+                || GameInput.GamepadButtonPressed(GamepadButton.LeftShoulder) ? -1
+                : GameInput.KeyPressed(Key.R) || GameInput.KeyPressed(Key.PageDown)
+                || GameInput.GamepadButtonPressed(GamepadButton.RightShoulder) ? 1 : 0;
             if (memberStep != 0)
             {
                 int previous = equipmentMenu.MemberIndex; equipmentMenu.ChangeMember(memberStep, controller.Party);
-                MenuSounds.Navigate(previous, equipmentMenu.MemberIndex); GameInput.ConsumeGamepadFrame(); return;
-            }
-            MenuDirection direction = GameInput.Navigation;
-            if (keys != null)
-            {
-                if (keys.upArrowKey.wasPressedThisFrame || keys.wKey.wasPressedThisFrame) direction = MenuDirection.Up;
-                else if (keys.downArrowKey.wasPressedThisFrame || keys.sKey.wasPressedThisFrame) direction = MenuDirection.Down;
-                else if (keys.leftArrowKey.wasPressedThisFrame || keys.aKey.wasPressedThisFrame) direction = MenuDirection.Left;
-                else if (keys.rightArrowKey.wasPressedThisFrame || keys.dKey.wasPressedThisFrame) direction = MenuDirection.Right;
+                MenuSounds.Navigate(previous, equipmentMenu.MemberIndex); GameInput.ConsumeFrame(); return;
             }
             var before = (equipmentMenu.ItemIndex, equipmentMenu.Category);
-            if (direction == MenuDirection.Up || direction == MenuDirection.Down) equipmentMenu.Move(direction == MenuDirection.Up ? -1 : 1);
-            else if (direction == MenuDirection.Left || direction == MenuDirection.Right)
-                equipmentMenu.ChangeCategory(direction == MenuDirection.Left ? -1 : 1, controller.Party);
+            if (input.Vertical != 0) equipmentMenu.Move(input.Vertical);
+            else if (input.Horizontal != 0) equipmentMenu.ChangeCategory(input.Horizontal, controller.Party);
             MenuSounds.Navigate(before, (equipmentMenu.ItemIndex, equipmentMenu.Category));
-            if (!GameInput.ConfirmPressed) return;
-            equipmentMenu.Apply(controller.Party); MenuSounds.Play(MenuSound.Confirm); GameInput.ConsumeGamepadFrame();
+            if (!input.Confirm) return;
+            equipmentMenu.Apply(controller.Party); MenuSounds.Play(MenuSound.Confirm); GameInput.ConsumeFrame();
         }
 
         public void Draw()
@@ -372,7 +318,7 @@ namespace DragonQuest.Presentation.Menus
                 GUI.Label(rect, InventoryMenuPresentation.Commands[i], presentation.CommandStyle);
                 GUI.color = color;
                 if (clicked)
-                { selectedMenu = i; OpenCommand(i); GameInput.ConsumeGamepadFrame(); }
+                { selectedMenu = i; OpenCommand(i); GameInput.ConsumeFrame(); }
             }
             if (Event.current.type == EventType.Repaint) lastPointer = pointer;
             presentation.DrawHand(selectedMenu);

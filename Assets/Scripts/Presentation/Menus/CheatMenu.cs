@@ -46,19 +46,18 @@ namespace DragonQuest.Presentation.Menus
                     IsOpen = true; player.SetMovementEnabled(false); MenuSounds.Play(MenuSound.Confirm);
                 }
             }
-            else if (IsOpen && GameInput.CancelPressed) Close();
             else if (IsOpen)
             {
+                MenuInput input = GameInput.ReadMenu();
+                if (input.Cancel) { Close(); GameInput.ConsumeFrame(); return; }
                 int previous = selected;
-                MenuDirection direction = GameInput.Navigation;
-                if (selected == 2 && (direction == MenuDirection.Left || direction == MenuDirection.Right))
-                    SetSelectedLevel(selectedLevel + (direction == MenuDirection.Right ? 1 : -1));
-                else if (direction == MenuDirection.Up || direction == MenuDirection.Left) selected = (selected + OptionCount - 1) % OptionCount;
-                else if (direction == MenuDirection.Down || direction == MenuDirection.Right) selected = (selected + 1) % OptionCount;
+                if (selected == 2 && input.Horizontal != 0)
+                    SetSelectedLevel(selectedLevel + input.Horizontal);
+                else if (input.Step != 0) selected = (selected + input.Step + OptionCount) % OptionCount;
                 MenuSounds.Navigate(previous, selected);
-                if (GameInput.ConfirmPressed) Activate(selected);
+                if (input.Confirm) Activate(selected);
             }
-            if (BlocksInput) GameInput.ConsumeGamepadFrame();
+            if (BlocksInput) GameInput.ConsumeFrame();
         }
 
         private void Close()

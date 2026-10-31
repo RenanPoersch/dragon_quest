@@ -216,7 +216,7 @@ namespace DragonQuest.Presentation.Battle
                     GUI.enabled = previousEnabled && commands.CanAcceptMenuInput;
                     bool clicked = GUI.Button(figure, GUIContent.none, GUIStyle.none);
                     GUI.enabled = previousEnabled;
-                    if (clicked) { GameInput.ConsumeGamepadFrame(); commands.ChooseTarget(i, participant); }
+                    if (clicked) { GameInput.ConsumeFrame(); commands.ChooseTarget(i, participant); }
                 }
             }
             if (controller.IsPresentingAction && controller.IsPresentingSummon)

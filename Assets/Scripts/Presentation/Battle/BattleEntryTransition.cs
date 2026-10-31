@@ -144,7 +144,7 @@ namespace DragonQuest.Presentation.Battle
         {
             if (!IsPlaying) return;
             Sequence.Advance(Time.unscaledDeltaTime);
-            if (!IsPlaying) { ReleaseTextures(); GameInput.ConsumeGamepadFrame(); }
+            if (!IsPlaying) { ReleaseTextures(); GameInput.ConsumeFrame(); }
             else if (!Sequence.ShowsBattle && !Sequence.IsFadeOnly) RenderSwirl();
         }
 

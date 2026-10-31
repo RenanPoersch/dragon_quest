@@ -29,44 +29,34 @@ namespace DragonQuest.Interactions
                 movement.SetMovementEnabled(false);
                 return;
             }
-            Keyboard keyboard = Keyboard.current;
-            bool hasInput = GameInput.IsFocused;
-
             // A mesma tecla que fecha uma conversa não abre outra neste frame.
             if (context.Dialogue.IsOpen)
             {
                 movement.SetMovementEnabled(false);
-                if (hasInput && GameInput.CancelPressed) context.Dialogue.Close();
-                else if (hasInput && context.Dialogue.ChoicesReady)
+                MenuInput input = GameInput.ReadMenu();
+                if (input.Cancel) context.Dialogue.Close();
+                else if (input.Available && context.Dialogue.ChoicesReady)
                 {
                     // Every dialogue selector uses the same previous/next controls, regardless of its options.
-                    MenuDirection direction = GameInput.Navigation;
-                    if (direction == MenuDirection.Down || direction == MenuDirection.Right
-                        || keyboard?.sKey.wasPressedThisFrame == true || keyboard?.dKey.wasPressedThisFrame == true
-                        || keyboard?.downArrowKey.wasPressedThisFrame == true || keyboard?.rightArrowKey.wasPressedThisFrame == true)
-                        context.Dialogue.MoveChoice(1);
-                    else if (direction == MenuDirection.Up || direction == MenuDirection.Left
-                        || keyboard?.wKey.wasPressedThisFrame == true || keyboard?.aKey.wasPressedThisFrame == true
-                        || keyboard?.upArrowKey.wasPressedThisFrame == true || keyboard?.leftArrowKey.wasPressedThisFrame == true)
-                        context.Dialogue.MoveChoice(-1);
-                    if (keyboard?.digit1Key.wasPressedThisFrame == true || keyboard?.numpad1Key.wasPressedThisFrame == true) context.Dialogue.Choose(0);
-                    else if (keyboard?.digit2Key.wasPressedThisFrame == true || keyboard?.numpad2Key.wasPressedThisFrame == true) context.Dialogue.Choose(1);
-                    else if (keyboard?.digit3Key.wasPressedThisFrame == true || keyboard?.numpad3Key.wasPressedThisFrame == true) context.Dialogue.Choose(2);
-                    else if (GameInput.ConfirmPressed)
+                    if (input.Step != 0) context.Dialogue.MoveChoice(input.Step);
+                    if (GameInput.KeyPressed(Key.Digit1) || GameInput.KeyPressed(Key.Numpad1)) context.Dialogue.Choose(0);
+                    else if (GameInput.KeyPressed(Key.Digit2) || GameInput.KeyPressed(Key.Numpad2)) context.Dialogue.Choose(1);
+                    else if (GameInput.KeyPressed(Key.Digit3) || GameInput.KeyPressed(Key.Numpad3)) context.Dialogue.Choose(2);
+                    else if (input.Confirm)
                         context.Dialogue.ConfirmChoice();
                 }
-                else if (hasInput && GameInput.ConfirmPressed)
+                else if (input.Confirm)
                     context.Dialogue.Continue();
-                GameInput.ConsumeGamepadFrame();
+                GameInput.ConsumeFrame();
                 movement.SetMovementEnabled(!context.Dialogue.IsOpen && !context.IsBusy());
                 return;
             }
 
             movement.SetMovementEnabled(true);
-            if (hasInput && GameInput.InteractPressed)
+            if (GameInput.InteractPressed)
             {
                 FindNearest()?.Interact(context);
-                GameInput.ConsumeGamepadFrame();
+                GameInput.ConsumeFrame();
                 movement.SetMovementEnabled(!context.Dialogue.IsOpen && !context.IsBusy());
             }
         }
