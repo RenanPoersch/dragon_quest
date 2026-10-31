@@ -1,0 +1,253 @@
+{
+  "width": 2688,
+  "height": 3472,
+  "originalSize": [
+    2305,
+    2975
+  ],
+  "upscaled": false,
+  "registration": "fixed normalized original map coordinates; no warp or displacement",
+  "assembly": "minimum-error pixel seams; no feathering, no interpolation of material pixels",
+  "sourceTiles": [
+    {
+      "name": "r0c0",
+      "nativeSize": [
+        1254,
+        1254
+      ],
+      "outputSlot": [
+        0,
+        0,
+        1024,
+        1024
+      ],
+      "upscaled": false,
+      "sourceSha256": "d315397db84041f51fc35610f976f8f53ac23fd9979281d8deebfd159b4a32b3"
+    },
+    {
+      "name": "r0c1",
+      "nativeSize": [
+        1254,
+        1254
+      ],
+      "outputSlot": [
+        832,
+        0,
+        1024,
+        1024
+      ],
+      "upscaled": false,
+      "sourceSha256": "990970357bd928c07bfe43eb15c514cde1c43df1007bd69d5ed846c4fd0b70fa"
+    },
+    {
+      "name": "r0c2",
+      "nativeSize": [
+        1254,
+        1254
+      ],
+      "outputSlot": [
+        1664,
+        0,
+        1024,
+        1024
+      ],
+      "upscaled": false,
+      "sourceSha256": "a80811dfd9e4d86a6cdafe429c31516ad6cf91cb2ce62d1b4575935833d04bc6"
+    },
+    {
+      "name": "r1c0",
+      "nativeSize": [
+        1254,
+        1254
+      ],
+      "outputSlot": [
+        0,
+        816,
+        1024,
+        1024
+      ],
+      "upscaled": false,
+      "sourceSha256": "db6783844eef6f029d3a19c278f5afedf15f6e293738e79e65df6cd9f80bff27"
+    },
+    {
+      "name": "r1c1",
+      "nativeSize": [
+        1254,
+        1254
+      ],
+      "outputSlot": [
+        832,
+        816,
+        1024,
+        1024
+      ],
+      "upscaled": false,
+      "sourceSha256": "7a0ee7069b6edd88b900e135193f1970b2092e4adb94af359d1c1eed08da881e"
+    },
+    {
+      "name": "r1c2",
+      "nativeSize": [
+        1254,
+        1254
+      ],
+      "outputSlot": [
+        1664,
+        816,
+        1024,
+        1024
+      ],
+      "upscaled": false,
+      "sourceSha256": "1cc26a57074c7751e3f8f7a4803ffca99168a84340bb1ea0e8243f857b905b6d"
+    },
+    {
+      "name": "r2c0",
+      "nativeSize": [
+        1254,
+        1254
+      ],
+      "outputSlot": [
+        0,
+        1632,
+        1024,
+        1024
+      ],
+      "upscaled": false,
+      "sourceSha256": "42c6368f22b3f1d5185c629c0afea2cadde16fdc93c792318a4e6f6d1e57a659"
+    },
+    {
+      "name": "r2c1",
+      "nativeSize": [
+        1254,
+        1254
+      ],
+      "outputSlot": [
+        832,
+        1632,
+        1024,
+        1024
+      ],
+      "upscaled": false,
+      "sourceSha256": "25baea244aacc82461dacabac1fd680be3505cdc8b7e5fd9fe3f83b95cdc5ea8"
+    },
+    {
+      "name": "r2c2",
+      "nativeSize": [
+        1254,
+        1254
+      ],
+      "outputSlot": [
+        1664,
+        1632,
+        1024,
+        1024
+      ],
+      "upscaled": false,
+      "sourceSha256": "a492f4d20aa102d68bae722aaf57ad2a054c7a65a3905eed06cb0298d19a040a"
+    },
+    {
+      "name": "r3c0",
+      "nativeSize": [
+        1254,
+        1254
+      ],
+      "outputSlot": [
+        0,
+        2448,
+        1024,
+        1024
+      ],
+      "upscaled": false,
+      "sourceSha256": "008a60c4646c87cd0dd7fdb84cd6841b42a6057b7519b7a8c39edeaa0d50f5c4"
+    },
+    {
+      "name": "r3c1",
+      "nativeSize": [
+        1254,
+        1254
+      ],
+      "outputSlot": [
+        832,
+        2448,
+        1024,
+        1024
+      ],
+      "upscaled": false,
+      "sourceSha256": "aafb2eb8987b952b48299359113c8e8b3ca97d7b4ed5f57e18b6848ea882f5f3"
+    },
+    {
+      "name": "r3c2",
+      "nativeSize": [
+        1254,
+        1254
+      ],
+      "outputSlot": [
+        1664,
+        2448,
+        1024,
+        1024
+      ],
+      "upscaled": false,
+      "sourceSha256": "c972d4ede0abc53b7732b43991843d3da6f1d615b67fd05e3d9d04d1bc8a0954"
+    }
+  ],
+  "lights": [
+    {
+      "name": "Loja de materias",
+      "color": "#41E7E2",
+      "doorWorld": [
+        5.0,
+        0.6649999999999999
+      ],
+      "doorPixel": [
+        1560.4124812280993,
+        1707.266879144385
+      ]
+    },
+    {
+      "name": "Loja de itens",
+      "color": "#F8D43B",
+      "doorWorld": [
+        -4.9,
+        -7.9350000000000005
+      ],
+      "doorPixel": [
+        1131.9157683964625,
+        2078.8531037433154
+      ]
+    },
+    {
+      "name": "Loja de equipamentos",
+      "color": "#FFA51C",
+      "doorWorld": [
+        5.1,
+        -11.735
+      ],
+      "doorPixel": [
+        1564.7407308526613,
+        2243.0423657754013
+      ]
+    },
+    {
+      "name": "Hospedaria",
+      "color": "#FFD278",
+      "doorWorld": [
+        -5.1,
+        -15.835
+      ],
+      "doorPixel": [
+        1123.2592691473385,
+        2420.1939379679143
+      ]
+    }
+  ],
+  "unchanged": {
+    "Assets/Scripts/Game/CityLayout.cs": "d3836ca8a51f6add53b77b0acbc5fe5301d815f9d06d139fdf0f2c54c1b2917a",
+    "Assets/Scripts/Game/CityPeripheryArt.cs": "8c30de80b0786af62901ce8b6b05896a935b20ce81c90fbccfecb59ae7978382",
+    "Assets/Scripts/Game/CityGroundArt.cs": "19c61f0a56f61228e88f7d2d8ddeb397dbbbf9a3e445023922aacb1de3d1d6ff",
+    "Assets/Scripts/Game/CastleFortressArt.cs": "4d1a62fbe5f9165db2e6fd8bbe9e0a14ef2172188dd78cff51e9cbb008c9a3ce",
+    "Assets/Resources/PixelArt/CityDetailsAtlas.png": "b85188fae64d3259745e605a55f4ae89ba4c8690b88da18bbbaca3c9bc21b3c3",
+    "Assets/Resources/PixelArt/CityMaterialsAtlas.png": "c78c73322cb276b5b71a992473fefbb3ed5b1e9f3a0b0b0166b86e9060f0e3a6",
+    "Assets/Resources/PixelArt/CastleMaterialsAtlas.png": "8e4b50d00d801a7a027f68c603ec2ee98dbda8ca6b22ed48689be3d0fda7be41"
+  },
+  "assembledSha256": "27d2901155034ee9c327ad2e0062a7b94232d620e865a644d456d0d7ee80cf74"
+}

@@ -1,0 +1,68 @@
+{
+  "tool": "image_gen built-in",
+  "assets": [
+    {
+      "path": "Assets/Resources/PixelArt/WorldGroundMap.png",
+      "generatedFile": "exec-39bc3606-cf57-4912-bfc6-79c86b20bc64.png",
+      "sha256": "54d12e6aa111fc90336b3b25df18af6c816547b2acf9cfa78fcdd9cddeea3602",
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "prompt": "Use case: stylized-concept. Asset type: ONE continuous opaque top-down ground texture for a miniature fantasy world map, 3:2 aspect ratio. Input image 1 is an ORIGINAL GEOMETRIC LAYOUT GUIDE, keep the five dirt trail positions and connections closely; image 2 is a STYLE/DETAIL reference only, do not copy its urban layout. Replace the flat olive guide with detailed mature late-1990s JRPG pixel art: natural mottled moss-green grass, tiny clustered blades, ochre earth, pebbles, small scattered rocks, short scrub, irregular patches of vegetation. Replace tan guide lines with narrow winding worn dirt footpaths in those same positions and gently soften the sharp bends. Grass fills the WHOLE rectangular canvas to all four edges. Actual island coastline and 3D POI sprites are supplied separately by Unity; do NOT draw an island outline, sea, beaches, cliffs, mountains, volcano, forest trees, buildings, ruins, fencing, foundations, holes or labels in this texture. Path junction at exact center; paths lead toward upper-left quarry (about28%width29%height), upper-right volcano(72%25%), lower-left ruins(28%75%), right forest(72%60%), with the central trail starting near(50%79%). Preserve a broad open walking surface with grounded earthy variation, no large isolated motif. Match the fine-grained clustered pixel brush of the ground reference. No gradients, blur, smooth photorealistic rendering, tile seams, grid, checkerboard, UI or watermark. Painting viewed exactly from above, shadows only subtle tiny contact marks in the texture.",
+      "references": [
+        "Docs/ArtReferences/ArtInputs/WorldGroundGuide.png",
+        "Docs/ArtReferences/ArtInputs/CityGroundCore.png"
+      ]
+    },
+    {
+      "path": "Assets/Resources/PixelArt/WorldPoiSprites.png",
+      "generatedFile": "exec-19d698d7-8082-43a8-b76a-d86ade60c04f.png",
+      "sha256": "932282128ee295cc88029e1d74a15158f6787b52cb0594250aef67ba67ec7b7c",
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "initialPrompt": "Use case: stylized-concept. Asset type: transparent pixel art sprite sheet for an original 2.5D fantasy JRPG world map in Unity. Reference images: castle masonry atlas and earthy ground painting are STYLE/COLOR references only, do not copy their sheet composition. Create FIVE miniature location sprites on one transparent PNG, a regular 3-column x 2-row grid, equally sized cells with generous empty transparent gutters and every object fully inside its cell. ORDER reading left-to-right: TOP LEFT imposing gray stone castle with towers and dark slate roofs, TOP CENTER terraced rocky quarry with pale cut stone and a tiny quarry track, TOP RIGHT dense dark olive forest cluster; BOTTOM LEFT ancient broken stone chapel ruins with crumbled columns, BOTTOM CENTER a single dark basalt volcano with orange crater and tiny smoke curl; BOTTOM RIGHT entirely transparent and empty. No ground outside each tiny footprint, no water, no landscape background. Each object is a small world map location marker drawn as a detailed miniature at the same scale, original mature late-1990s JRPG pixel art, rich clustered square pixels, consistent fine dithering, earthy palette matching references, gray cool stone, moss and warm brown earth, visible front and right side. Orthographic view about 55 degrees down from overhead with 22-degree yaw, front horizontal building edge slopes gently to the right, rear edges slope steeply up-right, similar to the existing city houses. Preserve crisp raster detail rather than smooth painting, no thick cartoon outlines or exaggerated toy colors. Consistent light from upper left. Castle and volcano slightly taller than other icons. The art will be viewed at roughly 100-160 screen pixels per marker. Prefer a high-resolution sheet with 3:2 aspect ratio. No labels, text, UI, framing, checkerboard background or watermark. Actual transparent background, no baked shadows far outside the footprints.",
+      "finalEditPrompt": "Use case: precise-object-edit. First image is a strict GEOMETRIC GRID GUIDE and second is the five-object EDIT TARGET. Re-layout and SCALE DOWN the five sprites from the second image so that each entire sprite including flags, smoke and footings fits completely INSIDE its corresponding red rectangle of the FIRST image, with additional transparent clearance. This means substantially reducing each sprite to at most 70 percent of its current width/height within the overall 1536x1024 sheet. Keep canvas aspect 3:2. Preserve the pixel-art object designs and detail, orientations and palettes. Top row: castle, quarry, forest; bottom row: ruins, volcano, EMPTY. The guides, red rectangles, white background and text MUST NOT appear in output. Only five small isolated pixel-art sprites and transparent negative space. Bottom right completely transparent. All cell edges must be blank with at least 35px alpha-zero padding. No part of any sprite may touch or cross the invisible grid boundaries at x=512,1024 or y=512. No haze, glow, outline around a whole cell, backdrop, titles or watermark. Real transparent alpha background.",
+      "references": [
+        "Assets/Resources/PixelArt/CastleMaterialsAtlas.png",
+        "Docs/ArtReferences/ArtInputs/CityGroundCore.png",
+        "Docs/ArtReferences/ArtInputs/WorldPoiGuide.png"
+      ],
+      "sourceWindowsTopOrigin": [
+        [
+          0,
+          0,
+          550,
+          540
+        ],
+        [
+          550,
+          0,
+          1040,
+          540
+        ],
+        [
+          1040,
+          0,
+          1536,
+          540
+        ],
+        [
+          0,
+          540,
+          550,
+          1024
+        ],
+        [
+          550,
+          520,
+          1140,
+          1024
+        ]
+      ],
+      "note": "Generated PNG copied unchanged. Sprite cropping is in runtime memory; source windows preserve all five original silhouettes despite the irregular grid."
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+> Referência de autoria e produção; pode registrar uma versão visual substituída. O funcionamento vigente está em [Docs/Current](../Current/README.md).
+
+# Pousada compacta em pixel art
+
+O interior foi redesenhado no mesmo tamanho das lojas de itens e matérias: planta 4:3 e altura de câmera de 3,6 unidades, com a mesma escala física dos personagens. A área projetada é aproximadamente 39% da antiga sala larga. Duas camas de cobertas azuis ocupam o fundo à esquerda; a lareira fica na parede lateral e a recepção à direita. O corredor central e o espaço diante das camas ficam livres.
+
+A pintura integral inclui piso, paredes, vigas, janelas, camas, lareira, móveis, tapete, luz e sombras. Foi criada com o imagegen integrado, em modo de geração com referências: a loja de itens fornece metragem visual e câmera; a Pousada anterior fornece materiais e atmosfera. O PNG original de 1447×1087 está em [InnInterior.png](../../Assets/Resources/PixelArt/InnInterior.png), com [prompt integral](ArtInputs/InnInterior.prompt.txt) e [prévia da Unity](InnPixelArt.preview.png). Importação Point/Clamp, sem mipmaps, compressão, redução ou edição do PNG. A pintura larga foi substituída no mesmo recurso, mantendo seu GUID; a versão anterior continua no histórico Git.
+
+`InnLayout` registra piso, camas, balcão, entrada, saída e atendimento, com a dimensão do colisor do herói considerada. `InnPixelScenery` usa a pintura inteira e uma camada de profundidade no balcão, desenhada com os mesmos pixels por `PaintedInteriorScenery`. A hospedeira aparece atrás dele; o personagem fala com ela na recepção acessível pela frente.
+
+O ID `inn`, a fachada, a conversa de salvamento e a recuperação após derrota continuam usando os mesmos serviços. Os limites históricos permitem carregar saves da Pousada larga; posições fora do novo piso reaparecem na entrada. O enquadramento contém a imagem inteira em 16:9, 16:10 e 4:3.
+
+`Tools > Dragon Quest > Validate Inn` verifica arte, metragem igual à das lojas compactas, profundidade do balcão, bases das duas camas, rotas para recepção, camas e lareira, limites de movimento, salvamento pela hospedeira, leitura de posições antigas e retorno à cidade. Renderiza os três formatos e detalhes em `Temp/InnPreview` (ou `DQ_INN_OUTPUT`).
+
+Verificação desta revisão: quatro validadores de interiores concluíram na Unity com código 0; passaram 139 verificações de salvamento e 603 verificações de sprites, materiais e movimento. Itens, matérias e sala do trono renderizaram de forma idêntica às prévias aprovadas. A suíte geral `Tools/Test-Oblique.ps1` continua parando numa expectativa antiga de câmera fixa para as Ruínas; a mesma falha foi reproduzida numa cópia sem alterações do HEAD publicado. Essa suíte geral permanece como limitação conhecida; os validadores específicos dos interiores passaram.
+
+A Pousada agora também tem um [cristal de salvamento animado](../History/Features/INN_SAVE_POINT.md) à esquerda, alinhado à faixa central do piso. São oito quadros de rotação e brilho; ao se aproximar, pressione E para salvar o slot atual. O sprite não bloqueia a circulação e usa o salvamento manual existente. A validação desta adição passou na Unity, junto com a compilação dos scripts e 145 verificações de salvamento.

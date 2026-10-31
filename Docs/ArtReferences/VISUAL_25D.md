@@ -1,0 +1,57 @@
+> Referência de autoria e produção; pode registrar uma versão visual substituída. O funcionamento vigente está em [Docs/Current](../Current/README.md).
+
+# Apresentação 2.5D
+
+## Cobertura da tela nos mapas locais
+
+O mapa global mantém a ilha cercada pelo mar. Nos mapas locais, o cenário deve preencher o enquadramento inteiro, sem revelar o fundo da câmera além de uma textura que terminou. Separar os limites de movimento da extensão visual do terreno e conferir os cantos da tela com a câmera inclinada, incluindo formatos largos. Aplicar esse critério ao refinar cada ambiente.
+
+Nesta etapa, a periferia recebe a extensão visual e os limites de câmera; os demais ambientes mantêm sua apresentação atual. Ver `PERIFERIA_PIXEL_ART.md`.
+
+O mundo passa a ser visto em ângulo, com modelos simples de poucos polígonos e cores por face. A direção escolhida usa o tamanho reduzido dos locais no mapa global e ambientes locais com volume. Os modelos são originais e provisórios; esta entrega define a perspectiva, antes do acabamento artístico.
+
+## O que muda
+
+- Ilha: superfície contínua, costa facetada elevada sobre o mar, faixa de espuma, montanhas e cratera do vulcão. O contorno visível também define o colisor do mar.
+- Ícones: pequeno castelo com torres e telhados, e conjuntos de árvores. São ligeiramente mais altos que o personagem global.
+- Periferia: casas com paredes, telhados, portas, janelas e chaminés; árvores, fonte, bancos, pontes e ruínas com volume.
+- Interiores: paredes, colunas, trono, balcões e estantes. As paredes ao sul são baixas para permitir enxergar a entrada.
+- Personagens: corpo, cabeça, braços, pernas, capa e espada simples. O herói muda de orientação e alterna os passos ao caminhar.
+- Baú: tampa articulada ao abrir; conserva a recompensa única.
+- Câmera: inclinação de 55 graus em relação à vista perpendicular ao chão e rotação lateral de 22 graus. Projeção ortográfica oblíqua, sem rotação controlada pelo jogador. Ilha e periferia acompanham o herói; ambientes locais pequenos têm enquadramento fixo. O tamanho do enquadramento fixo considera a proporção da janela. Na ilha, o tamanho ortográfico agora é 6,85: aproximadamente metade do enquadramento anterior de 13,7 em 16:9, deixando os elementos cerca de duas vezes maiores na tela. O ajuste automático para mostrar a ilha inteira foi desativado nesse mapa.
+- Controles: WASD/setas movimentam o herói de acordo com os eixos da tela.
+
+## Como o código funciona
+
+`CityLayout` e `WorldLayout` continuam descrevendo a planta do mapa, com posições e áreas de colisão. `GameEntryPoint` conecta a planta às portas, moradores, lojas e batalhas.
+
+`ObliqueScenery` cria os modelos a partir da planta. `ObliqueMeshData` armazena vértices, triângulos e cores por face, permitindo verificar a geometria sem iniciar o Editor. Os modelos são malhas criadas em execução, não arquivos importados do Final Fantasy. O material usa `Assets/Resources/ObliqueWorld.shader`, compatível com o renderer 2D URP existente, com profundidade para ordenar volumes.
+
+O chão físico continua em XY usando Rigidbody2D e Collider2D. A altura visual usa -Z. `ObliqueProjection` centraliza projeção, orientação dos controles e enquadramento da câmera. A câmera inclinada mostra o relevo sem migrar os sistemas de colisão e interação para física 3D. `ObliqueCharacter` anima o modelo filho do objeto físico.
+
+Nos mapas com acompanhamento, o foco segue diretamente o herói, sem prendê-lo ao retângulo do mapa. O ponto de mira usa a altura de 0,72 do modelo, mantendo o centro do corpo próximo ao centro da tela; a suavização é de 0,08 segundo. A costa e as paredes continuam limitando o movimento por colisores. Ao chegar às bordas, parte do espaço externo pode aparecer no enquadramento. Cenários com câmera fixa mantêm o foco no centro do ambiente.
+
+Ouro, inventário, estoques, matérias, equipamentos, missão e Limit continuam nos mesmos controladores. Batalhas e menus usam a interface provisória, agora com retrato próprio do dragão. Os três segredos e a abertura da trilha foram adicionados na parte 7B; interior do vulcão, dragão e hospedaria, na parte 7C.
+
+## Conferir no Editor
+
+Os nomes sobre locais, moradores, objetos e saídas foram removidos para liberar a visão do cenário. A exploração mantém a área inferior livre. Pressione E perto de moradores e objetos para interagir.
+
+1. Saia de Play, aguarde a importação dos scripts e do shader e abra `Assets/Scenes/Game.unity`.
+2. Inicie Play. Confirme a ilha vista em ângulo e o personagem sobre o chão; verifique se o Console apresenta erro de shader ou material rosa.
+3. Caminhe com WASD e setas, incluindo diagonais. Confira a direção na tela, os passos e as colisões com mar e montanhas.
+4. Caminhe até a entrada do castelo global. Explore a periferia, contorne casas, árvores, fonte e bancos e atravesse as três pontes.
+5. Entre nas três lojas, converse com os vendedores, abra o inventário e compre/venda um produto. Saia e confira ouro e estoques.
+6. Abra o baú. Confira a tampa aberta, as 25 moedas e a ausência de uma segunda recompensa ao examiná-lo novamente.
+7. Entre no castelo ao norte. Confira colunas, paredes, trono, diálogo do Rei Rubro e saída.
+8. Volte à ilha, entre nas duas florestas e examine a trilha bloqueada.
+9. Experimente a janela Game em 16:9 e 4:3. Confira os pontos de interesse e a legibilidade do HUD.
+10. Inicie uma batalha na periferia e confirme inventário/matérias, recompensa e retorno à exploração.
+
+## Validação desta entrega
+
+`Tools/Test-Oblique.ps1` compila os scripts com as bibliotecas da Unity e verifica geometria, triangulação da ilha, dimensões dos ícones, orientação do movimento, limites e enquadramento da câmera. Também exporta malhas para prévias técnicas fora de `Assets`.
+
+As prévias usam as mesmas malhas e a projeção do código, com um rasterizador externo. Não são capturas da Unity e não verificam importação do shader, GPU, HUD, animação ou física ao vivo. Esses pontos aguardam o roteiro de Play acima.
+
+Também foram executados os testes existentes de caminhos/viagens, combate e progresso. Modelos, interface de batalha, texturas, iluminação e áudio continuam sujeitos a acabamento nas próximas entregas.

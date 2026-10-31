@@ -1,0 +1,12 @@
+> Referência de autoria e produção; pode registrar uma versão visual substituída. O funcionamento vigente está em [Docs/Current](../Current/README.md).
+
+Versões finais geradas com image_gen integrada. As folhas anteriores serviram como referência para reconstruir o sopro inteiro do quadro de impacto.
+
+## BahamutAttack
+
+Use case: precise-object-edit. From the supplied sprite sheet extract and repair ONLY frame FIVE, the BOTTOM LEFT attack pose. Output ONE single isolated sprite, NOT a sprite sheet and NOT multiple poses. Preserve exactly the dark violet armored dragon Bahamut in its frame-5 LEFT-facing attack stance. Reconstruct the COMPLETE LEFT END of the white violet energy breath which was cut by the old sheet edge. The beam must end in a fully drawn natural rounded flaring bulb/flame tips, never terminate as a flat sliced edge. Entire creature, wings, tail and complete finite beam must be visible, with NO clipping on ANY side. Compose creature on RIGHT with beam to LEFT, whole body same original proportions, at least 15% empty transparent space around overall silhouette. Keep pixel art texture, palette and original creature identity. Single frame, genuine alpha transparent PNG, landscape 1536x1024. No backdrop, no gradient background, no text, no labels, no other sprites, no extra subjects. Do not include any of the other seven poses. Complete attack and creature, ready for game overlay.
+
+## PhoenixAttack
+
+Use case: precise-object-edit. From the supplied sprite sheet extract and repair ONLY frame FIVE, the BOTTOM LEFT attack pose. Output ONE single isolated sprite, NOT a sprite sheet and NOT multiple poses. Preserve exactly the red golden fiery phoenix in its frame-5 LEFT-facing attack stance. Reconstruct the COMPLETE LEFT END of the golden orange flame breath which was cut by the old sheet edge. The beam must end in a fully drawn natural rounded flaring bulb/flame tips, never terminate as a flat sliced edge. Entire creature, wings, tail and complete finite beam must be visible, with NO clipping on ANY side. Compose creature on RIGHT with beam to LEFT, whole body same original proportions, at least 15% empty transparent space around overall silhouette. Keep pixel art texture, palette and original creature identity. Single frame, genuine alpha transparent PNG, landscape 1536x1024. No backdrop, no gradient background, no text, no labels, no other sprites, no extra subjects. Do not include any of the other seven poses. Complete attack and creature, ready for game overlay.
+
