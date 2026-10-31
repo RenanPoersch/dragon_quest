@@ -3,13 +3,14 @@ using System.Collections.Generic;
 
 namespace DragonQuest.Interactions
 {
-    // Fluxo de paginas/escolhas independente de MonoBehaviour. Cancela sem executar a resposta.
+    // Fluxo de paginas/escolhas independente de MonoBehaviour.
     public sealed class DialogueSession
     {
         private string[] pages;
         private IReadOnlyList<string> choices;
         private int pageIndex;
         private Action completion;
+        private Action closeAction;
         private Action<int> choiceCallback;
         public bool IsOpen => pages != null;
         public bool HasChoices => IsOpen && choices != null;
@@ -23,7 +24,14 @@ namespace DragonQuest.Interactions
         public void Open(string title, Action completed, params string[] messages)
         {
             if (messages == null || messages.Length == 0) return;
-            Close(); Title = title; pages = (string[])messages.Clone(); completion = completed;
+            Clear(); Title = title; pages = (string[])messages.Clone(); completion = completed;
+        }
+
+        public void OpenWithCloseAction(string title, Action action, params string[] messages)
+        {
+            if (messages == null || messages.Length == 0) return;
+            Open(title, null, messages);
+            closeAction = action;
         }
 
         public void OpenIdentified(string id, string title, Action completed, params string[] messages)
@@ -56,6 +64,13 @@ namespace DragonQuest.Interactions
         }
 
         public void Close()
-        { Id = null; pages = null; pageIndex = 0; choices = null; completion = null; choiceCallback = null; }
+        {
+            Action action = closeAction;
+            Clear();
+            action?.Invoke();
+        }
+
+        private void Clear()
+        { Id = null; pages = null; pageIndex = 0; choices = null; completion = null; closeAction = null; choiceCallback = null; }
     }
 }

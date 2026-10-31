@@ -129,7 +129,7 @@ DialoguePortraitCatalog resolve a imagem do falante. DialoguePresentation carreg
 
 Confirmar enquanto o texto é revelado mostra o restante da página. Confirmar novamente avança. Ao terminar a última página, DialogueSession fecha a conversa e chama a função de conclusão. Uma escolha fecha a conversa antes de executar seu callback, permitindo abrir outra conversa ou menu.
 
-Cancelar fecha sem executar o callback de conclusão. Há comportamentos específicos por interação: a patrulha da ponte continua iniciando a batalha mesmo se seu aviso for fechado com Cancelar.
+Fechar a conversa de confronto com o dragão ou o aviso dos guardas inicia a batalha, inclusive usando Esc ou bolinha. Na pousada, fechar sem selecionar uma opção apenas encerra a conversa. As ações de escolha continuam executando a opção selecionada.
 
 OpenNotice é um aviso breve, com texto revelado imediatamente. Nem todas as falas estão no catálogo: interações de segredos e mensagens dependentes do estado também abrem texto diretamente.
 

@@ -52,6 +52,13 @@ namespace DragonQuest.Interactions
             BeginPage();
         }
 
+        public void OpenWithCloseAction(string title, System.Action action, params string[] messages)
+        {
+            notice = false;
+            session.OpenWithCloseAction(title, action, messages);
+            BeginPage();
+        }
+
         public void OpenChoices(string title, string text, System.Collections.Generic.IReadOnlyList<string> choices, System.Action<int> selected)
         {
             notice = false;

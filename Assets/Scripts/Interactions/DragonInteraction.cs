@@ -57,7 +57,7 @@ namespace DragonQuest.Interactions
                 "O dragão dorme sobre o basalto quente. Ao ouvir seus passos, abre os olhos, ergue a cabeça e estende as asas. O covil estremece com seu rugido.",
                 outburst
             } : new[] { outburst };
-            context.Dialogue.OpenWithCompletion("Dragão corrompido", () =>
+            context.Dialogue.OpenWithCloseAction("Dragão corrompido", () =>
             {
                 ClearPrelude();
                 // A fast dialogue advance still switches to the awake pose before battle.
