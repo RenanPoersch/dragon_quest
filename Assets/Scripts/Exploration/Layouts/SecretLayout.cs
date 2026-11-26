@@ -2,15 +2,18 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+// Centraliza posições e identificadores usados pelos segredos espalhados pelo mundo.
 namespace DragonQuest.Exploration.Layouts
 {
     public static class SecretLayout
     {
+        // Reaproveita a posição do altar definida no layout das ruínas.
         public static readonly Vector2 Altar = RuinsLayout.Altar;
         public static readonly Vector2 Inscription = new Vector2(-2, 3);
         // Registered to the visible stone and hollow in EastForestBackdrop (fixed oblique camera).
         public static readonly Vector2 ClawStone = new Vector2(3.35f, 0.70f);
         public static readonly Vector2 HollowTree = new Vector2(7.18f, 3.27f);
+        // Dá um nome estável à barreira que protege a passagem do vulcão.
         public const string SealedRocks = "Barreira magica do vulcao";
         public static IReadOnlyList<CityBlock> WestMonoliths { get; } = Array.AsReadOnly(new[]
         {

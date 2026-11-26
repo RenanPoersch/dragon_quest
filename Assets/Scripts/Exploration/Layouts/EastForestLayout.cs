@@ -2,14 +2,17 @@ using DragonQuest.Presentation.World.Rendering;
 using System;
 using UnityEngine;
 
+// Descreve a floresta leste com posições obtidas a partir da imagem de fundo.
 namespace DragonQuest.Exploration.Layouts
 {
     public static class EastForestLayout
     {
         public static readonly Rect Bounds = new Rect(-18, -18, 36, 30);
+        // Converte a posição de entrada na imagem para a posição do jogador no chão.
         public static readonly Vector2 Spawn = Ground(.47f, .83f);
         // A screen-aligned band spans the entire bottom path; a narrow XY box misses its sides.
         private static readonly Rect ExitImageBounds = new Rect(.39f,.955f,.20f,.08f);
+        // Delimita a saída no chão depois de converter a área marcada na imagem.
         private static readonly Rect ExitGroundBounds = GroundBounds(ExitImageBounds);
         public static readonly Vector2 Exit = ExitGroundBounds.center;
         public static readonly Vector2 ExitSize = ExitGroundBounds.size;

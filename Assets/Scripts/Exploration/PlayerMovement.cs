@@ -2,6 +2,7 @@ using DragonQuest.Presentation.World.Rendering;
 using UnityEngine;
 using DragonQuest.Input;
 
+// Traduz a entrada de exploração em movimento físico do jogador e aplica as permissões da cena.
 namespace DragonQuest.Exploration
 {
     [RequireComponent(typeof(Rigidbody2D), typeof(BoxCollider2D))]
@@ -14,7 +15,9 @@ namespace DragonQuest.Exploration
         private Rigidbody2D body;
         private Vector2 movement;
         private bool movementEnabled = true;
+        // Consulta a permissão de movimento fornecida pelo fluxo do jogo.
         private System.Func<bool> movementGate;
+        // Combina a permissão local, o foco e a regra externa antes de permitir o controle.
         private bool CanMove => movementEnabled && GameInput.IsFocused && (movementGate?.Invoke() ?? true);
         public void SetMovementGate(System.Func<bool> gate) => movementGate = gate;
         private float walkingSpeedMultiplier = 1f;

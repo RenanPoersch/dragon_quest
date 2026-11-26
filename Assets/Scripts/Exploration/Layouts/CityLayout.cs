@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+// Descreve os blocos e as áreas usados para montar a periferia da cidade.
 namespace DragonQuest.Exploration.Layouts
 {
     // Geometria compartilhada pelo cenario, camera, placas e verificacao de caminhos.
@@ -9,8 +10,10 @@ namespace DragonQuest.Exploration.Layouts
     {
         public string Name { get; }
         public Vector2 Position { get; }
+        // Guarda as dimensões do bloco para a montagem da cidade.
         public Vector2 Size { get; }
         public string Color { get; }
+        // Distingue os blocos com colisão dos elementos apenas visuais.
         public bool Solid { get; }
         public int Order { get; }
         public Rect Bounds => new Rect(Position.x - Size.x / 2, Position.y - Size.y / 2, Size.x, Size.y);

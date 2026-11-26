@@ -2,14 +2,17 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+// Define o espaço lateral das ruínas e os pontos usados pela navegação e pelas interações.
 namespace DragonQuest.Exploration.Layouts
 {
     public static class RuinsLayout
     {
         public static readonly Rect Bounds = new Rect(-42, -4, 44, 14);
+        // Mantém os limites da configuração antiga como referência dentro do layout.
         public static readonly Rect LegacyBounds = new Rect(-9, -7, 18, 14);
         public static readonly Vector2 Spawn = new Vector2(-2.5f, 0);
         public static readonly Vector2 Exit = new Vector2(0, 0);
+        // Fornece o tamanho e a altura usados no enquadramento lateral.
         public const float CameraSize = 4.5f, CameraHeight = 3.2f;
         public const float MinX = -38.5f, MaxX = .4f, AltarX = -31;
         public const float WalkingSpeedMultiplier = 1.15f;

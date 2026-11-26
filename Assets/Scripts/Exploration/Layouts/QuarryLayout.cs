@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+// Posiciona a entrada, as interações e a saída da pedreira em relação à arte de fundo.
 namespace DragonQuest.Exploration.Layouts
 {
     // U goes left to right; V goes top to bottom in the continuous quarry painting.
@@ -10,7 +11,9 @@ namespace DragonQuest.Exploration.Layouts
     {
         public static readonly Rect Bounds = new Rect(-18, -18, 36, 30);
         public static readonly Vector2 Spawn = Ground(.50f, .88f);
+        // Localiza o trabalhador no mundo usando coordenadas da imagem.
         public static readonly Vector2 Worker = Ground(.59f, .77f);
+        // Localiza a inscrição que o jogador pode examinar.
         public static readonly Vector2 Inscription = Ground(.405f, .825f);
         private static readonly Rect ExitImage = new Rect(.44f, .955f, .13f, .08f);
         private static readonly Rect ExitGround = GroundBounds(ExitImage);

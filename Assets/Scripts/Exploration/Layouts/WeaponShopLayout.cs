@@ -3,15 +3,18 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+// Define a geometria da loja de equipamentos e a liga às coordenadas da arte de fundo.
 namespace DragonQuest.Exploration.Layouts
 {
     // Planta compacta 4:3 com a mesma metragem das lojas de itens e materias. UV tem origem no alto.
     public static class WeaponShopLayout
     {
+        // Identifica o mapa no sistema de navegação.
         public const string MapId = "equipment-shop";
         public const float CameraSize = 3.6f, ArtAspect = 4f/3f;
         public static readonly Rect Bounds = GroundBounds(new Rect(0,0,1,1));
         public static readonly Rect LegacyBounds = GroundBounds(new Rect(0,0,1,1),5f,1672f/941f);
+        // Converte as marcas de chegada e saída da arte em posições no chão.
         public static readonly Vector2 Spawn = Ground(.50f,.75f), Exit = Ground(.50f,.94f);
         public static readonly Vector2 Merchant = Ground(0.55f,0.39f), Counter = Ground(0.56f,0.59f);
         public static readonly Vector2[] Floor = new[] { new Vector2(0.16f,0.53f),new Vector2(0.34f,0.53f),new Vector2(0.34f,0.55f),new Vector2(0.8f,0.55f),new Vector2(0.85f,0.65f),new Vector2(0.84f,0.785f),new Vector2(0.6f,0.785f),new Vector2(0.6f,0.99f),new Vector2(0.4f,0.99f),new Vector2(0.4f,0.785f),new Vector2(0.24f,0.785f),new Vector2(0.24f,0.68f),new Vector2(0.16f,0.68f) };

@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+// Define o interior da estalagem e as conversões entre chão e imagem usadas por seus objetos.
 namespace DragonQuest.Exploration.Layouts
 {
     // Planta compacta 4:3 com a mesma metragem das lojas de itens e materias. UV tem origem no alto.
@@ -11,7 +12,9 @@ namespace DragonQuest.Exploration.Layouts
         public const float CameraSize = 3.6f, ArtAspect = 4f/3f;
         public static readonly Rect Bounds = GroundBounds(new Rect(0,0,1,1));
         public static readonly Rect LegacyBounds = GroundBounds(new Rect(0,0,1,1),5f,1672f/941f);
+        // Converte em posições no chão os pontos de chegada e saída da estalagem.
         public static readonly Vector2 Spawn = Ground(.50f,.75f), Exit = Ground(.50f,.94f);
+        // Define posições distintas para o estalajadeiro e a área de atendimento.
         public static readonly Vector2 Keeper = Ground(0.735f,0.365f), Reception = Ground(0.735f,0.56f);
         public static readonly Vector2 SavePoint = Ground(.18f,.63f), SaveApproach = Ground(.28f,.65f);
         public static readonly Vector2[] Floor = new[] { new Vector2(0.21f,0.5f),new Vector2(0.55f,0.5f),new Vector2(0.55f,0.515f),new Vector2(0.88f,0.515f),new Vector2(0.88f,0.66f),new Vector2(0.85f,0.775f),new Vector2(0.61f,0.775f),new Vector2(0.61f,0.99f),new Vector2(0.39f,0.99f),new Vector2(0.39f,0.775f),new Vector2(0.19f,0.775f),new Vector2(0.19f,0.73f),new Vector2(0.08f,0.73f),new Vector2(0.08f,0.55f),new Vector2(0.21f,0.55f) };

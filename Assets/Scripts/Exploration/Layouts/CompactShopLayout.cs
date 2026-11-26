@@ -3,14 +3,17 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+// Fornece um layout reutilizável para as lojas montadas em um interior compacto.
 namespace DragonQuest.Exploration.Layouts
 {
     // Duas plantas pequenas sobre pinturas 4:3; UV tem origem no canto superior esquerdo.
     public sealed class CompactShopLayout
     {
         public const float CameraSize = 3.6f, ArtAspect = 4f / 3f;
+        // Associa o identificador do mapa, seu nome e o recurso de arte.
         public readonly string MapId, Name, Resource;
         public readonly Rect Bounds;
+        // Separa a chegada e a saída das posições usadas no atendimento.
         public readonly Vector2 Spawn, Exit, Merchant, Counter;
         public readonly Vector2[] Floor;
         public readonly Vector2[][] Fixtures, Foregrounds;

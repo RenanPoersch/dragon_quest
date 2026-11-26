@@ -1,11 +1,13 @@
 using System;
 using UnityEngine;
 
+// Alinha posições no salão do trono com a perspectiva da imagem do ambiente.
 namespace DragonQuest.Exploration.Layouts
 {
     // A fisica continua no plano XY. A camera em perspectiva projeta esse piso sobre a pintura aprovada.
     public static class ThroneRoomLayout
     {
+        // Guarda a proporção da arte e os parâmetros de perspectiva da câmera.
         public const float ArtAspect=1672f/941f, FieldOfView=45f, PitchDegrees=-85.26f;
         public static readonly Vector3 CameraPosition=new Vector3(0,-16,-5);
         public static Quaternion CameraRotation => new Quaternion((float)Math.Sin(PitchDegrees*Math.PI/360),0,0,(float)Math.Cos(PitchDegrees*Math.PI/360));
@@ -23,6 +25,7 @@ namespace DragonQuest.Exploration.Layouts
         public static Vector3 WorldPoint(Vector2 ground) => new Vector3(ground.x,ground.y,-FloorHeight(ground));
         public static Vector3 CameraPoint(Vector3 world)
         {
+            // Expressa a posição consultada em relação à câmera antes da projeção.
             Vector3 p=world-CameraPosition;
             return new Vector3(p.x,Cos*p.y+Sin*p.z,-Sin*p.y+Cos*p.z);
         }

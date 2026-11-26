@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+// Define os limites, o enquadramento e os parâmetros de movimentação da região do vulcão.
 namespace DragonQuest.Exploration.Layouts
 {
     // A lateral corridor, following the same presentation and controls as the ruins.
@@ -10,7 +11,9 @@ namespace DragonQuest.Exploration.Layouts
         public static readonly Rect Bounds = new Rect(-22, -4, 44, 14);
         public static readonly Rect LegacyBounds = new Rect(-10, -14, 20, 28);
         public const float CameraSize = 5.4f, CameraHeight = 3.2f;
+        // Limita o trecho horizontal que o jogador pode percorrer.
         public const float MinX = -20, MaxX = 12.9f;
+        // Ajusta a velocidade de caminhada usada neste mapa.
         public const float WalkingSpeedMultiplier = 1.15f;
         public static readonly Vector2 Spawn = new Vector2(-17.5f, 0);
         public static readonly Vector2 Exit = new Vector2(-19.6f, 0);

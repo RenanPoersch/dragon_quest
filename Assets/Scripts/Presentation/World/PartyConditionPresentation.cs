@@ -6,6 +6,7 @@ using DragonQuest.Exploration;
 using DragonQuest.Presentation.Battle;
 using UnityEngine;
 
+// Mostra na exploração os efeitos visuais das condições do grupo.
 namespace DragonQuest.Presentation.World
 {
     public sealed class PartyConditionPresentation : IDisposable
@@ -14,6 +15,7 @@ namespace DragonQuest.Presentation.World
         private PartyProgress Party;
         private SpriteRenderer explorationSprite;
         private GUIStyle poisonNumber;
+        // Mantém os indicadores de dano por veneno ainda visíveis no mapa.
         private readonly System.Collections.Generic.List<MapPoisonNumber> mapPoisonNumbers = new System.Collections.Generic.List<MapPoisonNumber>();
         private sealed class MapPoisonNumber
         {
@@ -32,6 +34,7 @@ namespace DragonQuest.Presentation.World
         public void RefreshTint()
         {
             if (explorationSprite == null || Party.Members.Count == 0) return;
+            // Usa o primeiro membro como referência para a representação do grupo em campo.
             var leader = Party.Members[0];
             explorationSprite.color = leader.IsAlive ? BattleStatusColors.Tint(leader.IsPoisoned, leader.BoundActions) : new Color(.4f, .4f, .4f);
         }

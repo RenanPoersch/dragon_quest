@@ -1,11 +1,14 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+// Define a geometria e os pontos de referência do mapa principal da ilha.
 namespace DragonQuest.Exploration.Layouts
 {
     public static class WorldLayout
     {
+        // Delimita a área de exploração que pode ser enquadrada.
         public static readonly Rect Bounds = new Rect(-20, -14, 40, 28);
+        // Indica a posição inicial do jogador ao entrar no mundo.
         public static readonly Vector2 Spawn = new Vector2(0, -7);
         public static readonly Vector2 Castle = Vector2.zero;
         // O ID west-forest permanece para conservar as jornadas existentes.
