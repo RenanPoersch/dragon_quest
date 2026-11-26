@@ -2,12 +2,15 @@ using System;
 using System.Collections.Generic;
 using DragonQuest.Persistence;
 
+// Prepara a consulta dos slots e encaminha operações de gravação ou carregamento ao armazenamento.
 namespace DragonQuest.Gameplay.Saving
 {
     public sealed class SaveSlotState
     {
         public int Number { get; }
+        // Indica se há dados gravados no slot consultado.
         public bool Occupied { get; }
+        // Guarda os dados lidos para apresentar uma prévia do slot.
         public RestoredJourney Preview { get; }
         public string Message { get; }
         public SaveSlotState(int number, bool occupied, RestoredJourney preview, string message)

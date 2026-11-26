@@ -1,12 +1,14 @@
 using System;
 using System.Runtime.Serialization;
 
+// Define o formato dos dados serializados de uma partida.
 namespace DragonQuest.Persistence
 {
     // IDs referenciam o catalogo; o save nunca redefine atributos ou habilidades.
     [DataContract]
     public sealed class JourneyData
     {
+        // Identifica a versão atual do formato para validação durante o carregamento.
         public const int CurrentVersion = 1;
         [DataMember(IsRequired = true)] public int Version;
         [DataMember(EmitDefaultValue = false)] public int EquipmentCatalogVersion;

@@ -4,6 +4,7 @@ using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
 using DragonQuest.Progression;
 
+// Persiste o perfil de conquistas de finais em arquivo separado dos slots de jornada.
 namespace DragonQuest.Persistence
 {
     public sealed class EndingAchievementStore
@@ -17,6 +18,7 @@ namespace DragonQuest.Persistence
 
         private readonly string path;
         private bool dirty;
+        // Indica que o formato encontrado não pode ser interpretado por esta versão do jogo.
         private bool unsupportedVersion;
         public EndingAchievements Progress { get; private set; }
         public string LastError { get; private set; }
@@ -41,6 +43,7 @@ namespace DragonQuest.Persistence
                 error = LastError = "Versao de conquistas nao suportada. O arquivo foi preservado.";
                 return false;
             }
+            // Prepara o destino provisório usado antes de publicar o arquivo de perfil.
             string temporary = path + ".tmp";
             try
             {

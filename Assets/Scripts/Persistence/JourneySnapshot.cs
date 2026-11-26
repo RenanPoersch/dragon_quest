@@ -9,10 +9,12 @@ using DragonQuest.Progression;
 using DragonQuest.Shops;
 using UnityEngine;
 
+// Converte a jornada em dados de save e reconstrói o estado do jogo a partir desses dados.
 namespace DragonQuest.Persistence
 {
     public sealed class RestoredJourney
     {
+        // Mantém os dados persistidos junto das referências reconstruídas de grupo e progresso.
         public JourneyData Data { get; internal set; }
         public PartyProgress Party { get; internal set; }
         public ExplorationProgress Progress { get; internal set; }
@@ -26,6 +28,7 @@ namespace DragonQuest.Persistence
         public static JourneyData Capture(PartyProgress party, ExplorationProgress progress, AncientSecrets secrets,
             DragonProgress dragon, ShopService shops, string map, float x, float y, GameEnding ending = GameEnding.None)
         {
+            // Reúne os registros de personagens e equipamentos antes de montar o retrato da jornada.
             var members = new List<MemberData>(); var gear = new List<GearData>();
             var materias = new List<MateriaData>(); var items = new List<StackData>(); var stocks = new List<StockData>();
             foreach (var member in party.Members) members.Add(new MemberData

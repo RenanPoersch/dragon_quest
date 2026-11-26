@@ -3,12 +3,14 @@ using DragonQuest.Presentation.Common;
 using System;
 using UnityEngine;
 
+// Desenha a tela de título e delega ao chamador as ações dos botões do menu.
 namespace DragonQuest.Presentation.Menus
 {
     public sealed class TitleMenuPresentation
     {
         private const float MenuOffsetY = 50f / 1.5f;
         private Texture2D scaleSprite;
+        // Mantém o estilo criado para reutilizar no desenho dos botões.
         private GUIStyle buttonStyle;
         public GUIStyle ButtonStyle { get { EnsureStyles(); return buttonStyle; } }
 
@@ -22,6 +24,7 @@ namespace DragonQuest.Presentation.Menus
             if (scaleSprite != null)
                 GUI.DrawTexture(new Rect(540, 250, 200, 200), scaleSprite, ScaleMode.ScaleToFit, true);
             if (button(OptionRect(0), "New game", 0, buttonStyle)) newGame();
+            // Guarda a habilitação atual da interface para restaurá-la depois de desenhar a opção.
             bool previousEnabled = GUI.enabled;
             try
             {

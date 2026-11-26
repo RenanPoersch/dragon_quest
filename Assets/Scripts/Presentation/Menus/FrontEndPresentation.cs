@@ -4,6 +4,7 @@ using System;
 using DragonQuest.Audio;
 using UnityEngine;
 
+// Coordena a introdução, o menu inicial e a transição da viagem ao começar nova partida.
 namespace DragonQuest.Presentation.Menus
 {
     public enum FrontEndStep { Continue, Busy, StartVoyage, FinishVoyage }
@@ -12,9 +13,11 @@ namespace DragonQuest.Presentation.Menus
     public sealed class FrontEndPresentation : IDisposable
     {
         private readonly EndingAchievementPresentation achievementScreen = new EndingAchievementPresentation();
+        // Mantém a apresentação de abertura que pode continuar atrás da tela de título.
         private IntroPresentation intro;
         private NewGameVoyagePresentation voyage;
         private const float MenuFadeInDuration = 1.2f, NewGameFadeOutDuration = 1.2f;
+        // Acompanha a transição de nova partida e os quadros em que as telas foram desenhadas.
         private bool startingNewGame, newGameBlackHasDrawn, menuHasDrawn;
         private float newGameFadeOutElapsed, menuFadeInElapsed;
 

@@ -9,13 +9,16 @@ using DragonQuest.Persistence;
 using DragonQuest.Progression;
 using UnityEngine;
 
+// Apresenta páginas de salvamento e carregamento com acesso ao estado fornecido pelo controlador.
 namespace DragonQuest.Presentation.Menus
 {
     public enum JourneyMenuPage { Title, Save, Continue }
     public sealed class SaveMenuContext
     {
         public Func<bool> IsVisible;
+        // Consulta a página atual no momento em que o menu é desenhado.
         public Func<JourneyMenuPage> ReadPage;
+        // Consulta a opção em foco e o slot que aguarda confirmação de sobrescrita.
         public Func<int> ReadSelection, ReadOverwriteSlot;
         public Func<string> ReadMessage;
         public Func<float> ReadMessageUntil;

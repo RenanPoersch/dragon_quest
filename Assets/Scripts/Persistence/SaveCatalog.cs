@@ -4,10 +4,12 @@ using System.Collections.Generic;
 using DragonQuest.Equipment;
 using DragonQuest.Inventory;
 
+// Traduz IDs persistidos em definições de equipamento, matéria e consumível dos catálogos.
 namespace DragonQuest.Persistence
 {
     public static class SaveCatalog
     {
+        // Mapeia as chaves gravadas no save às definições de equipamento usadas pelo jogo.
         private static readonly Dictionary<string, EquipmentDefinition> gear = new Dictionary<string, EquipmentDefinition>
         {
             {"initial-weapon", EquipmentCatalog.InitialWeapon}, {"initial-armor", EquipmentCatalog.InitialArmor}, {"iron-sword", EquipmentCatalog.IronSword},
@@ -23,6 +25,7 @@ namespace DragonQuest.Persistence
                 materia.Add(definition.Id, definition);
             foreach (var definition in new[] {ItemCatalog.Potion, ItemCatalog.Ether, ItemCatalog.Antidote, ItemCatalog.PhoenixFeather}) items.Add(definition.Id, definition);
         }
+        // Faz a consulta inversa quando uma definição de equipamento precisa ser gravada.
         public static string GearId(EquipmentDefinition definition)
         {
             foreach (var pair in gear) if (pair.Value == definition) return pair.Key;

@@ -3,12 +3,15 @@ using System;
 using UnityEngine;
 using DragonQuest.Persistence;
 
+// Desenha os slots de salvamento e suas prévias na tela de seleção.
 namespace DragonQuest.Presentation.Menus
 {
     public sealed class SaveSelectionPresentation : IDisposable
     {
         public static readonly Rect BackRect = new Rect(1140, 8, 132, 56);
+        // Calcula a posição de cada linha a partir do índice do slot.
         public static Rect SlotRect(int index) => new Rect(0, 80 + index * 212, 1280, 212);
+        // Mantém os recursos usados para desenhar fundos e destaques da lista.
         private readonly Texture2D pixel, gradient;
         private GUIStyle heading, text, number, right, level, empty, note;
         public GUIStyle BackStyle { get; private set; }

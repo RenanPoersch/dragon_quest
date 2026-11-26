@@ -2,10 +2,12 @@ using System;
 using System.IO;
 using System.Runtime.Serialization.Json;
 
+// Lê e grava arquivos de jornada por slot e mantém a cópia de recuperação de cada gravação.
 namespace DragonQuest.Persistence
 {
     public sealed class SaveStore
     {
+        // Define o número de posições de salvamento oferecidas ao jogador.
         public const int SlotCount = 3;
         private const int MaxBytes = 4 * 1024 * 1024;
         private readonly string directory;
@@ -28,6 +30,7 @@ namespace DragonQuest.Persistence
         }
         public bool TryWrite(int slot, JourneyData data, out string error)
         {
+            // Usa um arquivo temporário separado do destino durante a gravação.
             string path = SlotPath(slot), temporary = path + ".tmp";
             try
             {

@@ -3,14 +3,17 @@ using DragonQuest.Presentation.Common;
 using DragonQuest.Progression;
 using UnityEngine;
 
+// Mostra a notificação de conquista associada à conclusão de um final.
 namespace DragonQuest.Presentation.Menus
 {
     // A single temporary notification on the title menu's 1280 x 720 canvas.
     public sealed class EndingAchievementPresentation
     {
+        // Define durante quantos segundos a notificação deve permanecer visível.
         public const float Duration = 6f;
         private const float FadeOutDuration = .5f;
         public static readonly Rect Bounds = new Rect(910, 580, 326, 104);
+        // Reserva no painel a área do ícone do final conquistado.
         public static readonly Rect IconBounds = new Rect(922, 593, 78, 78);
         public static readonly Rect NameBounds = new Rect(1012, 596, 212, 32);
         public static readonly Rect CounterBounds = new Rect(1012, 636, 212, 30);
