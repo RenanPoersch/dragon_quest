@@ -4,12 +4,15 @@ using System;
 using DragonQuest.Progression;
 using UnityEngine;
 
+// Reúne as opções e os elementos visuais compartilhados entre as páginas do inventário.
 namespace DragonQuest.Presentation.Menus
 {
     public enum InventoryCommand { Item, Materia, Equipment, Status, Magic, Config, Save, Exit }
+    // Distingue a visão geral das páginas abertas pelas opções do menu.
     public enum InventoryPage { Overview = -1, Materia, Equipment, Items, Status, Config, Magic }
     public readonly struct InventoryMenuOption
     {
+        // Identifica a ação vinculada ao texto mostrado em uma opção.
         public InventoryCommand Command { get; }
         public string Label { get; }
         public InventoryPage Page { get; }

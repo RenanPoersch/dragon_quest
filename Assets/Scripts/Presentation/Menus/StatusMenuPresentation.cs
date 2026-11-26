@@ -6,6 +6,7 @@ using DragonQuest.Equipment;
 using UnityEngine;
 using DragonQuest.Audio;
 
+// Desenha os atributos, as condições e os comandos disponíveis de um personagem.
 namespace DragonQuest.Presentation.Menus
 {
     // A read-only character sheet, using the same values and commands as combat.
@@ -13,6 +14,7 @@ namespace DragonQuest.Presentation.Menus
     {
         public static readonly Rect BodyRect = new Rect(4, 38, 1272, 654);
         private GUIStyle text, cyan, number, right, condition;
+        // Mantém a rolagem própria da lista de comandos do personagem.
         private Vector2 commandsScroll;
 
         public void Reset() { commandsScroll = Vector2.zero; }

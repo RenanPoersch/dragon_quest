@@ -4,10 +4,12 @@ using DragonQuest.Equipment;
 using DragonQuest.Inventory;
 using UnityEngine;
 
+// Carrega a arte dos ícones de inventário a partir das chaves definidas no catálogo.
 namespace DragonQuest.Presentation.Menus
 {
     public static class InventoryPixelArt
     {
+        // Reaproveita as texturas já buscadas pela chave do ícone.
         private static readonly Dictionary<string, Texture2D> textures = new Dictionary<string, Texture2D>();
 
         public static Texture2D Texture(EquipmentDefinition definition) => Load(InventoryIconCatalog.Key(definition));

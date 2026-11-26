@@ -6,12 +6,15 @@ using DragonQuest.Inventory;
 using UnityEngine;
 using DragonQuest.Audio;
 
+// Desenha a lista de consumíveis e os alvos disponíveis para usar o item selecionado.
 namespace DragonQuest.Presentation.Menus
 {
     public sealed class ItemMenuPresentation
     {
+        // Calcula a área de seleção de cada personagem a partir da sua posição na lista.
         public static Rect MemberRect(int index) => new Rect(64, 174 + index * 180, 510, 158);
         private const float RowHeight = 60;
+        // Acompanha a posição da lista e do ponteiro para interações com o mouse.
         private Vector2 scroll, pointer = new Vector2(-1, -1);
         private GUIStyle text, quantity, muted, heading;
         private Texture2D scale;

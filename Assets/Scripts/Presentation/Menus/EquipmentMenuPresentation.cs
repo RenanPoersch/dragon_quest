@@ -5,13 +5,16 @@ using DragonQuest.Equipment;
 using UnityEngine;
 using DragonQuest.Audio;
 
+// Desenha as opções de equipamento e a comparação de atributos do personagem.
 namespace DragonQuest.Presentation.Menus
 {
     public sealed class EquipmentMenuPresentation
     {
+        // Mantém os nomes das categorias na ordem usada nas abas do menu.
         private static readonly string[] categories = { "Armas", "Armaduras", "Acessorios" };
         private static readonly string[] singular = { "arma", "armadura", "acessorio" };
         private static readonly string[] stats = { "Ataque", "Defesa", "Magia", "HP max.", "MP max.", "Velocidade", "Encaixes" };
+        // Separa as cores usadas para mostrar aumentos e reduções de atributos.
         private static readonly Color up = new Color(.22f, 1, .38f), down = new Color(1, .25f, .3f);
         private static readonly Color equippedText = new Color(.55f, .57f, .64f);
         private GUIStyle text, heading, small, cyan, number;

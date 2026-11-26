@@ -4,12 +4,15 @@ using System.Collections.Generic;
 using DragonQuest.Equipment;
 using UnityEngine;
 
+// Desenha os encaixes isolados e ligados com regiões de um mesmo atlas de arte.
 namespace DragonQuest.Presentation.Menus
 {
     public static class MateriaSocketArt
     {
         // Pixel rectangles in MateriaSockets.png, measured from its bottom-left corner.
+        // Define o recorte de arte usado no encaixe isolado.
         private static readonly Rect single = new Rect(77, 672, 499, 488);
+        // Define o recorte que inclui dois encaixes e a ligação entre eles.
         private static readonly Rect linked = new Rect(78, 94, 1099, 486);
         private static readonly Dictionary<Texture2D, Rect> materiaBounds = new Dictionary<Texture2D, Rect>();
         private static Texture2D atlas;

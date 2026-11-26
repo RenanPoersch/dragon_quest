@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using DragonQuest.Equipment;
 using DragonQuest.Inventory;
 
+// Traduz definições de equipamentos, matérias e itens nas chaves usadas para procurar seus ícones.
 namespace DragonQuest.Presentation.Menus
 {
     // Equipment uses definition identity, never the instance ID or translated display name.
     public static class InventoryIconCatalog
     {
+        // Associa cada definição de equipamento à chave visual escolhida para ela.
         private static readonly Dictionary<EquipmentDefinition, string> equipment = new Dictionary<EquipmentDefinition, string>
         {
             { EquipmentCatalog.InitialWeapon, "initial-weapon" },

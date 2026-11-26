@@ -5,13 +5,16 @@ using DragonQuest.Equipment;
 using UnityEngine;
 using DragonQuest.Audio;
 
+// Desenha os encaixes de equipamento e a lista de matérias disponíveis para seleção.
 namespace DragonQuest.Presentation.Menus
 {
     public sealed class MateriaMenuPresentation
     {
+        // Calcula a posição de um encaixe a partir do personagem, tipo de equipamento e índice.
         public static Rect SocketRect(int member, EquipmentSlot equipment, int socket) => new Rect(282 + socket * 44,
             234 + member * 180 + (equipment == EquipmentSlot.Armor ? 64 : 0), 36, 36);
         private const float RowHeight = 60;
+        // Registra a rolagem da lista e a última posição usada para acompanhar o mouse.
         private Vector2 scroll, pointer = new Vector2(-1, -1);
         private int revealedIndex = -1, activatedFrame = -1;
         private GUIStyle text, heading, small, cyan, muted, mutedSmall;

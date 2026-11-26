@@ -7,12 +7,14 @@ using DragonQuest.Combat;
 using DragonQuest.Inventory;
 using UnityEngine;
 
+// Desenha a tela de conjuradores, magias e alvos disponíveis durante a exploração.
 namespace DragonQuest.Presentation.Menus
 {
     public sealed class MagicMenuPresentation
     {
         private const float RowHeight = 60;
         private Vector2 scroll, pointer = new Vector2(-1, -1);
+        // Acompanha o item já revelado na rolagem e o quadro usado para registrar uma ativação.
         private int revealedIndex = -1, activatedFrame = -1;
         private GUIStyle text, heading, right, muted;
         public void Reset() { scroll = Vector2.zero; pointer = new Vector2(-1, -1); revealedIndex = -1; }
@@ -33,6 +35,7 @@ namespace DragonQuest.Presentation.Menus
             theme.Panel(new Rect(0, 0, 960, 72)); theme.Panel(new Rect(960, 0, 320, 72));
             theme.Panel(new Rect(0, 76, 1280, 68));
             theme.Panel(new Rect(0, 148, 600, 572)); theme.Panel(new Rect(600, 148, 680, 572));
+            // Busca o conjurador selecionado na sessão a partir do grupo atual.
             var caster = session.Caster(party);
             Label(new Rect(64, 10, 220, 48), "Magic", heading);
             if (Click(new Rect(320, 10, 420, 48), canInteract)) session.SelectCaster(session.CasterIndex, party);

@@ -5,12 +5,14 @@ using DragonQuest.Shops;
 using UnityEngine;
 using DragonQuest.Audio;
 
+// Desenha as listas de compra e venda, os filtros de equipamento e o painel de quantidade.
 namespace DragonQuest.Presentation.Menus
 {
     public sealed class ShopMenuPresentation
     {
         private static readonly Color cyan = new Color(.1f, 1, .91f), muted = new Color(.51f, .53f, .65f);
         private static readonly Color gain = new Color(1, .94f, .12f), loss = new Color(1, .30f, .32f);
+        // Mantém os rótulos das categorias de equipamento apresentadas como filtro.
         private static readonly string[] filters = { "Armas", "Armaduras", "Acessorios" };
         private const int QuantityWindowId = 781402;
         private GUIStyle text, heading, small, number, description, buttonText, slider, sliderThumb;
@@ -43,6 +45,7 @@ namespace DragonQuest.Presentation.Menus
             int actionIndex, Action<int> action, Action back)
         {
             Styles(); theme.EnsureStyles(); menu.Refresh();
+            // Identifica se a etapa atual deve mostrar a seleção de quantidade.
             bool quantity = menu.Phase == ShopMenuPhase.Quantity;
             bool equipment = menu.HasEquipment;
             if (menu.Selling != lastSelling || menu.Filter != lastFilter)

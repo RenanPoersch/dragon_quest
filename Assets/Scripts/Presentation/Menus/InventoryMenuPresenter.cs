@@ -11,12 +11,15 @@ using DragonQuest.Input;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.LowLevel;
 
+// Coordena a página ativa do inventário e encaminha a entrada para a sessão correspondente.
 namespace DragonQuest.Presentation.Menus
 {
     public sealed class InventoryMenuPresenter : System.IDisposable
     {
         private BattleController controller;
+        // Consulta o estado dos segredos para apresentar o progresso no inventário.
         private AncientSecrets secrets;
+        // Mantém o foco e a navegação usados pelos botões desenhados no menu.
         private readonly ControllerMenu navigation = new ControllerMenu();
         private Texture2D pixel;
         private InventoryMenuPresentation presentation;
