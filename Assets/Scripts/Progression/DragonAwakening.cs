@@ -1,5 +1,6 @@
 using System;
 
+// Mantém a transição entre o dragão adormecido, em despertar e acordado.
 namespace DragonQuest.Progression
 {
     public enum DragonRestState { Sleeping, Waking, Awake }
@@ -7,8 +8,10 @@ namespace DragonQuest.Progression
     // The resting pose belongs to this visit, rather than to the saved boss reward.
     public sealed class DragonAwakening
     {
+        // Determina a duração nominal da animação de despertar.
         public const float Duration = 1.4f;
         public DragonRestState State { get; private set; }
+        // Acumula o tempo do despertar que será usado para calcular o quadro visual.
         public float Elapsed { get; private set; }
         public int Frame => State == DragonRestState.Sleeping ? 0
             : State == DragonRestState.Awake || Elapsed >= .95f ? 2 : 1;

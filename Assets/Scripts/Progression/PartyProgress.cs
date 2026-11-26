@@ -5,6 +5,7 @@ using DragonQuest.Combat;
 using DragonQuest.Inventory;
 using DragonQuest.Progression;
 
+// Mantém o estado do grupo, incluindo personagens, níveis, equipamentos e inventário compartilhado.
 namespace DragonQuest.Progression
 {
     public enum CharacterClass { Attacker, Healer, Tank }
@@ -14,6 +15,7 @@ namespace DragonQuest.Progression
         public string Id { get; }
         public string Name { get; }
         public CharacterClass Class { get; }
+        // Guarda as estatísticas de origem do personagem para os cálculos de combate.
         public CombatantDefinition BaseStats { get; }
         public EquipmentLoadout Weapon { get; private set; }
         public EquipmentLoadout Armor { get; private set; }
@@ -110,6 +112,7 @@ namespace DragonQuest.Progression
 
         public CombatantState CreateCombatant()
         {
+            // Consulta os comandos habilitados pelas matérias já equipadas no personagem.
             var abilities = MateriaResolver.Resolve(this);
             var commands = new AbilityDefinition[abilities.Count];
             abilities.CopyTo(commands);
@@ -348,6 +351,7 @@ namespace DragonQuest.Progression
             equipments.Add(item);
         }
 
+        // Rejeita referências inválidas e IDs duplicados antes de registrar os novos equipamentos.
         public bool TryAddEquipments(params EquipmentLoadout[] additions)
         {
             if (additions == null || additions.Length == 0) return false;

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 
+// Reúne os versos do poema, a ordem das opções do altar e as páginas que explicam as pistas.
 namespace DragonQuest.Progression
 {
     // Poema original da lenda ficticia da ilha; nao e uma citacao de autor antigo.
@@ -9,8 +10,10 @@ namespace DragonQuest.Progression
         public const string Flame = "Flamma ardet, regnum perit.";
         public const string Sky = "Luna surgit, stella lucet, sol redit.";
         public const string Forest = "Silva antiqua memoriam servat.";
+        // Mantém a ordem usada para exibir o poema completo.
         public static IReadOnlyList<string> Verses { get; } = Array.AsReadOnly(new[] { Flame, Sky, Forest });
         // A posicao da resposta no altar nao segue a ordem do poema.
+        // Define a ordem da lista de respostas apresentada no altar.
         public static IReadOnlyList<string> AltarChoices { get; } = Array.AsReadOnly(new[] { Forest, Flame, Sky });
         public static string Text => string.Join("\n", Verses);
         public static string[] ExplainedPages() => new[]

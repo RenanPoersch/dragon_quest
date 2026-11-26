@@ -2,11 +2,13 @@ using System;
 using System.Collections.Generic;
 using DragonQuest.Combat;
 
+// Representa os resultados de batalha exibidos ao grupo após ganhar experiência e recompensas.
 namespace DragonQuest.Progression
 {
     public readonly struct PostBattleExperience
     {
         public readonly int Total, Level, ToNextLevel;
+        // Guarda a fração preenchida da barra de experiência no nível correspondente.
         public readonly float Progress;
         public PostBattleExperience(int total)
         {
@@ -23,6 +25,7 @@ namespace DragonQuest.Progression
     {
         public string Id { get; }
         public string Name { get; }
+        // Mantém a experiência anterior para comparar com o valor mostrado após a recompensa.
         public int BeforeExperience { get; }
         public int BeforeLevel { get; }
         public int Experience { get; private set; }

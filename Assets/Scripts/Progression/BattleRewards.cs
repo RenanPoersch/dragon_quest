@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using DragonQuest.Combat;
 using DragonQuest.Exploration;
 
+// Calcula e registra as recompensas das batalhas de uma jornada.
 namespace DragonQuest.Progression
 {
     public sealed class BattleRewards
@@ -15,7 +16,9 @@ namespace DragonQuest.Progression
             public string ExperienceMessage;
         }
         // Receipts live as long as their battle; completing encounters must not retain old sessions.
+        // Associa um recibo a cada sessão para evitar conceder a mesma recompensa repetidamente.
         private readonly ConditionalWeakTable<BattleSession, Receipt> receipts = new ConditionalWeakTable<BattleSession, Receipt>();
+        // Recebe as mudanças no progresso global da exploração, como o ouro ganho.
         private readonly ExplorationProgress progress;
         private readonly PartyProgress party;
         public BattleRewards(ExplorationProgress explorationProgress, PartyProgress party = null)

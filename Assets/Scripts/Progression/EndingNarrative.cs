@@ -1,7 +1,9 @@
+// Centraliza as falas, os epílogos e os títulos usados nos desfechos da história.
 namespace DragonQuest.Progression
 {
     public static class EndingNarrative
     {
+        // Mantém a fala do rei que precede o epílogo da libertação.
         public const string KingFreedSpeech =
             "Meu povo,\nhoje volto a falar\ncom minha própria voz.\n\n"
             + "Aren, Lia e Bram\nnos devolveram o amanhã.\n\n"
@@ -29,6 +31,7 @@ namespace DragonQuest.Progression
             + "O vento leva os nomes\nde Aren, Lia e Bram.\nA ilha guarda o silêncio.\n\n"
             + "Longe das muralhas,\num velho contempla\no que o fogo deixou.\nAinda na esperança\nde dias melhores.\n\n"
             + "E apenas com a lembrança\nda lenda e o desejo\nde encontrar quem\nvolte a contá-la.";
+        // Escolhe o título de apresentação conforme o final recebido.
         public static string Title(GameEnding ending) => ending==GameEnding.KingFreed?"FINAL BOM / O REI LIBERTADO"
             :ending==GameEnding.CastleDestroyed?"FINAL RUIM / CINZAS DO CASTELO":"TERCEIRO FINAL / O NOVO HOSPEDEIRO";
     }

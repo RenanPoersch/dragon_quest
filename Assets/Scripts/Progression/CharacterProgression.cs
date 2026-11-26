@@ -1,5 +1,6 @@
 using System;
 
+// Calcula a progressão individual a partir da experiência acumulada e dos limites de nível.
 namespace DragonQuest.Progression
 {
     // XP total e a fonte do nivel; atributos sao sempre derivados, nunca acumulados no save.
@@ -9,7 +10,9 @@ namespace DragonQuest.Progression
         public static int MaxExperience => ExperienceForLevel(MaxLevel);
         public int Level { get; private set; } = 1;
         public int Experience { get; private set; }
+        // Calcula a experiência obtida desde o início do nível atual.
         public int ExperienceInLevel => Experience - ExperienceForLevel(Level);
+        // Calcula quanto falta para o próximo nível e usa zero quando já se atingiu o máximo.
         public int ExperienceToNextLevel => Level == MaxLevel ? 0 : ExperienceForLevel(Level + 1) - Experience;
 
         public static int ExperienceForLevel(int level)

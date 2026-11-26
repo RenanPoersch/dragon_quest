@@ -3,6 +3,7 @@ using DragonQuest.Combat;
 using DragonQuest.Progression;
 using UnityEngine;
 
+// Acompanha o deslocamento na exploração para alimentar a regra de encontros e detectar a derrota do grupo.
 namespace DragonQuest.Gameplay.Exploration
 {
     public enum ExplorationStep { None, Defeat, Encounter }
@@ -11,6 +12,7 @@ namespace DragonQuest.Gameplay.Exploration
         private readonly PartyProgress party;
         private readonly RandomEncounterRules encounters;
         private Vector2 lastPosition;
+        // Distingue um teleporte de um deslocamento que pode contar para o próximo encontro.
         private int lastTeleportRevision;
         private bool trackingWalk;
         public bool IsEnabled => encounters.IsEnabled;
@@ -24,6 +26,7 @@ namespace DragonQuest.Gameplay.Exploration
             party.AdvancePoison(delta, blocked);
             if (!blocked && !party.HasLivingMembers) return ExplorationStep.Defeat;
             bool teleported = !trackingWalk || lastTeleportRevision != teleportRevision;
+            // Mede a distância entre duas posições quando já existe um ponto anterior de referência.
             float distance = trackingWalk ? Vector2.Distance(position, lastPosition) : 0;
             lastPosition = position; lastTeleportRevision = teleportRevision; trackingWalk = true;
             return encounters.Advance(location, distance, blocked || !moving, teleported) ? ExplorationStep.Encounter : ExplorationStep.None;

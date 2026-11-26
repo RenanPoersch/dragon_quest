@@ -1,16 +1,19 @@
 using System;
 using System.Collections.Generic;
 
+// Guarda o progresso da exploração, incluindo ouro, baús e recompensas únicas.
 namespace DragonQuest.Exploration
 {
     // Estado da sessão separado dos objetos do cenário; persiste ao entrar/sair da loja.
     public sealed class ExplorationProgress
     {
+        // Identifica os baús já abertos para evitar receber a mesma recompensa novamente.
         private readonly HashSet<string> openedChests = new HashSet<string>();
 
         private int gold;
         public bool HasInfiniteGold { get; private set; }
         public int Gold => HasInfiniteGold ? int.MaxValue : gold;
+        // Expõe para o save a quantia real por trás da opção de ouro infinito.
         internal int SavedGold => gold;
         public void SetInfiniteGold(bool enabled)
         {

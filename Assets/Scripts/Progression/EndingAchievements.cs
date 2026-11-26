@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 
+// Representa as conquistas de finais e armazena seu desbloqueio com uma máscara de bits.
 namespace DragonQuest.Progression
 {
     public sealed class EndingAchievement
@@ -8,6 +9,7 @@ namespace DragonQuest.Progression
         public GameEnding Ending { get; }
         public string Name { get; }
         public string IconResource { get; }
+        // Identifica o bit reservado a uma conquista dentro do conjunto de finais.
         internal int Bit { get; }
 
         internal EndingAchievement(GameEnding ending, string name, string icon, int bit)
@@ -18,6 +20,7 @@ namespace DragonQuest.Progression
     public sealed class EndingAchievements
     {
         public const int Total = 3;
+        // Representa os três bits de conquista ativos.
         public const int AllUnlocked = 7;
         public static readonly IReadOnlyList<EndingAchievement> All = Array.AsReadOnly(new[]
         {
