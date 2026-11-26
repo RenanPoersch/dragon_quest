@@ -1,11 +1,14 @@
 using DragonQuest.Combat;
 using DragonQuest.Equipment;
 
+// Reúne modelos de armas, armaduras e acessórios usados para criar equipamentos concretos.
 namespace DragonQuest.Content
 {
     public static class EquipmentCatalog
     {
+        // Define os atributos da arma inicial reutilizada na criação dos personagens.
         public static readonly EquipmentDefinition InitialWeapon = new EquipmentDefinition("Arma inicial", 5, 0, 2);
+        // Define os atributos da armadura inicial independentemente da cópia equipada.
         public static readonly EquipmentDefinition InitialArmor = new EquipmentDefinition("Armadura inicial", 0, 6, 4, EquipmentSlot.Armor);
         public static readonly EquipmentDefinition IronSword = new EquipmentDefinition("Espada de ferro", 9, 0, 2);
         public static readonly EquipmentDefinition RunicStaff = new EquipmentDefinition("Cajado runico", 3, 0, 4, magicBonus: 6);

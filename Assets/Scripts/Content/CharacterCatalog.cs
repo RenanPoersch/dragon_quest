@@ -1,10 +1,12 @@
 using DragonQuest.Progression;
 using DragonQuest.Combat;
 
+// Define os heróis jogáveis e fornece instâncias de cada um para montar o grupo.
 namespace DragonQuest.Content
 {
     public static class CharacterCatalog
     {
+        // Mantém identificadores estáveis para os heróis usados por outros sistemas.
         public const string ArenId = "aren", LiaId = "lia", BramId = "bram";
         public static readonly CombatantDefinition Aren = new CombatantDefinition("Aren", "Atacante",
             100, 28, 22, 7, 4, 14, ElementalAffinities.Neutral, 0, 0, .05, AbilityCatalog.Attack, AbilityCatalog.Defend);
@@ -13,6 +15,7 @@ namespace DragonQuest.Content
         public static readonly CombatantDefinition Bram = new CombatantDefinition("Bram", "Tank",
             150, 30, 14, 13, 3, 8, ElementalAffinities.Neutral, 0, 0, .05, AbilityCatalog.Attack, AbilityCatalog.Defend);
 
+        // Cria um membro com nome, função e estatísticas de origem já definidos.
         public static PartyMember CreateAren() => Create(ArenId, "Aren", CharacterClass.Attacker, Aren);
         public static PartyMember CreateLia() => Create(LiaId, "Lia", CharacterClass.Healer, Lia);
         public static PartyMember CreateBram() => Create(BramId, "Bram", CharacterClass.Tank, Bram);

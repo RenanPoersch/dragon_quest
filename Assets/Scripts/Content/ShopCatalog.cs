@@ -3,13 +3,16 @@ using DragonQuest.Content;
 using DragonQuest.Exploration;
 using DragonQuest.Shops;
 
+// Monta os estoques iniciais e as ofertas das lojas para uma jornada.
 namespace DragonQuest.Content
 {
     public static class ShopCatalog
     {
+        // Define a quantia de ouro entregue ao iniciar uma partida.
         public const int StartingGold = 50;
         public static ShopService Create(PartyProgress party, ExplorationProgress progress)
         {
+            // Cria um estoque próprio para a loja de consumíveis.
             var items = new ShopInventory("item-shop", "Loja de itens", ShopCategory.Items,
                 new ShopProduct("potion", ItemCatalog.Potion, 10, 12),
                 new ShopProduct("ether", ItemCatalog.Ether, 25, 6),

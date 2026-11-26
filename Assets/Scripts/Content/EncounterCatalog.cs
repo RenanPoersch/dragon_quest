@@ -2,11 +2,13 @@ using System.Collections.Generic;
 using DragonQuest.Combat;
 using DragonQuest.Progression;
 
+// Monta os encontros de combate a partir de combatentes, habilidades e regras específicas.
 namespace DragonQuest.Content
 {
     // Monta encontros a partir das definicoes compartilhadas de conteudo.
     public static class EncounterCatalog
     {
+        // Reutiliza a definição compartilhada de ataque do catálogo de habilidades.
         public static readonly AbilityDefinition Attack = AbilityCatalog.Attack;
         public static readonly AbilityDefinition Defend = AbilityCatalog.Defend;
         public static readonly AbilityDefinition HeavyStrike = AbilityCatalog.HeavyStrike;
@@ -26,6 +28,7 @@ namespace DragonQuest.Content
         {
             var participants = new System.Collections.Generic.List<CombatantState>();
             foreach (PartyMember member in party.Members) participants.Add(member.CreateCombatant());
+            // Configura as estatísticas e os comandos próprios do chefe secreto.
             var dragon = new CombatantDefinition("Dragao corrompido","Boss secreto",2000,0,25,10,22,6,
                 new ElementalAffinities(new[]{DamageElement.Ice},new[]{DamageElement.Fire}),100,300,0,
                 DragonClaw,ChargeBreath,DragonBreath);

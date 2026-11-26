@@ -1,5 +1,6 @@
 using DragonQuest.Progression;
 
+// Reúne os diálogos de personagens e interações usados na exploração.
 namespace DragonQuest.Content
 {
     public static class DialogueCatalog
@@ -30,6 +31,7 @@ namespace DragonQuest.Content
 
         public static readonly DialogueDefinition BridgeGuards = new DialogueDefinition("bridge-guards", DialogueSpeaker.RoyalGuard, "Guarda Real", "Alto! Ninguém atravessa esta ponte. Por ordem do Rei Rubro, vocês não passarão! Preparem-se para lutar!");
 
+        // Define o diálogo que apresenta a lenda ligada aos segredos antigos.
         public static readonly DialogueDefinition PeasantLegend = new DialogueDefinition("peasant-legend", DialogueSpeaker.Peasant, "Camponesa",
             "Minha avó me contava uma lenda quando eu era pequena. Eu sentava pertinho dela e pedia para ouvir de novo, mesmo já sabendo como terminava.",
             "Hoje já não lembro direito... Era algo sobre chamas, lua e coisas assim. Ela dizia que tinha a ver com aquelas ruínas a sudoeste da ilha.",
@@ -62,6 +64,7 @@ namespace DragonQuest.Content
             DialogueDefinition definition = result == MonolithResult.Reset ? MonolithReset
                 : result == MonolithResult.Completed ? MonolithCompleted
                 : result == MonolithResult.AlreadyCompleted ? MonolithAlreadyCompleted : MonolithActivated;
+            // Traduz o símbolo do monólito para o nome apresentado no diálogo.
             string symbolName = symbol == MonolithSymbol.Moon ? "Lua" : symbol == MonolithSymbol.Star ? "Estrela" : "Sol";
             return definition.Format(symbolName);
         }

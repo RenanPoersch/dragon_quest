@@ -2,15 +2,18 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 
+// Representa os dados de um diálogo, incluindo falante, título, páginas e escolhas.
 namespace DragonQuest.Content
 {
     public sealed class DialogueDefinition
     {
+        // Guarda as páginas de texto da definição.
         private readonly string[] pages;
         public string Id { get; }
         public DialogueSpeaker Speaker { get; }
         public string Title { get; }
         public bool IsNotice { get; }
+        // Expõe à interface as opções de resposta desta definição.
         public IReadOnlyList<string> Choices { get; }
 
         public DialogueDefinition(string id, DialogueSpeaker speaker, string title, params string[] pages)

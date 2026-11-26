@@ -1,5 +1,6 @@
 using DragonQuest.Equipment;
 
+// Reúne as definições de matérias mágicas, de invocação e de suporte disponíveis no jogo.
 namespace DragonQuest.Content
 {
     public static class MateriaCatalog
@@ -10,7 +11,9 @@ namespace DragonQuest.Content
         public static readonly MateriaDefinition CureMateria = new MateriaDefinition("cure", "Cura", "Verde: concede Curar.", MateriaType.Magic, abilities: new[] { AbilityCatalog.Heal });
         public static readonly MateriaDefinition CleanseMateria = new MateriaDefinition("cleanse", "Purificacao", "Verde: remove veneno.", MateriaType.Magic, abilities: new[] { AbilityCatalog.Cleanse });
         public static readonly MateriaDefinition ReviveMateria = new MateriaDefinition("revive", "Vida", "Verde: concede Reviver.", MateriaType.Magic, abilities: new[] { AbilityCatalog.Revive });
+        // Define a matéria que dá acesso à invocação da Fênix.
         public static readonly MateriaDefinition SummonMateria = new MateriaDefinition("phoenix", "Fenix", "Vermelha: revive e cura 80% do HP maximo de toda a equipe; dano baixo de Fogo em todos os inimigos. 12 MP.", MateriaType.Summon, abilities: new[] { AbilityCatalog.Summon });
+        // Define a matéria de suporte que modifica o alcance de uma matéria ligada.
         public static readonly MateriaDefinition AllMateria = new MateriaDefinition("all", "All", "Azul: ligada a verde/vermelha, aplica o comando a todos os alvos validos; MP x1,5. Sozinha nao concede comando.", MateriaType.Support, MateriaModifier.All);
         public static readonly MateriaDefinition InfuseMateria = new MateriaDefinition("infuse", "Infusao", "Roxa: ligada a magia elemental, infunde o ataque basico na arma (0 MP) ou concede resistencia de 50% na armadura. Primeiro par valido define o elemento da arma.", MateriaType.PhysicalEnhance, MateriaModifier.Infuse);
         public static readonly MateriaDefinition HeavyMateria = new MateriaDefinition("heavy", "Forca", "Roxa: aumenta ataque em 20%. Nao concede comando.", MateriaType.PhysicalEnhance, MateriaModifier.AttackUp);

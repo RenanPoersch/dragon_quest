@@ -2,6 +2,7 @@ using DragonQuest.Progression;
 using DragonQuest.Equipment;
 using DragonQuest.Inventory;
 
+// Monta o grupo inicial da jornada com os personagens e recursos definidos nos catálogos.
 namespace DragonQuest.Content
 {
     // Each journey receives independent members, inventory and equipment.
@@ -9,6 +10,7 @@ namespace DragonQuest.Content
     {
         public static PartyProgress Create()
         {
+            // Cria a instância de Aren que terá seu próprio estado nesta partida.
             var aren = CharacterCatalog.CreateAren();
             var lia = CharacterCatalog.CreateLia();
             var bram = CharacterCatalog.CreateBram();

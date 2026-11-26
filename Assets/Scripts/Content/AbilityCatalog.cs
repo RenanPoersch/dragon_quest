@@ -1,10 +1,13 @@
 using DragonQuest.Combat;
 
+// Centraliza as definições de habilidades disponíveis para personagens, encontros e matérias.
 namespace DragonQuest.Content
 {
     public static class AbilityCatalog
     {
+        // Define o comando básico de ataque compartilhado pelos combatentes que o usam.
         public static readonly AbilityDefinition Attack = new AbilityDefinition("attack", "Ataque", "Ataque basico, sem materia.", 0, 0, AbilityEffect.PhysicalDamage, TargetRule.Enemy);
+        // Define o comando que reduz o dano conforme as regras da batalha.
         public static readonly AbilityDefinition Defend = new AbilityDefinition("defend", "Defender", "Reduz o dano recebido ate o proximo turno.", 0, 0, AbilityEffect.Defend, TargetRule.Self);
         public static readonly AbilityDefinition HeavyStrike = new AbilityDefinition("heavy-strike", "Golpe forte",
             "Ataque fisico mais poderoso. Custa 4 MP.", 4, 14, AbilityEffect.PhysicalDamage, TargetRule.Enemy);
