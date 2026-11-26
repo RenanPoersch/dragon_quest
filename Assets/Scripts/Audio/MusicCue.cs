@@ -1,5 +1,6 @@
 using DragonQuest.Progression;
 
+// Define as faixas de música e as regras que escolhem uma faixa conforme o contexto do jogo.
 namespace DragonQuest.Audio
 {
     public enum MusicCue
@@ -10,7 +11,9 @@ namespace DragonQuest.Audio
 
     public readonly struct MusicStoryState
     {
+        // Guarda condições da história que podem mudar a faixa adequada para o momento.
         public readonly bool Voyage, Sleeping, DragonDefeated;
+        // Fornece à seleção de música o desfecho alcançado.
         public readonly GameEnding Ending;
         public MusicStoryState(bool voyage = false, bool sleeping = false, bool dragonDefeated = false,
             GameEnding ending = GameEnding.None)

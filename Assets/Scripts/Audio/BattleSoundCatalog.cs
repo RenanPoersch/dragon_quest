@@ -2,12 +2,15 @@ using System;
 using System.Collections.Generic;
 using DragonQuest.Combat;
 
+// Relaciona as ações de combate aos efeitos sonoros e aos momentos em que devem tocar.
 namespace DragonQuest.Audio
 {
     public readonly struct BattleSoundCue
     {
         public string Key { get; }
+        // Indica onde fica o impacto dentro do clipe para alinhá-lo com a ação visual.
         public float ClipImpact { get; }
+        // Identifica os clipes que devem acompanhar o começo da ação.
         public bool StartsWithAction { get; }
         public bool IsValid => Key != null;
 
