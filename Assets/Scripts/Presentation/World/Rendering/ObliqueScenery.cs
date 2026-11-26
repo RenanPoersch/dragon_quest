@@ -8,15 +8,19 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+// Gerencia materiais e malhas usados para desenhar o cenário em projeção oblíqua.
 namespace DragonQuest.Presentation.World.Rendering
 {
     // Modelos originais de poucos poligonos. Nao adiciona colliders: a planta continua no layout.
     public sealed class ObliqueScenery : IDisposable
     {
+        // Mantém as malhas criadas em execução para descartá-las junto com o cenário.
         private readonly List<Mesh> meshes = new List<Mesh>();
         private readonly Material material;
+        // Separa a aparência das sombras do material usado na geometria do cenário.
         private readonly Material shadowMaterial;
         private readonly Material cityMaterial, cityDetailsMaterial, castleMaterial, glowMaterial, cityGroundMaterial, worldGroundMaterial;
+        // Compartilha a biblioteca de sprites com a exploração e as apresentações de combate.
         public PixelSpriteLibrary PixelSprites { get; }
         public ObliqueScenery()
         {

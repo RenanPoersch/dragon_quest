@@ -13,11 +13,14 @@ using DragonQuest.Exploration;
 using DragonQuest.Persistence;
 using DragonQuest.Progression;
 
+// Coordena os menus de início e salvamento e reúne os dados da jornada para gravar ou carregar um slot.
 namespace DragonQuest.Gameplay.Saving
 {
     public sealed class SaveController : MonoBehaviour
     {
+        // Guarda entre instâncias o pedido de abrir o carregamento na próxima inicialização.
         private static bool loadGameOnStart;
+        // Identifica a página atual e orienta a navegação do menu.
         private JourneyMenuPage page = JourneyMenuPage.Title;
         private int selectedOption;
         private SaveStore store;
@@ -86,6 +89,7 @@ namespace DragonQuest.Gameplay.Saving
         }
         private bool Write(string success)
         {
+            // Delega a gravação ao slot ativo e recebe a mensagem de erro para a interface.
             bool saved = SlotSession.TryWrite(ActiveSlot, Capture, out string error);
             ShowMessage(saved ? success + " / slot " + ActiveSlot : error); return saved;
         }

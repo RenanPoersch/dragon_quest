@@ -14,11 +14,13 @@ using DragonQuest.Progression;
 using DragonQuest.Shops;
 using UnityEngine;
 
+// Reconecta os sistemas com o progresso da jornada atual ao iniciar uma partida ou carregar um save.
 namespace DragonQuest.Bootstrap
 {
     // Owns the connections that must follow the active journey rather than the scene's first party.
     public sealed class JourneyInstaller
     {
+        // Reúne as referências de cena reaproveitadas quando o progresso da partida muda.
         private readonly WorldScene world;
         private readonly SaveController saves;
         private readonly DialogueController dialogue;
@@ -62,6 +64,7 @@ namespace DragonQuest.Bootstrap
         {
             Progress = journey.Progress;
             world.BridgeGuards.RestoreState();
+            // Extrai do save os valores que serão aplicados ao estado de segredos já compartilhado pela cena.
             var savedSecrets = journey.Secrets;
             secrets.Restore(savedSecrets.KnowsPoem, savedSecrets.AltarSolved, savedSecrets.MonolithStep,
                 savedSecrets.HasScale, savedSecrets.PassageOpen);

@@ -15,17 +15,21 @@ using DragonQuest.Interactions;
 using DragonQuest.Progression;
 using DragonQuest.Input;
 
+// Coordena o ciclo do combate na cena, da entrada ao resultado e ao retorno à exploração.
 namespace DragonQuest.Gameplay.Battle
 {
     public sealed class BattleController : MonoBehaviour
     {
+        // Mantém a apresentação da ação em andamento separada das regras da batalha.
         private readonly BattleActionPresentation actionPresentation = new BattleActionPresentation();
         public BattleActionPresentation ActionPresentation => actionPresentation;
 
         private PlayerMovement movement;
         private readonly PartyConditionPresentation conditions = new PartyConditionPresentation();
+        // Acompanha a exploração que antecede os encontros aleatórios.
         private ExplorationSession exploration;
         private BattleResolution resolution;
+        // Representa o inimigo cuja próxima ação foi preparada.
         private CombatantState pendingEnemy;
         private float enemyActionTime;
         private bool pendingMeteorImpact;

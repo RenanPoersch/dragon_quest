@@ -9,6 +9,7 @@ using DragonQuest.Exploration;
 using DragonQuest.Interactions;
 using UnityEngine;
 
+// Encena a apresentação do grupo diante do Rei Rubro e coordena o posicionamento dos acompanhantes.
 namespace DragonQuest.Presentation.Cinematics.Exploration
 {
     // Os companheiros so se separam do heroi durante a audiencia; nao alteram a party salva.
@@ -23,12 +24,14 @@ namespace DragonQuest.Presentation.Cinematics.Exploration
             public float Delay, WalkDistance;
         }
 
+        // Mantém os acompanhantes criados para a cena enquanto o grupo se posiciona.
         private readonly List<Companion> companions = new List<Companion>();
         private PlayerMovement hero;
         private Func<PartyProgress> getParty;
         private ObliqueScenery scenery;
         private Transform tyrant;
         private DialogueController dialogue;
+        // Registra a versão do teleporte do herói para detectar mudanças de posição externas à cena.
         private int teleportRevision;
         private float elapsed;
 

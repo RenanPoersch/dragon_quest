@@ -8,11 +8,13 @@ using DragonQuest.Exploration;
 using DragonQuest.Input;
 using UnityEngine;
 
+// Encena o descanso na estalagem como uma sequência de caminhada, escurecimento e retorno à exploração.
 namespace DragonQuest.Presentation.Cinematics.Exploration
 {
     // A caminhada usa o corredor livre diante das camas da pintura.
     public sealed class InnRestController : MonoBehaviour
     {
+        // Define as fases da cena de descanso e a ordem que a atualização precisa percorrer.
         private enum Phase { Walking, FadeOut, Night, FadeIn }
         private sealed class Guest
         {
@@ -29,6 +31,7 @@ namespace DragonQuest.Presentation.Cinematics.Exploration
             InnLayout.Ground(.37f,.55f)
         };
         private readonly List<Guest> guests = new List<Guest>();
+        // Guarda a visibilidade original de cada parte do herói para restaurá-la ao concluir.
         private readonly Dictionary<Renderer,bool> heroRenderers = new Dictionary<Renderer,bool>();
         private PlayerMovement player;
         private Func<PartyProgress> getParty;
