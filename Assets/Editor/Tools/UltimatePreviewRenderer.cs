@@ -8,11 +8,13 @@ using System.Collections.Generic;
 using DragonQuest.Combat;
 using UnityEngine;
 
+// Monta a prévia das técnicas de limite para inspeção fora de uma batalha real.
 namespace DragonQuest.Authoring
 {
     // Renders the real effects in the editor's scrub/replay authoring window.
     public sealed class UltimatePreviewRenderer
     {
+        // Reutiliza o apresentador do jogo na prévia para desenhar as mesmas técnicas.
         private readonly UltimateAnimation animation = new UltimateAnimation();
         private readonly HeroCastAnimation cast = new HeroCastAnimation();
         private BattleSprites sprites;
@@ -39,6 +41,7 @@ namespace DragonQuest.Authoring
             }
             if(observed==ability) return;
             observed=ability; allies.Clear(); revived.Clear(); initialChanges.Clear();
+            // Cria um grupo próprio para alimentar a apresentação de prévia.
             var previewParty=PartySetup.Create();
             previewParty.SetInfiniteLimit(true);
             var members=previewParty.Members;

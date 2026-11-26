@@ -2,6 +2,7 @@ using DragonQuest.Combat;
 using UnityEditor;
 using UnityEngine;
 
+// Fornece a janela do Editor que controla a reprodução das prévias das técnicas de limite.
 namespace DragonQuest.Authoring
 {
     public sealed class UltimatePreviewWindow : EditorWindow
@@ -15,8 +16,10 @@ namespace DragonQuest.Authoring
             window.Show();
         }
 
+        // Mantém o objeto responsável por desenhar a prévia selecionada.
         private UltimatePreviewRenderer renderer;
         private int hero;
+        // Registra a posição atual na linha do tempo para navegar pela animação.
         private float elapsed;
         private bool playing;
         private double last;
