@@ -3,13 +3,16 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+// Desenha os quadros das animações do dragão durante o combate.
 namespace DragonQuest.Presentation.Battle.Sprites
 {
     // A primeira pose define o tamanho do corpo; fogo e arcos nao reduzem o dragao.
     public sealed class DragonBattleSprites
     {
+        // Mantém uma folha por chave de recurso para reutilização entre quadros.
         private readonly Dictionary<string, BattleAnimationSheet> sheets = new Dictionary<string, BattleAnimationSheet>();
 
+        // Recebe o recurso, o quadro da animação e a cor que serão aplicados ao desenho.
         public bool Draw(Rect area, string resource, int frame, Color tint)
         {
             if (resource != "Dragon" && resource != "DragonClaw" && resource != "DragonBreath" && resource != "DragonCharge") return false;

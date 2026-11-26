@@ -2,12 +2,14 @@ using DragonQuest.Infrastructure;
 using System;
 using UnityEngine;
 
+// Desenha a prisão de correntes do espírito e a transição em que as correntes se quebram.
 namespace DragonQuest.Presentation.Battle.Animations
 {
     // The prison is a persistent status overlay, independent of the boss's casting animation.
     public sealed class ChainPrisonAnimation
     {
         public const string Resource = "SpiritBoss/SpiritChainPrison";
+        // Define quanto tempo dura a animação de quebra.
         public const float BreakDuration = .6f;
         private Texture2D texture;
         private readonly Action<Texture2D, Rect, Rect, Color> draw;

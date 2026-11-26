@@ -2,14 +2,17 @@ using DragonQuest.Infrastructure;
 using System;
 using UnityEngine;
 
+// Interpreta os recortes de uma folha de animação e os dados para desenhá-los em combate.
 namespace DragonQuest.Presentation.Battle.Animations
 {
     // Reads generated atlases without changing their colors or alpha.
     public sealed class BattleAnimationSheet
     {
         private readonly Texture2D texture;
+        // Guarda os recortes normalizados usados para selecionar cada quadro da textura.
         private readonly Rect[] uv;
         private readonly Vector2[] size;
+        // Guarda a referência usada para alinhar cada quadro durante o desenho.
         private readonly float[] anchor;
         private readonly float[] feet;
         private readonly float[] frameScale;

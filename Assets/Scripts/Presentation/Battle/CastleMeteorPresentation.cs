@@ -2,12 +2,15 @@ using System;
 using DragonQuest.Combat;
 using DragonQuest.Progression;
 
+// Calcula os tempos e o movimento visual dos efeitos do meteoro na batalha do castelo.
 namespace DragonQuest.Presentation.Battle
 {
     public static class CastleMeteorPresentation
     {
+        // Reúne a duração da apresentação e os marcos de impacto e de início da absorção.
         public const float Duration = 3.6f, ImpactDelay = 2.1f, AbsorptionStart = .8f;
         public const float AbsorptionEnd = 2.65f, AbsorberReturn = 2.8f;
+        // Define o número usado na apresentação visual do dano do meteoro.
         public const int MeteorDamageDisplay = 9999;
         public const float WhiteHold = .25f;
         // O lancamento destrutivo tem seu proprio relogio; a absorcao preserva os tempos anteriores.

@@ -2,6 +2,7 @@ using DragonQuest.Infrastructure;
 using System;
 using UnityEngine;
 
+// Carrega as imagens e as coordenadas usadas nos sprites de combate do espírito.
 namespace DragonQuest.Presentation.Battle.Sprites
 {
     // Coordinates are measured from the generated source; PNG pixels and alpha stay unchanged.
@@ -22,11 +23,13 @@ namespace DragonQuest.Presentation.Battle.Sprites
         private readonly Texture2D texture;
         private readonly Texture2D casterTexture, effectTexture;
         private readonly Action<Texture2D, Rect, Rect, Color> draw;
+        // Expõe os recortes que posicionam os quadros dentro das texturas.
         public Atlas Coordinates { get; }
         public Texture2D Texture => texture;
         public SpiritBossSpriteSheet(string resource, Action<Texture2D, Rect, Rect, Color> draw)
         {
             texture = GameAssets.Required<Texture2D>("PixelArt/" + resource);
+            // Carrega os metadados que descrevem os quadros do recurso selecionado.
             var coordinates = GameAssets.Required<TextAsset>("PixelArt/" + resource + "Frames");
             Coordinates = JsonUtility.FromJson<Atlas>(coordinates.text);
             if (Coordinates?.frames == null || Coordinates.frames.Length != 12 || Coordinates.casterHeight <= 0

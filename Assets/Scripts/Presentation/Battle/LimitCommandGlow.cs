@@ -1,11 +1,13 @@
 using System.Text;
 using UnityEngine;
 
+// Acrescenta um brilho ao comando de limite conforme o estado de disponibilidade.
 namespace DragonQuest.Presentation.Battle
 {
     // A single rainbow text pass keeps the ready LIMIT command's strokes thin.
     public static class LimitCommandGlow
     {
+        // Combina a interação do botão com a apresentação visual da carga de limite.
         public static bool Button(Rect rect, string text, bool ready, GUIStyle style)
         {
             if (!ready) return GUI.Button(rect, text, style);

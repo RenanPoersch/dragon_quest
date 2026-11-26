@@ -5,14 +5,17 @@ using System.Collections.Generic;
 using DragonQuest.Combat;
 using UnityEngine;
 
+// Desenha as técnicas de limite e seleciona os quadros associados a cada fase da apresentação.
 namespace DragonQuest.Presentation.Battle.Animations
 {
     public sealed class UltimateAnimation
     {
         private readonly System.Action<Texture2D,Rect,Rect,Color> drawFrame;
+        // Controla se o nome da técnica deve ser desenhado junto da animação.
         private readonly bool drawText;
         public UltimateAnimation(System.Action<Texture2D,Rect,Rect,Color> drawFrame=null,bool drawText=true)
         { this.drawFrame=drawFrame; this.drawText=drawText; }
+        // Reaproveita as folhas das técnicas entre diferentes quadros.
         private readonly Dictionary<string,UltimateSpriteSheet> sheets=new Dictionary<string,UltimateSpriteSheet>();
         private readonly Dictionary<string,BattleAnimationSheet> blessings=new Dictionary<string,BattleAnimationSheet>();
         private GUIStyle caption;

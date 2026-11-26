@@ -3,13 +3,16 @@ using System.Collections.Generic;
 using DragonQuest.Combat;
 using UnityEngine;
 
+// Gera e desenha os ícones de condição exibidos para os combatentes.
 namespace DragonQuest.Presentation.Battle
 {
     // Small pixel glyphs match the existing GUI and remain legible at battle scale.
     public sealed class BattleStatusIcons : System.IDisposable
     {
+        // Mantém uma textura reutilizável por condição que já teve seu ícone gerado.
         private readonly Dictionary<CombatStatus, Texture2D> textures = new Dictionary<CombatStatus, Texture2D>();
         private GUIStyle count;
+        // Escolhe o padrão de pixels usado para materializar um ícone.
         private static string[] Pattern(CombatStatus status)
         {
             switch (status)

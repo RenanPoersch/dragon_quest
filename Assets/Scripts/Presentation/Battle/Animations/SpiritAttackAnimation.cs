@@ -4,11 +4,14 @@ using System.Collections.Generic;
 using DragonQuest.Combat;
 using UnityEngine;
 
+// Apresenta os quadros de ataque e os efeitos associados às ações do espírito.
 namespace DragonQuest.Presentation.Battle.Animations
 {
     public sealed class SpiritAttackAnimation
     {
+        // Reaproveita as folhas carregadas de cada animação.
         private readonly Dictionary<string, SpiritBossSpriteSheet> sheets = new Dictionary<string, SpiritBossSpriteSheet>();
+        // Define a rotina de desenho que recebe textura, posição, recorte e cor.
         private readonly Action<Texture2D, Rect, Rect, Color> render;
         public SpiritAttackAnimation(Action<Texture2D, Rect, Rect, Color> draw = null) { render = draw ?? DrawGui; }
         private static void DrawGui(Texture2D texture, Rect rect, Rect uv, Color tint)

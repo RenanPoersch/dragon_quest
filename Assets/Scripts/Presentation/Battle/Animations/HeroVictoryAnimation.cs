@@ -3,13 +3,16 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+// Desenha as poses usadas pelos heróis na tela de vitória.
 namespace DragonQuest.Presentation.Battle.Animations
 {
     public sealed class HeroVictoryAnimation
     {
         private readonly Dictionary<string, BattleAnimationSheet> sheets = new Dictionary<string, BattleAnimationSheet>();
+        // Permite reaproveitar a apresentação de nocaute quando o herói terminou a batalha caído.
         private readonly HeroKnockoutSprites knockoutSprites = new HeroKnockoutSprites();
         public static string Resource(string id) => id == "aren" ? "ArenVictory" : id == "lia" ? "LiaVictory" : id == "bram" ? "BramVictory" : null;
+        // Percorre quatro poses repetidas ao ritmo de seis quadros por segundo.
         public static int Pose(double elapsed) => (int)(Math.Max(0, elapsed) * 6) % 4;
         public bool Draw(Rect area, string id, bool celebrating, double elapsed, bool knockedOut = false)
         {

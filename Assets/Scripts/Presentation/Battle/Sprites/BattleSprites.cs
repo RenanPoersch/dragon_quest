@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using DragonQuest.Combat;
 
+// Localiza e mantém as folhas de sprites usadas na apresentação de ações e combatentes.
 namespace DragonQuest.Presentation.Battle.Sprites
 {
     // Dedicated battle sheets: idle / wind-up / impact / recovery, all facing the enemy side.
@@ -18,6 +19,7 @@ namespace DragonQuest.Presentation.Battle.Sprites
             public readonly Vector2[] Foot = new Vector2[4];
             public float BodyHeight;
         }
+        // Reutiliza as folhas já carregadas ao desenhar quadros sucessivos.
         private readonly Dictionary<string, Sheet> sheets = new Dictionary<string, Sheet>();
         // Animation registrations are specific to hero + action, never to a broad damage effect.
         private static readonly Dictionary<string, string> resources = new Dictionary<string, string>
@@ -40,6 +42,7 @@ namespace DragonQuest.Presentation.Battle.Sprites
 
         private void Load(string id, string resource, int[] boundaries)
         {
+            // Permite que a apresentação trate a ausência de uma animação específica.
             Texture2D texture = GameAssets.Optional<Texture2D>("PixelArt/" + resource);
             if (texture == null) return;
             Color32[] pixels = texture.GetPixels32();

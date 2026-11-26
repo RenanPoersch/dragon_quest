@@ -4,12 +4,15 @@ using DragonQuest.Input;
 using UnityEngine;
 using UnityEngine.Rendering;
 
+// Controla o efeito que cobre a troca da exploração para a batalha e revela a arena.
 namespace DragonQuest.Presentation.Battle
 {
     // The reveal waits for a complete battle repaint, including its lazily loaded artwork.
     public sealed class BattleEntrySequence
     {
+        // Define a duração do redemoinho, da tela coberta e da revelação da arena.
         public const float SwirlDuration = 3.2f, CoveredDuration = .12f, RevealDuration = .32f;
+        // Reserva tempos próprios para a transição por escurecimento do encontro no castelo.
         public const float KingFadeOutDuration = 2f, KingBlackDuration = 3f, KingFadeInDuration = 2f;
         public float Elapsed { get; private set; }
         public bool IsPlaying { get; private set; }

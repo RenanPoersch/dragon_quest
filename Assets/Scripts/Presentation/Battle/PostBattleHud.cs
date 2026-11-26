@@ -6,11 +6,13 @@ using DragonQuest.Audio;
 using DragonQuest.Input;
 using DragonQuest.Progression;
 
+// Desenha os resultados após a batalha, incluindo a evolução do grupo e a recompensa exibida.
 namespace DragonQuest.Presentation.Battle
 {
     public sealed class PostBattleHud : MonoBehaviour
     {
         private BattleController controller;
+        // Fornece as poses usadas para representar os personagens na tela de resultado.
         private readonly HeroVictoryAnimation sprites = new HeroVictoryAnimation();
         private Texture2D pixel;
         private GUIStyle text, title, value, right, small, up;
@@ -38,6 +40,7 @@ namespace DragonQuest.Presentation.Battle
             if (result == null || !result.IsComplete) return;
             EnsureStyles();
             Fill(new Rect(0, 0, Screen.width, Screen.height), new Color(.008f, .012f, .035f));
+            // Escolhe a menor escala para caber na largura e na altura da tela.
             float scale = Mathf.Min(Screen.width / 1280f, Screen.height / 720f);
             var previous = GUI.matrix;
             GUI.matrix = Matrix4x4.TRS(new Vector3((Screen.width - 1280 * scale) / 2,

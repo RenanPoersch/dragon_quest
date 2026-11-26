@@ -4,13 +4,16 @@ using System.Collections.Generic;
 using DragonQuest.Combat;
 using UnityEngine;
 
+// Apresenta uma invocação e fornece os tempos usados para alinhar a entrada e o impacto.
 namespace DragonQuest.Presentation.Battle.Animations
 {
     public sealed class SummonAnimation
     {
+        // Reserva um intervalo antes de iniciar a animação principal.
         public const float StartDelay = .35f;
         public const float AttackDuration = 2.4f;
         public const float Duration = StartDelay + AttackDuration + .3f;
+        // Posiciona o impacto na metade da animação principal, após o atraso inicial.
         public const float ImpactDelay = StartDelay + AttackDuration * .5f;
         private readonly Dictionary<string, BattleAnimationSheet> sheets = new Dictionary<string, BattleAnimationSheet>();
         public static string Resource(AbilityDefinition ability)

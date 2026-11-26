@@ -1,6 +1,7 @@
 using DragonQuest.Combat;
 using System;
 
+// Relaciona as etapas visuais das técnicas de limite aos quadros das respectivas folhas de sprites.
 namespace DragonQuest.Presentation.Battle
 {
     // Pose and effect indices are independent of framerate, and share the actual hit clock.
@@ -8,7 +9,9 @@ namespace DragonQuest.Presentation.Battle
     {
         public static readonly string[] Atlases = { "ArenOmnislash", "ArenFinisher", "ArenImpact", "LiaGospel",
             "LiaCelestial", "BramBastion", "BramShieldImpact", "BramBarrier" };
+        // Define a quantidade de quadros esperada por folha.
         public const int FramesPerAtlas = 16;
+        // Agrupa os índices dos quadros usados em cada sequência de cortes.
         private static readonly int[][] Cuts={new[]{3,4,5,7},new[]{8,9,10,11},new[]{3,12,13,14},new[]{4,5,6,15}};
         private static readonly int[] LiaFloatPoses={8,9,10,11,10,9};
         private static int Clamp(int value, int min, int max) => Math.Max(min, Math.Min(value, max));

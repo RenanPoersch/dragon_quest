@@ -1,5 +1,6 @@
 using System;
 
+// Define qual animação e qual ritmo correspondem a cada ataque do dragão.
 namespace DragonQuest.Presentation.Battle.Animations
 {
     public static class DragonAttackAnimation
@@ -7,9 +8,11 @@ namespace DragonQuest.Presentation.Battle.Animations
         public static string Resource(string abilityId) => abilityId == "dragon-claw" ? "DragonClaw"
             : abilityId == "dragon-breath" ? "DragonBreath"
             : abilityId == "charge-breath" ? "DragonCharge" : null;
+        // Escolhe a duração de um quadro conforme a habilidade executada.
         public static float FrameDuration(string abilityId) => abilityId == "dragon-breath" ? 0.48f
             : abilityId == "charge-breath" ? 0.18f : 0.12f;
         public static float Duration(string abilityId) => 6 * FrameDuration(abilityId);
+        // Marca o impacto após o tempo de três quadros da animação.
         public static float ImpactDelay(string abilityId) => 3 * FrameDuration(abilityId);
         public static int Frame(string abilityId, float elapsed)
         {

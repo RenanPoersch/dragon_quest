@@ -2,11 +2,13 @@ using DragonQuest.Presentation.Battle;
 using System;
 using UnityEngine;
 
+// Compõe a sequência visual que mostra a absorção e a descarga de energia do meteoro.
 namespace DragonQuest.Presentation.Battle.Animations
 {
     // All layers are transparent, point-filtered sprite atlases drawn in the battle's 2D plane.
     public sealed class MeteorAbsorptionAnimation
     {
+        // Guarda as folhas das diferentes camadas do efeito.
         private BattleAnimationSheet hero, release, ribbons, aura;
         private readonly Action<Texture2D, Rect, Rect, Color> drawTexture;
 
@@ -24,6 +26,7 @@ namespace DragonQuest.Presentation.Battle.Animations
 
         public static Rect BearerRect(Rect ground, float elapsed)
         {
+            // Usa a linha do tempo do meteoro para posicionar o personagem durante a aproximação.
             float advance = CastleMeteorPresentation.AbsorberAdvance(elapsed);
             ground.x -= 215 * advance;
             ground.y -= 100 * advance + (elapsed < CastleMeteorPresentation.AbsorberReturn

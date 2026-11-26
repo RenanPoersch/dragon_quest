@@ -2,6 +2,7 @@ using DragonQuest.Infrastructure;
 using System;
 using UnityEngine;
 
+// Abre uma folha de técnica de limite e permite desenhar os quadros descritos no atlas.
 namespace DragonQuest.Presentation.Battle.Sprites
 {
     // Coordinates are inspected from the source PNG; no pixel rewriting or per-pose resizing.
@@ -21,10 +22,12 @@ namespace DragonQuest.Presentation.Battle.Sprites
         private readonly Texture2D texture;
         private readonly Atlas atlas;
         private readonly Action<Texture2D,Rect,Rect,Color> drawFrame;
+        // Obtém a quantidade de quadros diretamente dos metadados carregados.
         public int FrameCount => atlas.frames.Length;
         public UltimateSpriteSheet(string name,Action<Texture2D,Rect,Rect,Color> drawFrame=null)
         {
             this.drawFrame=drawFrame;
+            // Monta o caminho no conjunto de recursos das técnicas de limite.
             string path="PixelArt/Ultimates/"+name;
             texture=GameAssets.Required<Texture2D>(path);
             var coordinates=GameAssets.Required<TextAsset>(path+"Frames");

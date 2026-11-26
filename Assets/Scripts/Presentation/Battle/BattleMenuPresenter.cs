@@ -7,6 +7,7 @@ using DragonQuest.Input;
 using DragonQuest.Inventory;
 using UnityEngine;
 
+// Coordena a seleção visual de comandos, itens e alvos na interface da batalha.
 namespace DragonQuest.Presentation.Battle
 {
     public delegate bool BattleCommandButton(Rect rect, string label, bool focused, bool enabled,
@@ -16,7 +17,9 @@ namespace DragonQuest.Presentation.Battle
     public sealed class BattleMenuPresenter
     {
         private BattleController controller;
+        // Mantém a sessão observada para reconhecer a mudança de encontro.
         private BattleSession observedBattle;
+        // Acompanha o combatente em foco para atualizar os comandos quando muda o turno.
         private CombatantState observedActor;
         private CombatantState preferredEnemyTarget;
         private CombatantDefinition observedDefinition;

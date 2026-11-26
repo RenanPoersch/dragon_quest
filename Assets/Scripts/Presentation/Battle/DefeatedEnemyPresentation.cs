@@ -2,6 +2,7 @@ using DragonQuest.Combat;
 using System;
 using System.Collections.Generic;
 
+// Apresenta um clarão seguido de desaparecimento para os inimigos derrotados.
 namespace DragonQuest.Presentation.Battle
 {
     // Keeps battle/reward data intact while removing the defeated enemy from presentation.
@@ -10,6 +11,7 @@ namespace DragonQuest.Presentation.Battle
         public const float FlashDuration = .20f;
         public const float FadeDuration = .35f;
         public const float Duration = FlashDuration + FadeDuration;
+        // Guarda o instante em que cada animação de derrota começou.
         private readonly Dictionary<CombatantState, float> deaths = new Dictionary<CombatantState, float>();
         public static float EndOfAction(float originalEnd, float impactTime, IReadOnlyList<CombatantState> targets)
         {
@@ -28,6 +30,7 @@ namespace DragonQuest.Presentation.Battle
         {
             if (fighter.IsAlive || fighter.Team != CombatTeam.Enemy) return 1;
             if (!deaths.TryGetValue(fighter, out float started)) return 0;
+            // Calcula há quanto tempo a animação deste inimigo está em andamento.
             float age = now - started;
             return age <= FlashDuration ? 1 : (float)Math.Max(0, 1 - (age - FlashDuration) / FadeDuration);
         }

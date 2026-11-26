@@ -6,14 +6,17 @@ using DragonQuest.Audio;
 using DragonQuest.Input;
 using UnityEngine;
 
+// Fornece os estilos e os elementos gráficos reutilizados pelo HUD de combate.
 namespace DragonQuest.Presentation.Battle
 {
     // Shared by arena and panels; only resources created by this view are destroyed here.
     public sealed class BattleHudGraphics : IDisposable
     {
+        // Guarda as texturas usadas para superfícies simples e para o ponteiro de seleção.
         private Texture2D pixel, hand;
         private GUIStyle title, text, small, centered, button, itemButton, number, castNumber;
         private GUIStyle commandLabel;
+        // Identifica o texto em foco para acompanhar sua rolagem.
         private object focusedTextKey;
         private string focusedText;
         private Rect focusedTextRect;

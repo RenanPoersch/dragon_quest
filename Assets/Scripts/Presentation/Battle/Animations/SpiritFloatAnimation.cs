@@ -1,13 +1,16 @@
 using DragonQuest.Presentation.World.Characters;
 using UnityEngine;
 
+// Move o visual do espírito em um ciclo de flutuação independente do objeto pai.
 namespace DragonQuest.Presentation.Battle.Animations
 {
     // Moves only the sprite; its parent keeps the floor depth, interaction anchor and ground shadow.
     public sealed class SpiritFloatAnimation : MonoBehaviour
     {
+        // Define quanto tempo leva um ciclo completo de flutuação.
         public const float Period = 2.8f;
         private const float Amplitude = .06f;
+        // Mantém a origem do movimento para calcular o deslocamento visual.
         private Vector3 origin;
         private float bodyHeight, elapsed;
 

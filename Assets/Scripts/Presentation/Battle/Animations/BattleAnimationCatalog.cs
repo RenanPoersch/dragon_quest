@@ -2,10 +2,12 @@ using DragonQuest.Presentation.Battle;
 using System;
 using DragonQuest.Combat;
 
+// Mapeia combatentes e habilidades para os recursos visuais de batalha correspondentes.
 namespace DragonQuest.Presentation.Battle.Animations
 {
     public static class BattleAnimationCatalog
     {
+        // Agrupa os identificadores de combatentes que usam a mesma família visual.
         public static string Family(string id)
         {
             if (id == null) return string.Empty;
@@ -32,6 +34,7 @@ namespace DragonQuest.Presentation.Battle.Animations
         public static string Resource(string id, AbilityDefinition ability)
         {
             if (ability == null) return Idle(id);
+            // Combina a família visual com a habilidade de origem para localizar uma animação.
             string family = Family(id), action = ability.SourceAbilityId;
             if (family == "tyrant")
             {

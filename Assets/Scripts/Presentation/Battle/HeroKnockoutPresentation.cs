@@ -1,6 +1,7 @@
 using DragonQuest.Combat;
 using System.Collections.Generic;
 
+// Mantém a pose de nocaute dos heróis e a atualiza a partir do estado de combate.
 namespace DragonQuest.Presentation.Battle
 {
     // Battle state is resolved before its animation; change the pose at the visible impact.
@@ -11,11 +12,13 @@ namespace DragonQuest.Presentation.Battle
             public bool Visible, Requested;
             public float ChangesAt;
         }
+        // Registra uma pose independente para cada combatente observado.
         private readonly Dictionary<CombatantState, Pose> poses = new Dictionary<CombatantState, Pose>();
         public void Reset() => poses.Clear();
         public void Observe(CombatantState fighter, float impactTime, float now)
         {
             if (fighter.Team != CombatTeam.Party) return;
+            // Converte a condição de vida do combatente em sinal para iniciar ou encerrar a pose de nocaute.
             bool knockedOut = !fighter.IsAlive;
             if (!poses.TryGetValue(fighter, out var pose))
             {

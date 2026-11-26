@@ -1,11 +1,14 @@
 using DragonQuest.Presentation.Battle;
 using UnityEngine;
 
+// Agrupa efeitos especiais do combate no castelo, como proteção, projéteis e absorção do meteoro.
 namespace DragonQuest.Presentation.Battle.Animations
 {
     public sealed class CastleSpellAnimation
     {
+        // Mantém referências separadas para as folhas dos principais efeitos do confronto.
         private BattleAnimationSheet protect, shieldHit, fireball, throwingKing;
+        // Delega a apresentação de absorção a uma rotina própria.
         private readonly MeteorAbsorptionAnimation absorption;
         private readonly System.Action<Texture2D, Rect, Rect, Color> drawTexture;
         public CastleSpellAnimation(System.Action<Texture2D, Rect, Rect, Color> drawTexture = null)

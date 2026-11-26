@@ -3,17 +3,20 @@ using System.Collections.Generic;
 using DragonQuest.Combat;
 using UnityEngine;
 
+// Escolhe e desenha as poses dos heróis durante a conjuração de habilidades.
 namespace DragonQuest.Presentation.Battle.Animations
 {
     public sealed class HeroCastAnimation
     {
         private readonly Dictionary<string, BattleAnimationSheet> sheets = new Dictionary<string, BattleAnimationSheet>();
+        // Identifica ações que usam a apresentação de conjuração.
         public static bool IsCasting(AbilityDefinition ability) => ability != null && !ability.UsesLimit
             && (ability.MenuGroup == AbilityMenuGroup.Magic || ability.MenuGroup == AbilityMenuGroup.Summon
                 || ability.Effect == AbilityEffect.MagicDamage || ability.Effect == AbilityEffect.Heal
                 || ability.Effect == AbilityEffect.Cleanse || ability.Effect == AbilityEffect.Revive);
         public static string Resource(string hero) => hero == "aren" ? "ArenCast"
             : hero == "lia" ? "LiaCast" : hero == "bram" ? "BramCast" : null;
+        // Seleciona a pose a partir do tempo decorrido e da duração da ação.
         public static int Pose(float elapsed, float duration) => elapsed < .16f ? 0
             : elapsed < .34f ? 1 : elapsed < duration - .28f ? 2 : 3;
         public static float Step(float elapsed, float duration)

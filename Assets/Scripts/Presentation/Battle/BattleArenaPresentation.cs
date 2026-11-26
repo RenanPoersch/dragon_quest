@@ -11,6 +11,7 @@ using DragonQuest.Input;
 using DragonQuest.Progression;
 using UnityEngine;
 
+// Compõe a apresentação da arena com os combatentes e os efeitos da ação em curso.
 namespace DragonQuest.Presentation.Battle
 {
     public sealed class BattleArenaPresentation
@@ -18,6 +19,7 @@ namespace DragonQuest.Presentation.Battle
         private readonly BattleHudGraphics graphics;
         private readonly BattleMenuPresenter commands;
         private BattleController controller;
+        // Dá acesso à biblioteca de sprites usada na composição visual dos personagens na arena.
         private PixelSpriteLibrary pixelSprites;
         private readonly DragonBattleSprites dragonSprites = new DragonBattleSprites();
         private BattleSprites battleSprites;
@@ -144,6 +146,7 @@ namespace DragonQuest.Presentation.Battle
         private void DrawArena()
         {
             Matrix4x4 arenaMatrix = GUI.matrix;
+            // Distingue a ação do espírito das demais sequências da arena.
             bool spiritAction = controller.IsPresentingAction && controller.PresentingActor.Id == CastleBattleRules.SpiritId;
             float spiritElapsed = Time.unscaledTime - controller.ActionStartedAt;
             if (spiritAction)

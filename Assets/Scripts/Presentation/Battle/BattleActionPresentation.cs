@@ -4,14 +4,17 @@ using DragonQuest.Combat;
 using DragonQuest.Progression;
 using UnityEngine;
 
+// Mantém o estado da apresentação de uma ação e calcula o instante visual de seu impacto.
 namespace DragonQuest.Presentation.Battle
 {
     // Visual state and timing of an accepted action. Combat execution remains with the session/controller.
     public sealed class BattleActionPresentation
     {
+        // Identifica quem executa a ação que está sendo apresentada.
         public CombatantState PresentingActor { get; private set; }
         public AbilityDefinition PresentingAbility { get; private set; }
         public bool IsPresentingConfusedAction { get; private set; }
+        // Reúne os alvos usados para posicionar os efeitos da ação.
         public IReadOnlyList<CombatantState> PresentingTargets { get; private set; } = new CombatantState[0];
         public IReadOnlyList<CombatantState> PresentingPartyTargets { get; private set; } = new CombatantState[0];
         public IReadOnlyList<CombatantState> PresentingRevivedTargets { get; private set; } = new CombatantState[0];

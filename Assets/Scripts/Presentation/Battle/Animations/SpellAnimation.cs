@@ -4,11 +4,13 @@ using System.Collections.Generic;
 using DragonQuest.Combat;
 using UnityEngine;
 
+// Desenha os efeitos de magia e fornece o tempo usado para sincronizar seu impacto.
 namespace DragonQuest.Presentation.Battle.Animations
 {
     public sealed class SpellAnimation
     {
         public const float Duration = 1.0f;
+        // Marca o instante do efeito principal durante a animação.
         public const float ImpactDelay = 0.5f;
         private sealed class Sheet
         {
@@ -17,6 +19,7 @@ namespace DragonQuest.Presentation.Battle.Animations
             public Vector2[] Size = new Vector2[8];
             public int PeakHeight;
         }
+        // Permite reutilizar as folhas já carregadas enquanto as magias são desenhadas.
         private readonly Dictionary<string, Sheet> sheets = new Dictionary<string, Sheet>();
 
         public static string Resource(AbilityDefinition ability)

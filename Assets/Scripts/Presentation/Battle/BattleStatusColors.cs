@@ -1,12 +1,14 @@
 using DragonQuest.Combat;
 using UnityEngine;
 
+// Padroniza as cores usadas para representar condições e efeitos em combate.
 namespace DragonQuest.Presentation.Battle
 {
     public static class BattleStatusColors
     {
         public static Color Poison => new Color(.40f, 1f, .35f);
         public static Color Bound => new Color(.60f, .65f, 1f);
+        // Define a cor reservada aos indicadores de dano periódico.
         public static Color DamageOverTime => new Color(.78f, .40f, 1f);
         public static Color Tint(bool poisoned, int boundActions) =>
             poisoned ? Poison : boundActions > 0 ? Bound : Color.white;
