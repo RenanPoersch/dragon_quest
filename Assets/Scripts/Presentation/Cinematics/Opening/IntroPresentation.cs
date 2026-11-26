@@ -4,13 +4,16 @@ using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
+// Desenha a introdução com fundo, pássaros animados e a apresentação do título.
 namespace DragonQuest.Presentation.Cinematics.Opening
 {
     // The artwork, lettering and animated sprite flock remain separate layers.
     public sealed class IntroPresentation : IDisposable
     {
+        // Define a quantidade de poses usadas na animação de voo.
         public const int BirdFrameCount = 6;
         public const int BirdCount = 8;
+        // Fornece os tempos de transição e revelação usados no desenho.
         private readonly IntroSequence sequence = new IntroSequence();
         private readonly Texture2D background;
         private readonly Sprite[] birdFrames = new Sprite[BirdFrameCount];

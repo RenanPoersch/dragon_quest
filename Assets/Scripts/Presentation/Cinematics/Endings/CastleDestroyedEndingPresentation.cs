@@ -1,13 +1,16 @@
 using System;
 using UnityEngine;
 
+// Encadeia a queda do meteoro com a apresentação das consequências no epílogo.
 namespace DragonQuest.Presentation.Cinematics.Endings
 {
     public sealed class CastleDestroyedEndingPresentation : IDisposable
     {
+        // Controla a parte inicial, em que o meteoro atinge o castelo.
         public CastleImpactPresentation Impact { get; }
         public CastleDestroyedPresentation Aftermath { get; }
         private bool hasDrawn;
+        // Só considera o final completo após concluir as duas sequências.
         public bool IsComplete => Impact.Sequence.IsComplete && Aftermath.Sequence.IsComplete;
         public float Elapsed => Impact.Sequence.Elapsed + Aftermath.Sequence.Elapsed;
 

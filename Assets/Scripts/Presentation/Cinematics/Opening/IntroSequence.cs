@@ -1,5 +1,6 @@
 using System;
 
+// Calcula os tempos de abertura, das transições e da entrada gradual do título.
 namespace DragonQuest.Presentation.Cinematics.Opening
 {
     // Advances with unscaled time so opening a paused game cannot freeze the intro.
@@ -7,7 +8,9 @@ namespace DragonQuest.Presentation.Cinematics.Opening
     {
         public const string Title = "DRAGON QUEST";
         public const float FadeInDuration = 3.2f;
+        // Define a espera até o início da apresentação do título.
         public const float TitleDelay = 2.6f;
+        // Define o intervalo entre as letras reveladas.
         public const float LetterInterval = .11f;
         public const float FadeOutDuration = .85f;
         public const float EarliestSkip = .35f;

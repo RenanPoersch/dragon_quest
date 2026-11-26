@@ -4,11 +4,14 @@ using System;
 using DragonQuest.Progression;
 using UnityEngine;
 
+// Desenha a revelação do trono, o espírito e as camadas de relâmpagos do final de possessão.
 namespace DragonQuest.Presentation.Cinematics.Endings
 {
     public sealed class HeroPossessedPresentation : IDisposable
     {
+        // Identifica a pintura usada de fundo para o enquadramento do trono.
         public const string ThroneResource = "PixelArt/Endings/PossessedThrone";
+        // Identifica o primeiro plano do espírito que será combinado com a pintura.
         public const string SpiritResource = "PixelArt/Endings/PossessedSpiritFront";
         public const string LightningAResource = "PixelArt/Endings/PossessionLightningA";
         public const string LightningBResource = "PixelArt/Endings/PossessionLightningB";

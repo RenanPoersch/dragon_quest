@@ -1,13 +1,16 @@
 using System;
 
+// Calcula os tempos e o movimento das camadas do epílogo após a destruição do castelo.
 namespace DragonQuest.Presentation.Cinematics.Endings
 {
     // The seated figure shares the hill's movement; only the scenery, scroll and fade advance.
     public sealed class CastleDestroyedSequence
     {
         public const float FadeInDuration = 1.4f;
+        // Determina o início e a duração da entrada do cenário.
         public const float ArrivalStart = .5f, ArrivalDuration = 16;
         public const float LandStartX = -1080, LandStopX = -144, LandWidth = 1040;
+        // Controla separadamente o deslocamento do terreno e o movimento do fundo.
         public const float LandDrift = 32, BackgroundDrift = 90;
         public const float ArrivalEnd = ArrivalStart + ArrivalDuration;
         public const float TextStart = ArrivalEnd + .8f, TextWindowHeight = 324, LineHeight = 34, ScrollSpeed = 29;

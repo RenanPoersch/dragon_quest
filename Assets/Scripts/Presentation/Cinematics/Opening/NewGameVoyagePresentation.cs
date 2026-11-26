@@ -4,12 +4,15 @@ using DragonQuest.Presentation.Common;
 using System;
 using UnityEngine;
 
+// Desenha a viagem de abertura com o panorama, o navio e o texto narrativo.
 namespace DragonQuest.Presentation.Cinematics.Opening
 {
     public sealed class NewGameVoyagePresentation : IDisposable
     {
+        // Calcula o estado da cena de acordo com o tempo decorrido.
         public readonly NewGameVoyageSequence Sequence = new NewGameVoyageSequence();
         private readonly Texture2D panorama;
+        // Compartilha o desenho do painel de texto com as demais apresentações narrativas.
         private readonly NarrativePanel narrative;
         private readonly string[] lines = new string[NewGameVoyageSequence.LineCount];
         private readonly VoyageShipLayers ship;

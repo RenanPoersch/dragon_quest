@@ -1,5 +1,6 @@
 using System;
 
+// Calcula os tempos e as posições da viagem exibida ao iniciar uma nova partida.
 namespace DragonQuest.Presentation.Cinematics.Opening
 {
     // A single unscaled clock keeps the ship, party, scroll and transition in sync.
@@ -8,7 +9,9 @@ namespace DragonQuest.Presentation.Cinematics.Opening
         public const float FadeInDelay = 2;
         public const float FadeInDuration = 3.2f;
         // Let the opening fade finish before the voyage starts moving.
+        // Define quando começa a chegada e quanto dura seu movimento.
         public const float ArrivalStart = FadeInDelay + FadeInDuration + .4f, ArrivalDuration = 6.2f;
+        // Guarda a largura do navio e as posições de entrada, parada e saída usadas pela apresentação.
         public const float ShipWidth = 1560, ShipStartX = 1300, ShipStopX = 548, ShipExitX = -ShipWidth - 64;
         public const float HeroSize = 96;
         public const float WalkStart = ArrivalStart + 1.7f, WalkDuration = 4.4f, HeroDelay = .48f;

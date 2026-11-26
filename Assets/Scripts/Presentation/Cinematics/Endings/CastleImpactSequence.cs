@@ -1,13 +1,16 @@
 using System;
 
+// Define a linha do tempo da queda do meteoro e do clarão sobre o castelo.
 namespace DragonQuest.Presentation.Cinematics.Endings
 {
     // A separate unscaled clock keeps the existing hillside epilogue at its original pace.
     public sealed class CastleImpactSequence
     {
         public const float FadeInDuration = 3.2f, MeteorStart = FadeInDuration + 1.6f, FallDuration = 13;
+        // Calcula o instante do impacto somando o início da queda à sua duração.
         public const float ImpactAt = MeteorStart + FallDuration;
         public const float FlashDuration = .45f, WhiteHold = 1.4f;
+        // Marca o fim da sequência depois do clarão e da permanência da tela branca.
         public const float CompleteAt = ImpactAt + FlashDuration + WhiteHold;
         public const float MaximumShake = 20;
         public float Elapsed { get; private set; }

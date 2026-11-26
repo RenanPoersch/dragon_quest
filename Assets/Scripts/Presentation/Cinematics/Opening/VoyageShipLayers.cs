@@ -1,13 +1,16 @@
 using System;
 using UnityEngine;
 
+// Recorta a pintura do navio em duas camadas para inserir o grupo no convés.
 namespace DragonQuest.Presentation.Cinematics.Opening
 {
     // Partition the original drawing along the curved near gunwale, without repainting it.
     // Both layers keep identical registration, so the party can stand inside the hull.
     public sealed class VoyageShipLayers : IDisposable
     {
+        // Guarda a parte do navio desenhada atrás dos personagens.
         public Texture2D BehindParty { get; }
+        // Guarda a parte do navio desenhada sobre os personagens.
         public Texture2D InFrontOfParty { get; }
         public int Width => BehindParty.width;
         public int Height => BehindParty.height;

@@ -2,6 +2,7 @@ using DragonQuest.Infrastructure;
 using System;
 using UnityEngine;
 
+// Aplica o efeito de movimento à arte dos finais usando uma textura de renderização intermediária.
 namespace DragonQuest.Presentation.Cinematics.Endings
 {
     // Move the crop in texture space. IMGUI only sees a stationary screen rectangle,
@@ -9,7 +10,9 @@ namespace DragonQuest.Presentation.Cinematics.Endings
     public sealed class EndingArtworkRenderer : IDisposable
     {
         public const string ShaderResource = "PixelArt/Endings/EndingArtworkMotion";
+        // Mantém o material que recebe os parâmetros do efeito visual.
         private readonly Material material;
+        // Guarda a superfície intermediária usada para desenhar a imagem processada.
         private RenderTexture frame;
 
         public EndingArtworkRenderer()

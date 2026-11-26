@@ -1,13 +1,16 @@
 using System;
 using System.Collections.Generic;
 
+// Define o movimento de câmera e os tempos do final em que o herói é possuído.
 namespace DragonQuest.Presentation.Cinematics.Endings
 {
     // One unscaled clock drives the upward camera, narration, lightning and fades.
     public sealed class HeroPossessedSequence
     {
         public const float FadeInDuration = 3.2f;
+        // Agrupa a partida da câmera e as durações dos trechos do movimento.
         public const float CameraStart = FadeInDuration, CarpetDuration = 9, StairDuration = 10, RevealDuration = 8;
+        // Calcula o instante em que a câmera chega ao enquadramento final.
         public const float CameraStopAt = CameraStart + CarpetDuration + StairDuration + RevealDuration;
         public const float FinalCameraFocusY = .16f;
         public const float TextStart = FadeInDuration + .8f, TextWindowHeight = 324, LineHeight = 34, ScrollSpeed = 29;

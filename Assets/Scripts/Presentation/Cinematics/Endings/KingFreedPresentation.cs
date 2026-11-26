@@ -4,13 +4,16 @@ using System;
 using DragonQuest.Progression;
 using UnityEngine;
 
+// Desenha a fala do rei libertado e a cena de prosperidade que a sucede.
 namespace DragonQuest.Presentation.Cinematics.Endings
 {
     public sealed class KingFreedPresentation : IDisposable
     {
         public const string SpeechResource = "PixelArt/Endings/KingFreedSpeech";
         public const string ProsperityResource = "PixelArt/Endings/KingdomProsperity";
+        // Define a largura reservada à coluna de texto.
         public const float TextColumnWidth = 350;
+        // Separa a fala em linhas para desenhá-la na área de rolagem.
         private readonly string[] speechLines = EndingNarrative.KingFreedSpeech.Split('\n');
         private readonly string[] epilogueLines = EndingNarrative.KingFreedEpilogue.Split('\n');
         private readonly Texture2D speech, prosperity;

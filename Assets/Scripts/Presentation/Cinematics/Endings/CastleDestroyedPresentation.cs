@@ -4,13 +4,16 @@ using System;
 using DragonQuest.Progression;
 using UnityEngine;
 
+// Desenha o cenário e o texto do epílogo após a destruição do castelo.
 namespace DragonQuest.Presentation.Cinematics.Endings
 {
     public sealed class CastleDestroyedPresentation : IDisposable
     {
         public const string BackgroundResource = "PixelArt/Endings/CastleAftermath";
         public const string ForegroundResource = "PixelArt/Endings/SeatedElderHill";
+        // Prepara as linhas do epílogo para o painel narrativo.
         private readonly string[] lines = EndingNarrative.CastleDestroyedEpilogue.Split('\n');
+        // Mantém as pinturas de fundo e de primeiro plano como camadas separadas.
         private readonly Texture2D background, foreground;
         private readonly NarrativePanel narrative;
         private readonly EndingArtworkRenderer backgroundMotion = new EndingArtworkRenderer();

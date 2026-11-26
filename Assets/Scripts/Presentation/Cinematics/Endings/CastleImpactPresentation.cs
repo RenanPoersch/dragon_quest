@@ -2,6 +2,7 @@ using DragonQuest.Infrastructure;
 using System;
 using UnityEngine;
 
+// Compõe a imagem do castelo com as nuvens vermelhas e o meteoro do final de destruição.
 namespace DragonQuest.Presentation.Cinematics.Endings
 {
     public sealed class CastleImpactPresentation : IDisposable
@@ -9,6 +10,7 @@ namespace DragonQuest.Presentation.Cinematics.Endings
         public const string CastleResource = "PixelArt/Endings/CastleBeforeImpact";
         public const string RedCloudResource = "PixelArt/Endings/CastleRedClouds";
         public const string MeteorResource = "PixelArt/Endings/EndingMeteor";
+        // Identifica o shader responsável por combinar as camadas durante a apresentação.
         public const string ShaderResource = "PixelArt/Endings/CastleImpactComposite";
         public const float FrameWidth = 1280, FrameHeight = 660;
         private const float ShakeOverscan = CastleImpactSequence.MaximumShake + 2;
@@ -21,6 +23,7 @@ namespace DragonQuest.Presentation.Cinematics.Endings
         public CastleImpactPresentation()
         {
             castle = Load(CastleResource);
+            // Carrega a camada do meteoro separadamente da arte do castelo.
             Texture2D meteor = Load(MeteorResource);
             Shader shader = GameAssets.Required<Shader>(ShaderResource);
             if (!shader.isSupported)

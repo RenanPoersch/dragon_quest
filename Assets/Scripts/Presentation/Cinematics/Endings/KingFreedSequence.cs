@@ -1,12 +1,15 @@
 using System;
 
+// Organiza os tempos da fala do rei e da transição para o epílogo da prosperidade.
 namespace DragonQuest.Presentation.Cinematics.Endings
 {
     // Speech and prosperity share one unscaled clock; neither text is lost in the dissolve.
     public sealed class KingFreedSequence
     {
         public const float FadeInDuration = 3.2f, TextStart = FadeInDuration + .8f;
+        // Define a altura da janela, a distância entre linhas e a velocidade de rolagem da fala.
         public const float TextWindowHeight = 324, LineHeight = 34, ScrollSpeed = 29;
+        // Define a pausa, o tempo de transição e a espera antes de encerrar a cena de prosperidade.
         public const float EndHold = 1.8f, DissolveDuration = 3, ProsperityHold = 1.4f;
         public const float FadeOutDuration = 3, BlackHold = 1;
         public int SpeechLineCount { get; }

@@ -1,13 +1,16 @@
 using System;
 
+// Coordena o escurecimento usado para sair da batalha antes de mostrar a próxima cena.
 namespace DragonQuest.Presentation.Cinematics.Endings
 {
     // Both ends of the fade wait for a repaint; loading cannot skip the battle or expose the cut.
     public sealed class BattleExitSequence
     {
+        // Define o tempo do escurecimento e o período de tela totalmente preta.
         public const float FadeOutDuration = 1.4f, BlackHold = 2;
         public float Elapsed { get; private set; }
         public bool IsPlaying { get; private set; }
+        // Acompanha se a transição já foi desenhada e se a tela já foi coberta.
         private bool hasDrawn, covered;
         public float BlackOpacity
         {
