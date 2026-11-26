@@ -1,12 +1,15 @@
 using System;
 
+// Mantém os valores e as condições que mudam em cada combatente durante uma batalha.
 namespace DragonQuest.Combat
 {
     public enum CombatTeam { Party, Enemy }
 
     public readonly struct CombatVitalChange
     {
+        // Identifica a alteração de vida ou magia e indica a qual golpe da ação ela pertence.
         public readonly int Sequence, Amount, ActionHitIndex;
+        // Fornece à apresentação os detalhes necessários para diferenciar os tipos de alteração.
         public readonly bool IsCritical, IsMp, IsShielded, IsDamageOverTime;
         public CombatVitalChange(int sequence, int amount, bool critical, bool mp, bool shielded = false, bool damageOverTime = false, int actionHitIndex = 0)
         { Sequence = sequence; Amount = amount; IsCritical = critical; IsMp = mp; IsShielded = shielded; IsDamageOverTime = damageOverTime; ActionHitIndex = actionHitIndex; }

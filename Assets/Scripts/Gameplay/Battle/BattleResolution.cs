@@ -2,12 +2,14 @@ using DragonQuest.Combat;
 using DragonQuest.Exploration;
 using DragonQuest.Progression;
 
+// Resolve o resultado de um encontro e coordena as recompensas com a tela pós-batalha.
 namespace DragonQuest.Gameplay.Battle
 {
     public sealed class BattleResolution
     {
         private readonly PartyProgress party;
         private readonly DragonProgress dragon;
+        // Controla se a conclusão já foi comunicada para evitar sinalizá-la novamente.
         private bool notifiedCompletion;
         public BattleRewards Rewards { get; }
         public string RewardMessage { get; private set; }
@@ -17,6 +19,7 @@ namespace DragonQuest.Gameplay.Battle
         public bool Resolve(BattleSession session, bool dragonEncounter, PostBattleResults postBattle)
         {
             if (session == null || session.Outcome == BattleOutcome.None) return false;
+            // Consulta as regras específicas quando o desfecho depende das fases da batalha do castelo.
             var castleRules = session.Rules as CastleBattleRules;
             if (!notifiedCompletion) party.CaptureBattleState(session);
             if (session.Outcome == BattleOutcome.Victory)

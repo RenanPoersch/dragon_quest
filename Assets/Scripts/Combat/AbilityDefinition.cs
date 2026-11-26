@@ -1,9 +1,12 @@
 using System;
 
+// Descreve os efeitos, alvos e parâmetros que uma habilidade disponibiliza às regras de combate.
 namespace DragonQuest.Combat
 {
     public enum AbilityEffect { PhysicalDamage, Heal, Defend, Cleanse, Revive, Taunt, Protect, MagicDamage, Prepare, Drain, Bind, MindControl, Silence }
+    // Limita quais combatentes a ação pode escolher como alvo.
     public enum TargetRule { Enemy, Ally, Self, AllEnemies, AllAllies }
+    // Indica em qual grupo de comandos a habilidade será apresentada.
     public enum AbilityMenuGroup { Direct, Magic, Summon }
     public enum PartyEffect { None, RestoreAndRevive, DamageShield, RestoreCleanseAndRevive }
 

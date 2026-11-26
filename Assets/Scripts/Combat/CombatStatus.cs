@@ -1,11 +1,13 @@
 using System.Collections.Generic;
 
+// Representa condições da batalha e prepara os indicadores que podem ser exibidos na interface.
 namespace DragonQuest.Combat
 {
     public enum CombatStatus { Poison, Shield, Defending, Protected, Taunted, Bound, Charging, Defeated, MindControlled, Silenced }
     public readonly struct StatusIndicator
     {
         public readonly CombatStatus Status;
+        // Guarda os turnos associados ao indicador quando a condição tem duração.
         public readonly int Turns;
         public StatusIndicator(CombatStatus status, int turns = 0)
         { Status = status; Turns = turns; }
@@ -14,6 +16,7 @@ namespace DragonQuest.Combat
     {
         public static List<StatusIndicator> Active(CombatantState member)
         {
+            // Reúne apenas os indicadores produzidos pelo estado atual do combatente.
             var result = new List<StatusIndicator>();
             if (!member.IsAlive) { result.Add(new StatusIndicator(CombatStatus.Defeated)); return result; }
             if (member.PoisonTurns > 0) result.Add(new StatusIndicator(CombatStatus.Poison));

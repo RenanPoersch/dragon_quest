@@ -1,13 +1,16 @@
 using System;
 
+// Acumula a carga do ataque limite e fornece o valor persistível da barra.
 namespace DragonQuest.Combat
 {
     // Compartilhada com o membro da equipe; nao e recriada ao iniciar outra batalha.
     public sealed class LimitGauge
     {
+        // Guarda a carga real, inclusive quando a opção de carga infinita está ligada.
         private int charge;
         public bool IsInfinite { get; private set; }
         public int Charge => IsInfinite ? 100 : charge;
+        // Fornece ao salvamento o valor acumulado da barra.
         internal int SavedCharge => charge;
         internal void SetInfinite(bool enabled) => IsInfinite = enabled;
         public bool IsReady => Charge == 100;

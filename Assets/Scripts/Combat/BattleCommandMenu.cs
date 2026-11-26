@@ -1,12 +1,15 @@
 using System.Collections.Generic;
 
+// Representa os comandos de combate e prepara a navegação entre habilidades e categorias.
 namespace DragonQuest.Combat
 {
     public enum BattleCommandKind { Ability, Magic, Summon, Items }
 
     public sealed class BattleMenuCommand
     {
+        // Diferencia uma habilidade executável de uma opção que abre uma categoria.
         public BattleCommandKind Kind { get; }
+        // Referencia a habilidade concreta quando o comando foi criado para executar uma.
         public AbilityDefinition Ability { get; }
         public string Label { get; }
         public BattleMenuCommand(BattleCommandKind kind, string label, AbilityDefinition ability = null)

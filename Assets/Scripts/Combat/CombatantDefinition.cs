@@ -1,12 +1,14 @@
 using System;
 using System.Collections.Generic;
 
+// Define as estatísticas de origem, as afinidades e as habilidades de um tipo de combatente.
 namespace DragonQuest.Combat
 {
     public sealed class CombatantDefinition
     {
         public string Name { get; }
         public string Role { get; }
+        // Indica o máximo de pontos de vida do modelo antes de criar o estado de batalha.
         public int MaxHp { get; }
         public int MaxMp { get; }
         public int Attack { get; }
@@ -45,6 +47,7 @@ namespace DragonQuest.Combat
             if (maxHp <= 0 || maxMp < 0 || attack < 0 || defense < 0 || magic < 0 || speed < 0)
                 throw new ArgumentOutOfRangeException(nameof(maxHp), "Atributos invalidos.");
             if (abilities == null || abilities.Length == 0) throw new ArgumentException("Combatente precisa de habilidades.");
+            // Permite detectar habilidades repetidas pelo identificador ao montar a definição.
             var ids = new HashSet<string>();
             foreach (AbilityDefinition ability in abilities)
                 if (ability == null || !ids.Add(ability.Id)) throw new ArgumentException("Habilidades nulas ou IDs repetidos.");

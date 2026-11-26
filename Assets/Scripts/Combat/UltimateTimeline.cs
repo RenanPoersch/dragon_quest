@@ -1,12 +1,15 @@
 using System;
 
+// Centraliza os tempos usados para alinhar a apresentação e os impactos das técnicas de limite.
 namespace DragonQuest.Combat
 {
     // Shared by the animation, individual damage numbers, hit reactions and defeat timing.
     public static class UltimateTimeline
     {
+        // Define o primeiro corte da sequência e o intervalo até os cortes seguintes.
         public const float CutStart = 1.15f, CutInterval = .22f;
         public const float JumpStart = 3.9f, HangStart = 4.4f, DiveStart = 5.02f, FinalImpact = 5.32f;
+        // Marca o instante em que o efeito principal da técnica de Lia acontece.
         public const float SalvationImpact = 3.65f;
         public const float AegisShieldStart = .55f, AegisShieldImpact = .85f;
         public const float AegisShieldFade = 1.25f, AegisShieldEnd = 1.8f;

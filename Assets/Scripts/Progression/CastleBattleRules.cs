@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using DragonQuest.Combat;
 
+// Implementa as fases e desfechos especiais da batalha do castelo.
 namespace DragonQuest.Progression
 {
     public enum GameEnding { None, KingFreed, CastleDestroyed, HeroPossessed }
@@ -9,7 +10,9 @@ namespace DragonQuest.Progression
     {
         public const string TyrantId="tyrant", SpiritId="evil-spirit";
         // Protect inicia a contagem 5 a 1; o lancamento ocupa o turno seguinte do Rei Rubro.
+        // Define quantos turnos fazem parte da conjuração do meteoro.
         public const int MeteorCastTurns=5;
+        // Define o limite de vida considerado para iniciar essa fase do confronto.
         public const int MeteorHpThreshold=450;
         public const int ProtectDamageReductionPercent=60;
         public static readonly AbilityDefinition RoyalStrike=new AbilityDefinition("royal-strike","Golpe do Rei Rubro",

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using DragonQuest.Inventory;
 
+// Executa turnos, habilidades, efeitos e condições de encerramento de uma batalha.
 namespace DragonQuest.Combat
 {
     public enum BattleOutcome { None, Victory, Defeat, Completed, Escaped }
@@ -13,8 +14,11 @@ namespace DragonQuest.Combat
         public static readonly AbilityDefinition MindControlAttack = new AbilityDefinition("confused-attack", "Ataque confuso",
             "Ataca um combatente vivo aleatorio por controle mental.", 0, 0, AbilityEffect.PhysicalDamage,
             TargetRule.Enemy, sourceAbilityId: "attack");
+        // Mantém o estado de todos os participantes para resolver ações e alvos.
         private readonly List<CombatantState> combatants;
+        // Guarda a ordem de ação separadamente da coleção de participantes.
         private readonly List<CombatantState> turnOrder = new List<CombatantState>();
+        // Identifica a posição atual na ordem dos turnos.
         private int turnIndex;
         private bool skippingBoundTurns;
         private readonly Func<double> criticalRoll;

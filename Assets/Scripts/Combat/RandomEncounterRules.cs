@@ -1,5 +1,6 @@
 using System;
 
+// Determina quando e qual encontro aleatório pode ocorrer durante a exploração.
 namespace DragonQuest.Combat
 {
     public enum RandomEncounterType { None, Pirate, Golem, Wolf }
@@ -7,8 +8,10 @@ namespace DragonQuest.Combat
     // Distance-based scheduling: pauses do not roll dice and teleports reset the meter.
     public sealed class RandomEncounterRules
     {
+        // Recebe a fonte de sorteio usada pelas regras de encontro.
         private readonly Func<double> random;
         private string location;
+        // Guarda a distância restante até a próxima verificação de encontro.
         private float remaining;
         public bool IsEnabled { get; private set; } = true;
         public RandomEncounterRules(Func<double> random) { this.random = random ?? throw new ArgumentNullException(nameof(random)); }

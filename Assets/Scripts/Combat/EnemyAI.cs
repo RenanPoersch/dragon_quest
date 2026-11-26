@@ -1,14 +1,17 @@
 using System;
 
+// Escolhe a ação inimiga e um alvo elegível na sessão de combate.
 namespace DragonQuest.Combat
 {
     public static class EnemyAI
     {
+        // Fornece o sorteio usado na escolha de alvos.
         private static readonly Random targetRandom = new Random();
         private static bool IsCycledAction(AbilityDefinition ability) => ability.Effect == AbilityEffect.PhysicalDamage
             || ability.Effect == AbilityEffect.MagicDamage || ability.Effect == AbilityEffect.Prepare
             || ability.Effect == AbilityEffect.Drain || ability.Effect == AbilityEffect.Bind
             || ability.Effect == AbilityEffect.MindControl || ability.Effect == AbilityEffect.Silence;
+        // Consulta a situação da batalha para escolher o próximo comando do inimigo.
         public static AbilityDefinition ChooseAbility(BattleSession battle)
         {
             CombatantState actor = battle.CurrentActor;

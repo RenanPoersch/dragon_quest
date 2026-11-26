@@ -1,8 +1,10 @@
+// Reúne as técnicas de limite de Aren, Lia e Bram usadas pela batalha.
 namespace DragonQuest.Combat
 {
     public static class HeroUltimates
     {
         // Keep the command ID stable for saves/menus; each signature drives its own presentation.
+        // Define a técnica de limite ofensiva de Aren.
         public static readonly AbilityDefinition Omnislash = new AbilityDefinition("limit-break", "Omnislash",
             "13 cortes de espada em UM inimigo; o corte final causa dano triplo. Consome 100% do LIMIT, sem MP.",
             0, 10, AbilityEffect.PhysicalDamage, TargetRule.Enemy, usesLimit: true,
@@ -16,6 +18,7 @@ namespace DragonQuest.Combat
             0, 65, AbilityEffect.PhysicalDamage, TargetRule.AllEnemies, usesLimit: true, sourceAbilityId: "bram-aegis",
             partyEffect: PartyEffect.DamageShield, shieldDuration: 3);
 
+        // Seleciona a técnica de limite conforme o identificador do personagem.
         public static AbilityDefinition ForHero(string id) => id == "lia" ? Salvation : id == "bram" ? Aegis : Omnislash;
     }
 }

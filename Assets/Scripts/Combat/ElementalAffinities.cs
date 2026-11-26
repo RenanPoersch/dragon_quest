@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 
+// Modela fraquezas e resistências usadas para interpretar o elemento de um dano.
 namespace DragonQuest.Combat
 {
     public enum DamageElement { None, Fire, Ice, Lightning, Earth, Chaos }
@@ -8,7 +9,9 @@ namespace DragonQuest.Combat
     // Perfil imutavel: pode ser compartilhado entre encontros sem carregar estado da batalha.
     public sealed class ElementalAffinities
     {
+        // Fornece a configuração padrão sem fraquezas nem resistências específicas.
         public static readonly ElementalAffinities Neutral = new ElementalAffinities();
+        // Expõe os elementos classificados como fraquezas sem entregar uma lista editável.
         public IReadOnlyList<DamageElement> Weaknesses { get; }
         public IReadOnlyList<DamageElement> Resistances { get; }
 
