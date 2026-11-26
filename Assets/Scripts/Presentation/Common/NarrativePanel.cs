@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+// Desenha o painel narrativo compartilhado pelas apresentações com texto e fundo sombreado.
 namespace DragonQuest.Presentation.Common
 {
     public sealed class NarrativePanel : IDisposable
@@ -34,6 +35,7 @@ namespace DragonQuest.Presentation.Common
             public float BottomFadeInset;
         }
 
+        // Mantém as regras de posicionamento e espaçamento fornecidas pelo chamador.
         private readonly Layout layout;
         private Texture2D shade;
         private GUIStyle story;
@@ -59,6 +61,7 @@ namespace DragonQuest.Presentation.Common
                 layout.Chapter.Style = Style(layout.Chapter.FontSize, layout.Chapter.Emphasized);
         }
 
+        // Recebe as linhas e o título junto com deslocamento e opacidade controlados pela apresentação.
         public void Draw(IReadOnlyList<string> lines, string title, float offset, float opacity)
         {
             if (opacity <= 0) return;

@@ -3,6 +3,7 @@ using DragonQuest.Input;
 using UnityEngine;
 using DragonQuest.Audio;
 
+// Coordena foco, confirmação e rolagem dos botões desenhados pelas interfaces imediatas do Unity.
 namespace DragonQuest.Presentation.Common
 {
     // IMGUI has no gamepad focus. Keep its existing buttons, mouse input and scroll views.
@@ -11,8 +12,10 @@ namespace DragonQuest.Presentation.Common
         private readonly ControllerMenuFocus focus = new ControllerMenuFocus();
         private readonly List<bool> buttons = new List<bool>();
         private int buttonIndex, scrollIndex, currentScroll = -1, selectedScroll = -1;
+        // Mantém a área do item selecionado para que a rolagem possa revelá-lo.
         private Rect selectedRect;
         private int selectedRectIndex = -1, revealIndex = -1;
+        // Guarda os quadros de leitura, desenho e ativação para evitar processar o mesmo comando mais de uma vez.
         private int processedFrame = -1, lastDrawFrame = -10, activatedFrame = -1;
         private bool confirm;
 

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 
+// Traduz eixos do controle em movimentos de menu e acompanha o foco dos botões disponíveis.
 namespace DragonQuest.Input
 {
     public enum MenuDirection { None, Up, Down, Left, Right }
@@ -9,10 +10,12 @@ namespace DragonQuest.Input
     public sealed class ControllerNavigation
     {
         private MenuDirection held;
+        // Marca o instante em que uma direção mantida pode voltar a produzir navegação.
         private double nextRepeat;
         public void Reset() { held = MenuDirection.None; nextRepeat = 0; }
         public MenuDirection Step(float x, float y, double time)
         {
+            // Usa um limite menor enquanto a direção já está ativa para evitar mudanças perto do limiar.
             float threshold = held == MenuDirection.None ? .55f : .35f;
             MenuDirection direction = Math.Abs(x) < threshold && Math.Abs(y) < threshold ? MenuDirection.None
                 : Math.Abs(y) >= Math.Abs(x) ? (y > 0 ? MenuDirection.Up : MenuDirection.Down)
