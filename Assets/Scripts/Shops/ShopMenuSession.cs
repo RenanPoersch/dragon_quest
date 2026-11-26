@@ -5,8 +5,10 @@ using System.Linq;
 using DragonQuest.Equipment;
 using DragonQuest.Inventory;
 
+// Mantém a navegação e a seleção de compra ou venda enquanto a loja está aberta.
 namespace DragonQuest.Shops
 {
+    // Distingue a escolha de ação, a lista de produtos e a seleção de quantidade.
     public enum ShopMenuPhase { Actions, Browse, Quantity }
     public enum ShopEquipmentFilter { Weapons, Armor, Accessories }
 
@@ -77,6 +79,7 @@ namespace DragonQuest.Shops
                 var ordered = entries.OrderBy(entry => entry.Materia.Type).ToArray();
                 entries.Clear(); entries.AddRange(ordered);
             }
+            // Procura a entrada anterior após atualizar a lista para preservar a seleção quando possível.
             int found = entries.FindIndex(entry => entry.Same(previous));
             Index = found >= 0 ? found : Math.Max(0, Math.Min(Index, entries.Count - 1));
             if (Phase == ShopMenuPhase.Quantity && (found < 0 || Maximum == 0)) Phase = ShopMenuPhase.Browse;

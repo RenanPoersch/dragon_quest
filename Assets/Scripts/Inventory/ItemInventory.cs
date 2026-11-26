@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
 
+// Mantém os consumíveis do grupo em pilhas de itens da mesma definição.
 namespace DragonQuest.Inventory
 {
     public sealed class ItemStack
     {
         public ConsumableDefinition Definition { get; }
+        // Guarda o total de unidades disponível nesta pilha e o altera pelos métodos do inventário.
         public int Quantity { get; private set; }
         public ItemStack(ConsumableDefinition definition, int quantity)
         {
@@ -25,6 +27,7 @@ namespace DragonQuest.Inventory
         public ItemInventory(params ItemStack[] initialItems)
         {
             if (initialItems == null) throw new ArgumentNullException(nameof(initialItems));
+            // Verifica a unicidade dos identificadores ao montar o inventário.
             var ids = new HashSet<string>();
             foreach (ItemStack stack in initialItems)
             {

@@ -2,12 +2,15 @@ using DragonQuest.Progression;
 using System;
 using System.Collections.Generic;
 
+// Gerencia a seleção de personagem, matéria e encaixe para montar combinações de equipamento.
 namespace DragonQuest.Equipment
 {
     public sealed class MateriaMenuSocket
     {
         public PartyMember Member { get; }
+        // Identifica a cópia do equipamento que contém o encaixe.
         public EquipmentLoadout Equipment { get; }
+        // Identifica a posição do encaixe dentro desse equipamento.
         public int Index { get; }
         public MateriaMenuSocket(PartyMember member, EquipmentLoadout equipment, int index)
         { Member = member; Equipment = equipment; Index = index; }

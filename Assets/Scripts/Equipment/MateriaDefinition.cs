@@ -2,9 +2,12 @@ using System;
 using System.Collections.Generic;
 using DragonQuest.Combat;
 
+// Define os tipos de matéria e os modificadores que podem alterar comandos ou atributos.
 namespace DragonQuest.Equipment
 {
+    // Distingue matérias de magia, suporte, invocação e reforço físico.
     public enum MateriaType { Magic, Support, Summon, PhysicalEnhance }
+    // Identifica o efeito adicional aplicado pela matéria.
     public enum MateriaModifier { None, All, Infuse, AttackUp, DefenseUp, HpUp, MpUp }
 
     public sealed class MateriaDefinition

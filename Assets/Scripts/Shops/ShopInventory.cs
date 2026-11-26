@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using DragonQuest.Equipment;
 using DragonQuest.Inventory;
 
+// Representa produtos e estoques associados a cada categoria de loja.
 namespace DragonQuest.Shops
 {
     public enum ShopCategory { Items, Equipment, Materia }
 
+    // Reúne os dados de uma oferta, como a definição do produto que o jogador pode comprar.
     public sealed class ShopProduct
     {
         public string Id { get; }
@@ -48,6 +50,7 @@ namespace DragonQuest.Shops
         {
             if (string.IsNullOrWhiteSpace(id) || string.IsNullOrWhiteSpace(name) || !Enum.IsDefined(typeof(ShopCategory), category) || products == null)
                 throw new ArgumentException("Dados da loja invalidos.");
+            // Verifica que as entradas do catálogo têm identificadores distintos.
             var ids = new HashSet<string>();
             var definitions = new HashSet<object>();
             foreach (ShopProduct product in products)

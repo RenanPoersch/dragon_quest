@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using DragonQuest.Combat;
 
+// Resolve os efeitos das matérias equipadas e as habilidades disponíveis ao personagem.
 namespace DragonQuest.Equipment
 {
     public static class MateriaResolver
@@ -13,6 +14,7 @@ namespace DragonQuest.Equipment
         public static readonly AbilityDefinition LimitBreak = HeroUltimates.Omnislash;
 
         // A weapon has one basic-attack element; the first valid linked pair wins.
+        // Consulta o elemento obtido da configuração de matérias do equipamento.
         public static DamageElement InfusedElement(EquipmentLoadout equipment)
         {
             foreach (DamageElement element in InfusedElements(equipment)) return element;
@@ -37,6 +39,7 @@ namespace DragonQuest.Equipment
         public static List<AbilityDefinition> Resolve(PartyMember member)
         {
                         DamageElement element = InfusedElement(member.Weapon);
+            // Reaproveita o ataque padrão ou monta um ataque associado ao elemento da configuração.
             var basicAttack = element == DamageElement.None ? Attack : new AbilityDefinition("attack", "Ataque",
                 "Ataque basico com Infusao de " + ElementalAffinities.NameOf(element) + ". Sem custo de MP.",
                 0, 0, AbilityEffect.PhysicalDamage, TargetRule.Enemy, element: element);

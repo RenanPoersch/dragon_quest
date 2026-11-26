@@ -2,8 +2,10 @@ using DragonQuest.Progression;
 using System;
 using System.Collections.Generic;
 
+// Acompanha a seleção de personagem e equipamento e calcula os atributos exibidos na comparação.
 namespace DragonQuest.Equipment
 {
+    // Define as categorias do menu usadas para navegar entre os tipos de equipamento.
     public enum EquipmentMenuCategory { Weapons, Armor, Accessories }
 
     public sealed class EquipmentMenuStats
@@ -21,6 +23,7 @@ namespace DragonQuest.Equipment
             : throw new ArgumentOutOfRangeException(nameof(index));
 
         public EquipmentMenuStats(PartyMember member, EquipmentLoadout weapon, EquipmentLoadout armor, EquipmentLoadout accessory,
+            // Recebe a escolha de preservar matérias equipadas durante a operação.
             bool preserveEquippedMaterias = false)
         {
             if (member == null) return;

@@ -4,10 +4,12 @@ using System.Collections.Generic;
 using DragonQuest.Combat;
 using DragonQuest.Equipment;
 
+// Mantém a navegação entre conjuradores, magias e alvos disponíveis no menu.
 namespace DragonQuest.Inventory
 {
     public sealed class MagicMenuSession
     {
+        // Reúne as magias apresentadas para o personagem selecionado.
         private readonly List<AbilityDefinition> spells = new List<AbilityDefinition>();
         public IReadOnlyList<AbilityDefinition> Spells { get; }
         public int CasterIndex { get; private set; }
@@ -29,6 +31,7 @@ namespace DragonQuest.Inventory
 
         public void Refresh(PartyProgress party)
         {
+            // Guarda o identificador da magia para tentar manter a seleção ao refazer a lista.
             string selected = SelectedSpell?.Id;
             CasterIndex = Math.Max(0, Math.Min(CasterIndex, party.Members.Count - 1));
             TargetIndex = Math.Max(0, Math.Min(TargetIndex, party.Members.Count - 1));

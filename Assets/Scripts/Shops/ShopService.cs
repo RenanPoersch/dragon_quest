@@ -5,12 +5,15 @@ using System.Collections.Generic;
 using DragonQuest.Equipment;
 using DragonQuest.Exploration;
 
+// Aplica as regras de compra e venda que afetam o patrimônio do grupo e o ouro da jornada.
 namespace DragonQuest.Shops
 {
     // Transacoes sincronas: valida todos os limites antes de alterar ouro, estoque ou propriedade.
     public sealed class ShopService
     {
+        // Fornece acesso ao inventário afetado pelas transações.
         public PartyProgress Party { get; }
+        // Fornece acesso ao ouro disponível para comprar e vender.
         public ExplorationProgress Progress { get; }
         public IReadOnlyList<ShopInventory> Shops { get; }
 

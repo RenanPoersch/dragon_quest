@@ -2,6 +2,7 @@ using DragonQuest.Combat;
 using System;
 using System.Collections.Generic;
 
+// Separa a definição de um equipamento de cada cópia que pode ser equipada e receber matérias.
 namespace DragonQuest.Equipment
 {
     public enum EquipmentSlot { Weapon, Armor, Accessory }
@@ -11,6 +12,7 @@ namespace DragonQuest.Equipment
         public string Name { get; }
         public int AttackBonus { get; }
         public int DefenseBonus { get; }
+        // Indica quantos encaixes uma cópia criada a partir desta definição terá.
         public int SocketCount { get; }
         public EquipmentSlot Slot { get; }
         public int MagicBonus { get; }
@@ -33,6 +35,7 @@ namespace DragonQuest.Equipment
 
     public sealed class EquipmentLoadout
     {
+        // Mantém as matérias encaixadas nesta cópia específica.
         private readonly MateriaInstance[] sockets;
         public EquipmentDefinition Definition { get; }
         public string Id { get; }

@@ -2,15 +2,18 @@ using DragonQuest.Progression;
 using System;
 using System.Collections.Generic;
 
+// Mantém a seleção de item e de alvo durante o uso de consumíveis pelo menu.
 namespace DragonQuest.Inventory
 {
     // Selecting an item only moves the cursor; resources change when a target is confirmed.
     public sealed class ItemMenuSession
     {
+        // Reúne as pilhas apresentadas na lista de itens.
         private readonly List<ItemStack> items = new List<ItemStack>();
         private bool arranged;
         public IReadOnlyList<ItemStack> Items { get; }
         public int ItemIndex { get; private set; }
+        // Registra a posição do alvo selecionado para o consumível atual.
         public int TargetIndex { get; private set; }
         public bool ChoosingTarget { get; private set; }
         public bool ShowingKeyItems { get; private set; }

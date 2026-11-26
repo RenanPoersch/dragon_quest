@@ -1,5 +1,6 @@
 using System;
 
+// Define os dados e os efeitos de um tipo de item consumível.
 namespace DragonQuest.Inventory
 {
     public enum ItemEffect { RestoreHp, RestoreMp, CleansePoison, Revive }
@@ -9,6 +10,7 @@ namespace DragonQuest.Inventory
         public string Id { get; }
         public string Name { get; }
         public string Description { get; }
+        // Identifica a regra aplicada quando o item é usado no alvo.
         public ItemEffect Effect { get; }
         public int Power { get; }
 
