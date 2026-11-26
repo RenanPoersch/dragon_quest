@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using DragonQuest.Input;
 using UnityEngine;
 
+// Reproduz efeitos sonoros correspondentes às ações apresentadas no combate.
 namespace DragonQuest.Audio
 {
     [DisallowMultipleComponent]
@@ -11,7 +12,9 @@ namespace DragonQuest.Audio
     {
         private const int VoiceCount = 8;
         private readonly Dictionary<string, AudioClip> clips = new Dictionary<string, AudioClip>();
+        // Fornece fontes independentes para permitir que mais de um efeito soe ao mesmo tempo.
         private readonly AudioSource[] voices = new AudioSource[VoiceCount];
+        // Registra até quando cada fonte está ocupada para apoiar a seleção de uma voz disponível.
         private readonly double[] occupiedUntil = new double[VoiceCount];
         private BattleController battle;
         public string CurrentSound { get; private set; }

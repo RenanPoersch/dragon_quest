@@ -8,6 +8,7 @@ using DragonQuest.Input;
 using DragonQuest.Exploration;
 using DragonQuest.Shops;
 
+// Coordena a interação com a loja aberta e encaminha a entrada do jogador à seleção atual.
 namespace DragonQuest.Gameplay.Shops
 {
     public sealed class ShopController : MonoBehaviour
@@ -15,7 +16,9 @@ namespace DragonQuest.Gameplay.Shops
         private PlayerMovement movement;
         private BattleController battle;
         public ShopService Service { get; private set; }
+        // Identifica o estoque em exibição. Uma referência ausente indica que nenhuma loja está aberta.
         public ShopInventory ActiveShop { get; private set; }
+        // Guarda a seleção, o filtro e a quantidade usados pela interface da loja.
         public ShopMenuSession Menu { get; } = new ShopMenuSession();
         public int ActionIndex { get; private set; }
         public bool IsOpen => ActiveShop != null;

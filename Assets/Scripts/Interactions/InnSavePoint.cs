@@ -6,11 +6,13 @@ using System.Collections.Generic;
 using DragonQuest.Exploration;
 using UnityEngine;
 
+// Monta e anima o ponto de salvamento da estalagem e aciona o menu quando a interação é permitida.
 namespace DragonQuest.Interactions
 {
     // O circulo marca o chao sem bloquear a passagem. A arte anima em oito quadros, com a base registrada.
     public sealed class InnSavePoint : MonoBehaviour
     {
+        // Descreve a grade da imagem de animação e a quantidade de quadros esperada.
         public const int Columns=4, Rows=2, FrameCount=8;
         public const float FramesPerSecond=6f, Height=.95f;
         private readonly Sprite[] frames=new Sprite[FrameCount];
@@ -18,6 +20,7 @@ namespace DragonQuest.Interactions
         private Material material;
         private Action openSaveMenu;
         private PlayerMovement player;
+        // Consulta se o fluxo atual impede abrir o menu de salvamento.
         private Func<bool> isBlocked;
         private bool wasOnPoint, hasPlayerSample;
         private int teleportRevision;

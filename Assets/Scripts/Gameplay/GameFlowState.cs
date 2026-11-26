@@ -1,5 +1,6 @@
 using System;
 
+// Reúne as regras que decidem qual sistema pode receber a entrada do jogador a cada momento.
 namespace DragonQuest.Gameplay
 {
     public enum GameInputOwner { None, Exploration, Dialogue, Inventory, Shop, Battle, Save, Cinematic, Cheats, Ending }
@@ -7,6 +8,7 @@ namespace DragonQuest.Gameplay
     // Queries the live components, so loading a journey never leaves a stale copy of their state.
     public sealed class GameFlowState
     {
+        // Consulta as condições atuais por callbacks, sem guardar uma cópia do estado dos sistemas.
         private readonly Func<bool> ended, battle, inventory, dialogue, shop, save, cheats, cinematic, focused;
         public GameFlowState(Func<bool> ended, Func<bool> battle, Func<bool> inventory, Func<bool> dialogue,
             Func<bool> shop, Func<bool> save, Func<bool> cheats, Func<bool> cinematic, Func<bool> focused)
@@ -18,7 +20,9 @@ namespace DragonQuest.Gameplay
         // Dialogue is handled by PlayerInteraction itself; it must not hide behind this busy gate.
         public bool IsBusy => ended() || battle() || inventory() || ExternalMenuOpen;
         public bool BlocksTravel => IsBusy || dialogue();
+        // Combina as restrições de viagem com o foco da janela para controlar o movimento.
         public bool BlocksMovement => BlocksTravel || !focused();
+        // Exige que o solicitante seja o dono atual da entrada e que exista um dono válido.
         public bool CanReceiveInput(GameInputOwner owner) => owner != GameInputOwner.None && Owner == owner;
         public bool CanInteract => CanReceiveInput(GameInputOwner.Exploration);
         public bool CanTravel => CanInteract;

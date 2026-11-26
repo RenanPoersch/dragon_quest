@@ -3,6 +3,7 @@ using UnityEngine.InputSystem;
 using DragonQuest.Input;
 using DragonQuest.Exploration;
 
+// Localiza um alvo próximo ao jogador e encaminha a interação com o contexto da jornada.
 namespace DragonQuest.Interactions
 {
     [DefaultExecutionOrder(-50)]
@@ -11,6 +12,7 @@ namespace DragonQuest.Interactions
     {
         [SerializeField, Min(0.1f)] private float interactionRange = 1.6f;
         private PlayerMovement movement;
+        // Contém os alvos montados pelo construtor do mundo.
         private Interactable[] candidates;
         private InteractionContext context;
 
@@ -64,6 +66,7 @@ namespace DragonQuest.Interactions
         private Interactable FindNearest()
         {
             Interactable nearest = null;
+            // Compara distâncias ao quadrado usando o alcance de interação como limite inicial.
             float bestDistance = interactionRange * interactionRange;
             foreach (Interactable candidate in candidates)
             {

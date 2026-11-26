@@ -2,17 +2,20 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.LowLevel;
 
+// Padroniza a captura dos comandos do jogador e a leitura da entrada de menu.
 namespace DragonQuest.Input
 {
     // A screen reads once before handling its commands; consuming then blocks every later reader.
     public readonly struct MenuInput
     {
         public bool Available { get; }
+        // Guarda a direção reconhecida para a leitura atual do menu.
         public MenuDirection Direction { get; }
         public bool Confirm { get; }
         public bool Cancel { get; }
         public int Horizontal => Direction == MenuDirection.Left ? -1 : Direction == MenuDirection.Right ? 1 : 0;
         public int Vertical => Direction == MenuDirection.Up ? -1 : Direction == MenuDirection.Down ? 1 : 0;
+        // Converte a direção em um deslocamento inteiro para listas que navegam em um eixo.
         public int Step => Horizontal != 0 ? Horizontal : Vertical;
 
         internal MenuInput(MenuDirection direction, bool confirm, bool cancel)

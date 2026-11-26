@@ -7,6 +7,7 @@ using UnityEngine.SceneManagement;
 using DragonQuest.Exploration;
 using DragonQuest.Progression;
 
+// Escolhe e conduz a apresentação correspondente ao desfecho da jornada.
 namespace DragonQuest.Presentation.Cinematics.Endings
 {
     public sealed class EndingController : MonoBehaviour
@@ -14,7 +15,9 @@ namespace DragonQuest.Presentation.Cinematics.Endings
         private Dictionary<string,GameObject> maps;
         private PlayerMovement player;
         private CameraFollow follow;
+        // Protege o início da sequência para que o encerramento seja acionado uma vez.
         private bool started;
+        // Identifica o desfecho cuja sequência e arte serão exibidas.
         private GameEnding ending;
         private CastleDestroyedEndingPresentation aftermath;
         private HeroPossessedPresentation possession;

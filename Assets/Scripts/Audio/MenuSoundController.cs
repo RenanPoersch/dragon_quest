@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using DragonQuest.Input;
 using UnityEngine;
 
+// Centraliza os sons de navegação, confirmação, cancelamento e início da partida.
 namespace DragonQuest.Audio
 {
     public enum MenuSound { Navigate, Confirm, Cancel, NewGame }
@@ -12,6 +13,7 @@ namespace DragonQuest.Audio
     {
         public static void Play(MenuSound sound, MenuSoundContext context = MenuSoundContext.Other)
             => MenuSoundController.Instance?.Play(sound, context);
+        // Toca o som de navegação quando o valor selecionado muda.
         public static void Navigate<T>(T before, T after, MenuSoundContext context = MenuSoundContext.Other)
         {
             if (!EqualityComparer<T>.Default.Equals(before, after)) Play(MenuSound.Navigate, context);
@@ -25,6 +27,7 @@ namespace DragonQuest.Audio
     public sealed class MenuSoundController : MonoBehaviour
     {
         internal static MenuSoundController Instance { get; private set; }
+        // Guarda um clipe por categoria de som de menu.
         private readonly AudioClip[] clips = new AudioClip[4];
         private AudioSource voice;
         private int playedFrame = -1;

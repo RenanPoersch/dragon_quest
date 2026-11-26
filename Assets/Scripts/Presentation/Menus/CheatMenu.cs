@@ -7,6 +7,7 @@ using DragonQuest.Input;
 using DragonQuest.Exploration;
 using DragonQuest.Progression;
 
+// Oferece comandos de depuração durante a jornada e se integra ao controle de entrada dos menus.
 namespace DragonQuest.Presentation.Menus
 {
     // Run before exploration and combat so opening/closing cannot leak input to the game.
@@ -18,8 +19,10 @@ namespace DragonQuest.Presentation.Menus
         private PlayerMovement player;
         private BattleController battle;
         private SaveController saves;
+        // Dá acesso às mudanças de progresso usadas pelos comandos de depuração.
         private ExplorationProgress progress;
         private GUIStyle title, text, small, button, window;
+        // Mantém a opção selecionada, o nível escolhido e o quadro de fechamento do menu.
         private int selected, selectedLevel = 1, closedFrame = -1;
         private string message = "";
         public bool IsOpen { get; private set; }

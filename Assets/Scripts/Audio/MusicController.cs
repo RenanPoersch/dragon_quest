@@ -11,6 +11,7 @@ using DragonQuest.Combat;
 using DragonQuest.Interactions;
 using UnityEngine;
 
+// Seleciona a trilha conforme a situação do jogo e troca de música usando duas fontes de áudio.
 namespace DragonQuest.Audio
 {
     // Sources belong to the scene: returning to the title cannot leave an old soundtrack behind.
@@ -19,7 +20,9 @@ namespace DragonQuest.Audio
     {
         private const float MusicVolume = .52f;
         private readonly Dictionary<MusicCue, AudioClip> clips = new Dictionary<MusicCue, AudioClip>();
+        // Permite sobrepor a saída de uma faixa e a entrada da próxima durante a transição.
         private readonly AudioSource[] sources = new AudioSource[2];
+        // Guarda os volumes de partida e de destino para cada uma das fontes.
         private readonly float[] from = new float[2], target = new float[2];
         private SaveController saves;
         private WorldLocationController locations;

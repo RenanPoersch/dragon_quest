@@ -6,10 +6,12 @@ using DragonQuest.Presentation.Menus;
 using DragonQuest.Progression;
 using UnityEngine;
 
+// Encaminha os eventos da cena ao apresentador que controla o menu de inventário.
 namespace DragonQuest.Presentation.Menus
 {
     public sealed class InventoryHud : MonoBehaviour
     {
+        // Mantém o objeto que recebe as chamadas de atualização, desenho e descarte do componente.
         public InventoryMenuPresenter Presenter { get; private set; }
         public void Initialize(BattleController battleController, AncientSecrets ancientSecrets)
         {

@@ -4,13 +4,16 @@ using System.Collections.Generic;
 using UnityEngine;
 using DragonQuest.Progression;
 
+// Define os mapas disponíveis e controla a navegação entre eles com acesso aos segredos da jornada.
 namespace DragonQuest.Exploration
 {
     public sealed class MapDefinition
     {
         public string Id { get; }
         public string Name { get; }
+        // Delimita a área do mundo usada para enquadrar este mapa.
         public Rect Bounds { get; }
+        // Representa um limite visual adicional quando o mapa precisa restringir o enquadramento ao piso coberto.
         public Rect? CoveredGroundBounds { get; }
         public Vector2 Spawn { get; }
         public float CameraSize { get; }
@@ -50,6 +53,7 @@ namespace DragonQuest.Exploration
         {
             secrets = ancientSecrets;
             var items=CompactShopLayout.Items; var materia=CompactShopLayout.Materia;
+            // Reúne as definições que identificam os mapas e seus pontos de entrada.
             var definitions = new[]
             {
                 new MapDefinition(World, "ILHA / MAPA GLOBAL", WorldLayout.Bounds, WorldLayout.Spawn, 6.85f),

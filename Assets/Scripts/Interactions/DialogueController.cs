@@ -2,11 +2,14 @@ using DragonQuest.Content;
 using UnityEngine;
 using DragonQuest.Audio;
 
+// Liga o estado da conversa à revelação gradual do texto e à seleção de respostas.
 namespace DragonQuest.Interactions
 {
     public sealed class DialogueController : MonoBehaviour
     {
+        // Guarda a página e a escolha ativas durante a conversa.
         private readonly DialogueSession session = new DialogueSession();
+        // Controla quanto do texto já pode ser lido e quando as escolhas ficam liberadas.
         private readonly DialogueTextReveal reveal = new DialogueTextReveal();
 
         public bool IsOpen => session.IsOpen;

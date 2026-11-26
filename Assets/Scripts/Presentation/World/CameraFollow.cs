@@ -1,6 +1,7 @@
 using DragonQuest.Presentation.World.Rendering;
 using UnityEngine;
 
+// Enquadra o jogador de acordo com os limites e o tipo de câmera de cada região.
 namespace DragonQuest.Presentation.World
 {
     [DefaultExecutionOrder(100)]
@@ -11,8 +12,10 @@ namespace DragonQuest.Presentation.World
         private Camera view;
         private Rect worldBounds;
         private Rect? coveredGroundBounds;
+        // Indica quando o mapa usa um enquadramento fixo.
         private bool fixedFrame;
         private float requestedSize;
+        // Seleciona a câmera lateral das regiões que usam essa perspectiva.
         private bool sideView;
         private float sideHeight;
         private bool perspectiveView;

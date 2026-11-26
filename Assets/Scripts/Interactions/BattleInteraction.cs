@@ -7,6 +7,7 @@ using DragonQuest.Combat;
 using DragonQuest.Exploration;
 using DragonQuest.Input;
 
+// Conecta um ponto de desafio no mapa ao diálogo, à batalha e ao progresso da exploração.
 namespace DragonQuest.Interactions
 {
     public sealed class BattleInteraction : Interactable
@@ -14,7 +15,9 @@ namespace DragonQuest.Interactions
         private PlayerMovement player;
         private DialogueController dialogue;
         private BattleController battle;
+        // Busca o progresso da jornada ativa quando o desafio precisa consultá-lo.
         private Func<ExplorationProgress> getProgress;
+        // Mantém a referência ao encontro iniciado por esta interação.
         private BattleSession encounter;
         private bool challenged;
 

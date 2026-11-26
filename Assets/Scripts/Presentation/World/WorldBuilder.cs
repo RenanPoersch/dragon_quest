@@ -10,17 +10,21 @@ using DragonQuest.Interactions;
 using DragonQuest.Progression;
 using UnityEngine;
 
+// Monta os objetos, mapas e pontos de interação usados na exploração.
 namespace DragonQuest.Presentation.World
 {
     public sealed class WorldBuilder
     {
         private readonly Transform root;
         private readonly ObliqueScenery scenery;
+        // Compartilha o material sem atrito e sem quique entre as partes físicas que o usam.
         private readonly PhysicsMaterial2D frictionless;
         private readonly AncientSecrets secrets;
         private readonly DragonProgress dragon;
         private readonly WorldNavigation navigation;
+        // Dá aos objetos construídos acesso às ações de batalha, audiência e estalagem.
         private readonly WorldActions actions;
+        // Guarda o ponto de salvamento construído para entregá-lo ao bootstrap no resultado.
         private InnSavePoint innSavePoint;
 
         public WorldBuilder(Transform root, ObliqueScenery scenery, PhysicsMaterial2D frictionless,

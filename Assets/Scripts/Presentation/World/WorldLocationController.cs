@@ -5,16 +5,19 @@ using System.Collections.Generic;
 using DragonQuest.Exploration;
 using DragonQuest.Interactions;
 
+// Aplica à cena as viagens decididas pela navegação, incluindo mapa ativo, posição e câmera.
 namespace DragonQuest.Presentation.World
 {
     // Alterna ambientes do versão inicial sem recriar o herói ou o estado da sessão.
     public sealed class WorldLocationController : MonoBehaviour
     {
+        // Associa os identificadores dos locais aos objetos que podem ser ativados na troca de mapa.
         private Dictionary<string, GameObject> mapRoots;
         private WorldNavigation navigation;
         private PlayerMovement player;
         private CameraFollow cameraFollow;
         private ThroneRoomDepth throneDepth;
+        // Consulta o fluxo do jogo antes de autorizar uma tentativa de viagem.
         private System.Func<bool> travelBlocked;
 
         public string LocationId => navigation?.Current.Id ?? WorldNavigation.World;

@@ -4,13 +4,16 @@ using DragonQuest.Presentation.Battle;
 using UnityEngine;
 using DragonQuest.Combat;
 
+// Compõe o HUD de combate a partir dos comandos, da arena e dos elementos gráficos da batalha.
 namespace DragonQuest.Presentation.Battle
 {
     public sealed class BattleHud : MonoBehaviour
     {
+        // Desenha as opções de combate para a seleção atual.
         private readonly BattleMenuPresenter commands = new BattleMenuPresenter();
         public BattleMenuPresenter Menu => commands;
         private readonly BattleHudGraphics graphics = new BattleHudGraphics();
+        // Representa a parte visual da arena associada à batalha observada.
         private BattleArenaPresentation arena;
         public BattleArenaPresentation Arena => arena;
 
