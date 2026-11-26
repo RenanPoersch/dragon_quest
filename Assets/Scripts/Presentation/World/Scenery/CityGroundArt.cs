@@ -2,15 +2,18 @@ using DragonQuest.Presentation.World.Rendering;
 using DragonQuest.Exploration.Layouts;
 using UnityEngine;
 
+// Monta a superfície de chão da cidade e mapeia a pintura nos limites do terreno.
 namespace DragonQuest.Presentation.World.Scenery
 {
     // Uma pintura cobre toda a planta; as alturas mantem a ponte e o fosso fisicamente legiveis.
     public static class CityGroundArt
     {
+        // Reutiliza os limites do terreno definidos pelo layout da cidade.
         public static Rect TerrainBounds => CityLayout.TerrainBounds;
         public static bool ReplacesBlock(string name) => name == "Chao escuro da periferia"
             || name.StartsWith("Patio") || name == "Canteiro do bairro";
 
+        // Converte uma posição do chão em coordenadas para a textura da cidade.
         public static Vector2 MapUv(Vector2 ground)
         {
             Rect bounds = TerrainBounds;

@@ -1,12 +1,15 @@
 using System;
 using UnityEngine;
 
+// Define as superfícies do atlas de terreno e as regras de projeção das texturas.
 namespace DragonQuest.Presentation.World.Rendering
 {
     public enum PixelSurface { None = -1, Grass, Dirt, Paving, Sand, Wood, Wall, Roof, Basalt, Leaves, Water, Lava, Fabric, Auto }
     public static class PixelSurfaces
     {
+        // Define a escala de repetição da textura no espaço do mundo.
         public const float TileSize = 2f;
+        // Classifica o bloco para escolher o tipo de superfície aplicado à malha.
         public static PixelSurface ForBlock(string name, bool solid, int order)
         {
             name = name.ToLowerInvariant();

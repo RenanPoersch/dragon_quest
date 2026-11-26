@@ -9,12 +9,15 @@ using DragonQuest.Interactions;
 using DragonQuest.Progression;
 using UnityEngine;
 
+// Monta a pedreira com fundo pintado, objetos do mapa e a apresentação das runas.
 namespace DragonQuest.Presentation.World.Scenery
 {
     public sealed class QuarryPixelScenery : MonoBehaviour
     {
+        // Acompanha os objetos de renderização criados em execução para seu descarte.
         private readonly List<UnityEngine.Object> owned = new List<UnityEngine.Object>();
         private Material propMaterial;
+        // Guarda o shader usado para desenhar os elementos luminosos da pedreira.
         private Shader runeShader;
         private const float TotemHeight = 2.65f;
 

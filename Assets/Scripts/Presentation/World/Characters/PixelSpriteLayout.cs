@@ -2,13 +2,16 @@ using DragonQuest.Presentation.World.Rendering;
 using System;
 using UnityEngine;
 
+// Descreve as direções, os recortes e o alinhamento dos quadros de personagens.
 namespace DragonQuest.Presentation.World.Characters
 {
     // As primeiras quatro direcoes usam o atlas cardinal; as demais, o atlas diagonal.
     public enum PixelDirection { Down, Left, Right, Up, DownLeft, DownRight, UpLeft, UpRight }
     public readonly struct PixelFrame
     {
+        // Descreve a posição e o tamanho do recorte na folha de sprites.
         public readonly int X, Y, Width, Height;
+        // Guarda o alinhamento horizontal do pé, usado para estabilizar a pose.
         public readonly float FootX;
         public PixelFrame(int x, int y, int width, int height, float footX)
         { X = x; Y = y; Width = width; Height = height; FootX = footX; }

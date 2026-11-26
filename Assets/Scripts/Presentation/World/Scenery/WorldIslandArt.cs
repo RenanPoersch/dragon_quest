@@ -4,10 +4,12 @@ using System;
 using System.Linq;
 using UnityEngine;
 
+// Gera a geometria usada para desenhar o chão da ilha e a barreira mágica.
 namespace DragonQuest.Presentation.World.Scenery
 {
     public static class WorldIslandArt
     {
+        // Produz a malha que representa as áreas de terreno.
         public static ObliqueMeshData Ground()
         {
             var mesh = new ObliqueMeshData();
@@ -22,6 +24,7 @@ namespace DragonQuest.Presentation.World.Scenery
             return mesh;
         }
 
+        // Produz a geometria usada para mostrar a barreira mágica.
         public static ObliqueMeshData Ward()
         {
             var mesh = new ObliqueMeshData();

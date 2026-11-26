@@ -2,14 +2,17 @@ using DragonQuest.Infrastructure;
 using System;
 using UnityEngine;
 
+// Anima a chama do altar das ruínas a partir de uma folha de sprites.
 namespace DragonQuest.Presentation.World.Animations
 {
     [RequireComponent(typeof(SpriteRenderer))]
     public sealed class RuinsFlameAnimation : MonoBehaviour
     {
+        // Define a quantidade de quadros preparados e o ritmo da animação.
         public const int FrameCount = 8, FramesPerSecond = 10;
         private const int Columns = 4, Rows = 2, PixelWidth = 32, PixelHeight = 48;
         private readonly Sprite[] frames = new Sprite[FrameCount];
+        // Guarda as texturas criadas para os quadros e permite descartá-las junto da animação.
         private readonly Texture2D[] textures = new Texture2D[FrameCount];
         private SpriteRenderer renderer;
         private float elapsed, phaseOffset;

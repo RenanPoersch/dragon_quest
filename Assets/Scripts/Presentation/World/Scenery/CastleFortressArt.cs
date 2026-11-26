@@ -2,6 +2,7 @@ using DragonQuest.Presentation.World.Rendering;
 using System;
 using UnityEngine;
 
+// Gera as malhas que compõem o castelo, incluindo pedra, detalhes e tochas.
 namespace DragonQuest.Presentation.World.Scenery
 {
     // Fortaleza de alvenaria: material proprio, terracos de pedra, ameias e portal em arco.
@@ -10,6 +11,7 @@ namespace DragonQuest.Presentation.World.Scenery
         private static readonly Color Stone = ObliqueMeshData.Hex("A2A8AF");
         private static readonly Color Dark = ObliqueMeshData.Hex("242A31");
         private static readonly Color Gold = ObliqueMeshData.Hex("BAA273");
+        // Define a posição horizontal da tocha e a altura em que sua chama é desenhada.
         public const float TorchOffsetX = 1.9f, TorchFlameHeight = 2.19f;
 
         public static Vector3 TorchFlamePosition(float x, Vector2 size)
@@ -17,6 +19,7 @@ namespace DragonQuest.Presentation.World.Scenery
 
         public static PeripheryBuildingArt Building(string name, Vector2 size)
         {
+            // Separa a malha principal do castelo da arte de detalhe e brilho.
             var art = new PeripheryBuildingArt(); var mesh = art.Body;
             bool tower = name.StartsWith("Torre");
             float w = size.x, d = size.y, wall = tower ? 7.1f : 5.8f, front = -d / 2 - 0.025f;

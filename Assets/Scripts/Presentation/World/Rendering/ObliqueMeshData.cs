@@ -2,14 +2,18 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+// Acumula os dados de geometria que formam uma malha de cenário.
 namespace DragonQuest.Presentation.World.Rendering
 {
     // Dados de malha independentes do renderer, tambem usados na verificacao e na previa.
     public sealed class ObliqueMeshData
     {
+        // Guarda as posições dos pontos que compõem a geometria.
         public readonly List<Vector3> Vertices = new List<Vector3>();
         public readonly List<Color> Colors = new List<Color>();
+        // Usa índices dos vértices para indicar as faces que a malha deve desenhar.
         public readonly List<int> Triangles = new List<int>();
+        // Vincula cada vértice à posição correspondente na textura.
         public readonly List<Vector2> UVs = new List<Vector2>();
         public readonly List<Vector2> Surfaces = new List<Vector2>();
         public PixelSurface DefaultSurface { get; set; } = PixelSurface.None;

@@ -4,13 +4,16 @@ using System.Collections.Generic;
 using DragonQuest.Progression;
 using UnityEngine;
 
+// Desenha os estados visuais do dragão no covil e acompanha a progressão do despertar.
 namespace DragonQuest.Presentation.World.Animations
 {
     public sealed class DragonLairAnimation : MonoBehaviour
     {
         private readonly List<UnityEngine.Object> owned = new List<UnityEngine.Object>();
+        // Mantém o estado e o tempo do despertar que determinam a pose atual.
         private readonly DragonAwakening awakening = new DragonAwakening();
         private SpriteRenderer body;
+        // Guarda os quadros recortados da folha que representa o dragão no mapa.
         private Sprite[] poses;
         public DragonRestState State => awakening.State;
         public int CurrentFrame => awakening.Frame;

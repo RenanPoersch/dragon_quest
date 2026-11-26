@@ -4,12 +4,15 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+// Oferece a base para interiores com imagem de fundo, recortes em primeiro plano e geometria de colisão.
 namespace DragonQuest.Presentation.World.Scenery
 {
     // Pintura integral com contornos de profundidade e bases fisicas registrados em UV.
     public abstract class PaintedInteriorScenery : MonoBehaviour
     {
+        // Acompanha os recursos criados em execução para liberá-los quando o interior é destruído.
         private readonly List<UnityEngine.Object> owned = new List<UnityEngine.Object>();
+        // Recebe a pintura e os parâmetros de montagem fornecidos pelo interior concreto.
         protected void BuildPainting(string name,string resource,float halfHeight,float aspect,
             Vector2[][] foregrounds,Vector2[] anchors,Vector2[][] fixtures,PhysicsMaterial2D physics)
         {

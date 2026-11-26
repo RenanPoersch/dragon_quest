@@ -1,6 +1,7 @@
 using DragonQuest.Exploration.Layouts;
 using UnityEngine;
 
+// Ajusta a altura dos elementos visuais conforme a profundidade do salão do trono.
 namespace DragonQuest.Presentation.World.Characters
 {
     // Eleva apenas a apresentacao (sprite e sombra); colisores e interacoes conservam coordenadas XY.
@@ -9,6 +10,7 @@ namespace DragonQuest.Presentation.World.Characters
     public sealed class ThroneRoomDepth : MonoBehaviour
     {
         private Transform[] visuals;
+        // Preserva a posição de referência dos elementos antes de aplicar o ajuste visual.
         private Vector3[] origins;
         private void OnEnable() => Refresh();
         public void Refresh()
@@ -18,6 +20,7 @@ namespace DragonQuest.Presentation.World.Characters
                 visuals=new Transform[transform.childCount]; origins=new Vector3[visuals.Length];
                 for(int i=0;i<visuals.Length;i++) { visuals[i]=transform.GetChild(i); origins[i]=visuals[i].localPosition; }
             }
+            // Consulta a altura correspondente à posição atual no salão.
             float height=ThroneRoomLayout.FloorHeight(transform.position);
             for(int i=0;i<visuals.Length;i++) if(visuals[i]!=null) visuals[i].localPosition=origins[i]+Vector3.back*height;
         }

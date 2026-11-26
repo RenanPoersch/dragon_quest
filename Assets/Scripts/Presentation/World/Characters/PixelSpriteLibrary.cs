@@ -4,17 +4,20 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+// Carrega folhas de sprites de personagem e disponibiliza seus quadros para desenho e animação.
 namespace DragonQuest.Presentation.World.Characters
 {
     public sealed class PixelSpriteAtlas : IDisposable
     {
         public Texture2D Texture { get; }
+        // Guarda os sprites criados a partir dos recortes da textura.
         public Sprite[] Sprites { get; }
         public PixelSpriteAtlas(string resource)
         {
             Texture = GameAssets.Required<Texture2D>("PixelArt/" + resource);
             Color32[] pixels = Texture.GetPixels32(); var alpha = new byte[pixels.Length];
             for (int i = 0; i < pixels.Length; i++) alpha[i] = pixels[i].a;
+            // Distingue as folhas de caminhada que recebem tratamento próprio.
             bool walkingSheet = resource == "ArenWalk" || resource == "ArenDiagonalWalk";
             bool chest = resource == "ChestStates";
             bool worldPoi = resource == "WorldPoiSprites";

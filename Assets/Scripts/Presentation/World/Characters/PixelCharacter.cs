@@ -2,10 +2,12 @@ using DragonQuest.Presentation.World.Rendering;
 using DragonQuest.Exploration;
 using UnityEngine;
 
+// Atualiza a representação do personagem na exploração conforme posição e movimento.
 namespace DragonQuest.Presentation.World.Characters
 {
     public sealed class PixelCharacter : MonoBehaviour
     {
+        // Vincula a representação visual à posição acompanhada no mapa.
         private Transform anchor;
         private PlayerMovement movement;
         private SpriteRenderer sprite;
@@ -28,6 +30,7 @@ namespace DragonQuest.Presentation.World.Characters
         {
             FaceCamera();
             if (movement == null) return;
+            // Mede o deslocamento desde o quadro anterior para alimentar a animação de caminhada.
             float distance = Vector2.Distance(anchor.position, previous); previous = anchor.position;
             bool teleported = teleportRevision != movement.TeleportRevision;
             teleportRevision = movement.TeleportRevision;

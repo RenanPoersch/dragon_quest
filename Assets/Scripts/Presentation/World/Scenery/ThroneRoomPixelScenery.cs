@@ -4,10 +4,12 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+// Monta a arte do salão do trono em planos desenhados em profundidades distintas.
 namespace DragonQuest.Presentation.World.Scenery
 {
     public sealed class ThroneRoomPixelScenery : MonoBehaviour
     {
+        // Guarda os recursos criados por esta montagem para destruí-los no encerramento.
         private readonly List<UnityEngine.Object> owned=new List<UnityEngine.Object>();
         public void Build()
         {
@@ -23,6 +25,7 @@ namespace DragonQuest.Presentation.World.Scenery
             Draw("Pilar direito / profundidade",new[]{new Vector2(.88f,0),new Vector2(1,0),new Vector2(1,.72f),
                 new Vector2(.90f,.65f),new Vector2(.88f,.53f)},15,foreground);
         }
+        // Constrói um plano com o contorno, a profundidade e o material fornecidos.
         private void Draw(string name,Vector2[] outline,float depth,Material material)
         {
             var vertices=new Vector3[outline.Length];var uv=new Vector2[outline.Length];var colors=new Color[outline.Length];

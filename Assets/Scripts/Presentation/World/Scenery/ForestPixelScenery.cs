@@ -4,6 +4,7 @@ using DragonQuest.Exploration.Layouts;
 using DragonQuest.Progression;
 using UnityEngine;
 
+// Monta o cenário da floresta leste e liga sua representação visual às interações dos segredos.
 namespace DragonQuest.Presentation.World.Scenery
 {
     // One continuous painting, registered to the existing fixed oblique camera and XY interaction map.
@@ -13,6 +14,7 @@ namespace DragonQuest.Presentation.World.Scenery
         private const float ArtHalfHeight = 8f, ArtHalfWidth = 128f / 9f;
         private Mesh mesh;
         private Material material;
+        // Consulta o progresso que determina a disponibilidade da escama no cenário.
         private AncientSecrets secrets;
         private GameObject scale;
         private Mesh scaleMesh;
@@ -21,6 +23,7 @@ namespace DragonQuest.Presentation.World.Scenery
         public void Build(AncientSecrets progress = null)
         {
             secrets = progress;
+            // Carrega o fundo indispensável para montar a floresta.
             var texture = GameAssets.Required<Texture2D>("PixelArt/EastForestBackdrop");
             var shader = GameAssets.Required<Shader>("ForestPixelBackdrop");
             material = new Material(shader) { name = "Floresta ancestral / pintura pixel art" };

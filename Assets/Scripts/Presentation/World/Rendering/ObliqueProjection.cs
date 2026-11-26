@@ -1,12 +1,15 @@
 using System;
 using UnityEngine;
 
+// Converte posições do mundo para o plano usado pela câmera oblíqua e pelo enquadramento do mapa.
 namespace DragonQuest.Presentation.World.Rendering
 {
     // XY continua sendo o chao fisico; -Z representa altura apenas na apresentacao.
     public static class ObliqueProjection
     {
+        // Define a inclinação da vista em relação ao chão.
         public const float TiltDegrees = 55f;
+        // Define a rotação horizontal usada ao construir a projeção.
         public const float YawDegrees = 22f;
         public const float Distance = 60f;
         public const float HeroCenterHeight = 0.72f;

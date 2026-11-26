@@ -4,10 +4,12 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+// Monta o panorama do covil e cria a representação animada do dragão no mapa.
 namespace DragonQuest.Presentation.World.Scenery
 {
     public sealed class DragonLairScenery : MonoBehaviour
     {
+        // Acompanha os recursos criados em execução para descarte junto com o cenário.
         private readonly List<UnityEngine.Object> owned = new List<UnityEngine.Object>();
         private Material material;
 
@@ -35,6 +37,7 @@ namespace DragonQuest.Presentation.World.Scenery
             var renderer = panorama.AddComponent<SpriteRenderer>(); renderer.sprite = sprite; renderer.sharedMaterial = material;
         }
 
+        // Cria o visual do dragão vinculado à posição indicada pelo chamador.
         public DragonLairAnimation CreateDragon(Transform anchor)
         {
             var visual = new GameObject("Dragao / sono e despertar em pixel art");

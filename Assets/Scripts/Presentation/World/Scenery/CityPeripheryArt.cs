@@ -3,12 +3,15 @@ using DragonQuest.Exploration.Layouts;
 using System;
 using UnityEngine;
 
+// Separa a geometria da periferia da cidade em corpo, detalhes e brilho.
 namespace DragonQuest.Presentation.World.Scenery
 {
     public sealed class PeripheryBuildingArt
     {
+        // Recebe as faces que formam o volume principal da construção.
         public readonly ObliqueMeshData Body = new ObliqueMeshData();
         public readonly ObliqueMeshData Details = new ObliqueMeshData();
+        // Recebe as partes luminosas para que possam usar uma apresentação própria.
         public readonly ObliqueMeshData Glow = new ObliqueMeshData();
     }
 

@@ -4,13 +4,16 @@ using DragonQuest.Exploration.Layouts;
 using System.Collections.Generic;
 using UnityEngine;
 
+// Compõe as ruínas laterais com planos pintados e ajustes de profundidade.
 namespace DragonQuest.Presentation.World.Scenery
 {
     // Pixel art layers have their own depth so foreground pillars really occlude the hero.
     [DefaultExecutionOrder(120)]
     public sealed class RuinsSideScenery : MonoBehaviour
     {
+        // Mantém as referências dos planos de arte criados na montagem.
         private readonly List<Transform> planes = new List<Transform>();
+        // Guarda os ajustes usados com os planos ao atualizar sua posição.
         private readonly List<float> compensation = new List<float>();
         private readonly List<Object> pixelAssets = new List<Object>();
         private Material material;

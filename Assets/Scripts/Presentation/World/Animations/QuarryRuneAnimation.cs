@@ -3,12 +3,14 @@ using System;
 using DragonQuest.Progression;
 using UnityEngine;
 
+// Anima o surgimento e a flutuação da runa da pedreira.
 namespace DragonQuest.Presentation.World.Animations
 {
     [ExecuteAlways]
     [RequireComponent(typeof(SpriteRenderer))]
     public sealed class QuarryRuneAnimation : MonoBehaviour
     {
+        // Define a quantidade de quadros e a grade do arquivo de origem.
         public const int FrameCount = 8, Columns = 4, Rows = 2;
         private const float FaceWidth = .37f, FaceHeight = .46f;
         public const float FloatingScale = 4f, RevealDuration = 2f;
@@ -43,6 +45,7 @@ namespace DragonQuest.Presentation.World.Animations
             if (!Source.isReadable || Source.width%Columns != 0 || Source.height%Rows != 0)
                 throw new InvalidOperationException("Atlas da runa deve ser legivel, com quatro colunas e duas linhas: " + symbol);
             Color32[] pixels = Source.GetPixels32();
+            // Calcula as dimensões de cada recorte a partir da grade de quadros.
             int width = Source.width/Columns, height = Source.height/Rows;
             var pivots = new Vector2[FrameCount];
             float halfWidth = 1, halfHeight = 1;
