@@ -24,8 +24,6 @@ O destino configurado de build é Windows. O executável desktop inicia em janel
 | Salvar diretamente, quando permitido | F5 | Pelo menu de save |
 | Preparar fuga de batalha comum | Segurar Q + E | Segurar L2 + R2 |
 
-Chefes não permitem fuga. O menu de salvar não tem botão Voltar; use cancelamento. O inventário permite retornar ao título pela opção Sair. O menu de ajustes de partida abre com backquote no teclado ou Select/clique do analógico direito no controle.
-
 ## Jornada e dados locais
 
 O salvamento manual fica disponível no mapa global e na pousada, fora dos estados bloqueados. Há três slots. Os arquivos ficam em Application.persistentDataPath/Saves e as conquistas dos finais em Application.persistentDataPath/Achievements. Heróis que terminam uma batalha mortos não recebem XP.
@@ -37,4 +35,4 @@ O salvamento manual fica disponível no mapa global e na pousada, fora dos estad
 - [Índice da documentação](Docs/README.md): contratos atuais e referências de autoria em uso.
 - Assets/Scripts contém runtime; Assets/Editor contém ferramentas de autoria; Tools contém utilitários externos. Diálogos usam um catálogo com falantes explícitos, menus compartilham a leitura de comandos, GameFlowState define permissões e GameAssets padroniza o carregamento de recursos.
 
-A documentação vigente fica em Docs/Current. Os testes e registros antigos foram retirados do projeto.
+A documentação vigente fica em Docs/Current.
