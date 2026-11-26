@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 
+// Calcula quanto texto deve aparecer ao longo do tempo durante um diálogo.
 namespace DragonQuest.Interactions
 {
     // Reveals whole text elements, including accented letters and surrogate pairs.
@@ -8,7 +9,9 @@ namespace DragonQuest.Interactions
     {
         public const float CharactersPerSecond = 48f;
         private string text = string.Empty;
+        // Guarda os índices dos elementos de texto para revelar caracteres compostos como uma unidade.
         private int[] elements = Array.Empty<int>();
+        // Registra quantos elementos já podem aparecer na interface.
         private int shown;
         private double elapsed;
 

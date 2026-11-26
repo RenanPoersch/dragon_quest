@@ -1,10 +1,12 @@
 using UnityEngine;
 using DragonQuest.Content;
 
+// Registra a abertura de um baú e sincroniza sua aparência com o progresso da exploração.
 namespace DragonQuest.Interactions
 {
     public sealed class ChestInteraction : Interactable
     {
+        // Identifica este baú nos dados da jornada.
         private string chestId;
         private int goldReward;
         private System.Action<bool> showState;
@@ -24,6 +26,7 @@ namespace DragonQuest.Interactions
 
         private void Update()
         {
+            // Consulta o progresso conhecido e usa o estado local como alternativa quando a consulta não está disponível.
             bool savedState = wasOpened?.Invoke() ?? opened;
             if (savedState != opened) { opened = savedState; showState?.Invoke(opened); }
         }

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using DragonQuest.Content;
 
+// Mantém as páginas, escolhas e callbacks de uma conversa aberta.
 namespace DragonQuest.Interactions
 {
     // Fluxo de paginas/escolhas independente de MonoBehaviour.
@@ -9,8 +10,10 @@ namespace DragonQuest.Interactions
     {
         private string[] pages;
         private IReadOnlyList<string> choices;
+        // Marca a página exibida enquanto o jogador avança pela conversa.
         private int pageIndex;
         private Action completion;
+        // Guarda a ação associada ao fechamento da sessão.
         private Action closeAction;
         private Action<int> choiceCallback;
         public bool IsOpen => pages != null;

@@ -4,14 +4,17 @@ using UnityEngine;
 using DragonQuest.Progression;
 using DragonQuest.Content;
 
+// Coordena o despertar do dragão, o início do encontro e a aparência após a derrota.
 namespace DragonQuest.Interactions
 {
     public sealed class DragonInteraction : Interactable
     {
+        // Define a antecedência usada na preparação da música do confronto.
         public const float BattleMusicLeadSeconds = 1f;
         private DragonProgress progress;
         private Action startBattle;
         private GameObject body, essence;
+        // Dá acesso ao estado visual do dragão antes da batalha.
         private DragonLairAnimation restingDragon;
         private DialogueController battleDialogue;
         private int finalPageVersion, encounterPageCount;

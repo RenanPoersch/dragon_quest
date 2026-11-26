@@ -3,12 +3,15 @@ using System;
 using UnityEngine;
 using DragonQuest.Progression;
 
+// Coordena o encontro com o Rei Rubro, incluindo a apresentação do grupo e o início do combate.
 namespace DragonQuest.Interactions
 {
     public sealed class TyrantInteraction : Interactable
     {
+        // Obtém o grupo atual no momento em que a interação é executada.
         private Func<PartyProgress> getParty;
         private Action startBattle;
+        // Entrega o controlador de conversa à rotina de audiência.
         private Action<DialogueController> presentParty;
         private GameObject spirit;
         public void Initialize(Func<PartyProgress> party,Action start,GameObject spiritModel,Action<DialogueController> partyPresentation=null)

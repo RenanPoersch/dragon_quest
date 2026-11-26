@@ -3,13 +3,16 @@ using DragonQuest.Audio;
 using DragonQuest.Progression;
 using DragonQuest.Content;
 
+// Conecta os objetos dos enigmas antigos ao progresso compartilhado e à sua apresentação no mapa.
 namespace DragonQuest.Interactions
 {
     public enum SecretObject { Peasant, Altar, Inscription, Monolith, ClawStone, HollowTree }
 
     public sealed class AncientSecretInteraction : Interactable
     {
+        // Determina qual regra o objeto deve aplicar, como conversar, examinar ou ativar.
         private SecretObject kind;
+        // Identifica o símbolo usado na sequência quando o objeto é um monólito.
         private MonolithSymbol symbol;
         private AncientSecrets secrets;
         private GameObject light;

@@ -7,16 +7,19 @@ using DragonQuest.Interactions;
 using DragonQuest.Input;
 using UnityEngine;
 
+// Desenha a caixa de diálogo e prepara os recursos visuais usados por falas, escolhas e retratos.
 namespace DragonQuest.Presentation.Dialogue
 {
     // Every conversation, including choices and narrated discoveries, uses this layout.
     public sealed class DialoguePresentation : IDisposable
     {
         public const float ReferencePanelHeight = 180f;
+        // Define a fração usada para o retrato avançar além dos limites do painel.
         public const float PortraitOverhang = .20f;
         public const float PortraitBottomInset = 8f;
 
         private readonly Texture2D gradient;
+        // Armazena retratos carregados para evitar buscar a mesma textura em todo desenho.
         private readonly Dictionary<string, Texture2D> portraits = new Dictionary<string, Texture2D>();
         private const float ChoiceTextInset = 48;
         private Texture2D hand;

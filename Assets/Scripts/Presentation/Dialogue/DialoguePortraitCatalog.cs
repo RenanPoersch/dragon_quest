@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using DragonQuest.Content;
 
+// Relaciona os falantes às chaves e aos caminhos dos recursos de retrato.
 namespace DragonQuest.Presentation.Dialogue
 {
     public static class DialoguePortraitCatalog
@@ -13,6 +14,7 @@ namespace DragonQuest.Presentation.Dialogue
             "traveler", "innkeeper", "guard", "tyrant", "dragon", "dragon-essence"
         });
 
+        // Converte a identificação do falante na chave usada para procurar seu retrato.
         public static string CharacterFor(DialogueSpeaker speaker)
         {
             switch (speaker)

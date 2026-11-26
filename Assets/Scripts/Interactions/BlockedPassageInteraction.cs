@@ -2,11 +2,13 @@ using DragonQuest.Progression;
 using DragonQuest.Content;
 using UnityEngine;
 
+// Atualiza a barreira da passagem antiga quando o jogador reúne os requisitos do enigma.
 namespace DragonQuest.Interactions
 {
     public sealed class BlockedPassageInteraction : Interactable
     {
         private GameObject barrier;
+        // Acumula o tempo usado para animar a abertura da barreira.
         private float openingTime;
         private bool opening;
         private Progression.AncientSecrets secrets;
@@ -55,6 +57,7 @@ namespace DragonQuest.Interactions
             }
             if(!opening || barrier==null) return;
             openingTime+=Time.unscaledDeltaTime;
+            // Interpola a altura visual à medida que o tempo de abertura avança.
             float height = 1 - Mathf.SmoothStep(0, 1, Mathf.Clamp01(openingTime / 0.8f));
             barrier.transform.localScale = new Vector3(1, 1, height);
             if(openingTime>=0.8f) { opening=false; fullyOpen=true; barrier.SetActive(false); }
